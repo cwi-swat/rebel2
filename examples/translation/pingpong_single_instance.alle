@@ -1,0 +1,75 @@
+// Static configuration of state machines
+Spec (spId:id) = {<pingpong>}
+states (spId:id, stId:id) = {<pingpong,uninitialized>, <pingpong,finalized>, <pingpong,pingpong_ping>, <pingpong,pingpong_pong>}
+initialized (stId:id) = {<pingpong_ping>,<pingpong_pong>}
+
+PingPongEventStart (event:id) = {<pingpong_event_start>}
+PingPongEventHit (event:id)   = {<pingpong_event_hit>} 
+
+events (from:id, to:id, event:id) = {
+  <uninitialized, pingpong_ping, pingpong_event_start>,
+  <pingpong_ping, pingpong_pong, pingpong_event_hit>,
+  <pingpong_pong, pingpong_ping, pingpong_event_hit>
+  }
+
+Instance (spId:id, iId:id) = {<pingpong, p1>}
+MachinePingPong (spId:id) = {<pingpong>}
+
+// Dynamic part
+Config (cId:id) >= {<c1>} <= {<c1>..<c5>}
+configOrder (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>}
+initialConfig (cId:id) = {<c1>}
+finalConfig (cId:id) <= {<c1>..<c5>}
+
+raisedEvent (cur:id, nxt:id, event:id) <= {
+  <c1,c2,pingpong_event_start>,<c1,c2,pingpong_event_hit>,
+  <c2,c3,pingpong_event_start>,<c2,c3,pingpong_event_hit>,
+  <c3,c4,pingpong_event_start>,<c3,c4,pingpong_event_hit>,
+  <c4,c5,pingpong_event_start>,<c4,c5,pingpong_event_hit>
+}
+
+PingPongStateVector (cId:id, iId:id, stId:id, id:int, times:int) >= {<c1,p1,uninitialized,0,0>} <= {<c2,p1,uninitialized,?,?>..<c5,p1,uninitialized,?,?>,<c2,p1,finalized,?,?>..<c5,p1,finalized,?,?>,<c2,p1,pingpong_ping,?,?>..<c5,p1,pingpong_ping,?,?>,<c2,p1,pingpong_pong,?,?>..<c5,p1,pingpong_pong,?,?>}
+ParamsEventPingPongStart (cur:id, nxt:id, id:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>}
+
+// 'Type' constraints
+configOrder ⊆ Config[cId as cur] ⨯ Config[cId as nxt]
+raisedEvent ⊆ configOrder ⨯ events[event]
+
+PingPongStateVector[cId,iId,stId] ⊆ Config ⨯ Instance[iId] ⨯ states[stId]
+
+ParamsEventPingPongStart[cur,nxt] ⊆ configOrder
+ 
+// All configurations are reachable
+∀ c ∈ Config ∖ initialConfig | c ⊆ (initialConfig[cId as cur] ⨝ ^<cur,nxt>configOrder)[nxt -> cId]
+
+finalConfig ⊆ Config
+one finalConfig
+no finalConfig[cId as cur] ⨝ configOrder
+ 
+// Every transition can only happen by exactly one event
+∀ o ∈ configOrder | one o ⨝ raisedEvent
+// In every configuration all initialized instance have values attached
+∀ c ∈ Config | one PingPongStateVector ⨝ c
+
+// Transitions are only allowed between if an event is specified between two states
+∀ o ∈ configOrder ⨝ raisedEvent | (o[cur as cId] ⨝ PingPongStateVector)[stId->from] ⨯ (o[nxt as cId] ⨝ PingPongStateVector)[stId->to] ⨯ o[event] ⊆ events
+   
+// Transition function
+∀ o ∈ configOrder ⨝ raisedEvent | 
+  let old = (o[cur as cId] ⨝ PingPongStateVector)[cId -> oldCId, stId->oldStId, id->oldId, times->oldTimes],
+      new = (o[nxt as cId] ⨝ PingPongStateVector)[cId -> newCId, stId->newStId, id->newId, times->newTimes] | 
+  // PingPong.start() 
+  ( 
+    o[event] = PingPongEventStart ∧ 
+    some (new ⨯ (ParamsEventPingPongStart ⨝ o)) where (newId = id) ∧ 
+    some new where (newTimes = 0 && newId > 0)
+  ) 
+  ////////////////
+  ∨ 
+  // PingPong.hit()
+  ( 
+    o[event] = PingPongEventHit ∧ some (new ⨯ old) where (newTimes = oldTimes + 1 && newId = oldId)
+  )  
+
+some (finalConfig ⨝ PingPongStateVector) where times = 2
+   

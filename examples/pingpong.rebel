@@ -1,0 +1,16 @@
+spec PingPong 
+  id: Integer,
+  times: Integer;
+
+  identity id;
+  
+  init event start(id: Integer) 
+    post: this.id' = id, this.times' = 0;
+  
+  event hit()
+    post: this.times' = this.times + 1, this.id' = this.id;
+    
+  states:
+    (*) -> ping: start;
+    ping -> pong: hit;
+    pong -> ping: hit;
