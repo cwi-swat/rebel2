@@ -6,53 +6,53 @@ spec CoffeeMachine
   
   init event powerOn(id: Integer) 
     post: 
-      this.id = id,
-      this.amountNeeded = 0;
+      this.id' = id,
+      this.amountNeeded' = 0;
     
   event powerOff()
   
   event selectAmericano()
     post: 
-      this.amountNeeded = 130;
+      this.amountNeeded' = 130;
     
   event selectEspresso()
     post: 
-      this.amountNeeded = 120;
+      this.amountNeeded' = 120;
     
   event selectNormal()
     post: 
-      this.amountNeeded = 100;
+      this.amountNeeded' = 100;
     
   event selectLatte() 
     post: 
-      this.amountNeeded = 150;
+      this.amountNeeded' = 150;
        
   event pay(amount: Integer)
     pre: 
       this.amountNeeded - amount > 0;
     post: 
-      this.amountNeeded = this.amountNeeded - amount;
+      this.amountNeeded' = this.amountNeeded - amount;
   
     success amountMet
       pre: 
         this.amountNeeded - amount = 0;
       post: 
-        this.amountNeeded = 0;
-        
-    failure tooMuch
-      pre: this.amountNeeded - amount < 0;
-         
+        this.amountNeeded' = 0;
+                 
   event cancel() 
-    post: this.amountNeeded = 0;
-     
+    post: this.amountNeeded' = 0;
+
+  event empty()
+
   states:
     active {
       waiting -> acceptingPayment: selectAmericano, selectEspresso, selectNormal, selectLatte;
       acceptingPayment -> serve: pay::amountMet;
-      acceptingPayment -> acceptingPayment: pay, pay::tooMuch;
+      acceptingPayment -> acceptingPayment: pay;
       acceptingPayment -> waiting: cancel;
       serve -> waiting: empty;
     }
     
     active -> (*): powerOff;
     (*) -> waiting: powerOn;  
+    

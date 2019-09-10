@@ -1,75 +1,194 @@
 // Static configuration of state machines
-PingPong (spec:id) = {<pingpong>}
+CoffeeMachine (spec:id) = {<coffeemachine>}
 
-State (state:id) = {<state_uninitialized>,<state_finalized>,<state_pingpong_ping>,<state_pingpong_pong>}
-initialized (state:id) = {<state_pingpong_ping>,<state_pingpong_pong>}
+State (state:id) = {<state_uninitialized>,<state_finalized>,<state_coffeemachine_waiting>,<state_coffeemachine_serve>,<state_coffeemachine_acceptingpayment>}
+initialized (state:id) = {<state_coffeemachine_waiting>,<state_coffeemachine_serve>,<state_coffeemachine_acceptingpayment>}
 finalized (state:id) = {<state_finalized>}
 uninitialized (state:id) = {<state_uninitialized>}
-allowedTransitions (from:id, to:id, event:id) = {<state_pingpong_pong,state_pingpong_ping,event_pingpong_hit>,<state_uninitialized,state_pingpong_ping,event_pingpong_start>,<state_pingpong_ping,state_pingpong_pong,event_pingpong_hit>}
+StateCoffeeMachineWaiting (state:id) = {<state_coffeemachine_waiting>}
+StateCoffeeMachineAcceptingPayment (state:id) = {<state_coffeemachine_acceptingpayment>}
+StateCoffeeMachineServe (state:id) = {<state_coffeemachine_serve>}
 
-EventPingPongStart (event:id) = {<event_pingpong_start>}
-EventPingPongHit (event:id) = {<event_pingpong_hit>}
+
+allowedTransitions (from:id, to:id, event:id) = {<state_coffeemachine_waiting,state_coffeemachine_acceptingpayment,event_coffeemachine_selectamericano>,<state_coffeemachine_waiting,state_coffeemachine_acceptingpayment,event_coffeemachine_selectespresso>,<state_coffeemachine_serve,state_coffeemachine_waiting,event_coffeemachine_empty>,<state_coffeemachine_acceptingpayment,state_coffeemachine_serve,event_coffeemachine_pay_amountmet>,<state_coffeemachine_waiting,state_finalized,event_coffeemachine_poweroff>,<state_coffeemachine_serve,state_finalized,event_coffeemachine_poweroff>,<state_coffeemachine_waiting,state_coffeemachine_acceptingpayment,event_coffeemachine_selectlatte>,<state_coffeemachine_waiting,state_coffeemachine_acceptingpayment,event_coffeemachine_selectnormal>,<state_coffeemachine_acceptingpayment,state_coffeemachine_acceptingpayment,event_coffeemachine_pay>,<state_coffeemachine_acceptingpayment,state_coffeemachine_waiting,event_coffeemachine_cancel>,<state_uninitialized,state_coffeemachine_waiting,event_coffeemachine_poweron>,<state_coffeemachine_acceptingpayment,state_finalized,event_coffeemachine_poweroff>}
+
+EventCoffeeMachineSelectNormal (event:id) = {<event_coffeemachine_selectnormal>}
+EventCoffeeMachineSelectEspresso (event:id) = {<event_coffeemachine_selectespresso>}
+EventCoffeeMachineSelectAmericano (event:id) = {<event_coffeemachine_selectamericano>}
+EventCoffeeMachinePay_amountMet (event:id) = {<event_coffeemachine_pay_amountmet>}
+EventCoffeeMachineSelectLatte (event:id) = {<event_coffeemachine_selectlatte>}
+EventCoffeeMachinePay (event:id) = {<event_coffeemachine_pay>}
+EventCoffeeMachineEmpty (event:id) = {<event_coffeemachine_empty>}
+EventCoffeeMachinePowerOn (event:id) = {<event_coffeemachine_poweron>}
+EventCoffeeMachinePowerOff (event:id) = {<event_coffeemachine_poweroff>}
+EventCoffeeMachineCancel (event:id) = {<event_coffeemachine_cancel>}
 
 // Dynamic configuration of state machines
-Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>,<c9>,<c10>,<c11>,<c12>,<c13>,<c14>,<c15>,<c16>,<c17>,<c18>,<c19>,<c20>}
-order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>,<c6,c7>,<c7,c8>,<c8,c9>,<c9,c10>,<c10,c11>,<c11,c12>,<c12,c13>,<c13,c14>,<c14,c15>,<c15,c16>,<c16,c17>,<c17,c18>,<c18,c19>,<c19,c20>}
+Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>,<c9>,<c10>}
+order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>,<c6,c7>,<c7,c8>,<c8,c9>,<c9,c10>}
 InitialConfig (config:id) = {<c1>}
 
-Instance (spec:id, instance:id) = {<pingpong,p1>,<pingpong,p2>}
-instanceInState (config:id, instance:id, state:id) >= {<c1,p1,state_uninitialized>,<c1,p2,state_uninitialized>}<= {<c1,p1,state_uninitialized>,<c1,p1,state_finalized>,<c1,p1,state_pingpong_ping>,<c1,p1,state_pingpong_pong>,<c1,p2,state_uninitialized>,<c1,p2,state_finalized>,<c1,p2,state_pingpong_ping>,<c1,p2,state_pingpong_pong>,<c2,p1,state_uninitialized>,<c2,p1,state_finalized>,<c2,p1,state_pingpong_ping>,<c2,p1,state_pingpong_pong>,<c2,p2,state_uninitialized>,<c2,p2,state_finalized>,<c2,p2,state_pingpong_ping>,<c2,p2,state_pingpong_pong>,<c3,p1,state_uninitialized>,<c3,p1,state_finalized>,<c3,p1,state_pingpong_ping>,<c3,p1,state_pingpong_pong>,<c3,p2,state_uninitialized>,<c3,p2,state_finalized>,<c3,p2,state_pingpong_ping>,<c3,p2,state_pingpong_pong>,<c4,p1,state_uninitialized>,<c4,p1,state_finalized>,<c4,p1,state_pingpong_ping>,<c4,p1,state_pingpong_pong>,<c4,p2,state_uninitialized>,<c4,p2,state_finalized>,<c4,p2,state_pingpong_ping>,<c4,p2,state_pingpong_pong>,<c5,p1,state_uninitialized>,<c5,p1,state_finalized>,<c5,p1,state_pingpong_ping>,<c5,p1,state_pingpong_pong>,<c5,p2,state_uninitialized>,<c5,p2,state_finalized>,<c5,p2,state_pingpong_ping>,<c5,p2,state_pingpong_pong>,<c6,p1,state_uninitialized>,<c6,p1,state_finalized>,<c6,p1,state_pingpong_ping>,<c6,p1,state_pingpong_pong>,<c6,p2,state_uninitialized>,<c6,p2,state_finalized>,<c6,p2,state_pingpong_ping>,<c6,p2,state_pingpong_pong>,<c7,p1,state_uninitialized>,<c7,p1,state_finalized>,<c7,p1,state_pingpong_ping>,<c7,p1,state_pingpong_pong>,<c7,p2,state_uninitialized>,<c7,p2,state_finalized>,<c7,p2,state_pingpong_ping>,<c7,p2,state_pingpong_pong>,<c8,p1,state_uninitialized>,<c8,p1,state_finalized>,<c8,p1,state_pingpong_ping>,<c8,p1,state_pingpong_pong>,<c8,p2,state_uninitialized>,<c8,p2,state_finalized>,<c8,p2,state_pingpong_ping>,<c8,p2,state_pingpong_pong>,<c9,p1,state_uninitialized>,<c9,p1,state_finalized>,<c9,p1,state_pingpong_ping>,<c9,p1,state_pingpong_pong>,<c9,p2,state_uninitialized>,<c9,p2,state_finalized>,<c9,p2,state_pingpong_ping>,<c9,p2,state_pingpong_pong>,<c10,p1,state_uninitialized>,<c10,p1,state_finalized>,<c10,p1,state_pingpong_ping>,<c10,p1,state_pingpong_pong>,<c10,p2,state_uninitialized>,<c10,p2,state_finalized>,<c10,p2,state_pingpong_ping>,<c10,p2,state_pingpong_pong>,<c11,p1,state_uninitialized>,<c11,p1,state_finalized>,<c11,p1,state_pingpong_ping>,<c11,p1,state_pingpong_pong>,<c11,p2,state_uninitialized>,<c11,p2,state_finalized>,<c11,p2,state_pingpong_ping>,<c11,p2,state_pingpong_pong>,<c12,p1,state_uninitialized>,<c12,p1,state_finalized>,<c12,p1,state_pingpong_ping>,<c12,p1,state_pingpong_pong>,<c12,p2,state_uninitialized>,<c12,p2,state_finalized>,<c12,p2,state_pingpong_ping>,<c12,p2,state_pingpong_pong>,<c13,p1,state_uninitialized>,<c13,p1,state_finalized>,<c13,p1,state_pingpong_ping>,<c13,p1,state_pingpong_pong>,<c13,p2,state_uninitialized>,<c13,p2,state_finalized>,<c13,p2,state_pingpong_ping>,<c13,p2,state_pingpong_pong>,<c14,p1,state_uninitialized>,<c14,p1,state_finalized>,<c14,p1,state_pingpong_ping>,<c14,p1,state_pingpong_pong>,<c14,p2,state_uninitialized>,<c14,p2,state_finalized>,<c14,p2,state_pingpong_ping>,<c14,p2,state_pingpong_pong>,<c15,p1,state_uninitialized>,<c15,p1,state_finalized>,<c15,p1,state_pingpong_ping>,<c15,p1,state_pingpong_pong>,<c15,p2,state_uninitialized>,<c15,p2,state_finalized>,<c15,p2,state_pingpong_ping>,<c15,p2,state_pingpong_pong>,<c16,p1,state_uninitialized>,<c16,p1,state_finalized>,<c16,p1,state_pingpong_ping>,<c16,p1,state_pingpong_pong>,<c16,p2,state_uninitialized>,<c16,p2,state_finalized>,<c16,p2,state_pingpong_ping>,<c16,p2,state_pingpong_pong>,<c17,p1,state_uninitialized>,<c17,p1,state_finalized>,<c17,p1,state_pingpong_ping>,<c17,p1,state_pingpong_pong>,<c17,p2,state_uninitialized>,<c17,p2,state_finalized>,<c17,p2,state_pingpong_ping>,<c17,p2,state_pingpong_pong>,<c18,p1,state_uninitialized>,<c18,p1,state_finalized>,<c18,p1,state_pingpong_ping>,<c18,p1,state_pingpong_pong>,<c18,p2,state_uninitialized>,<c18,p2,state_finalized>,<c18,p2,state_pingpong_ping>,<c18,p2,state_pingpong_pong>,<c19,p1,state_uninitialized>,<c19,p1,state_finalized>,<c19,p1,state_pingpong_ping>,<c19,p1,state_pingpong_pong>,<c19,p2,state_uninitialized>,<c19,p2,state_finalized>,<c19,p2,state_pingpong_ping>,<c19,p2,state_pingpong_pong>,<c20,p1,state_uninitialized>,<c20,p1,state_finalized>,<c20,p1,state_pingpong_ping>,<c20,p1,state_pingpong_pong>,<c20,p2,state_uninitialized>,<c20,p2,state_finalized>,<c20,p2,state_pingpong_ping>,<c20,p2,state_pingpong_pong>}
-raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_pingpong_hit,p1>,<c1,c2,event_pingpong_start,p1>,<c2,c3,event_pingpong_hit,p1>,<c2,c3,event_pingpong_start,p1>,<c3,c4,event_pingpong_hit,p1>,<c3,c4,event_pingpong_start,p1>,<c4,c5,event_pingpong_hit,p1>,<c4,c5,event_pingpong_start,p1>,<c5,c6,event_pingpong_hit,p1>,<c5,c6,event_pingpong_start,p1>,<c6,c7,event_pingpong_hit,p1>,<c6,c7,event_pingpong_start,p1>,<c7,c8,event_pingpong_hit,p1>,<c7,c8,event_pingpong_start,p1>,<c8,c9,event_pingpong_hit,p1>,<c8,c9,event_pingpong_start,p1>,<c9,c10,event_pingpong_hit,p1>,<c9,c10,event_pingpong_start,p1>,<c10,c11,event_pingpong_hit,p1>,<c10,c11,event_pingpong_start,p1>,<c11,c12,event_pingpong_hit,p1>,<c11,c12,event_pingpong_start,p1>,<c12,c13,event_pingpong_hit,p1>,<c12,c13,event_pingpong_start,p1>,<c13,c14,event_pingpong_hit,p1>,<c13,c14,event_pingpong_start,p1>,<c14,c15,event_pingpong_hit,p1>,<c14,c15,event_pingpong_start,p1>,<c15,c16,event_pingpong_hit,p1>,<c15,c16,event_pingpong_start,p1>,<c16,c17,event_pingpong_hit,p1>,<c16,c17,event_pingpong_start,p1>,<c17,c18,event_pingpong_hit,p1>,<c17,c18,event_pingpong_start,p1>,<c18,c19,event_pingpong_hit,p1>,<c18,c19,event_pingpong_start,p1>,<c19,c20,event_pingpong_hit,p1>,<c19,c20,event_pingpong_start,p1>,<c1,c2,event_pingpong_hit,p2>,<c1,c2,event_pingpong_start,p2>,<c2,c3,event_pingpong_hit,p2>,<c2,c3,event_pingpong_start,p2>,<c3,c4,event_pingpong_hit,p2>,<c3,c4,event_pingpong_start,p2>,<c4,c5,event_pingpong_hit,p2>,<c4,c5,event_pingpong_start,p2>,<c5,c6,event_pingpong_hit,p2>,<c5,c6,event_pingpong_start,p2>,<c6,c7,event_pingpong_hit,p2>,<c6,c7,event_pingpong_start,p2>,<c7,c8,event_pingpong_hit,p2>,<c7,c8,event_pingpong_start,p2>,<c8,c9,event_pingpong_hit,p2>,<c8,c9,event_pingpong_start,p2>,<c9,c10,event_pingpong_hit,p2>,<c9,c10,event_pingpong_start,p2>,<c10,c11,event_pingpong_hit,p2>,<c10,c11,event_pingpong_start,p2>,<c11,c12,event_pingpong_hit,p2>,<c11,c12,event_pingpong_start,p2>,<c12,c13,event_pingpong_hit,p2>,<c12,c13,event_pingpong_start,p2>,<c13,c14,event_pingpong_hit,p2>,<c13,c14,event_pingpong_start,p2>,<c14,c15,event_pingpong_hit,p2>,<c14,c15,event_pingpong_start,p2>,<c15,c16,event_pingpong_hit,p2>,<c15,c16,event_pingpong_start,p2>,<c16,c17,event_pingpong_hit,p2>,<c16,c17,event_pingpong_start,p2>,<c17,c18,event_pingpong_hit,p2>,<c17,c18,event_pingpong_start,p2>,<c18,c19,event_pingpong_hit,p2>,<c18,c19,event_pingpong_start,p2>,<c19,c20,event_pingpong_hit,p2>,<c19,c20,event_pingpong_start,p2>}
-changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,p1>,<c1,c2,p2>,<c2,c3,p1>,<c2,c3,p2>,<c3,c4,p1>,<c3,c4,p2>,<c4,c5,p1>,<c4,c5,p2>,<c5,c6,p1>,<c5,c6,p2>,<c6,c7,p1>,<c6,c7,p2>,<c7,c8,p1>,<c7,c8,p2>,<c8,c9,p1>,<c8,c9,p2>,<c9,c10,p1>,<c9,c10,p2>,<c10,c11,p1>,<c10,c11,p2>,<c11,c12,p1>,<c11,c12,p2>,<c12,c13,p1>,<c12,c13,p2>,<c13,c14,p1>,<c13,c14,p2>,<c14,c15,p1>,<c14,c15,p2>,<c15,c16,p1>,<c15,c16,p2>,<c16,c17,p1>,<c16,c17,p2>,<c17,c18,p1>,<c17,c18,p2>,<c18,c19,p1>,<c18,c19,p2>,<c19,c20,p1>,<c19,c20,p2>}
+Instance (spec:id, instance:id) = {<coffeemachine,cm1>}
+instanceInState (config:id, instance:id, state:id) >= {<c1,cm1,state_uninitialized>}<= {<c1,cm1,state_uninitialized>,<c1,cm1,state_finalized>,<c1,cm1,state_coffeemachine_waiting>,<c1,cm1,state_coffeemachine_serve>,<c1,cm1,state_coffeemachine_acceptingpayment>,<c2,cm1,state_uninitialized>,<c2,cm1,state_finalized>,<c2,cm1,state_coffeemachine_waiting>,<c2,cm1,state_coffeemachine_serve>,<c2,cm1,state_coffeemachine_acceptingpayment>,<c3,cm1,state_uninitialized>,<c3,cm1,state_finalized>,<c3,cm1,state_coffeemachine_waiting>,<c3,cm1,state_coffeemachine_serve>,<c3,cm1,state_coffeemachine_acceptingpayment>,<c4,cm1,state_uninitialized>,<c4,cm1,state_finalized>,<c4,cm1,state_coffeemachine_waiting>,<c4,cm1,state_coffeemachine_serve>,<c4,cm1,state_coffeemachine_acceptingpayment>,<c5,cm1,state_uninitialized>,<c5,cm1,state_finalized>,<c5,cm1,state_coffeemachine_waiting>,<c5,cm1,state_coffeemachine_serve>,<c5,cm1,state_coffeemachine_acceptingpayment>,<c6,cm1,state_uninitialized>,<c6,cm1,state_finalized>,<c6,cm1,state_coffeemachine_waiting>,<c6,cm1,state_coffeemachine_serve>,<c6,cm1,state_coffeemachine_acceptingpayment>,<c7,cm1,state_uninitialized>,<c7,cm1,state_finalized>,<c7,cm1,state_coffeemachine_waiting>,<c7,cm1,state_coffeemachine_serve>,<c7,cm1,state_coffeemachine_acceptingpayment>,<c8,cm1,state_uninitialized>,<c8,cm1,state_finalized>,<c8,cm1,state_coffeemachine_waiting>,<c8,cm1,state_coffeemachine_serve>,<c8,cm1,state_coffeemachine_acceptingpayment>,<c9,cm1,state_uninitialized>,<c9,cm1,state_finalized>,<c9,cm1,state_coffeemachine_waiting>,<c9,cm1,state_coffeemachine_serve>,<c9,cm1,state_coffeemachine_acceptingpayment>,<c10,cm1,state_uninitialized>,<c10,cm1,state_finalized>,<c10,cm1,state_coffeemachine_waiting>,<c10,cm1,state_coffeemachine_serve>,<c10,cm1,state_coffeemachine_acceptingpayment>}
+raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_coffeemachine_cancel,cm1>,<c1,c2,event_coffeemachine_selectamericano,cm1>,<c1,c2,event_coffeemachine_selectlatte,cm1>,<c1,c2,event_coffeemachine_selectnormal,cm1>,<c1,c2,event_coffeemachine_poweroff,cm1>,<c1,c2,event_coffeemachine_poweron,cm1>,<c1,c2,event_coffeemachine_pay_amountmet,cm1>,<c1,c2,event_coffeemachine_empty,cm1>,<c1,c2,event_coffeemachine_selectespresso,cm1>,<c1,c2,event_coffeemachine_pay,cm1>,<c2,c3,event_coffeemachine_cancel,cm1>,<c2,c3,event_coffeemachine_selectamericano,cm1>,<c2,c3,event_coffeemachine_selectlatte,cm1>,<c2,c3,event_coffeemachine_selectnormal,cm1>,<c2,c3,event_coffeemachine_poweroff,cm1>,<c2,c3,event_coffeemachine_poweron,cm1>,<c2,c3,event_coffeemachine_pay_amountmet,cm1>,<c2,c3,event_coffeemachine_empty,cm1>,<c2,c3,event_coffeemachine_selectespresso,cm1>,<c2,c3,event_coffeemachine_pay,cm1>,<c3,c4,event_coffeemachine_cancel,cm1>,<c3,c4,event_coffeemachine_selectamericano,cm1>,<c3,c4,event_coffeemachine_selectlatte,cm1>,<c3,c4,event_coffeemachine_selectnormal,cm1>,<c3,c4,event_coffeemachine_poweroff,cm1>,<c3,c4,event_coffeemachine_poweron,cm1>,<c3,c4,event_coffeemachine_pay_amountmet,cm1>,<c3,c4,event_coffeemachine_empty,cm1>,<c3,c4,event_coffeemachine_selectespresso,cm1>,<c3,c4,event_coffeemachine_pay,cm1>,<c4,c5,event_coffeemachine_cancel,cm1>,<c4,c5,event_coffeemachine_selectamericano,cm1>,<c4,c5,event_coffeemachine_selectlatte,cm1>,<c4,c5,event_coffeemachine_selectnormal,cm1>,<c4,c5,event_coffeemachine_poweroff,cm1>,<c4,c5,event_coffeemachine_poweron,cm1>,<c4,c5,event_coffeemachine_pay_amountmet,cm1>,<c4,c5,event_coffeemachine_empty,cm1>,<c4,c5,event_coffeemachine_selectespresso,cm1>,<c4,c5,event_coffeemachine_pay,cm1>,<c5,c6,event_coffeemachine_cancel,cm1>,<c5,c6,event_coffeemachine_selectamericano,cm1>,<c5,c6,event_coffeemachine_selectlatte,cm1>,<c5,c6,event_coffeemachine_selectnormal,cm1>,<c5,c6,event_coffeemachine_poweroff,cm1>,<c5,c6,event_coffeemachine_poweron,cm1>,<c5,c6,event_coffeemachine_pay_amountmet,cm1>,<c5,c6,event_coffeemachine_empty,cm1>,<c5,c6,event_coffeemachine_selectespresso,cm1>,<c5,c6,event_coffeemachine_pay,cm1>,<c6,c7,event_coffeemachine_cancel,cm1>,<c6,c7,event_coffeemachine_selectamericano,cm1>,<c6,c7,event_coffeemachine_selectlatte,cm1>,<c6,c7,event_coffeemachine_selectnormal,cm1>,<c6,c7,event_coffeemachine_poweroff,cm1>,<c6,c7,event_coffeemachine_poweron,cm1>,<c6,c7,event_coffeemachine_pay_amountmet,cm1>,<c6,c7,event_coffeemachine_empty,cm1>,<c6,c7,event_coffeemachine_selectespresso,cm1>,<c6,c7,event_coffeemachine_pay,cm1>,<c7,c8,event_coffeemachine_cancel,cm1>,<c7,c8,event_coffeemachine_selectamericano,cm1>,<c7,c8,event_coffeemachine_selectlatte,cm1>,<c7,c8,event_coffeemachine_selectnormal,cm1>,<c7,c8,event_coffeemachine_poweroff,cm1>,<c7,c8,event_coffeemachine_poweron,cm1>,<c7,c8,event_coffeemachine_pay_amountmet,cm1>,<c7,c8,event_coffeemachine_empty,cm1>,<c7,c8,event_coffeemachine_selectespresso,cm1>,<c7,c8,event_coffeemachine_pay,cm1>,<c8,c9,event_coffeemachine_cancel,cm1>,<c8,c9,event_coffeemachine_selectamericano,cm1>,<c8,c9,event_coffeemachine_selectlatte,cm1>,<c8,c9,event_coffeemachine_selectnormal,cm1>,<c8,c9,event_coffeemachine_poweroff,cm1>,<c8,c9,event_coffeemachine_poweron,cm1>,<c8,c9,event_coffeemachine_pay_amountmet,cm1>,<c8,c9,event_coffeemachine_empty,cm1>,<c8,c9,event_coffeemachine_selectespresso,cm1>,<c8,c9,event_coffeemachine_pay,cm1>,<c9,c10,event_coffeemachine_cancel,cm1>,<c9,c10,event_coffeemachine_selectamericano,cm1>,<c9,c10,event_coffeemachine_selectlatte,cm1>,<c9,c10,event_coffeemachine_selectnormal,cm1>,<c9,c10,event_coffeemachine_poweroff,cm1>,<c9,c10,event_coffeemachine_poweron,cm1>,<c9,c10,event_coffeemachine_pay_amountmet,cm1>,<c9,c10,event_coffeemachine_empty,cm1>,<c9,c10,event_coffeemachine_selectespresso,cm1>,<c9,c10,event_coffeemachine_pay,cm1>}
+changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,cm1>,<c2,c3,cm1>,<c3,c4,cm1>,<c4,c5,cm1>,<c5,c6,cm1>,<c6,c7,cm1>,<c7,c8,cm1>,<c8,c9,cm1>,<c9,c10,cm1>}
 
-StateVectorPingPongPrimitives (config:id, instance:id, id:int, times:int) <= {<c1,p1,?,?>,<c1,p2,?,?>,<c2,p1,?,?>,<c2,p2,?,?>,<c3,p1,?,?>,<c3,p2,?,?>,<c4,p1,?,?>,<c4,p2,?,?>,<c5,p1,?,?>,<c5,p2,?,?>,<c6,p1,?,?>,<c6,p2,?,?>,<c7,p1,?,?>,<c7,p2,?,?>,<c8,p1,?,?>,<c8,p2,?,?>,<c9,p1,?,?>,<c9,p2,?,?>,<c10,p1,?,?>,<c10,p2,?,?>,<c11,p1,?,?>,<c11,p2,?,?>,<c12,p1,?,?>,<c12,p2,?,?>,<c13,p1,?,?>,<c13,p2,?,?>,<c14,p1,?,?>,<c14,p2,?,?>,<c15,p1,?,?>,<c15,p2,?,?>,<c16,p1,?,?>,<c16,p2,?,?>,<c17,p1,?,?>,<c17,p2,?,?>,<c18,p1,?,?>,<c18,p2,?,?>,<c19,p1,?,?>,<c19,p2,?,?>,<c20,p1,?,?>,<c20,p2,?,?>}
+StateVectorCoffeeMachinePrimitives (config:id, instance:id, id:int, amountNeeded:int) <= {<c1,cm1,?,?>,<c2,cm1,?,?>,<c3,cm1,?,?>,<c4,cm1,?,?>,<c5,cm1,?,?>,<c6,cm1,?,?>,<c7,cm1,?,?>,<c8,cm1,?,?>,<c9,cm1,?,?>,<c10,cm1,?,?>}
 
-ParamsEventPingPongStartPrimitives (cur:id, nxt:id, id:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>,<c7,c8,?>,<c8,c9,?>,<c9,c10,?>,<c10,c11,?>,<c11,c12,?>,<c12,c13,?>,<c13,c14,?>,<c14,c15,?>,<c15,c16,?>,<c16,c17,?>,<c17,c18,?>,<c18,c19,?>,<c19,c20,?>} 
+ParamsEventCoffeeMachinePowerOnPrimitives (cur:id, nxt:id, id:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>,<c7,c8,?>,<c8,c9,?>,<c9,c10,?>} 
+ParamsEventCoffeeMachinePayPrimitives (cur:id, nxt:id, amount:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>,<c7,c8,?>,<c8,c9,?>,<c9,c10,?>} 
+ParamsEventCoffeeMachinePay_amountMetPrimitives (cur:id, nxt:id, amount:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>,<c7,c8,?>,<c8,c9,?>,<c9,c10,?>} 
 
 // Generic 'Type' constraints
-order ⊆ Config[config as cur] ⨯ Config[config as nxt]
-raisedEvent ⊆ order ⨯ allowedTransitions[event] ⨯ Instance[instance]
-instanceInState ⊆ Instance[instance] ⨯ Config ⨯ State
-changedInstance ⊆ order ⨯ Instance[instance]
+order in Config[config as cur] x Config[config as nxt]
+raisedEvent in order x allowedTransitions[event] x Instance[instance]
+instanceInState in Instance[instance] x Config x State
+changedInstance in order x Instance[instance]
     
 // Machine specific 'Type' constraints
-StateVectorPingPongPrimitives[config,instance] ⊆ Config ⨯ Instance[instance]
+StateVectorCoffeeMachinePrimitives[config,instance] in Config x Instance[instance]
 
 // Generic: All configurations are reachable
-∀ c ∈ Config ∖ InitialConfig | c ⊆ (InitialConfig[config as cur] ⨝ ^<cur,nxt>order)[nxt -> config]
+forall c : Config - InitialConfig | c in (InitialConfig[config as cur] |x| ^<cur,nxt>order)[nxt -> config]
 
 // Generic: Every transition can only happen by exactly one event
-∀ o ∈ order | one o ⨝ raisedEvent
+forall o : order | one o |x| raisedEvent
 
 // Generic: In every configuration all machines have a state
-∀ c ∈ Config, inst ∈ Instance | one instanceInState ⨝ c ⨝ inst
+forall c : Config, inst : Instance | one instanceInState |x| c |x| inst
 
 // Specific per machine: In every configuration iff a machine is in an initialized state then it must have values
-∀ c ∈ Config, inst ∈ (Instance ⨝ PingPong)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one StateVectorPingPongPrimitives ⨝ c ⨝ inst)
+forall c : Config, inst : (Instance |x| CoffeeMachine)[instance] | (((c x inst) |x| instanceInState)[state] ⊆ initialized <=> one StateVectorCoffeeMachinePrimitives |x| c |x| inst)
 
 
 // Generic: Transitions are only allowed between if an event is specified between two states
-∀ o ∈ order ⨝ raisedEvent | (o[cur as config] ⨝ instanceInState)[state->from] ⨯ (o[nxt as config] ⨝ instanceInState)[state->to] ⨯ o[event] ⊆ allowedTransitions
+forall o : order |x| raisedEvent | (o[cur as config] ⨝ instanceInState)[state->from] x (o[nxt as config] ⨝ instanceInState)[state->to] x o[event] ⊆ allowedTransitions
 
 // Transition function
-∀ o ∈ order | (
-    ∀ inst ∈ (Instance ⨝ PingPong)[instance] | let cur = (o[cur as config] ⨝ StateVectorPingPongPrimitives ⨝ instanceInState ⨝ inst)[config -> curConfig, state->curState, instance->curInstance, id->curId, times->curTimes],
-          nxt = (o[nxt as config] ⨝ StateVectorPingPongPrimitives ⨝ instanceInState ⨝ inst)[config -> nxtConfig, state->nxtState, instance->instance, id->nxtId, times->nxtTimes] | 
+forall o : order |  
+  // Possible transitions for CoffeeMachine
+  (
+    forall inst : (Instance |x| CoffeeMachine)[instance] |  
+      let cur = (o[cur as config] |x| StateVectorCoffeeMachinePrimitives |x| instanceInState |x| inst)[config -> curConfig, state->curState, instance->curInstance, id->curId, amountNeeded->curAmountNeeded],
+          nxt = (o[nxt as config] |x| StateVectorCoffeeMachinePrimitives |x| instanceInState |x| inst)[config -> nxtConfig, state->nxtState, instance->instance, id->nxtId, amountNeeded->nxtAmountNeeded] | 
         // Iff this is the instance that raised the event then one of the transitions must have happened 
-        (some nxt[instance] ∩ ((raisedEvent ⨝ o)[instance]) ⇔ (
-            ( // Event PingPong.start
+        (some nxt[instance] & ((raisedEvent |x| o)[instance]) <=> 
+          (
+            ( // Event CoffeeMachine.selectEspresso
        
        // Postconditions
-       (some (nxt ⨯ o ⨝ ParamsEventPingPongStartPrimitives) where (nxtId = id)) ∧ (some (nxt) where (nxtTimes = 0)) ∧ (o ⨝ raisedEvent)[event] = EventPingPongStart ∧ nxt[nxtState] = ((o[cur->config] ⨝ instanceInState ⨝ inst)[state as from] ⨝ (allowedTransitions ⨝ EventPingPongStart))[to->nxtState] ∧ (changedInstance ⨝ o)[instance] = nxt[instance] // TODO: needs to be extended when syncing events is introduced
-    ) ∨ ( // Event PingPong.hit
+       (some (cur x nxt) where (nxtId = curId)) &&
+       (some (nxt) where (nxtAmountNeeded = 120)) &&
+      (o |x| raisedEvent)[event] = EventCoffeeMachineSelectEspresso &&
+      nxt[nxtState] = ((o[cur->config] |x| instanceInState |x| inst)[state as from] |x| (allowedTransitions |x| EventCoffeeMachineSelectEspresso))[to->nxtState] && 
+      (changedInstance |x| o)[instance] = nxt[instance] // TODO: needs to be extended when syncing events is introduced
+    )
+    ||
+    ( // Event CoffeeMachine.cancel
        
        // Postconditions
-       (some (cur ⨯ nxt) where (nxtTimes = curTimes  +  1)) ∧ (some (cur ⨯ nxt) where (nxtId = curId)) ∧ (o ⨝ raisedEvent)[event] = EventPingPongHit ∧ nxt[nxtState] = ((o[cur->config] ⨝ instanceInState ⨝ inst)[state as from] ⨝ (allowedTransitions ⨝ EventPingPongHit))[to->nxtState] ∧ (changedInstance ⨝ o)[instance] = nxt[instance] // TODO: needs to be extended when syncing events is introduced
+       (some (cur x nxt) where (nxtId = curId)) &&
+       (some (nxt) where (nxtAmountNeeded = 0)) &&
+      (o |x| raisedEvent)[event] = EventCoffeeMachineCancel &&
+      nxt[nxtState] = ((o[cur->config] |x| instanceInState |x| inst)[state as from] |x| (allowedTransitions |x| EventCoffeeMachineCancel))[to->nxtState] && 
+      (changedInstance |x| o)[instance] = nxt[instance] // TODO: needs to be extended when syncing events is introduced
+    )
+    ||
+    ( // Event CoffeeMachine.empty
+       
+       // Postconditions
+       (some (cur x nxt) where (nxtId = curId)) &&
+       (some (cur x nxt) where (nxtAmountNeeded = curAmountNeeded)) &&
+      (o |x| raisedEvent)[event] = EventCoffeeMachineEmpty &&
+      nxt[nxtState] = ((o[cur->config] |x| instanceInState |x| inst)[state as from] |x| (allowedTransitions |x| EventCoffeeMachineEmpty))[to->nxtState] && 
+      (changedInstance |x| o)[instance] = nxt[instance] // TODO: needs to be extended when syncing events is introduced
+    )
+    ||
+    ( // Event CoffeeMachine.selectNormal
+       
+       // Postconditions
+       (some (cur x nxt) where (nxtId = curId)) &&
+       (some (nxt) where (nxtAmountNeeded = 100)) &&
+      (o |x| raisedEvent)[event] = EventCoffeeMachineSelectNormal &&
+      nxt[nxtState] = ((o[cur->config] |x| instanceInState |x| inst)[state as from] |x| (allowedTransitions |x| EventCoffeeMachineSelectNormal))[to->nxtState] && 
+      (changedInstance |x| o)[instance] = nxt[instance] // TODO: needs to be extended when syncing events is introduced
+    )
+    ||
+    ( // Event CoffeeMachine.powerOn
+       
+       // Postconditions
+       (some (nxt x o |x| ParamsEventCoffeeMachinePowerOnPrimitives) where (nxtId = id)) &&
+       (some (nxt) where (nxtAmountNeeded = 0)) &&
+      (o |x| raisedEvent)[event] = EventCoffeeMachinePowerOn &&
+      nxt[nxtState] = ((o[cur->config] |x| instanceInState |x| inst)[state as from] |x| (allowedTransitions |x| EventCoffeeMachinePowerOn))[to->nxtState] && 
+      (changedInstance |x| o)[instance] = nxt[instance] // TODO: needs to be extended when syncing events is introduced
+    )
+    ||
+    ( // Event CoffeeMachine.pay
+       // Preconditions 
+       (some (cur x o |x| ParamsEventCoffeeMachinePayPrimitives) where (curAmountNeeded  -  amount > 0)) &&
+       // Postconditions
+       (some (cur x nxt) where (nxtId = curId)) &&
+       (some (cur x nxt x o |x| ParamsEventCoffeeMachinePayPrimitives) where (nxtAmountNeeded = curAmountNeeded  -  amount)) &&
+      (o |x| raisedEvent)[event] = EventCoffeeMachinePay &&
+      nxt[nxtState] = ((o[cur->config] |x| instanceInState |x| inst)[state as from] |x| (allowedTransitions |x| EventCoffeeMachinePay))[to->nxtState] && 
+      (changedInstance |x| o)[instance] = nxt[instance] // TODO: needs to be extended when syncing events is introduced
+    )
+    ||
+    ( // Event CoffeeMachine.powerOff
+       
+       // Postconditions
+       (some (cur x nxt) where (nxtId = curId)) &&
+       (some (cur x nxt) where (nxtAmountNeeded = curAmountNeeded)) &&
+      (o |x| raisedEvent)[event] = EventCoffeeMachinePowerOff &&
+      nxt[nxtState] = ((o[cur->config] |x| instanceInState |x| inst)[state as from] |x| (allowedTransitions |x| EventCoffeeMachinePowerOff))[to->nxtState] && 
+      (changedInstance |x| o)[instance] = nxt[instance] // TODO: needs to be extended when syncing events is introduced
+    )
+    ||
+    ( // Event CoffeeMachine.pay_amountMet
+       // Preconditions 
+       (some (cur x o |x| ParamsEventCoffeeMachinePay_amountMetPrimitives) where (curAmountNeeded  -  amount = 0)) &&
+       // Postconditions
+       (some (cur x nxt) where (nxtId = curId)) &&
+       (some (nxt) where (nxtAmountNeeded = 0)) &&
+      (o |x| raisedEvent)[event] = EventCoffeeMachinePay_amountMet &&
+      nxt[nxtState] = ((o[cur->config] |x| instanceInState |x| inst)[state as from] |x| (allowedTransitions |x| EventCoffeeMachinePay_amountMet))[to->nxtState] && 
+      (changedInstance |x| o)[instance] = nxt[instance] // TODO: needs to be extended when syncing events is introduced
+    )
+    ||
+    ( // Event CoffeeMachine.selectAmericano
+       
+       // Postconditions
+       (some (cur x nxt) where (nxtId = curId)) &&
+       (some (nxt) where (nxtAmountNeeded = 130)) &&
+      (o |x| raisedEvent)[event] = EventCoffeeMachineSelectAmericano &&
+      nxt[nxtState] = ((o[cur->config] |x| instanceInState |x| inst)[state as from] |x| (allowedTransitions |x| EventCoffeeMachineSelectAmericano))[to->nxtState] && 
+      (changedInstance |x| o)[instance] = nxt[instance] // TODO: needs to be extended when syncing events is introduced
+    )
+    ||
+    ( // Event CoffeeMachine.selectLatte
+       
+       // Postconditions
+       (some (cur x nxt) where (nxtId = curId)) &&
+       (some (nxt) where (nxtAmountNeeded = 150)) &&
+      (o |x| raisedEvent)[event] = EventCoffeeMachineSelectLatte &&
+      nxt[nxtState] = ((o[cur->config] |x| instanceInState |x| inst)[state as from] |x| (allowedTransitions |x| EventCoffeeMachineSelectLatte))[to->nxtState] && 
+      (changedInstance |x| o)[instance] = nxt[instance] // TODO: needs to be extended when syncing events is introduced
     )
           )
-        ) ∧ (no nxt[instance] ∩ (raisedEvent ⨝ o)[instance] ⇔ (
+        ) 
+        &&
+        // If it is not a transitioning instance, frame the values
+        (no nxt[instance] & (raisedEvent |x| o)[instance] <=> 
+          (
             // The instance keeps its current state
-            (o[nxt->config] ⨝ instanceInState ⨝ inst)[state] = (o[cur->config] ⨝ instanceInState ⨝ inst)[state] ∧ (
+            (o[nxt->config] |x| instanceInState |x| inst)[state] = (o[cur->config] |x| instanceInState |x| inst)[state] 
+            && (
               // Either there was no values attached yet 
-              (no (o[nxt->config] ⨝ StateVectorPingPongPrimitives ⨝ inst)) ∨ (some (nxt ⨯ cur) where ((nxtId = curId) && (nxtTimes = curTimes)))
+              (no (o[nxt->config] ⨝ StateVectorCoffeeMachinePrimitives |x| inst)) 
+              || 
+              // Or keep the current values
+              (some (nxt x cur) where ((nxtId = curId) && (nxtAmountNeeded = curAmountNeeded)))
             )
         )) 
       
@@ -77,6 +196,6 @@ StateVectorPingPongPrimitives[config,instance] ⊆ Config ⨯ Instance[instance]
   
 
 // Asserts: this is where the checks get added
-∃ c ∈ Config, p ∈ StateVectorPingPongPrimitives | some p where times = 5
+exists c: Config | (c |x| instanceInState)[state] in StateCoffeeMachineServe
 
 objectives: minimize(Config[count()])

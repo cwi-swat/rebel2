@@ -11,7 +11,7 @@ import List;
 import IO;
 import ParseTree;
 
-str translateConstraints(set[Spec] spcs) {
+str translateConstraints(set[Spec] spcs, str check) {
   str cons = "<genericTypeConstraints()>
              '<machineTypeConstraints(spcs)>
              '<allConfigsAreReachable()>
@@ -20,7 +20,7 @@ str translateConstraints(set[Spec] spcs) {
              '<machineOnlyHasValuesWhenInitialized(spcs)>
              '<noTransitionsBetweenUnrelatedStates()>
              '<transitionFunction(spcs)>
-             '<encodeAsserts()>
+             '<encodeAsserts(check)>
              '<findMinimumExample(spcs)>
              '";
   
@@ -147,9 +147,9 @@ private str translateGenericPart(str spc, Event event, str cur, str nxt)
 private str frameValues(Spec spc, str cur, str nxt) 
   = "(some (<nxt> x <cur>) where (<intercalate(" && ", ["(<nxt><ff> = <cur><ff>)" | str f <- lookupPrimitiveFieldNames(spc), str ff := capitalize(f)])>))";
 
-private str encodeAsserts() 
+private str encodeAsserts(str check) 
   = "// Asserts: this is where the checks get added
-    'exists c: Config, p: StateVectorPingPongPrimitives | some p where times = 18
+    '<check>
     '";
 
 private str findMinimumExample(set[Spec] spcs) 

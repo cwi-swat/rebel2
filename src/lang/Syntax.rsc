@@ -38,7 +38,7 @@ syntax FormalParam
   ;
   
 syntax EventBody
-  = Pre? pre Post? post Sync? sync EventVariant* variants
+  = Pre? pre Post? post EventVariant* variants
   ;
   
 syntax Pre
@@ -49,16 +49,12 @@ syntax Post
   = "post" ":" {Formula ","}* formulas ";"
   ;
 
-syntax Sync
-  = "sync" ":" {Expr ","}* exprs ";"
-  ;
-
 syntax EventVariant
   = ("success" | "failure") Id name EventVariantBody body
   ;
 
 syntax EventVariantBody
-  = Pre pre Post? post
+  = Pre? pre Post? post
   ;
   
 syntax Formula

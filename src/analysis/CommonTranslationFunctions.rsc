@@ -3,6 +3,7 @@ module analysis::CommonTranslationFunctions
 import lang::Syntax;
 
 import String;
+import Node;
 
 data State 
   = uninitialized()
@@ -22,11 +23,21 @@ str getPrimStateVectorName(Spec spc) = "StateVector<getCapitalizedSpecName(spc)>
 @memo
 set[Spec] lookupSpecs(rel[Spec spc, str instance, State initialState] instances) = {i.spc | i <- instances}; 
 
+@memo 
+set[lang::Syntax::State] lookupStates(Spec spc) 
+  = {delAnnotationsRec(st) | /lang::Syntax::State st <- spc.states, st has name};
+
 @memo
-set[str] lookupStates(Spec spc) 
-  = {"state_<specName>_<st>" | /lang::Syntax::State st <- spc.states, st has name} 
-  + {"state_uninitialized", "state_finalized"} 
+set[str] lookupStateLabels(Spec spc) 
+  = {getStateLabel(spc, st) | lang::Syntax::State st <- lookupStates(spc)} 
   when str specName := toLowerCase("<spc.name>");
+
+@memo
+set[str] lookupStateLabelsWithDefaultState(Spec spc)
+  = lookupStateLabels(spc) + {"state_uninitialized", "state_finalized"};   
+
+str getStateLabel(Spec spc, lang::Syntax::State state)
+  = "state_<getLowerCaseSpecName(spc)>_<toLowerCase("<state>")>";
 
 @memo
 set[str] lookupInstances(Spec spc, rel[Spec spc, str instance, State _] instances) 
@@ -34,7 +45,7 @@ set[str] lookupInstances(Spec spc, rel[Spec spc, str instance, State _] instance
 
 @memo
 set[str] lookupEventNames(Spec spc)
-  = {"event_<specName>_<ev>" | Event event <- lookupEvents(spc), str ev := replaceAll("<event.name>", "::", "_")}
+  = {"event_<specName>_<ev>" | Event event <- lookupEvents(spc), str ev := toLowerCase(replaceAll("<event.name>", "::", "_"))}
   when str specName := toLowerCase("<spc.name>");
 
 @memo

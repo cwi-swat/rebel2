@@ -28,8 +28,18 @@ private str buildStateRel(set[Spec] spcs)
   = "State (state:id) = {\<state_uninitialized\>,\<state_finalized\>,<stateTuples>}
     'initialized (state:id) = {<stateTuples>}
     'finalized (state:id) = {\<state_finalized\>}
-    'uninitialized (state:id) = {\<state_uninitialized\>}"
+    'uninitialized (state:id) = {\<state_uninitialized\>}
+    '<buildIndividualStateRels(spcs)>"
   when stateTuples := intercalate(",", [buildStateTuples(s) | s <- spcs]);
+
+private str buildIndividualStateRels(set[Spec] spcs)
+  = "<for (s <- spcs) {><buildIndividualStateRel(s)>
+    '<}>";
+
+private str buildIndividualStateRel(Spec spc)
+  = "<for (lang::Syntax::State s <- states) {>State<getCapitalizedSpecName(spc)><capitalize("<s>")> (state:id) = {\<<getStateLabel(spc, s)>\>}
+    '<}>"
+    when set[lang::Syntax::State] states := lookupStates(spc);
   
 private str buildStateTuples(Spec spc) 
   = intercalate(",", ["\<state_<s>\>" | str s <- states])
@@ -58,7 +68,7 @@ private rel[str,str,str] flattenTransitions(Spec s)
       str name := getLowerCaseSpecName(s),
       /(Transition)`<State from> -\> <State to> : <{TransEvent ","}+ events>;` := s.states,
       str cfrom := convertFromState(from, name), str cto := convertToState(to, name),
-      str event <- {replaceAll("<e>", "::", "_") | TransEvent e <- events}};
+      str event <- {toLowerCase(replaceAll("<e>", "::", "_")) | TransEvent e <- events}};
 
 private str convertFromState((State)`(*)`, str _) = "state_uninitialized";
 private default str convertFromState(lang::Syntax::State st, str spec) = convertState(st, spec);   
@@ -66,4 +76,4 @@ private default str convertFromState(lang::Syntax::State st, str spec) = convert
 private str convertToState((State)`(*)`, str _) = "state_finalized";
 private default str convertToState(lang::Syntax::State st, str spec) = convertState(st, spec);
 
-private str convertState(lang::Syntax::State st, str spec) = "state_<spec>_<st>";   
+private str convertState(lang::Syntax::State st, str spec) = "state_<spec>_<toLowerCase("<st>")>";   

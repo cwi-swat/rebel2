@@ -89,4 +89,5 @@ private str buildInitialInstanceInStateTuples(rel[Spec spc, str instance, State 
   = intercalate(",", ["\<c1,<i>,<translateConfigState(s, st)>\>" | <s,i,st> <- instances]);
 
 private str buildInstanceInStateTuples(rel[Spec spc, str instance] instances, int numberOfTransitions)
-  = intercalate(",", ["\<c<c>,<i>,<st>\>" | int c <- [1..numberOfTransitions+1], <s,i> <- instances, str st <- lookupStates(s)]);
+  = intercalate(",", ["\<c<c>,<i>,<st>\>" | int c <- [1..numberOfTransitions+1], <s,i> <- instances, str st <- lookupStateLabelsWithDefaultState(s)]);
+  
