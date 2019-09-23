@@ -1,7 +1,7 @@
-module analysis::StaticRelationsTranslator
+module analysis::allealle::StaticRelationsTranslator
 
 import lang::Syntax;
-import analysis::CommonTranslationFunctions;
+import analysis::allealle::CommonTranslationFunctions;
 
 import String;
 import List;

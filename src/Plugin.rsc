@@ -3,7 +3,6 @@ module Plugin
 import lang::Syntax;
 import lang::Parser;
 
-import analysis::DefAndUseBuilder;
 import analysis::Checker;
 
 import util::IDE;
@@ -35,11 +34,11 @@ set[Contribution] getRebelContributions() {
  
   return {
     annotator(Spec (Spec s) {
-      UseDef useDef = buildUseDefRel(s);
-      set[Message] msgs = check(s, useDef); 
+      TModel tm = collectAndSolve(s);
 
-      Spec annotatedSpec = s[@messages=msgs];
-      //  annotatedMod = annotatedMod[@hyperlinks=getAllHyperlinks(m@\loc, built.refs)];
+      annotatedSpec = s[@messages= {m | m <- tm.messages}];
+      annotatedSpec = annotatedSpec[@hyperlinks=tm.useDef];
+      
       return annotatedSpec;
     }),
     syntaxProperties(#start[Spec]),

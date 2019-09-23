@@ -1,7 +1,8 @@
-module analysis::FormulaAndExpressionTranslator
+module analysis::allealle::FormulaAndExpressionTranslator
 
 import lang::Syntax;
-import analysis::CommonTranslationFunctions;
+import analysis::allealle::CommonTranslationFunctions;
+import analysis::Checker;
 
 import String;
 import IO;
@@ -15,25 +16,40 @@ private data Reference
   | param()
   ;
 
-data Context = ctx(str cur, str nxt, str spec, str event);
+data Context = ctx(str cur, str nxt, str spec, str event, TModel tm);
 
 str translate((Formula)`(<Formula f>)`, Context ctx) = "(<translate(f,ctx)>)";
 str translate((Formula)`<Expr event>(<{Expr ","}* params>)`, Context ctx) { throw "Not yet supported"; }  
-str translate((Formula)`<Expr lhs> in <Expr rhs>`, Context ctx) { throw "Not yet supported"; }
+
+str translate((Formula)`<Expr lhs> is initialized`, Context ctx) = translateMember(lhs, "initialized", ctx);
+default str translate((Formula)`<Expr lhs> is <State st>`, Context ctx) { throw "Not yet supported"; }
+
+private str translateMember(Expr lhs, str stateRel, Context ctx) { 
+  str lhsRel = "";
+  
+  visit (ctx.useDef[lhs@\loc]<1>) {
+    case event(_) : lhsRel = "(o ⨝ ParamsEvent<capitalize(ctx.spec)><capitalize(ctx.event)><capitalize("<lhs>")>)[cur-\>config,follower-\>instance]"; 
+    case spec(_) : lhsRel = "TODO"; 
+  }
+  
+  return "(<lhsRel> ⨝ instanceInState)[state] ⊆ initialized";
+}
 
 str translate((Formula)`<Formula lhs> && <Formula rhs>`,    Context ctx) = "(<translate(lhs,ctx)> && <translate(rhs,ctx)>)";
 str translate((Formula)`<Formula lhs> || <Formula rhs>`,    Context ctx) = "(<translate(lhs,ctx)> || <translate(rhs,ctx)>)";
 str translate((Formula)`<Formula lhs> =\> <Formula rhs>`,   Context ctx) = "(<translate(lhs,ctx)> =\> <translate(rhs,ctx)>)";
 str translate((Formula)`<Formula lhs> \<=\> <Formula rhs>`, Context ctx) = "(<translate(lhs,ctx)> \<=\> <translate(rhs,ctx)>)";
 
-str translate((Formula)`<Expr lhs> \< <Expr rhs>`,  Context ctx) = translateEquality(lhs, rhs, "\<",  ctx);
-str translate((Formula)`<Expr lhs> \<= <Expr rhs>`, Context ctx) = translateEquality(lhs, rhs, "\<=", ctx);
-str translate((Formula)`<Expr lhs> = <Expr rhs>`,   Context ctx) = translateEquality(lhs, rhs, "=",   ctx);
-str translate((Formula)`<Expr lhs> != <Expr rhs>`,  Context ctx) = translateEquality(lhs, rhs, "!=",  ctx);
-str translate((Formula)`<Expr lhs> \>= <Expr rhs>`, Context ctx) = translateEquality(lhs, rhs, "\>=", ctx);
-str translate((Formula)`<Expr lhs> \> <Expr rhs>`,  Context ctx) = translateEquality(lhs, rhs, "\>",  ctx);
+str translate((Formula)`<Expr lhs> = <Expr rhs>`,   Context ctx) = translateRestrictionEquality(lhs, rhs, "=",   ctx); // when isPrimType(lhs);
+//str translate((Formula)`<Expr lhs> = <Expr rhs>`,   Context ctx) = translateRelEquality(lhs, rhs, "=",   ctx) when !isPrimType(lhs);
 
-str translateEquality(Expr lhs, Expr rhs, str operator, Context ctx) {
+str translate((Formula)`<Expr lhs> \< <Expr rhs>`,  Context ctx) = translateRestrictionEquality(lhs, rhs, "\<",  ctx);
+str translate((Formula)`<Expr lhs> \<= <Expr rhs>`, Context ctx) = translateRestrictionEquality(lhs, rhs, "\<=", ctx);
+str translate((Formula)`<Expr lhs> != <Expr rhs>`,  Context ctx) = translateRestrictionEquality(lhs, rhs, "!=",  ctx);
+str translate((Formula)`<Expr lhs> \>= <Expr rhs>`, Context ctx) = translateRestrictionEquality(lhs, rhs, "\>=", ctx);
+str translate((Formula)`<Expr lhs> \> <Expr rhs>`,  Context ctx) = translateRestrictionEquality(lhs, rhs, "\>",  ctx);
+
+str translateRestrictionEquality(Expr lhs, Expr rhs, str operator, Context ctx) {
   set[Reference] r = findReferences(lhs, ctx); 
   r += findReferences(rhs, ctx);
   
@@ -75,7 +91,7 @@ str translate((Expr)`<Expr exp>.<Id event>`, Context ctx) { throw "Not yet suppo
 str translate((Expr)`now`, Context ctx) { throw "Not yet supported"; }
 str translate((Expr)`<Lit l>`, Context ctx) = translate(l);
 
-str translate((Expr)`- <Expr e>=`, Context ctx) = "-<translate(e,ctx)>";
+str translate((Expr)`- <Expr e>`, Context ctx) = "-<translate(e,ctx)>";
 str translate((Expr)`<Expr lhs> * <Expr rhs>`, Context ctx) = "<translate(lhs,ctx)>  *  <translate(rhs,ctx)>";
 str translate((Expr)`<Expr lhs> \\ <Expr rhs>`, Context ctx) = "<translate(lhs,ctx)> \\ <translate(rhs,ctx)>";
 str translate((Expr)`<Expr lhs> + <Expr rhs>`, Context ctx) = "<translate(lhs,ctx)>  +  <translate(rhs,ctx)>";

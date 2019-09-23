@@ -5,10 +5,14 @@ spec PingPong
   identity id;
   
   init event start(id: Integer) 
-    post: this.id' = id, this.times' = 0;
+    post: 
+      this.id' = id, 
+      this.times' = 0;
   
   event hit()
-    post: this.times' = this.times + 1, this.id' = this.id;
+    post: 
+      this.times' = this.times + 1, 
+      this.id' = this.id;
     
   states:
     (*) -> ping: start;

@@ -1,77 +1,21 @@
-spec CoffeeMachine
-  id: Integer,
-  amountNeeded: Integer;
-  
+spec PingPong 
+  id: one Integer,
+  times: one Integer;
+
   identity id;
   
-  init event powerOn(id: Integer) 
+  init event start(id: one Integer) 
     post: 
-      this.id' = id,
-      this.amountNeeded' = 0;
-    
-   
-event powerOff()
+      this.id' = id, 
+      this.times' = 0;
   
-  post:
-  this.id' = this.id,  // Frame condition
-  this.amountNeeded' = this.amountNeeded; 
-event selectAmericano()
-    post:
-  this.id' = this.id,  // Frame condition
-  this.amountNeeded' = 130;
+   
+event hit()
+    post: 
+      this.times' = this.times + 1, 
+      this.id' = this.id;
     
-   
-event selectEspresso()
-    post:
-  this.id' = this.id,  // Frame condition
-  this.amountNeeded' = 120;
-    
-   
-event selectNormal()
-    post:
-  this.id' = this.id,  // Frame condition
-  this.amountNeeded' = 100;
-    
-   
-event selectLatte() 
-    post:
-  this.id' = this.id,  // Frame condition
-  this.amountNeeded' = 150;
-       
-   
-event cancel() 
-    post:
-  this.id' = this.id,  // Frame condition
-  this.amountNeeded' = 0;
-
-   
-event empty()
-
-  post:
-  this.id' = this.id,  // Frame condition
-  this.amountNeeded' = this.amountNeeded; 
-event pay(amount: Integer)
-    pre: 
-      this.amountNeeded - amount > 0; 
-post:
-  this.id' = this.id,  // Frame condition
-  this.amountNeeded' = this.amountNeeded - amount;
-
- 
-event pay_amountMet(amount: Integer)
-    pre: 
-        this.amountNeeded - amount = 0; 
-post:
-  this.id' = this.id,  // Frame condition
-  this.amountNeeded' = 0;
-
-states : 
-  acceptingPayment -> acceptingPayment : pay;
-  serve -> waiting : empty;
-  waiting -> (*) : powerOff;
-  acceptingPayment -> (*) : powerOff;
-  serve -> (*) : powerOff;
-  acceptingPayment -> serve : pay::amountMet;
-  acceptingPayment -> waiting : cancel;
-  waiting -> acceptingPayment : selectAmericano, selectEspresso, selectNormal, selectLatte;
-  (*) -> waiting : powerOn;
+  states : 
+  pong -> ping : hit;
+  ping -> pong : hit;
+  (*) -> ping : start;

@@ -42,8 +42,6 @@ spec CoffeeMachine
   event cancel() 
     post: this.amountNeeded' = 0;
 
-  event empty()
-
   states:
     active {
       waiting -> acceptingPayment: selectAmericano, selectEspresso, selectNormal, selectLatte;

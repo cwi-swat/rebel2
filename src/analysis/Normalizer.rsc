@@ -17,9 +17,11 @@ Spec normalize(Spec spc, bool saveOutput = true) {
   
   list[Event] normEvents = normalizeEvents([e | Event e <- spc.events]);
   normEvents = addFrameConditions(fields, normEvents);
+  normEvents = addEmptyTransitionIfNecessary(spc, normEvents);
   
   spc.events = buildNormEvents(normEvents);
   spc.states = normalizeStates(spc.states);
+  spc = addImplicitMultiplicities(spc);
   
   if (saveOutput) {
     writeFile(|project://rebel2/examples/latest-normalized-spc.rebel|, spc);
@@ -27,6 +29,11 @@ Spec normalize(Spec spc, bool saveOutput = true) {
   
   return spc;
 }
+
+Spec addImplicitMultiplicities(Spec spc) 
+  = visit (spc) {
+    case (Type)`<TypeName tp>` => (Type)`one <TypeName tp>`
+  };
 
 list[Event] addFrameConditions(set[str] fields, list[Event] events) {
   list[Event] framedEvents = [];
@@ -60,6 +67,15 @@ list[Event] normalizeEvents(list[Event] events) {
       events += e;
       events += addedEvents;      
     }
+  }
+  
+  return events;
+}
+
+private list[Event] addEmptyTransitionIfNecessary(Spec spc, list[Event] events) {
+  if (/(TransEvent)`empty` := spc.states) {
+    events += (Event)`event empty()
+                     '`;
   }
   
   return events;

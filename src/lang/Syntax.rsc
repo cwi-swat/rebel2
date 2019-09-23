@@ -2,10 +2,8 @@ module lang::Syntax
 
 extend lang::std::Layout;
 
-//start syntax Module = "module" QualifiedName Import* imports;
-
 start syntax Spec 
-  = Import* imports "spec" Id name Fields? fields Constraints? constraints Event* events States? states
+  = QualifiedName? path Import* imports "spec" Id name Fields? fields Constraints? constraints Event* events States? states
   ;
   
 syntax Import = "import" QualifiedName module;
@@ -30,8 +28,11 @@ syntax Constraint
   ;
   
 syntax Event
-  = "init"? "event" Id name "(" {FormalParam ","}* params ")" EventBody body 
+  = Initial? "event" Id name "(" {FormalParam ","}* params ")" EventBody body 
   ;
+
+syntax Initial
+  = "init";
   
 syntax FormalParam
   = Id name ":" Type tipe
@@ -60,7 +61,7 @@ syntax EventVariantBody
 syntax Formula
   = brackets: "(" Formula ")"
   > sync: Expr event  "(" {Expr ","}* params ")"  
-  | Expr "in" Expr
+  | Expr "is" State
   > right Formula "&&" Formula
   | right Formula "||" Formula
   > right Formula "=\>" Formula
@@ -107,16 +108,29 @@ syntax State
   ;
   
 syntax TransEvent
-  = Id event 
+  = Id event \ "empty"
   | Id event "::" {Id "::"}+ variant
+  | "empty"
   ;  
   
 syntax Lit
   = Int
   | StringConstant 
   ;
+
+syntax Type
+  = TypeName tp
+  | Multiplicity mult TypeName tp
+  ;  
+  
+syntax Multiplicity
+  = "one"
+  | "lone"
+  | "set"
+  ;
+  
 lexical Id = [a-z A-Z 0-9 _] !<< ([a-z A-Z][a-z A-Z 0-9 _]* !>> [a-z A-Z 0-9 _]) \ Keywords;
-lexical Type = @category="Type" [a-z A-Z 0-9 _] !<< [A-Z][a-z A-Z 0-9 _]* !>> [a-z A-Z 0-9 _] \ Keywords;
+lexical TypeName = @category="Type" [a-z A-Z 0-9 _] !<< [A-Z][a-z A-Z 0-9 _]* !>> [a-z A-Z 0-9 _] \ Keywords;
 lexical Int = @category="Constant"  [0-9] !<< [0-9]+ !>> [0-9];
 lexical StringConstant = @category="Constant"  "\"" StringCharacter* "\""; 
 
@@ -133,7 +147,8 @@ lexical UnicodeEscape
   | ascii: "\\" [a] [0-7] [0-9A-Fa-f]
   ;
       
-keyword Keywords = "now" 
+keyword Keywords = "spec"
+                 | "now" 
                  | "this" 
                  | "failure" 
                  | "success" 
@@ -142,6 +157,10 @@ keyword Keywords = "now"
                  | "event" 
                  | "pre" 
                  | "post"
-                 | "in"
+                 | "is"
+                 | "one"
+                 | "lone"
+                 | "set"
+                 | "init"
                  ;
  
