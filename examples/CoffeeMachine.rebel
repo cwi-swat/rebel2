@@ -1,3 +1,5 @@
+module CoffeeMachine
+
 spec CoffeeMachine
   id: Integer,
   amountNeeded: Integer;

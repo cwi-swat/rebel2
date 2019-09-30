@@ -10,9 +10,14 @@ import IO;
 // Test imports
 import lang::Parser;
 
-Spec normalizeCoffeeMachine() = normalize(parseSpec(|project://rebel2/examples/CoffeeMachine.rebel|)); 
+Module normalizeCoffeeMachine() = normalize(parseModule(|project://rebel2/examples/CoffeeMachine.rebel|)); 
 
-Spec normalize(Spec spc, bool saveOutput = true) {
+Module normalize(Module m, bool saveOutput = true) {
+  m.spc = normalize(m.spc, saveOutput);
+  return m;
+}
+
+Spec normalize(Spec spc, bool saveOutput) {
   set[str] fields = {"<f.name>" | /Field f := spc};
   
   list[Event] normEvents = normalizeEvents([e | Event e <- spc.events]);

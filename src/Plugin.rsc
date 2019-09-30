@@ -18,7 +18,7 @@ void main() {
   str REBEL2_LANGUAGE = "Rebel2 Language";
   //str REBEL2_TEST_LANGUAGE = "Rebel2 Test Language";
 
-  registerLanguage(REBEL2_LANGUAGE,"rebel", parseSpec);
+  registerLanguage(REBEL2_LANGUAGE,"rebel", parseModule);
   //registerLanguage(REBEL_TEST_LANGUAGE, "tebel", parseTestModule);
   
   registerContributions(REBEL2_LANGUAGE, getRebelContributions());
@@ -33,15 +33,15 @@ set[Contribution] getRebelContributions() {
   list[int] visualisationPorts = [startPort..endPort];
  
   return {
-    annotator(Spec (Spec s) {
-      TModel tm = collectAndSolve(s);
+    annotator(Module (Module m) {
+      TModel tm = rebelTModelFromTree(m);
 
-      annotatedSpec = s[@messages= {m | m <- tm.messages}];
-      annotatedSpec = annotatedSpec[@hyperlinks=tm.useDef];
+      annotatedMod = m[@messages= {*tm.messages}];
+      annotatedMod = annotatedMod[@hyperlinks=tm.useDef];
       
-      return annotatedSpec;
+      return annotatedMod;
     }),
-    syntaxProperties(#start[Spec]),
+    syntaxProperties(#start[Module]),
     popup(
       menu("Rebel actions", [
         action("Visualize", (Spec current, loc file) {

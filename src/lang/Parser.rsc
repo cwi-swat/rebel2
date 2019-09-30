@@ -5,5 +5,5 @@ import lang::Syntax;
 import ParseTree;
 import IO;
 
-Spec parseSpec(loc file) = parse(#start[Spec], file, allowAmbiguity=false).top;
-Spec parseSpec(str x, loc file) = parse(#start[Spec], x, file, allowAmbiguity=false).top;
+Module parseModule(loc file) = parse(#start[Module], file, allowAmbiguity=false).top;
+Module parseModule(str x, loc file) = parse(#start[Module], x, file, allowAmbiguity=false).top;

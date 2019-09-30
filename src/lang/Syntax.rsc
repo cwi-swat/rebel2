@@ -2,13 +2,17 @@ module lang::Syntax
 
 extend lang::std::Layout;
 
-start syntax Spec 
-  = QualifiedName? path Import* imports "spec" Id name Fields? fields Constraints? constraints Event* events States? states
+start syntax Module
+  = ModuleId module Import* imports Spec spc
   ;
-  
+
 syntax Import = "import" QualifiedName module;
 
+syntax ModuleId = "module" QualifiedName name; 
+
 syntax QualifiedName = {Id "::"}+ names !>> "::";
+
+syntax Spec = "spec" Id name Fields? fields Constraints? constraints Event* events States? states;
 
 syntax Fields
   = {Field ","}+ fields ";"
@@ -51,17 +55,18 @@ syntax Post
   ;
 
 syntax EventVariant
-  = ("success" | "failure") Id name EventVariantBody body
+  = Outcome outcome Id name EventBody body
   ;
 
-syntax EventVariantBody
-  = Pre? pre Post? post
+syntax Outcome
+  = "success"
+  | "failure"
   ;
   
 syntax Formula
   = brackets: "(" Formula ")"
-  > sync: Expr event  "(" {Expr ","}* params ")"  
-  | Expr "is" State
+  > sync: Expr spc "." Id event  "(" {Expr ","}* params ")"  
+  | Expr "is" Id
   > right Formula "&&" Formula
   | right Formula "||" Formula
   > right Formula "=\>" Formula
@@ -77,9 +82,8 @@ syntax Formula
 syntax Expr
   = brackets: "(" Expr ")"
   > var: Id
-  | fieldAccess: Expr "." Id 
+  | fieldAccess: "this" "." Id 
   | Lit
-  | "this"
   | "now"
   > nextVal: Expr "\'"
   > "-" Expr
@@ -109,7 +113,7 @@ syntax State
   
 syntax TransEvent
   = Id event \ "empty"
-  | Id event "::" {Id "::"}+ variant
+  | Id event "::" Id variant
   | "empty"
   ;  
   
@@ -147,7 +151,8 @@ lexical UnicodeEscape
   | ascii: "\\" [a] [0-7] [0-9A-Fa-f]
   ;
       
-keyword Keywords = "spec"
+keyword Keywords = "module"
+                 | "spec"
                  | "now" 
                  | "this" 
                  | "failure" 

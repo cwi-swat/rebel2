@@ -1,0 +1,23 @@
+test SetId [[ 
+  module Simple
+  
+  spec Simple
+    id: Integer;
+    
+    init event start(id: Integer) 
+      post: this.id' = id;
+    
+    states:
+      (*) -> started: start; 
+]] 
+
+test EventVariant [[
+  module EV
+  
+  spec EV
+    event base() 
+      success var
+  
+  states:
+    (*) -> started: base::var;
+]]

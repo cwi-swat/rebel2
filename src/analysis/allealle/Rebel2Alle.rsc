@@ -11,7 +11,7 @@ import analysis::Checker;
 import IO;  
   
 void translateSpecs(Config config, TModel tm, str check) {
-  set[Spec] specs = {c.spc | c <- config.instances};
+  set[Spec] specs = {inst.spc | inst <- config.instances};
   str alleSpec = "<translateStaticPart(specs)>
                  '<translateDynamicPart(config)>
                  '<translateConstraints(specs, tm, check)>";

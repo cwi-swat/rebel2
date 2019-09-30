@@ -91,7 +91,7 @@ str specToStateMachineJs(Spec spc) {
   
   str convEvent((TransEvent)`empty`) = "&#949;";
   str convEvent((TransEvent)`<Id event>`) = "<event>";
-  str convEvent((TransEvent)`<Id event>::<{Id "::"}+ variant>`) = "<event>::<variant>";
+  str convEvent((TransEvent)`<Id event>::<Id variant>`) = "<event>::<variant>";
   
   return conv(spc);
 }
@@ -113,7 +113,7 @@ str specToPlantUml(Spec spc) {
     = "<from> --\> <to> : <intercalate(", ", [conv(e) | e <- events])>";
   
   str conv((TransEvent)`<Id event>`) = "<event>";
-  str conv((TransEvent)`<Id event>::<{Id "::"}+ variant>`) = "<event>::<variant>";
+  str conv((TransEvent)`<Id event>::<Id variant>`) = "<event>::<variant>";
   
   return 
     "@startuml

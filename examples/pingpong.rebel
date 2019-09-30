@@ -1,3 +1,5 @@
+module PingPong
+
 spec PingPong 
   id: Integer,
   times: Integer;
