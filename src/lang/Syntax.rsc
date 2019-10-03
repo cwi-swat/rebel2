@@ -45,7 +45,7 @@ syntax FormalParam
 syntax EventBody
   = Pre? pre Post? post EventVariant* variants
   ;
-  
+    
 syntax Pre
   = "pre" ":" {Formula ","}* formulas ";"
   ;
@@ -55,13 +55,17 @@ syntax Post
   ;
 
 syntax EventVariant
-  = Outcome outcome Id name EventBody body
-  ;
+  = Outcome outcome Id name EventVariantBody body
+  ;  
 
 syntax Outcome
   = "success"
   | "failure"
   ;
+
+syntax EventVariantBody
+  = Pre? pre Post? post
+  ;  
   
 syntax Formula
   = brackets: "(" Formula ")"
@@ -85,6 +89,7 @@ syntax Expr
   | fieldAccess: "this" "." Id 
   | Lit
   | "now"
+  | "now" "." Id
   > nextVal: Expr "\'"
   > "-" Expr
   > right Expr lhs "*" Expr rhs

@@ -1,12 +1,14 @@
 module analysis::Checker
 
 import lang::Syntax;
+import util::PathUtil;
 
 extend analysis::typepal::TypePal;
 
 data AType
   = intType(AMult mult)
-  | dateType()
+  | dateType(AMult mult)
+  | stringType(AMult mult)
   | boolType()
   | stateType()
   | eventType(AType argTypes)
@@ -57,7 +59,7 @@ str prettyAType(eventType(AType argTypes)) = "event <prettyAType(argTypes)>";
 str prettyAMult(oneMult()) = "one";
 str prettyAMult(loneMult()) = "lone";
 str prettyAMult(setMult()) = "set";
-
+ 
 TModel rebelTModelFromTree(Tree pt, bool debug = false, PathConfig pathConf = pathConfig(pt@\loc)){
     if (pt has top) pt = pt.top;
  
@@ -78,20 +80,20 @@ TModel rebelTModelFromTree(Tree pt, bool debug = false, PathConfig pathConf = pa
 tuple[list[str] typeNames, set[IdRole] idRoles] rebelTypeNamesAndRole(specType(AMult mult, str name)) = <[name], {specId()}>;
 default tuple[list[str] typeNames, set[IdRole] idRoles] rebelTypeNamesAndRole(AType t) = <[], {}>;
 
-private loc project(loc file) {
-   assert file.scheme == "project";
-   return |project://<file.authority>|;
-}
-
-data PathConfig = pathConfig(list[loc] srcs = [], list[loc] libs = []);
-
-PathConfig pathConfig(loc file) {
-   assert file.scheme == "project";
-
-   p = project(file);      
- 
-   return pathConfig(srcs = [ p + "src", p + "examples"]);
-}
+//private loc project(loc file) {
+//   assert file.scheme == "project";
+//   return |project://<file.authority>|;
+//}
+//
+//data PathConfig = pathConfig(list[loc] srcs = [], list[loc] libs = []);
+//
+//PathConfig pathConfig(loc file) {
+//   assert file.scheme == "project";
+//
+//   p = project(file);      
+// 
+//   return pathConfig(srcs = [ p + "src", p + "examples"]);
+//}
 
 private str __REBEL_IMPORT_QUEUE = "__rebelImportQueue";
 
@@ -235,7 +237,7 @@ void collect(current: (Event)`<Initial? init> event <Id name>(<{FormalParam ","}
   c.leaveScope(current);
 }
 
-void collect(current: (EventVariant)`<Outcome outcome> <Id name> <EventBody body>`, Collector c) {
+void collect(current: (EventVariant)`<Outcome outcome> <Id name> <EventVariantBody body>`, Collector c) {
   c.fact(current, boolType());
   c.define("<name>", eventVariantId(), name, defType(current));
   
@@ -272,6 +274,28 @@ void collect((EventBody)`<Pre? maybePre> <Post? maybePost> <EventVariant* varian
   }
   
   collect(variants, c);
+}
+
+void collect((EventVariantBody)`<Pre? maybePre> <Post? maybePost>`, Collector c) {
+  if (/Pre pre := maybePre) {
+    c.push("phase", prePhase());
+    
+    for (Formula f <- pre.formulas) {
+      collect(f, c);
+    }
+    
+    c.pop("phase");
+  }
+  
+  if (/Post post := maybePost) {
+    c.push("phase", postPhase());
+  
+    for (Formula f <- post.formulas) {
+      collect(f, c);
+    }
+    
+    c.pop("phase");    
+  }
 }
 
 void collect(current: (Formula)`( <Formula f> )`, Collector c) {
@@ -363,6 +387,11 @@ void collect(current: (Formula)`<Expr lhs> = <Expr rhs>`, Collector c) {
   collect(lhs, rhs, c);
 }
 
+void collect(current: (Formula)`<Expr lhs> != <Expr rhs>`, Collector c) {
+  collectEq(c, current, lhs, rhs, "inequality");
+  collect(lhs, rhs, c);
+}
+
 void collect(current: (Formula)`<Expr lhs> \> <Expr rhs>`, Collector c) {
   collectIntEq(c, current, lhs, rhs, "greater than");
   collect(lhs, rhs, c);
@@ -398,8 +427,12 @@ void collect(current: (Expr)`- <Expr expr>`, Collector c) {
   collect(expr, c);
 }
 
-void collect(current: (Expr)`<Expr expr>`, Collector c) {
-  c.fact(current, dateType());
+void collect(current: (Expr)`now`, Collector c) {
+  c.fact(current, dateType(oneMult()));
+}
+
+void collect(current: (Expr)`now.<Id field>`, Collector c) {
+  c.fact(current, intType(oneMult()));
 }
 
 void collect(current: (Expr)`<Expr expr>'`, Collector c) {
@@ -461,6 +494,10 @@ void collect(current: (Lit)`<Int i>`, Collector c) {
   c.fact(current, intType(oneMult()));
 }
 
+void collect(current: (Lit)`<StringConstant s>`, Collector c) {
+  c.fact(current, stringType(oneMult()));
+}
+
 void collect(current: (Type)`<TypeName tp>`, Collector c) {
   c.push("mult", oneMult());
   collect(tp, c);
@@ -479,7 +516,14 @@ void collect(current: (TypeName)`Integer`, Collector c) {
   c.fact(current, intType(c.pop("mult")));
 }
 
+void collect(current: (TypeName)`String`, Collector c) {
+  c.fact(current, stringType(c.pop("mult")));
+}
+
+void collect(current: (TypeName)`Date`, Collector c) {
+  c.fact(current, dateType(c.pop("mult")));
+}
+
 void collect(current: TypeName tn, Collector c) {
-  //c.fact(current, specType(c.pop("mult"), "<tn>"));
   c.use(tn, {specId()});
 }

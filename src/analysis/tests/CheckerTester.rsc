@@ -16,7 +16,7 @@ TModel checkPingpong()
 TModel checkCoffeeMachine() 
   = collectAndSolve(parseSpec(|project://rebel2/examples/CoffeeMachine.rebel|));
 
-TModel check(Tree spc) = rebelTModelFromTree(spc, debug=true);
+TModel check(Tree spc) = rebelTModelFromTree(spc, debug=true, pathConf = pathConfig(src=[], lib=[]));
   
 bool runRebelTests()
-  = runTests([|project://rebel2/src/analysis/tests/tests.ttl|], #Spec, check);
+  = runTests([|project://rebel2/src/analysis/tests/tests.ttl|], #Module, check);

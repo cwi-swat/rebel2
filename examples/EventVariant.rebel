@@ -1,0 +1,9 @@
+module EV
+  
+  spec EV
+    event base() 
+      success var 
+  
+  states:
+    (*) -> started: base::var;
+    started -> (*): base;

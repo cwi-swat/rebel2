@@ -8,7 +8,8 @@ test SetId [[
       post: this.id' = id;
     
     states:
-      (*) -> started: start; 
+      (*) -> started: start;
+      started -> (*): start;  
 ]] 
 
 test EventVariant [[
@@ -20,4 +21,5 @@ test EventVariant [[
   
   states:
     (*) -> started: base::var;
+    started -> (*): base;
 ]]

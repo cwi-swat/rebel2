@@ -9,15 +9,23 @@ import IO;
 
 // Test imports
 import lang::Parser;
+import util::PathUtil;
 
 Module normalizeCoffeeMachine() = normalize(parseModule(|project://rebel2/examples/CoffeeMachine.rebel|)); 
 
-Module normalize(Module m, bool saveOutput = true) {
-  m.spc = normalize(m.spc, saveOutput);
+Module normalize(Module m) {
+  m.spc = normalize(m.spc);
+
+  loc normPath = addModuleToBase(project(m@\loc.top) + "bin/normalized/", m);
+
+  makeDirRecursively(normPath.parent); 
+
+  writeFile(normPath[extension = "rebel"], m);
+
   return m;
 }
 
-Spec normalize(Spec spc, bool saveOutput) {
+Spec normalize(Spec spc) {
   set[str] fields = {"<f.name>" | /Field f := spc};
   
   list[Event] normEvents = normalizeEvents([e | Event e <- spc.events]);
@@ -27,11 +35,7 @@ Spec normalize(Spec spc, bool saveOutput) {
   spc.events = buildNormEvents(normEvents);
   spc.states = normalizeStates(spc.states);
   spc = addImplicitMultiplicities(spc);
-  
-  if (saveOutput) {
-    writeFile(|project://rebel2/examples/latest-normalized-spc.rebel|, spc);
-  }
-  
+
   return spc;
 }
 

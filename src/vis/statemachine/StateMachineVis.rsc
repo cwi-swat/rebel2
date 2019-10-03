@@ -15,7 +15,7 @@ import vis::statemachine::salix::StateMachineCat;
 alias Model = tuple[loc spc, Spec prev];
 
 App[Model] createVis(loc spc, int port) {
-  Model init() = <spc, parseSpec(spc)>;
+  Model init() = <spc, parseModule(spc).spc>;
 
   return app(init, view, update, |http://localhost/statemachine/index.html|[port = port], |project://rebel2/salix/|, subs = changeCheckSubs); 
 }

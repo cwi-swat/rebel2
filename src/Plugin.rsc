@@ -13,6 +13,7 @@ import salix::App;
 import vis::statemachine::StateMachineVis;
 
 import ParseTree;
+import util::PathUtil;
 
 void main() {
   str REBEL2_LANGUAGE = "Rebel2 Language";
@@ -32,9 +33,12 @@ set[Contribution] getRebelContributions() {
   map[loc, VisConfig] runningVisInstances = ();
   list[int] visualisationPorts = [startPort..endPort];
  
+ 
   return {
     annotator(Module (Module m) {
-      TModel tm = rebelTModelFromTree(m);
+      loc proj = project(m@\loc.top);
+
+      TModel tm = rebelTModelFromTree(m, debug=true, pathConf = pathConfig(srcs = [ proj + "src", proj + "examples"]));
 
       annotatedMod = m[@messages= {*tm.messages}];
       annotatedMod = annotatedMod[@hyperlinks=tm.useDef];
@@ -44,7 +48,7 @@ set[Contribution] getRebelContributions() {
     syntaxProperties(#start[Module]),
     popup(
       menu("Rebel actions", [
-        action("Visualize", (Spec current, loc file) {
+        action("Visualize", (Module current, loc file) {
           if (file.top notin runningVisInstances) {
             int port = startPort;
             
