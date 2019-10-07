@@ -38,7 +38,7 @@ set[Contribution] getRebelContributions() {
     annotator(Module (Module m) {
       loc proj = project(m@\loc.top);
 
-      TModel tm = rebelTModelFromTree(m, debug=true, pathConf = pathConfig(srcs = [ proj + "src", proj + "examples"]));
+      TModel tm = rebelTModelFromTree(m, debug=false, pathConf = pathConfig(srcs = [ proj + "src", proj + "examples"]));
 
       annotatedMod = m[@messages= {*tm.messages}];
       annotatedMod = annotatedMod[@hyperlinks=tm.useDef];

@@ -1,118 +1,244 @@
 // Static configuration of state machines
-PingPong (spec:id) = {<pingpong>}
+Leader (spec:id) = {<leader>}Follower (spec:id) = {<follower>}
 
-State (state:id) = {<state_uninitialized>,<state_finalized>,<state_pingpong_ping>,<state_pingpong_pong>}
-initialized (state:id) = {<state_pingpong_ping>,<state_pingpong_pong>}
+State (state:id) = {<state_uninitialized>,<state_finalized>,<state_leader_active>,<state_follower_active>}
+initialized (state:id) = {<state_leader_active>,<state_follower_active>}
 finalized (state:id) = {<state_finalized>}
 uninitialized (state:id) = {<state_uninitialized>}
-StatePingPongPing (state:id) = {<state_pingpong_ping>}
-StatePingPongPong (state:id) = {<state_pingpong_pong>}
+StateLeaderActive (state:id) = {<state_leader_active>}
+
+StateFollowerActive (state:id) = {<state_follower_active>}
 
 
-allowedTransitions (from:id, to:id, event:id) = {<state_pingpong_pong,state_pingpong_ping,event_pingpong_hit>,<state_uninitialized,state_pingpong_ping,event_pingpong_start>,<state_pingpong_ping,state_pingpong_pong,event_pingpong_hit>}
+allowedTransitions (from:id, to:id, event:id) = {<state_uninitialized,state_leader_active,event_leader_start>,<state_leader_active,state_leader_active,event_leader_hit>,<state_follower_active,state_follower_active,event_follower_hit>,<state_uninitialized,state_follower_active,event_follower_start>}
 
-EventPingPongStart (event:id) = {<event_pingpong_start>}
-EventPingPongHit (event:id) = {<event_pingpong_hit>}
+EventLeader__frame (event:id) = {<event_leader___frame>}
+EventFollower__frame (event:id) = {<event_follower___frame>}
+EventLeaderStart (event:id) = {<event_leader_start>}
+EventFollowerStart (event:id) = {<event_follower_start>}
+EventLeaderHit (event:id) = {<event_leader_hit>}
+EventFollowerHit (event:id) = {<event_follower_hit>}
 
 // Dynamic configuration of state machines
-Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>,<c9>,<c10>}
-order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>,<c6,c7>,<c7,c8>,<c8,c9>,<c9,c10>}
+Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>}
+order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>}
 InitialConfig (config:id) = {<c1>}
 
-Instance (spec:id, instance:id) = {<pingpong,p1>,<pingpong,p2>}
-instanceInState (config:id, instance:id, state:id) >= {<c1,p1,state_uninitialized>,<c1,p2,state_uninitialized>}<= {<c1,p1,state_uninitialized>,<c1,p1,state_finalized>,<c1,p1,state_pingpong_ping>,<c1,p1,state_pingpong_pong>,<c1,p2,state_uninitialized>,<c1,p2,state_finalized>,<c1,p2,state_pingpong_ping>,<c1,p2,state_pingpong_pong>,<c2,p1,state_uninitialized>,<c2,p1,state_finalized>,<c2,p1,state_pingpong_ping>,<c2,p1,state_pingpong_pong>,<c2,p2,state_uninitialized>,<c2,p2,state_finalized>,<c2,p2,state_pingpong_ping>,<c2,p2,state_pingpong_pong>,<c3,p1,state_uninitialized>,<c3,p1,state_finalized>,<c3,p1,state_pingpong_ping>,<c3,p1,state_pingpong_pong>,<c3,p2,state_uninitialized>,<c3,p2,state_finalized>,<c3,p2,state_pingpong_ping>,<c3,p2,state_pingpong_pong>,<c4,p1,state_uninitialized>,<c4,p1,state_finalized>,<c4,p1,state_pingpong_ping>,<c4,p1,state_pingpong_pong>,<c4,p2,state_uninitialized>,<c4,p2,state_finalized>,<c4,p2,state_pingpong_ping>,<c4,p2,state_pingpong_pong>,<c5,p1,state_uninitialized>,<c5,p1,state_finalized>,<c5,p1,state_pingpong_ping>,<c5,p1,state_pingpong_pong>,<c5,p2,state_uninitialized>,<c5,p2,state_finalized>,<c5,p2,state_pingpong_ping>,<c5,p2,state_pingpong_pong>,<c6,p1,state_uninitialized>,<c6,p1,state_finalized>,<c6,p1,state_pingpong_ping>,<c6,p1,state_pingpong_pong>,<c6,p2,state_uninitialized>,<c6,p2,state_finalized>,<c6,p2,state_pingpong_ping>,<c6,p2,state_pingpong_pong>,<c7,p1,state_uninitialized>,<c7,p1,state_finalized>,<c7,p1,state_pingpong_ping>,<c7,p1,state_pingpong_pong>,<c7,p2,state_uninitialized>,<c7,p2,state_finalized>,<c7,p2,state_pingpong_ping>,<c7,p2,state_pingpong_pong>,<c8,p1,state_uninitialized>,<c8,p1,state_finalized>,<c8,p1,state_pingpong_ping>,<c8,p1,state_pingpong_pong>,<c8,p2,state_uninitialized>,<c8,p2,state_finalized>,<c8,p2,state_pingpong_ping>,<c8,p2,state_pingpong_pong>,<c9,p1,state_uninitialized>,<c9,p1,state_finalized>,<c9,p1,state_pingpong_ping>,<c9,p1,state_pingpong_pong>,<c9,p2,state_uninitialized>,<c9,p2,state_finalized>,<c9,p2,state_pingpong_ping>,<c9,p2,state_pingpong_pong>,<c10,p1,state_uninitialized>,<c10,p1,state_finalized>,<c10,p1,state_pingpong_ping>,<c10,p1,state_pingpong_pong>,<c10,p2,state_uninitialized>,<c10,p2,state_finalized>,<c10,p2,state_pingpong_ping>,<c10,p2,state_pingpong_pong>}
-raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_pingpong_hit,p1>,<c1,c2,event_pingpong_start,p1>,<c2,c3,event_pingpong_hit,p1>,<c2,c3,event_pingpong_start,p1>,<c3,c4,event_pingpong_hit,p1>,<c3,c4,event_pingpong_start,p1>,<c4,c5,event_pingpong_hit,p1>,<c4,c5,event_pingpong_start,p1>,<c5,c6,event_pingpong_hit,p1>,<c5,c6,event_pingpong_start,p1>,<c6,c7,event_pingpong_hit,p1>,<c6,c7,event_pingpong_start,p1>,<c7,c8,event_pingpong_hit,p1>,<c7,c8,event_pingpong_start,p1>,<c8,c9,event_pingpong_hit,p1>,<c8,c9,event_pingpong_start,p1>,<c9,c10,event_pingpong_hit,p1>,<c9,c10,event_pingpong_start,p1>,<c1,c2,event_pingpong_hit,p2>,<c1,c2,event_pingpong_start,p2>,<c2,c3,event_pingpong_hit,p2>,<c2,c3,event_pingpong_start,p2>,<c3,c4,event_pingpong_hit,p2>,<c3,c4,event_pingpong_start,p2>,<c4,c5,event_pingpong_hit,p2>,<c4,c5,event_pingpong_start,p2>,<c5,c6,event_pingpong_hit,p2>,<c5,c6,event_pingpong_start,p2>,<c6,c7,event_pingpong_hit,p2>,<c6,c7,event_pingpong_start,p2>,<c7,c8,event_pingpong_hit,p2>,<c7,c8,event_pingpong_start,p2>,<c8,c9,event_pingpong_hit,p2>,<c8,c9,event_pingpong_start,p2>,<c9,c10,event_pingpong_hit,p2>,<c9,c10,event_pingpong_start,p2>}
-changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,p1>,<c1,c2,p2>,<c2,c3,p1>,<c2,c3,p2>,<c3,c4,p1>,<c3,c4,p2>,<c4,c5,p1>,<c4,c5,p2>,<c5,c6,p1>,<c5,c6,p2>,<c6,c7,p1>,<c6,c7,p2>,<c7,c8,p1>,<c7,c8,p2>,<c8,c9,p1>,<c8,c9,p2>,<c9,c10,p1>,<c9,c10,p2>}
+Instance (spec:id, instance:id) = {<follower,f1>,<leader,l1>}
+instanceInState (config:id, instance:id, state:id) >= {<c1,f1,state_uninitialized>,<c1,l1,state_uninitialized>}<= {<c1,l1,state_uninitialized>,<c1,l1,state_leader_active>,<c1,l1,state_finalized>,<c1,f1,state_uninitialized>,<c1,f1,state_finalized>,<c1,f1,state_follower_active>,<c2,l1,state_uninitialized>,<c2,l1,state_leader_active>,<c2,l1,state_finalized>,<c2,f1,state_uninitialized>,<c2,f1,state_finalized>,<c2,f1,state_follower_active>,<c3,l1,state_uninitialized>,<c3,l1,state_leader_active>,<c3,l1,state_finalized>,<c3,f1,state_uninitialized>,<c3,f1,state_finalized>,<c3,f1,state_follower_active>,<c4,l1,state_uninitialized>,<c4,l1,state_leader_active>,<c4,l1,state_finalized>,<c4,f1,state_uninitialized>,<c4,f1,state_finalized>,<c4,f1,state_follower_active>,<c5,l1,state_uninitialized>,<c5,l1,state_leader_active>,<c5,l1,state_finalized>,<c5,f1,state_uninitialized>,<c5,f1,state_finalized>,<c5,f1,state_follower_active>,<c6,l1,state_uninitialized>,<c6,l1,state_leader_active>,<c6,l1,state_finalized>,<c6,f1,state_uninitialized>,<c6,f1,state_finalized>,<c6,f1,state_follower_active>}
+raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_leader_hit,l1>,<c1,c2,event_leader_start,l1>,<c1,c2,event_leader___frame,l1>,<c2,c3,event_leader_hit,l1>,<c2,c3,event_leader_start,l1>,<c2,c3,event_leader___frame,l1>,<c3,c4,event_leader_hit,l1>,<c3,c4,event_leader_start,l1>,<c3,c4,event_leader___frame,l1>,<c4,c5,event_leader_hit,l1>,<c4,c5,event_leader_start,l1>,<c4,c5,event_leader___frame,l1>,<c5,c6,event_leader_hit,l1>,<c5,c6,event_leader_start,l1>,<c5,c6,event_leader___frame,l1>,<c1,c2,event_follower_start,f1>,<c1,c2,event_follower___frame,f1>,<c1,c2,event_follower_hit,f1>,<c2,c3,event_follower_start,f1>,<c2,c3,event_follower___frame,f1>,<c2,c3,event_follower_hit,f1>,<c3,c4,event_follower_start,f1>,<c3,c4,event_follower___frame,f1>,<c3,c4,event_follower_hit,f1>,<c4,c5,event_follower_start,f1>,<c4,c5,event_follower___frame,f1>,<c4,c5,event_follower_hit,f1>,<c5,c6,event_follower_start,f1>,<c5,c6,event_follower___frame,f1>,<c5,c6,event_follower_hit,f1>}
+changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,l1>,<c1,c2,f1>,<c2,c3,l1>,<c2,c3,f1>,<c3,c4,l1>,<c3,c4,f1>,<c4,c5,l1>,<c4,c5,f1>,<c5,c6,l1>,<c5,c6,f1>}
 
-SVPingPongOnePrims (config:id, instance:id, id:int, times:int) <= {<c1,p1,?,?>,<c1,p2,?,?>,<c2,p1,?,?>,<c2,p2,?,?>,<c3,p1,?,?>,<c3,p2,?,?>,<c4,p1,?,?>,<c4,p2,?,?>,<c5,p1,?,?>,<c5,p2,?,?>,<c6,p1,?,?>,<c6,p2,?,?>,<c7,p1,?,?>,<c7,p2,?,?>,<c8,p1,?,?>,<c8,p2,?,?>,<c9,p1,?,?>,<c9,p2,?,?>,<c10,p1,?,?>,<c10,p2,?,?>}
+SVLeaderOnePrims (config:id, instance:id, id:int, times:int) <= {<c1,l1,?,?>,<c2,l1,?,?>,<c3,l1,?,?>,<c4,l1,?,?>,<c5,l1,?,?>,<c6,l1,?,?>}
+SVLeaderFollower (config:id, instance:id, follower:id) <= {<c1,l1,f1>,<c2,l1,f1>,<c3,l1,f1>,<c4,l1,f1>,<c5,l1,f1>,<c6,l1,f1>}
+
+SVFollowerOnePrims (config:id, instance:id, id:int, times:int) <= {<c1,f1,?,?>,<c2,f1,?,?>,<c3,f1,?,?>,<c4,f1,?,?>,<c5,f1,?,?>,<c6,f1,?,?>}
 
 
 
-ParamsEventPingPongStartPrimitives (cur:id, nxt:id, id:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>,<c7,c8,?>,<c8,c9,?>,<c9,c10,?>}
+ParamsEventLeaderStartPrimitives (cur:id, nxt:id, id:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>}
+ParamsEventLeaderStartFollower (cur:id, nxt:id, follower:id) <= {<c1,c2,f1>,<c2,c3,f1>,<c3,c4,f1>,<c4,c5,f1>,<c5,c6,f1>,<c6,c7,f1>} 
+
+
+
+
+
+ParamsEventFollowerStartPrimitives (cur:id, nxt:id, id:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>}
+
+
 
 
 
 // Generic 'Type' constraints
-order in Config[config as cur] x Config[config as nxt]
-raisedEvent in order x allowedTransitions[event] x Instance[instance]
-instanceInState in Instance[instance] x Config x State
-changedInstance in order x Instance[instance]
+order ⊆ Config[config as cur] ⨯ Config[config as nxt]
+raisedEvent ⊆ order ⨯ allowedTransitions[event] ⨯ Instance[instance]
+instanceInState ⊆ Instance[instance] ⨯ Config ⨯ State
+changedInstance ⊆ order ⨯ Instance[instance]
     
 // Machine specific 'Type' constraints
-SVPingPongOnePrims[config,instance] in Config x Instance[instance]
+SVLeaderOnePrims[config,instance] ⊆ Config ⨯ Instance[instance]
+SVFollowerOnePrims[config,instance] ⊆ Config ⨯ Instance[instance]
 
-ParamsEventPingPongStartPrimitives[cur,nxt] in order
+ParamsEventLeaderStartPrimitives[cur,nxt] ⊆ order
+ParamsEventLeaderStartFollower ⊆ order ⨯ (Instance ⨝ Follower)[instance->follower]
+ParamsEventFollowerStartPrimitives[cur,nxt] ⊆ order
 
 
 // Specific per event
 ∀ o ∈ order ⨝ raisedEvent | (
-    (some (o |x| EventPingPongStart) <=> one (o |x| ParamsEventPingPongStartPrimitives))
+    (some (o ⨝ EventLeaderStart) ⇔ one (o ⨝ ParamsEventLeaderStartPrimitives))
+   ∧   (some (o ⨝ EventLeaderStart) ⇔ one (o ⨝ ParamsEventLeaderStartFollower))
+   ∧   (some (o ⨝ EventFollowerStart) ⇔ one (o ⨝ ParamsEventFollowerStartPrimitives))
 
 )
 // Generic: All configurations are reachable
-forall c : Config - InitialConfig | c in (InitialConfig[config as cur] |x| ^<cur,nxt>order)[nxt -> config]
+∀ c ∈ Config ∖ InitialConfig | c ⊆ (InitialConfig[config as cur] ⨝ ^<cur,nxt>order)[nxt -> config]
 
 // Generic: Every transition can only happen by exactly one event
-forall o : order | one o |x| raisedEvent
+∀ o ∈ order | one o ⨝ raisedEvent
 
 // Generic: In every configuration all machines have a state
-forall c : Config, inst : Instance | one instanceInState |x| c |x| inst
+∀ c ∈ Config, inst ∈ Instance | one instanceInState ⨝ c ⨝ inst
 
 // Specific per machine: In every configuration iff a machine is in an initialized state then it must have values
-forall c : Config, inst : (Instance |x| PingPong)[instance] | (((c x inst) |x| instanceInState)[state] ⊆ initialized <=> one SVPingPongOnePrims |x| c |x| inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Leader)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one SVLeaderOnePrims ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Follower)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one SVFollowerOnePrims ⨝ c ⨝ inst)
 
 
 // Generic: Transitions are only allowed between if an event is specified between two states
-forall o : order |x| raisedEvent | (o[cur as config] ⨝ instanceInState)[state->from] x (o[nxt as config] ⨝ instanceInState)[state->to] x o[event] ⊆ allowedTransitions
+∀ o ∈ order ⨝ raisedEvent | (o[cur as config] ⨝ instanceInState)[state->from] ⨯ (o[nxt as config] ⨝ instanceInState)[state->to] ⨯ o[event] ⊆ allowedTransitions
 
 // Transition function
-forall o : order |  
-(
-  forall inst : (Instance |x| PingPong)[instance] |  
-    let cur = (o[cur as config] |x| SVPingPongOnePrims |x| instanceInState |x| inst)[config -> curConfig, state->curState, instance->curInstance, id->curId, times->curTimes],
-        nxt = (o[nxt as config] |x| SVPingPongOnePrims |x| instanceInState |x| inst)[config -> nxtConfig, state->nxtState, instance->instance, id->nxtId, times->nxtTimes] | 
+∀ o ∈ order |  
+  (
+    // Events from Leader  
+    ∀ inst ∈ (Instance ⨝ Leader)[instance] |  
       // Iff this is the instance that raised the event then one of the transitions must have happened 
-      (some nxt[instance] & ((raisedEvent |x| o)[instance]) <=> 
-        (
-          ( // Event PingPong.hit
-     
-     // Postconditions
-     (some (cur x nxt) where (nxtTimes = curTimes  +  1)) &&
-     (some (cur x nxt) where (nxtId = curId)) &&
-    (o |x| raisedEvent)[event] = EventPingPongHit &&
-    nxt[nxtState] = ((o[cur->config] |x| instanceInState |x| inst)[state as from] |x| (allowedTransitions |x| EventPingPongHit))[to->nxtState] && 
-    (changedInstance |x| o)[instance] = nxt[instance] // TODO: needs to be extended when syncing events is introduced
-  )
-  ||
-  ( // Event PingPong.start
-     
-     // Postconditions
-     (some (nxt x o |x| ParamsEventPingPongStartPrimitives) where (nxtId = id)) &&
-     (some (nxt) where (nxtTimes = 0)) &&
-    (o |x| raisedEvent)[event] = EventPingPongStart &&
-    nxt[nxtState] = ((o[cur->config] |x| instanceInState |x| inst)[state as from] |x| (allowedTransitions |x| EventPingPongStart))[to->nxtState] && 
-    (changedInstance |x| o)[instance] = nxt[instance] // TODO: needs to be extended when syncing events is introduced
-  )
-        )
-      ) 
-      &&
-      // If it is not a transitioning instance, frame the values
-      (no nxt[instance] & (raisedEvent |x| o)[instance] <=> 
-        (
-          // The instance keeps its current state
-          (o[nxt->config] |x| instanceInState |x| inst)[state] = (o[cur->config] |x| instanceInState |x| inst)[state] 
-          && (
-            // Either there was no values attached yet 
-            (no (o[nxt->config] ⨝ SVPingPongOnePrims |x| inst)) 
-            || 
-            // Or keep the current values
-            (some (nxt x cur) where ((nxtId = curId) && (nxtTimes = curTimes)))
+      (some inst ∩ ((raisedEvent ⨝ o)[instance]) ⇔ 
+        // Event Leader.hit
+        let curLeaderState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+            nxtLeaderState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+            curLeaderFlattened = (SVLeaderOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,times->curTimes],
+            nxtLeaderFlattened = (SVLeaderOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,times->nxtTimes],
+            curLeaderFollower = (o[cur -> config] ⨝ SVLeaderFollower ⨝ inst)[follower],
+            nxtLeaderFollower = (o[nxt -> config] ⨝ SVLeaderFollower ⨝ inst)[follower] |
+          ( 
+            // Preconditions 
+            // Event Follower.hit
+            let curFollowerState = (instanceInState ⨝ o[cur->config] ⨝ curLeaderFollower[follower][follower->instance])[state],
+                nxtFollowerState = (instanceInState ⨝ o[nxt->config] ⨝ curLeaderFollower[follower][follower->instance])[state],
+                curFollowerFlattened = (SVFollowerOnePrims ⨝ o[cur -> config] ⨝ curLeaderFollower[follower][follower->instance])[id->curId,times->curTimes],
+                nxtFollowerFlattened = (SVFollowerOnePrims ⨝ o[nxt -> config] ⨝ curLeaderFollower[follower][follower->instance])[id->nxtId,times->nxtTimes] |
+              ( 
+                 
+                // Postconditions
+                (some (curFollowerFlattened ⨯ nxtFollowerFlattened) where (nxtId = curId)) ∧
+                (some (curFollowerFlattened ⨯ nxtFollowerFlattened) where (nxtTimes = curTimes  +  1))  ∧ 
+                // Generic event conditions
+                nxtFollowerState = (curFollowerState[state as from] ⨝ (allowedTransitions ⨝ EventFollowerHit))[to->state] 
+              )  ∧ 
+            // Postconditions
+            nxtLeaderFollower[follower] = curLeaderFollower[follower] ∧
+            (some (curLeaderFlattened ⨯ nxtLeaderFlattened) where (nxtId = curId)) ∧
+            (some (curLeaderFlattened ⨯ nxtLeaderFlattened) where (nxtTimes = curTimes  +  1))  ∧ 
+            // Generic event conditions
+            (o ⨝ raisedEvent)[event] = EventLeaderHit ∧
+            nxtLeaderState = (curLeaderState[state as from] ⨝ (allowedTransitions ⨝ EventLeaderHit))[to->state] ∧ 
+            (changedInstance ⨝ o)[instance] = inst ∪ curLeaderFollower[follower][follower->instance]
           )
-      )) 
-    
-)
+         ∨ 
+        // Event Leader.start
+        let curLeaderState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+            nxtLeaderState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+            curLeaderFlattened = (SVLeaderOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,times->curTimes],
+            nxtLeaderFlattened = (SVLeaderOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,times->nxtTimes],
+            curLeaderFollower = (o[cur -> config] ⨝ SVLeaderFollower ⨝ inst)[follower],
+            nxtLeaderFollower = (o[nxt -> config] ⨝ SVLeaderFollower ⨝ inst)[follower],
+            paramLeaderStartFlattened = (o ⨝ ParamsEventLeaderStartPrimitives)[id],
+            paramsLeaderStartFollower = (o ⨝ ParamsEventLeaderStartFollower)[follower] |
+          ( 
+            // Preconditions 
+            ((paramsLeaderStartFollower[follower->instance] ⨯ o[cur->config]) ⨝ instanceInState)[state] ⊆ StateFollowerActive ∧
+            (some (paramLeaderStartFlattened) where (id > 0))  ∧ 
+            // Postconditions
+            (some (nxtLeaderFlattened ⨯ paramLeaderStartFlattened) where (nxtId = id)) ∧
+            nxtLeaderFollower[follower] = paramsLeaderStartFollower[follower] ∧
+            (some (nxtLeaderFlattened) where (nxtTimes = 0))  ∧ 
+            // Generic event conditions
+            (o ⨝ raisedEvent)[event] = EventLeaderStart ∧
+            nxtLeaderState = (curLeaderState[state as from] ⨝ (allowedTransitions ⨝ EventLeaderStart))[to->state] ∧ 
+            (changedInstance ⨝ o)[instance] = inst
+          )
+      ) 
+      ∧
+      // If it is not a transitioning instance, frame the values
+      (no inst ∩ (changedInstance ⨝ o)[instance] ⇔
+        // Frame values if needed
+        let curLeaderState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+            nxtLeaderState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+            curLeaderFlattened = (SVLeaderOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,times->curTimes],
+            nxtLeaderFlattened = (SVLeaderOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,times->nxtTimes],
+            curLeaderFollower = (o[cur -> config] ⨝ SVLeaderFollower ⨝ inst)[follower],
+            nxtLeaderFollower = (o[nxt -> config] ⨝ SVLeaderFollower ⨝ inst)[follower] | (
+          // State must stay the same
+          nxtLeaderState = curLeaderState
+          ∧
+          (
+            (no curLeaderFlattened) ∨ 
+            (  
+              // Postconditions
+              (some (curLeaderFlattened ⨯ nxtLeaderFlattened) where (nxtId = curId)) ∧
+              (some (curLeaderFlattened ⨯ nxtLeaderFlattened) where (nxtTimes = curTimes)) ∧
+              nxtLeaderFollower[follower] = curLeaderFollower[follower]
+            )
+          )  
+        )
+      )
+  )
+   ∧ 
+  (
+    // Events from Follower  
+    ∀ inst ∈ (Instance ⨝ Follower)[instance] |  
+      // Iff this is the instance that raised the event then one of the transitions must have happened 
+      (some inst ∩ ((raisedEvent ⨝ o)[instance]) ⇔ 
+        // Event Follower.start
+        let curFollowerState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+            nxtFollowerState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+            curFollowerFlattened = (SVFollowerOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,times->curTimes],
+            nxtFollowerFlattened = (SVFollowerOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,times->nxtTimes],
+            paramFollowerStartFlattened = (o ⨝ ParamsEventFollowerStartPrimitives)[id] |
+          ( 
+            // Preconditions 
+            (some (paramFollowerStartFlattened) where (id > 0))  ∧ 
+            // Postconditions
+            (some (nxtFollowerFlattened ⨯ paramFollowerStartFlattened) where (nxtId = id)) ∧
+            (some (nxtFollowerFlattened) where (nxtTimes = 0))  ∧ 
+            // Generic event conditions
+            (o ⨝ raisedEvent)[event] = EventFollowerStart ∧
+            nxtFollowerState = (curFollowerState[state as from] ⨝ (allowedTransitions ⨝ EventFollowerStart))[to->state] ∧ 
+            (changedInstance ⨝ o)[instance] = inst
+          )
+         ∨ 
+        // Event Follower.hit
+        let curFollowerState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+            nxtFollowerState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+            curFollowerFlattened = (SVFollowerOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,times->curTimes],
+            nxtFollowerFlattened = (SVFollowerOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,times->nxtTimes] |
+          ( 
+             
+            // Postconditions
+            (some (curFollowerFlattened ⨯ nxtFollowerFlattened) where (nxtId = curId)) ∧
+            (some (curFollowerFlattened ⨯ nxtFollowerFlattened) where (nxtTimes = curTimes  +  1))  ∧ 
+            // Generic event conditions
+            (o ⨝ raisedEvent)[event] = EventFollowerHit ∧
+            nxtFollowerState = (curFollowerState[state as from] ⨝ (allowedTransitions ⨝ EventFollowerHit))[to->state] ∧ 
+            (changedInstance ⨝ o)[instance] = inst
+          )
+      ) 
+      ∧
+      // If it is not a transitioning instance, frame the values
+      (no inst ∩ (changedInstance ⨝ o)[instance] ⇔
+        // Frame values if needed
+        let curFollowerState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+            nxtFollowerState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+            curFollowerFlattened = (SVFollowerOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,times->curTimes],
+            nxtFollowerFlattened = (SVFollowerOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,times->nxtTimes] | (
+          // State must stay the same
+          nxtFollowerState = curFollowerState
+          ∧
+          (
+            (no curFollowerFlattened) ∨ 
+            (  
+              // Postconditions
+              (some (curFollowerFlattened ⨯ nxtFollowerFlattened) where (nxtId = curId)) ∧
+              (some (curFollowerFlattened ⨯ nxtFollowerFlattened) where (nxtTimes = curTimes))
+            )
+          )  
+        )
+      )
+  )
 
 // Asserts: this is where the checks get added
-exists c: Config, p: SVPingPongOnePrims | some (c |x| p) where times = 5
+∃ c ∈ Config, f ∈ SVFollowerOnePrims, l ∈ SVLeaderOnePrims | (some (c ⨝ f) where times = 2 ∧ some (c ⨝ l) where times = 2)
 
 objectives: minimize(Config[count()])

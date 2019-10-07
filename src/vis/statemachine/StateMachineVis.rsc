@@ -15,9 +15,13 @@ import vis::statemachine::salix::StateMachineCat;
 alias Model = tuple[loc spc, Spec prev];
 
 App[Model] createVis(loc spc, int port) {
-  Model init() = <spc, parseModule(spc).spc>;
+  if (/Spec s := parseModule(spc).parts) {
+    Model init() = <spc, s>;
 
-  return app(init, view, update, |http://localhost/statemachine/index.html|[port = port], |project://rebel2/salix/|, subs = changeCheckSubs); 
+    return app(init, view, update, |http://localhost/statemachine/index.html|[port = port], |project://rebel2/salix/|, subs = changeCheckSubs);
+  } else {
+    throw "No defined specification in file";
+  }
 }
 
 data Msg 
@@ -35,9 +39,10 @@ void view(Model m) {
 Model update(Msg msg, Model m) {
   switch (msg) {
       case specChangedCheck(_): {
-        Spec cur = parseSpec(m.spc);
-        if (cur != m.prev) {
-          m.prev = cur;
+        if (/Spec cur := parseModule(m.spc).parts) {
+          if (cur != m.prev) {
+            m.prev = cur;
+          }
         }
       }
   }

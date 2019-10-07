@@ -118,24 +118,29 @@ void handleImports(Collector c, Tree root, PathConfig pcfg) {
       
         for (m <- modulesToImport, m notin imported) {
           if (<true, l> := lookupModule(m, pcfg)) {
-                collect(parse(#start[Module], l).top, c);
-            }
-            else {
-              c.report(error(m, "Cannot find module %v in %v", "<m>", pcfg.srcs));
-            }
-            imported += m; 
+            collect(parse(#start[Module], l).top, c);
+          }
+          else {
+            c.report(error(m, "Cannot find module %v in %v", "<m>", pcfg.srcs));
+          }
+          
+          imported += m; 
         }
     }
 }
     
-void collect(current: (Module)`<ModuleId modDef> <Import* imports> <Spec spc>`, Collector c) { 
+void collect(current: (Module)`<ModuleId modDef> <Import* imports> <Part+ parts>`, Collector c) { 
   c.define("<modDef.name>", moduleId(), current, defType(moduleType()));
   
   c.enterScope(current); 
     collect(imports, c);
-    collect(spc, c);
+    collect(parts, c);
   c.leaveScope(current);
-}  
+} 
+
+void collect(current: (Part)`<Spec spc>`, Collector c) {
+  collect(spc, c);
+} 
 
 void collect(current: (Spec)`spec <Id name> <Fields? fields> <Constraints? constraints> <Event* events> <States? states>`, Collector c) {
   c.define("<name>", specId(), current, defType(specType(oneMult(), "<name>")));
@@ -504,6 +509,7 @@ void collect(current: (Type)`<TypeName tp>`, Collector c) {
 }
 
 void collect(current: (Type)`<Multiplicity mult> <TypeName tp>`, Collector c) {
+  c.fact(current, tp);
   c.push("mult", getMultiplicity(mult));
   collect(tp,c);
 }

@@ -11,10 +11,13 @@ import ParseTree;
 import IO;
 
 TModel checkPingpong() 
-  = collectAndSolve(parseSpec(|project://rebel2/examples/pingpong.rebel|));
+  = collectAndSolve(parseModule(|project://rebel2/examples/pingpong.rebel|));
 
 TModel checkCoffeeMachine() 
-  = collectAndSolve(parseSpec(|project://rebel2/examples/CoffeeMachine.rebel|));
+  = collectAndSolve(parseModule(|project://rebel2/examples/CoffeeMachine.rebel|));
+
+TModel checkNormalizedCoffeeMachine() 
+  = collectAndSolve(parseModule(|project://rebel2/bin/normalized/CoffeeMachine.rebel|));
 
 TModel check(Tree spc) = rebelTModelFromTree(spc, debug=true, pathConf = pathConfig(src=[], lib=[]));
   

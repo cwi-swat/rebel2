@@ -3,7 +3,7 @@ module lang::Syntax
 extend lang::std::Layout;
 
 start syntax Module
-  = ModuleId module Import* imports Spec spc
+  = ModuleId module Import* imports Part+ parts
   ;
 
 syntax Import = "import" QualifiedName module;
@@ -11,6 +11,10 @@ syntax Import = "import" QualifiedName module;
 syntax ModuleId = "module" QualifiedName name; 
 
 syntax QualifiedName = {Id "::"}+ names !>> "::";
+
+syntax Part 
+  = Spec spc
+  ;
 
 syntax Spec = "spec" Id name Fields? fields Constraints? constraints Event* events States? states;
 
@@ -138,7 +142,7 @@ syntax Multiplicity
   | "set"
   ;
   
-lexical Id = [a-z A-Z 0-9 _] !<< ([a-z A-Z][a-z A-Z 0-9 _]* !>> [a-z A-Z 0-9 _]) \ Keywords;
+lexical Id = [a-z A-Z 0-9 _] !<< ([a-z A-Z_][a-z A-Z 0-9 _]* !>> [a-z A-Z 0-9 _]) \ Keywords;
 lexical TypeName = @category="Type" [a-z A-Z 0-9 _] !<< [A-Z][a-z A-Z 0-9 _]* !>> [a-z A-Z 0-9 _] \ Keywords;
 lexical Int = @category="Constant"  [0-9] !<< [0-9]+ !>> [0-9];
 lexical StringConstant = @category="Constant"  "\"" StringCharacter* "\""; 

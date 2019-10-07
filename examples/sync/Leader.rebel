@@ -9,7 +9,7 @@ spec Leader
 
   init event start(id: Integer, follower: Follower) 
     pre: 
-      follower is active,
+      follower is active, 
       id > 0;
     post: 
       this.id' = id, 

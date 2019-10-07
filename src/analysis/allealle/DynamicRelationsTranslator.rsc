@@ -2,6 +2,7 @@ module analysis::allealle::DynamicRelationsTranslator
 
 import lang::Syntax;
 import analysis::allealle::CommonTranslationFunctions;
+import analysis::Checker;
 
 import String;
 import Set;
@@ -12,84 +13,104 @@ str translateConfigState(Spec spc, uninitialized()) = "state_uninitialized";
 str translateConfigState(Spec spc, finalized())     = "state_finalized";
 str translateConfigState(Spec spc, state(str name)) = "state_<toLowerCase("<spc.name>")>_<name>";
 
-str translateDynamicPart(Config config) {
+str translateDynamicPart(Config cfg) {
   str def = "// Dynamic configuration of state machines
-            '<buildConfigRels(config.numberOfTransitions)>
-            '<buildInstanceRel(config.instances)>
-            '<buildInstanceInStateRel(config.instances, config.numberOfTransitions)>
-            '<buildRaisedEventsRel(config.instances<0,1>, config.numberOfTransitions)>
-            '<buildChangedInstancesRel(config.instances<1>, config.numberOfTransitions)>
-            '<buildStateVectors(lookupSpecs(config.instances), config.instances<0,1>, config.initialValues, config.numberOfTransitions)>
-            '<buildEventParamRels(lookupSpecs(config.instances), config.instances<0,1>, config.numberOfTransitions)>"; 
+            '<buildConfigRels(cfg.numberOfTransitions)>
+            '<buildInstanceRel(cfg.instances)>
+            '<buildInstanceInStateRel(cfg.instances, cfg.numberOfTransitions)>
+            '<buildRaisedEventsRel(cfg.instances<0,1>, cfg.numberOfTransitions)>
+            '<buildChangedInstancesRel(cfg.instances<1>, cfg.numberOfTransitions)>
+            '<buildStateVectors(lookupSpecs(cfg.instances), cfg)>
+            '<buildEventParamRels(lookupSpecs(cfg.instances), cfg)>"; 
 
   return def;
 }
 
-private str buildEventParamRels(set[Spec] specs, rel[Spec spc, str instance] instances, int numberOfTransitions)
-  = "<for (s <- specs, e <- lookupEvents(s)) {><buildEventSingleParamRel(s,e,numberOfTransitions)>
-    '<buildBinRelParamRels(s,e,instances,numberOfTransitions)>
+private str buildEventParamRels(set[Spec] specs, Config cfg)
+  = "<for (s <- specs, e <- lookupEvents(s)) {><buildEventFlattenedParamRel(s,e,cfg)>
+    '<buildOtherParamRels(s,e,cfg)>
     '<}>";
 
-private str buildEventSingleParamRel(Spec s, Event e, int numberOfTransitions)
- = "ParamsEvent<getCapitalizedSpecName(s)><getCapitalizedEventName(e)>Primitives (cur:id, nxt:id, <intercalate(",", [toLowerCase("<p.name>:<convertType(p.tipe)>") | p <- params])>) \<= {<buildParamTuples(numberOfTransitions, size(params))>}"
+private str buildEventFlattenedParamRel(Spec s, Event e, Config cfg)
+ = "ParamsEvent<getCapitalizedSpecName(s)><getCapitalizedEventName(e)>Primitives (cur:id, nxt:id, <intercalate(",", [toLowerCase("<p.name>:<convertType(p.tipe)>") | p <- params])>) \<= {<buildParamTuples(cfg.numberOfTransitions, size(params))>}"
  when 
-  list[FormalParam] params := lookupPrimitiveParams(e), 
+  list[FormalParam] params := lookupPrimitiveParams(e, cfg.tm), 
   size(params) > 0;
 
-private default str buildEventSingleParamRel(Spec _, Event _, int _) = "";
+private default str buildEventFlattenedParamRel(Spec _, Event _, Config _) = "";
   
 private str buildParamTuples(int numberOfTransitions, int numberOfPrimFields) 
   = intercalate(",", ["\<c<c>,c<c+1>,<fields>\>" | int c <- [1..numberOfTransitions]])
   when str fields := intercalate(",", ["?" | int i <- [0..numberOfPrimFields]]);
 
-private str buildBinRelParamRels(Spec s, Event e, rel[Spec spc, str instance] instances, int numberOfTransitions)
-  = "<for (FormalParam p <- lookupNonPrimParams(e)) {>ParamsEvent<getCapitalizedSpecName(s)><getCapitalizedEventName(e)><capitalize("<p.name>")> (cur:id, nxt:id, <toLowerCase("<p.name>")>:id) \<= {<intercalate(",", ["\<c<c>,c<c+1>,<i>\>" | int c <- [1..numberOfTransitions+1], str i <- getInstancesOfType(p.tipe, instances)])>} 
+private str buildOtherParamRels(Spec s, Event e, Config cfg)
+  = "<for (FormalParam p <- lookupNonPrimParams(e,cfg.tm)) {>ParamsEvent<getCapitalizedSpecName(s)><getCapitalizedEventName(e)><capitalize("<p.name>")> (cur:id, nxt:id, <toLowerCase("<p.name>")>:id) \<= {<intercalate(",", ["\<c<c>,c<c+1>,<i>\>" | int c <- [1..cfg.numberOfTransitions+1], str i <- getInstancesOfType(p.tipe, cfg.instances<0,1>)])>} 
     '<}>";
 
-private str buildStateVectors(set[Spec] specs, rel[Spec spc, str instance] instances, rel[Spec spc, str instance, str field, set[str] val] initialValues, int numberOfTransitions)
+private str buildStateVectors(set[Spec] specs, Config cfg) //rel[Spec spc, str instance] instances, rel[Spec spc, str instance, str field, set[str] val] initialValues, int numberOfTransitions)
   = "<for (Spec s <- specs) {>
-    '<buildPrimOneStateVector(s, instances, initialValues, numberOfTransitions)>
-    '<buildBinaryStateVectorRels(s, instances, initialValues, numberOfTransitions)><}>"; 
+    '<buildFlattenedStateVector(s, cfg)>
+    '<buildOtherStateVectorRels(s, cfg)><}>"; 
 
-private str buildPrimOneStateVector(Spec s, rel[Spec spc, str instance] instances, rel[Spec spc, str instance, str field, set[str] val] initialValues, int numberOfTransitions)
-  = "<getOnePrimStateVectorName(s)> (config:id, instance:id, <buildFieldDecls(fields)>) <buildInitialStateVectorTuples(s, lookupInstances(s, instances), initialValues[s], fields, numberOfTransitions)>"
-  when list[Field] fields := lookupOnePrimitiveFields(s); 
+private str buildFlattenedStateVector(Spec s, Config cfg) {
+  list[Field] fields = lookupOnePrimitiveFields(s, cfg.tm);
+      
+  return "<getOnePrimStateVectorName(s)> (config:id, instance:id, <buildFieldDecls(fields)>) <buildFlattenedStateVectorTuples(s, fields, cfg)>";
+}
 
-private str buildInitialStateVectorTuples(Spec s, set[str] instances, {}, list[Field] fields, int numberOfTransitions) 
-  = "\<= {<buildInitialStateVectorUpperBound(instances, size(fields), numberOfTransitions)>}";
+private str buildFlattenedStateVectorTuples(Spec s, list[Field] fields, Config cfg) {
+  str tuples = "";
+  
+  if (cfg.initialValues[s] != {}) {
+    tuples += "\>= {<builFlattenedInitialStateVectorTuples(cfg.initialValues[s], fields)>} ";
+  }
 
-private default str buildInitialStateVectorTuples(Spec s, set[str] instances, rel[str instance, str field, set[str] val] initialValues, list[Field] order, int numberOfTransitions)
-  = "\>= {<buildInitialStateVectorTuplesPerInstance(initialValues, order)>} \<= {<buildInitialStateVectorUpperBound(instances, size(order), numberOfTransitions)>}";
+  tuples += "\<= {<buildFlattenedStateVectorUpperBound(lookupInstances(s, cfg.instances<0,1>), size(fields), cfg.numberOfTransitions)>}";
+  
+  return tuples; 
+}
 
-private str buildInitialStateVectorUpperBound(set[str] instances, int numberOfPrimitiveFields, int numberOfTransitions)
+private str buildFlattenedStateVectorUpperBound(set[str] instances, int numberOfFlattenedFields, int numberOfTransitions)
   = intercalate(",", ["\<c<c>,<i>,<primFields>\>" | int c <- [1..numberOfTransitions+1], str i <- instances])
-  when str primFields := intercalate(",", ["?" | int i <- [0..numberOfPrimitiveFields]]);
+  when str primFields := intercalate(",", ["?" | int i <- [0..numberOfFlattenedFields]]);
 
-private str buildInitialStateVectorTuplesPerInstance(rel[str instance, str field, set[str] val] initialValues, list[Field] order) 
+private str builFlattenedInitialStateVectorTuples(rel[str instance, str field, set[str] val] initialValues, list[Field] order) 
   = intercalate(",", ["\<c1,<i>,<buildInitialStateVectorFieldValues(initialValues[i], order)>\>" | str i <- initialValues<0>]); 
 
 private str buildInitialStateVectorFieldValues(rel[str field, set[str] val] initialValues, list[Field] order)
   = intercalate(",", ["<v>" | f <- order, result := initialValues["<f.name>"], str v := (result == {} ? "?" : getOneFrom(getOneFrom(result)))]);
 
-private str buildBinaryStateVectorRels(Spec spc, rel[Spec spc, str instance] instances, rel[Spec spc, str instance, str field, set[str] val] initialValues, int numberOfTransitions) 
-  = "<for (f <- binFields) {><getMultStateVectorName(spc,f)> (config:id, instance:id, <toLowerCase("<f.name>")>:id) <buildBinRelBoundsDecl(spc, f, instances, initialValues, numberOfTransitions)>
-    '<}>" 
-  when list[Field] binFields := lookupNonPrimFields(spc);
+private str buildOtherStateVectorRels(Spec spc, Config cfg) {
+  list[Field] otherFields = lookupNonPrimFields(spc, cfg.tm);
+  
+  str rels = "";
+  
+  for (f <- otherFields) {
+    rels += "<getMultStateVectorName(spc,f)> (config:id, instance:id, <toLowerCase("<f.name>")>:id) <buildOtherRelBoundsDecl(spc, f, cfg)>\n";
+  }
+  
+  return rels;
+}
+private str buildOtherRelBoundsDecl(Spec spc, Field f, Config cfg) {
+  str bounds = "";
+  
+  if (cfg.initialValues[spc] != {}) {
+    bounds += "\>= {<buildOtherRelLowerBounds(spc,f,cfg.initialValues[spc])>}";
+  }
+  
+  bounds += "\<= {<buildOtherRelUpperBounds(spc,f,cfg)>}";
+  
+  return bounds;
+}
 
-private str buildBinRelBoundsDecl(Spec spc, Field f, rel[Spec spc, str instance] instances, {}, int numberOfTransitions) 
-  = "\<= {<buildBinRelUpperBounds(spc,f,instances,numberOfTransitions)>}";
-
-private default str buildBinRelBoundsDecl(Spec spc, Field f, rel[Spec spc, str instance] instances, rel[str instance, str field, set[str] val] initialValues, int numberOfTransitions) 
-  = "\>= {<buildBinRelLowerBounds(spc,f,initialValues)>} \<= {<buildBinRelUpperBounds(spc,f,instances,numberOfTransitions)>}";
-
-private str buildBinRelLowerBounds(Spec spc, Field f, rel[str instance, str field, set[str] val] initialValues)
+private str buildOtherRelLowerBounds(Spec spc, Field f, rel[str instance, str field, set[str] val] initialValues)
   = "TODO";
   
-private str buildBinRelUpperBounds(Spec spc, Field f, rel[Spec spc, str instance] instances, int numberOfTransitions)
-  = intercalate(",", ["\<c<c>,<i>,<t>\>" | int c <- [1..numberOfTransitions+1], str i <- inst, str t <- instOfType])
+private str buildOtherRelUpperBounds(Spec spc, Field f, Config cfg) 
+  = intercalate(",", ["\<c<c>,<i>,<t>\>" | int c <- [1..cfg.numberOfTransitions+1], str i <- inst, str t <- instOfType])
   when 
-    set[str] inst := lookupInstances(spc, instances),
-    list[str] instOfType := getInstancesOfType(f.tipe, instances);
+    set[str] inst := lookupInstances(spc, cfg.instances<0,1>), bprintln(inst),
+    list[str] instOfType := getInstancesOfType(f.tipe, cfg.instances<0,1>), bprintln(instOfType);
       
 private str buildFieldDecls(list[Field] fields) 
   = intercalate(", ", ["<f.name>:<convertType(f.tipe)>" | Field f <- fields]);

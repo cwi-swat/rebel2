@@ -13,4 +13,4 @@ spec Follower
  
   states:
     (*) -> active: start; 
-    active -> active: hit;    
+    active -> active: hit;     

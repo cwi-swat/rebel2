@@ -22,4 +22,16 @@ test EventVariant [[
   states:
     (*) -> started: base::var;
     started -> (*): base;
+]] expect { "Undefined event variant" }
+
+test MultipleSpecs [[
+  module Multiple 
+  
+  spec Leader 
+    follower: Follower;
+    
+    event start(follower: Follower) 
+      post: this.follower' = follower;
+  
+  spec Follower
 ]]

@@ -14,8 +14,10 @@ import util::PathUtil;
 Module normalizeCoffeeMachine() = normalize(parseModule(|project://rebel2/examples/CoffeeMachine.rebel|)); 
 
 Module normalize(Module m) {
-  m.spc = normalize(m.spc);
-
+  m = visit(m) {
+    case (Part)`<Spec spc>` => (Part)`<Spec nSpc>` when Spec nSpc := normalize(spc)
+  }
+  
   loc normPath = addModuleToBase(project(m@\loc.top) + "bin/normalized/", m);
 
   makeDirRecursively(normPath.parent); 
@@ -31,6 +33,7 @@ Spec normalize(Spec spc) {
   list[Event] normEvents = normalizeEvents([e | Event e <- spc.events]);
   normEvents = addFrameConditions(fields, normEvents);
   normEvents = addEmptyTransitionIfNecessary(spc, normEvents);
+  normEvents += createFrameEvent(spc);
   
   spc.events = buildNormEvents(normEvents);
   spc.states = normalizeStates(spc.states);
@@ -43,6 +46,14 @@ Spec addImplicitMultiplicities(Spec spc)
   = visit (spc) {
     case (Type)`<TypeName tp>` => (Type)`one <TypeName tp>`
   };
+
+Event createFrameEvent(Spec spc) {
+  str frameCond = "<intercalate(",\n", ["this.<f.name>\' = this.<f.name>" | /Field f <- spc.fields])>";
+                  
+  return [Event]"event __frame() 
+                '  post: <frameCond>;
+                '";                  
+}
 
 list[Event] addFrameConditions(set[str] fields, list[Event] events) {
   list[Event] framedEvents = [];
@@ -175,16 +186,17 @@ private States? normalizeStates(States? states) {
   rel[str from, str to, str events] normalized = {};
 
   visit(states) {
-    case (Transition)`<State from> -\> <State to> : <{TransEvent ","}+ events>;`: {
+    case t:(Transition)`<State from> -\> <State to> : <{TransEvent ","}+ events>;`: {   
+      te = normalizeEventRefs(t);
       
       bool mapped = false;
       for (<"<from>", str inner> <- mapping) {
         mapped = true;
-        normalized += <inner, "<to>", "<events>">;
+        normalized += <inner, "<to>", "<te.events>">;
       }
       
       if (!mapped) {
-        normalized += <"<from>", "<to>", "<events>">;
+        normalized += <"<from>", "<to>", "<te.events>">;
       } 
     }
   }
@@ -195,6 +207,12 @@ private States? normalizeStates(States? states) {
                         '<}>");
                  
   return foo.states;
+}
+
+private Transition normalizeEventRefs(Transition t) {
+  return visit (t) {
+    case (TransEvent)`<Id event>::<Id variant>` => [TransEvent]"<event>_<variant>"
+  }
 }
 
 private States? normalizeInnerStates(States? states) {
