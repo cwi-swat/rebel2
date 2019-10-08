@@ -132,7 +132,7 @@ private default str translatePost(Event event, Context ctx) = "";
 private str translateGenericPart(Spec spc, Event event, bool topLevel, set[str] changedInstances, Context ctx)
   = "// Generic event conditions
     '<ctx.varLookup["nxt_state"]> = (<ctx.varLookup["cur_state"]>[state as from] ⨝ (allowedTransitions ⨝ <eventName>))[to-\>state]
-    '<if (topLevel){> ∧ (o ⨝ raisedEvent)[event] = <eventName>  ∧ 
+    '<if (topLevel){> ∧ (o ⨝ raisedEvent)[event] = <eventName> ∧ 
     '(changedInstance ⨝ o)[instance] = <intercalate(" ∪ ", [*changedInstances])><}>"
   when str eventName := "Event<getCapitalizedSpecName(spc)><capitalize("<event.name>")>"; 
 
@@ -144,6 +144,7 @@ str translate((Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, Context ct
 
   str getFieldName(Expr expr) = visit(expr) {
     case (Expr)`this.<Id field>`: return "<field>";
+    case (Expr)`<Id field>`: return "<field>";
   };
   
   ctx.addChangedInstance("<relOfSync>[<getFieldName(spc)>-\>instance]");
@@ -151,11 +152,30 @@ str translate((Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, Context ct
   Spec syncedSpec = getSpecByType(spc, ctx.cfg.instances, ctx.cfg.tm);
   Event syncedEvent = lookupEventByName("<event>", syncedSpec);
   
-  if ("" !:= "<params>") {
-    throw "Params of synced events are not yet supported!";
-  } 
+  // Fix synced event param values
+  list[str] paramConst = [];
+  list[FormalParam] formals = [p | FormalParam p <- syncedEvent.params];
+  list[Expr] args = [a | Expr a <- params];
    
-  return translateEvent(syncedSpec, syncedEvent, "<relOfSync>[<getFieldName(spc)>-\>instance]", ctx.cfg, topLevel = false);
+  for (int i <- [0..size(formals)]) {
+    if (isAttributeType(args[i],ctx.cfg.tm) && isAttributeType(formals[i], ctx.cfg.tm)) {
+      list[str] refRels = findReferencedRels(findReferences(args[i], ctx), ctx) +
+                          "(o ⨝ ParamsEvent<getCapitalizedSpecName(syncedSpec)><getCapitalizedEventName(syncedEvent)>Primitives)[<formals[i].name>-\>s_<formals[i].name>]";
+      
+      paramConst += "(some (<intercalate(" ⨯ ", refRels)>) where <translateAttr(args[i],ctx)> = s_<formals[i].name>)"; 
+    } else {
+      paramConst += "<translate(args[i],ctx)> = (o ⨝ ParamsEvent<getCapitalizedSpecName(syncedSpec)><getCapitalizedEventName(syncedEvent)><capitalize("<formals[i].name>")>)[<formals[i].name>-\><getFieldName(args[i])>]";
+    }
+  }
+  
+  //for (FormalParam p <- lookupNonPrimParams(event, cfg.tm)) {
+  //  paramConst += "(o ⨝ ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(event)><capitalize("<p.name>")>)[<p.name>-\>s_<p.name>]";
+  //}  
+   
+  return "// Synchronised event, constraint input param values of synced event
+         '<for (c <- paramConst) {><c> ∧
+         '<}>
+         '<translateEvent(syncedSpec, syncedEvent, "<relOfSync>[<getFieldName(spc)>-\>instance]", ctx.cfg, topLevel = false)>";
 }  
 
 str translate(f: (Formula)`<Expr lhs> is <Id state>`, Context ctx) {
@@ -185,8 +205,6 @@ str translate((Formula)`<Expr lhs> \<= <Expr rhs>`, Context ctx) = translateRest
 str translate((Formula)`<Expr lhs> \>= <Expr rhs>`, Context ctx) = translateRestrictionEquality(lhs, rhs, "\>=", ctx);
 str translate((Formula)`<Expr lhs> \> <Expr rhs>`,  Context ctx) = translateRestrictionEquality(lhs, rhs, "\>",  ctx);
 
-str getReferencedRel(Expr expr, Context ctx) = translate(expr, ctx);
-
 str translateEq(Expr lhs, Expr rhs, str op, Context ctx) {
   // Is it equality on attributes?
   if (isAttributeType(lhs, ctx.cfg.tm) && isAttributeType(rhs, ctx.cfg.tm)) {
@@ -203,18 +221,8 @@ str translateRestrictionEquality(Expr lhs, Expr rhs, str operator, Context ctx) 
   set[Reference] r = findReferences(lhs, ctx); 
   r += findReferences(rhs, ctx);
   
-  list[str] refRels = [];
-  
-  if (cur() in r) {
-    refRels += ctx.varLookup["cur_flattened"];
-  }
-  if (next() in r) {
-    refRels += ctx.varLookup["nxt_flattened"];
-  }
-  if (param() in r) {
-    refRels += ctx.varLookup["params_flattened"];
-  } 
-  
+  list[str] refRels = findReferencedRels(r, ctx);
+
   return "(some (<intercalate(" ⨯ ", refRels)>) where (<translateAttr(lhs,ctx)> <operator> <translateAttr(rhs,ctx)>))";
 }  
 
@@ -230,6 +238,22 @@ set[Reference] findReferences(Expr expr, Context ctx) {
   }
   
   return r;
+}
+
+list[str] findReferencedRels(set[Reference] refs, Context ctx) {
+  list[str] refRels = [];
+  
+  if (cur() in refs) {
+    refRels += ctx.varLookup["cur_flattened"];
+  }
+  if (next() in refs) {
+    refRels += ctx.varLookup["nxt_flattened"];
+  }
+  if (param() in refs) {
+    refRels += ctx.varLookup["params_flattened"];
+  }
+  
+  return refRels; 
 }
   
 str translate((Expr)`(<Expr e>)`, Context ctx) = "(<translate(e,ctx,prefix)>)"; 

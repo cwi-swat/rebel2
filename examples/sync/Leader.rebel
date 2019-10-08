@@ -11,11 +11,13 @@ spec Leader
       follower is active; 
     post: 
       this.follower' = follower, 
-      this.times' = 0;
-     
-  event hit()
-    pre: this.follower.hit();
-    post: this.times' = this.times + 1; 
+      this.times' = 0; 
+      
+  event hit(times: Integer) 
+    pre:  
+      this.follower.hit(times);
+    post: 
+      this.times' = this.times + 1; 
 
   states:
     (*) -> active: start;

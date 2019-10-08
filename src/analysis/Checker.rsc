@@ -209,7 +209,7 @@ void collect((TransEvent)`<Id event>`, Collector c) {
 }
 
 void collect(current: (TransEvent)`<Id event>::<Id variant>`, Collector c) {
-  c.useQualified(["<event>","<variant>"], variant, {eventVariantId()}, {eventId()});
+  c.useQualified(["<event>","<variant>"], current, {eventVariantId()}, {eventId()});
 }
 
 void collect((TransEvent)`empty`, Collector c) {}
@@ -223,7 +223,7 @@ void collect(current: (State)`(*)`, Collector c) {}
 void collect(current: (Event)`<Initial? init> event <Id name>(<{FormalParam ","}* formals>) <EventBody body>`, Collector c) {
   list[Id] fp = [f.name | f <- formals];
   
-  c.define("<name>", eventId(), name, defType(fp, 
+  c.define("<name>", eventId(), current, defType(fp, 
     AType (Solver s) {
       return eventType(atypeList([s.getType(f) | f <- fp]));
     }));

@@ -6,8 +6,8 @@ spec Follower
   init event start() 
     post: this.times' = 0;
     
-  event hit()
-    post: this.times' = this.times + 1;
+  event hit(times: Integer)
+    post: this.times' = this.times + times;
  
   states:
     (*) -> active: start; 

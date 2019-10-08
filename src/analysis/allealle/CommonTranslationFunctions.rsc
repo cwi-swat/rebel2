@@ -47,11 +47,21 @@ bool isAttributeType(Expr expr, TModel tm) {
   }
 }
 
+bool isAttributeType(FormalParam p, TModel tm) {
+  switch (getType(p, tm)) {
+    case intType(oneMult()) : return true;
+    default: return false;
+  }
+}
+
 AType getType(Field f, TModel tm) = tm.facts[f@\loc] when f@\loc in tm.facts;
 default AType getType(Field f, TModel tm) { throw "No type info available for `<f>`"; }
 
 AType getType(Expr expr, TModel tm) = tm.facts[expr@\loc] when expr@\loc in tm.facts;
 default AType getType(Expr expr, TModel tm) { throw "No type info available for `<expr>`"; }
+
+AType getType(FormalParam p, TModel tm) = tm.facts[p.name@\loc] when p.name@\loc in tm.facts;
+default AType getType(FormalParam p, TModel tm) { throw "No type info available for `<p>`"; }
 
 bool isParam(Expr expr, TModel lookup) 
   = d.idRole == paramId()

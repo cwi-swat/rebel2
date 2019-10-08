@@ -66,7 +66,7 @@ void translateLeaderAndFollower() {
   Module f = parseModule(followerFile);
   Module l = parseModule(leaderFile);
 
-  TModel tm = rebelTModelFromTree(l, debug = true, pathConf = normPathConfig());
+  TModel tm = rebelTModelFromTree(l, debug = false, pathConf = normPathConfig());
 
   instances = {<getSpec(f, "Follower"), "f1", uninitialized()>, <getSpec(f, "Follower"), "f2", uninitialized()>, <getSpec(l, "Leader"), "l1", uninitialized()>};
   initialValues = {};  

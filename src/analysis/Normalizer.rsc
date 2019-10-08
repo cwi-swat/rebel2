@@ -181,9 +181,9 @@ private Event* buildNormEvents(list[Event] es) {
 private States? normalizeStates(States? states) {
   states = normalizeInnerStates(states);
   
-  rel[str super, str inner] mapping = {<"<super>", "<n>"> | /(Transition)`<State super> <InnerStates inner> { <Transition* trans> }` := states, State n <- inner.states};
+  lrel[str super, str inner] mapping = [<"<super>", "<n>"> | /(Transition)`<State super> <InnerStates inner> { <Transition* trans> }` := states, State n <- inner.states];
 
-  rel[str from, str to, str events] normalized = {};
+  lrel[str from, str to, str events] normalized = [];
 
   visit(states) {
     case t:(Transition)`<State from> -\> <State to> : <{TransEvent ","}+ events>;`: {   

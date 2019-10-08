@@ -7,14 +7,16 @@ import analysis::allealle::DynamicRelationsTranslator;
 import analysis::allealle::ConstraintsTranslator;
 import analysis::allealle::CommonTranslationFunctions;
 import analysis::Checker;
+import util::PathUtil;
 
 import ide::CombinedModelFinder; // From AlleAlle
 import ide::CombinedSyntax;      // From AlleAlle
 import ide::Parser;              // From AlleAlle
-import ide::CombinedAST;
-import ide::CombinedImploder;
+import ide::CombinedAST;         // From AlleAlle
+import ide::CombinedImploder;    // From AlleAlle
   
 import IO;  
+import Set;
   
 void translateSpecs(Config config, str check, bool debug = true) {
   set[Spec] specs = {inst.spc | inst <- config.instances};
@@ -23,7 +25,7 @@ void translateSpecs(Config config, str check, bool debug = true) {
                  '<translateConstraints(specs, config, check)>";
   
   if (debug) {
-    writeFile(|project://rebel2/examples/latest-alle-spc.alle|, alleSpec);
+    writeFile(project(getOneFrom(specs)@\loc.top) + "bin/latest-alle-spc.alle", alleSpec);
   }
   
   ModelFinderResult mfr = checkInitialSolution(implodeProblem(alleSpec));
@@ -54,11 +56,12 @@ void translateSpecs(Config config, str check, bool debug = true) {
 //  ;
 
 data Trace
-  = step(Configuration cur, Configuration next, RaisedEvent re, Trace next)
+  = step(Configuration cur, Configuration next, RaisedEvent re, Trace tail)
   | empty()
   ;
 
 data Configuration 
   = config(rel[Spec spc, str instance, State state] instances, rel[Spec spc, str instance, str field, set[str] val] values)
   ;
-  
+
+data RaisedEvent;  

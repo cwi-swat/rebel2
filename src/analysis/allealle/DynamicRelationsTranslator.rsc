@@ -109,8 +109,8 @@ private str buildOtherRelLowerBounds(Spec spc, Field f, rel[str instance, str fi
 private str buildOtherRelUpperBounds(Spec spc, Field f, Config cfg) 
   = intercalate(",", ["\<c<c>,<i>,<t>\>" | int c <- [1..cfg.numberOfTransitions+1], str i <- inst, str t <- instOfType])
   when 
-    set[str] inst := lookupInstances(spc, cfg.instances<0,1>), bprintln(inst),
-    list[str] instOfType := getInstancesOfType(f.tipe, cfg.instances<0,1>), bprintln(instOfType);
+    set[str] inst := lookupInstances(spc, cfg.instances<0,1>),
+    list[str] instOfType := getInstancesOfType(f.tipe, cfg.instances<0,1>);
       
 private str buildFieldDecls(list[Field] fields) 
   = intercalate(", ", ["<f.name>:<convertType(f.tipe)>" | Field f <- fields]);
