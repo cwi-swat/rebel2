@@ -1,12 +1,10 @@
 module sync::Follower
 
 spec Follower 
-  id: Integer,
   times: Integer;
   
-  init event start(id: Integer) 
-    pre: id > 0;
-    post: this.id' = id, this.times' = 0;
+  init event start() 
+    post: this.times' = 0;
     
   event hit()
     post: this.times' = this.times + 1;

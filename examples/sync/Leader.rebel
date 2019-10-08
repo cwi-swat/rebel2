@@ -3,17 +3,14 @@ module sync::Leader
 import sync::Follower 
   
 spec Leader   
-  id: Integer,
   times: Integer,
   follower: Follower; 
 
-  init event start(id: Integer, follower: Follower) 
+  init event start(follower: Follower) 
     pre: 
-      follower is active, 
-      id > 0;
+      follower is active; 
     post: 
-      this.id' = id, 
-      this.follower' = follower,  
+      this.follower' = follower, 
       this.times' = 0;
      
   event hit()

@@ -18,12 +18,13 @@ private data Reference
   
 data Context = ctx(map[str var, str relation] varLookup, void (str) addChangedInstance, Config cfg);
 
-str translateEvent(Spec spc, Event event, str instRel, Config cfg) {
+str translateEvent(Spec spc, Event event, str instRel, Config cfg, bool topLevel = true) {
   tuple[list[str] rels, map[str,str] lookup] l = buildLetAndVarLookup(spc, event, instRel, cfg);
   
   return "// Event <spc.name>.<event.name>
-         'let <intercalate(",\n", l.rels)> |
-         '  <translateEvent(spc, event, ctx(l.lookup, emptyAdd, cfg))>";     
+         '(let <intercalate(",\n", l.rels)> |
+         '  <translateEvent(spc, event, topLevel, ctx(l.lookup, emptyAdd, cfg))>
+         ')";     
 }
 
 str translateFrameEvent(Spec spc, Event frameEvent, str instRel, Config cfg) {
@@ -51,8 +52,7 @@ str translateFrameEvent(Spec spc, Event frameEvent, str instRel, Config cfg) {
          ')";
 }
 
-private void emptyAdd(str inst) {
-}
+private void emptyAdd(str inst) {}
 
 private tuple[list[str], map[str,str]] buildLetAndVarLookup(Spec spc, Event event, str instRel, Config cfg) {
   str renameFlattenedFields(list[Field] fields, str prefix) =
@@ -99,7 +99,7 @@ private tuple[list[str], map[str,str]] buildLetAndVarLookup(Spec spc, Event even
   return <tmpRels, varMapping>;
 }
 
-private str translateEvent(Spec spc, Event event, Context ctx) {
+private str translateEvent(Spec spc, Event event, bool topLevel, Context ctx) {
   set[str] changedInstances = {"inst"};
   void addChangedInstance(str relation) { changedInstances += relation; }
 
@@ -111,7 +111,7 @@ private str translateEvent(Spec spc, Event event, Context ctx) {
   return  "( 
           '  <pre> <if (pre != "") {> ∧ <}>
           '  <post> <if (post != "") {> ∧ <}>
-          '  <translateGenericPart(spc, event, changedInstances, ctx)>
+          '  <translateGenericPart(spc, event, topLevel, changedInstances, ctx)>
           ')";
 }
 
@@ -129,11 +129,11 @@ private str translatePost(Event event, Context ctx)
 
 private default str translatePost(Event event, Context ctx) = "";     
 
-private str translateGenericPart(Spec spc, Event event, set[str] changedInstances, Context ctx)
+private str translateGenericPart(Spec spc, Event event, bool topLevel, set[str] changedInstances, Context ctx)
   = "// Generic event conditions
-    '(o ⨝ raisedEvent)[event] = <eventName> ∧
-    '<ctx.varLookup["nxt_state"]> = (<ctx.varLookup["cur_state"]>[state as from] ⨝ (allowedTransitions ⨝ <eventName>))[to-\>state] ∧ 
-    '(changedInstance ⨝ o)[instance] = <intercalate(" ∪ ", [*changedInstances])>"
+    '<ctx.varLookup["nxt_state"]> = (<ctx.varLookup["cur_state"]>[state as from] ⨝ (allowedTransitions ⨝ <eventName>))[to-\>state]
+    '<if (topLevel){> ∧ (o ⨝ raisedEvent)[event] = <eventName>  ∧ 
+    '(changedInstance ⨝ o)[instance] = <intercalate(" ∪ ", [*changedInstances])><}>"
   when str eventName := "Event<getCapitalizedSpecName(spc)><capitalize("<event.name>")>"; 
 
 str translate((Formula)`(<Formula f>)`, Context ctx) = "(<translate(f,ctx)>)";
@@ -148,14 +148,14 @@ str translate((Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, Context ct
   
   ctx.addChangedInstance("<relOfSync>[<getFieldName(spc)>-\>instance]");
   
-  Spec syncedSpec = getSpecByType(spc, ctx.cfg.instances, ctx.cfg.tm); // do lookup
+  Spec syncedSpec = getSpecByType(spc, ctx.cfg.instances, ctx.cfg.tm);
   Event syncedEvent = lookupEventByName("<event>", syncedSpec);
   
   if ("" !:= "<params>") {
     throw "Params of synced events are not yet supported!";
   } 
    
-  return translateEvent(syncedSpec, syncedEvent, "<relOfSync>[<getFieldName(spc)>-\>instance]", ctx.cfg);
+  return translateEvent(syncedSpec, syncedEvent, "<relOfSync>[<getFieldName(spc)>-\>instance]", ctx.cfg, topLevel = false);
 }  
 
 str translate(f: (Formula)`<Expr lhs> is <Id state>`, Context ctx) {
@@ -163,13 +163,13 @@ str translate(f: (Formula)`<Expr lhs> is <Id state>`, Context ctx) {
    
   str specRel = isParam(lhs, ctx.cfg.tm) ?
     "(<ctx.varLookup["param_<lhs>"]>[<lhs>-\>instance] ⨯ o[cur-\>config])" : 
-    "(o[cur -\> config] x (Instance |x| <capitalize(specOfLhs)>)";  
+    "(o[cur -\> config] ⨯ (Instance ⨝ <capitalize(specOfLhs)>)";  
   
   str stateRel = "<state>" == "initialized" ?
     "initialized" :
     "State<capitalize(specOfLhs)><capitalize("<state>")>";
     
-  return "(<specRel> |x| instanceInState)[state] in <stateRel>";    
+  return "(<specRel> ⨝ instanceInState)[state] ⊆ <stateRel>";    
 } 
 
 str translate((Formula)`<Formula lhs> && <Formula rhs>`,    Context ctx) = "(<translate(lhs,ctx)> ∧ <translate(rhs,ctx)>)";

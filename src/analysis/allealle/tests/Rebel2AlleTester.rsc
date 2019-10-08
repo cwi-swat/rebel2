@@ -26,7 +26,7 @@ void translatePingPong() {
   instances = {<pp, "p1", uninitialized()>, <pp, "p2", uninitialized()>};
   initialValues = {};  
   
-  translateSpecs(config(instances, initialValues, tm, 10), "exists c: Config, p: SVPingPongOnePrims | some (c |x| p) where times = 5");
+  translateSpecs(config(instances, initialValues, tm, 20), "exists c: Config, p: SVPingPongOnePrims | some (c |x| p) where times = 5");
 }
 
 private PathConfig normPathConfig() = pathConfig(srcs=[|project://rebel2/bin/normalized|]);
@@ -60,21 +60,16 @@ void translateLeaderAndFollower() {
   loc leaderFile = |project://rebel2/bin/normalized/sync/Leader.rebel|;
   loc followerFile = |project://rebel2/bin/normalized/sync/Follower.rebel|;
   
-  //if (!exists(leaderFile)) {
-    normalize(parseModule(|project://rebel2/examples/sync/Leader.rebel|));
-  //}
-  //if (!exists(followerFile)) {
-    normalize(parseModule(|project://rebel2/examples/sync/Follower.rebel|));
-  //}
-
+  normalize(parseModule(|project://rebel2/examples/sync/Leader.rebel|));
+  normalize(parseModule(|project://rebel2/examples/sync/Follower.rebel|));
 
   Module f = parseModule(followerFile);
   Module l = parseModule(leaderFile);
 
   TModel tm = rebelTModelFromTree(l, debug = true, pathConf = normPathConfig());
 
-  instances = {<getSpec(f, "Follower"), "f1", uninitialized()>, <getSpec(l, "Leader"), "l1", uninitialized()>};
+  instances = {<getSpec(f, "Follower"), "f1", uninitialized()>, <getSpec(f, "Follower"), "f2", uninitialized()>, <getSpec(l, "Leader"), "l1", uninitialized()>};
   initialValues = {};  
   
-  translateSpecs(config(instances, initialValues, tm, 6), "exists c: Config, f: SVFollowerOnePrims, l: SVLeaderOnePrims | (some (c |x| f) where times = 2 && some (c |x| l) where times = 1)");
+  translateSpecs(config(instances, initialValues, tm, 6), "∃ c ∈ Config, f ∈ SVFollowerOnePrims, l ∈ SVLeaderOnePrims | (some (c ⨝ f) where times = 3 ∧ some (c ⨝ l) where times = 3)");
 }

@@ -22,7 +22,7 @@ test EventVariant [[
   states:
     (*) -> started: base::var;
     started -> (*): base;
-]] expect { "Undefined event variant" }
+]]
 
 test MultipleSpecs [[
   module Multiple 

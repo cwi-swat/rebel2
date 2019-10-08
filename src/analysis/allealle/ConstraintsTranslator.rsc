@@ -2,7 +2,6 @@ module analysis::allealle::ConstraintsTranslator
 
 import lang::Syntax;
 import analysis::allealle::CommonTranslationFunctions;
-import analysis::allealle::FormulaAndExpressionTranslator;
 import analysis::allealle::EventTranslator;
 import analysis::Checker;
 
@@ -33,20 +32,20 @@ str translateConstraints(set[Spec] spcs, Config cfg, str check) {
 private str genericTypeConstraints() 
   = "
     '// Generic \'Type\' constraints
-    'order in Config[config as cur] x Config[config as nxt]
-    'raisedEvent in order x allowedTransitions[event] x Instance[instance]
-    'instanceInState in Instance[instance] x Config x State
-    'changedInstance in order x Instance[instance]
+    'order ⊆ Config[config as cur] ⨯ Config[config as nxt]
+    'raisedEvent ⊆ order ⨯ allowedTransitions[event] ⨯ Instance[instance]
+    'instanceInState ⊆ Instance[instance] ⨯ Config ⨯ State
+    'changedInstance ⊆ order ⨯ Instance[instance]
     ";
     
 private str machineTypeConstraints(set[Spec] spcs)
   = "// Machine specific \'Type\' constraints
-    '<for (Spec s <- spcs) {>SV<getCapitalizedSpecName(s)>OnePrims[config,instance] in Config x Instance[instance]
+    '<for (Spec s <- spcs) {>SV<getCapitalizedSpecName(s)>OnePrims[config,instance] ⊆ Config ⨯ Instance[instance]
     '<}>";
    
 private str allConfigsAreReachable()
   = "// Generic: All configurations are reachable
-    '∀ c ∈ Config ∖ InitialConfig | c in (InitialConfig[config as cur] ⨝ ^\<cur,nxt\>order)[nxt -\> config]
+    '∀ c ∈ Config ∖ InitialConfig | c ⊆ (InitialConfig[config as cur] ⨝ ^\<cur,nxt\>order)[nxt -\> config]
     '";
     
 private str onlyOneTriggeringEvent()
@@ -66,36 +65,28 @@ private str machineOnlyHasValuesWhenInitialized(set[Spec] spcs)
     '";
 
 private str eventParamTypeAndMultiplicityConstraints(set[Spec] spcs, Config cfg) {
-  str typeCons = "";
-
+  list[str] typeCons = [];
   list[str] multCons = [];
 
   for (Spec spc <- spcs, Event ev <- spc.events) {
     if (size(lookupPrimitiveParams(ev, cfg.tm)) > 0) {
-      typeCons += "ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>Primitives[cur,nxt] in order
-                  '";
-                  
-      multCons += "  (some (o ⨝ Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>) ⇔ one (o ⨝ ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>Primitives))
-                  '";                 
+      typeCons += "ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>Primitives[cur,nxt] ⊆ order";
+      multCons += "(some (o ⨝ Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>) ⇔ one (o ⨝ ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>Primitives))";                 
     }
     
     for (FormalParam p <- lookupNonPrimParams(ev, cfg.tm)) {
-      typeCons += "ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)><getCapitalizedParamName(p)> in order ⨯ (Instance ⨝ <p.tipe.tp>)[instance-\><toLowerCase("<p.name>")>]
-                  '";
+      typeCons += "ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)><getCapitalizedParamName(p)> ⊆ order ⨯ (Instance ⨝ <p.tipe.tp>)[instance-\><toLowerCase("<p.name>")>]";
 
       str mult = (/(Multiplicity)`set` := p.tipe) ? "some" : "one";
-
-      multCons += "  (some (o ⨝ Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>) ⇔ <mult> (o ⨝ ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)><getCapitalizedParamName(p)>))
-                  '";                 
-
+      multCons += "(some (o ⨝ Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>) ⇔ <mult> (o ⨝ ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)><getCapitalizedParamName(p)>))";                 
     }
   }
   
-  return "<typeCons>
+  return "<intercalate("\n", typeCons)>
          '
          '// Specific per event
          '∀ o ∈ order ⨝ raisedEvent | (
-         '  <intercalate(" ∧ ", multCons)>
+         '  <intercalate(" ∧\n", multCons)>
          ')";
 }
    
@@ -124,8 +115,8 @@ private str transitionFunction(Spec spc, Config cfg)
     '    <translateEvents(spc, "inst", cfg)>
     '  ) 
     '  ∧
-    '  // If it is not a transitioning instance, frame the values
-    '  (no inst & (changedInstance |x| o)[instance] ⇔
+    '  // Iff it is not a transitioning instance, frame the values
+    '  (no inst ∩ (changedInstance ⨝ o)[instance] ⇔
     '    <translateFrameEvent(spc, getFrameEvent(spc), "inst", cfg)>
     '  )"; 
 

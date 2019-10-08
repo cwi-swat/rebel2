@@ -24,26 +24,26 @@ Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>}
 order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>}
 InitialConfig (config:id) = {<c1>}
 
-Instance (spec:id, instance:id) = {<follower,f1>,<leader,l1>}
-instanceInState (config:id, instance:id, state:id) >= {<c1,f1,state_uninitialized>,<c1,l1,state_uninitialized>}<= {<c1,l1,state_uninitialized>,<c1,l1,state_leader_active>,<c1,l1,state_finalized>,<c1,f1,state_uninitialized>,<c1,f1,state_finalized>,<c1,f1,state_follower_active>,<c2,l1,state_uninitialized>,<c2,l1,state_leader_active>,<c2,l1,state_finalized>,<c2,f1,state_uninitialized>,<c2,f1,state_finalized>,<c2,f1,state_follower_active>,<c3,l1,state_uninitialized>,<c3,l1,state_leader_active>,<c3,l1,state_finalized>,<c3,f1,state_uninitialized>,<c3,f1,state_finalized>,<c3,f1,state_follower_active>,<c4,l1,state_uninitialized>,<c4,l1,state_leader_active>,<c4,l1,state_finalized>,<c4,f1,state_uninitialized>,<c4,f1,state_finalized>,<c4,f1,state_follower_active>,<c5,l1,state_uninitialized>,<c5,l1,state_leader_active>,<c5,l1,state_finalized>,<c5,f1,state_uninitialized>,<c5,f1,state_finalized>,<c5,f1,state_follower_active>,<c6,l1,state_uninitialized>,<c6,l1,state_leader_active>,<c6,l1,state_finalized>,<c6,f1,state_uninitialized>,<c6,f1,state_finalized>,<c6,f1,state_follower_active>}
-raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_leader_hit,l1>,<c1,c2,event_leader_start,l1>,<c1,c2,event_leader___frame,l1>,<c2,c3,event_leader_hit,l1>,<c2,c3,event_leader_start,l1>,<c2,c3,event_leader___frame,l1>,<c3,c4,event_leader_hit,l1>,<c3,c4,event_leader_start,l1>,<c3,c4,event_leader___frame,l1>,<c4,c5,event_leader_hit,l1>,<c4,c5,event_leader_start,l1>,<c4,c5,event_leader___frame,l1>,<c5,c6,event_leader_hit,l1>,<c5,c6,event_leader_start,l1>,<c5,c6,event_leader___frame,l1>,<c1,c2,event_follower_start,f1>,<c1,c2,event_follower___frame,f1>,<c1,c2,event_follower_hit,f1>,<c2,c3,event_follower_start,f1>,<c2,c3,event_follower___frame,f1>,<c2,c3,event_follower_hit,f1>,<c3,c4,event_follower_start,f1>,<c3,c4,event_follower___frame,f1>,<c3,c4,event_follower_hit,f1>,<c4,c5,event_follower_start,f1>,<c4,c5,event_follower___frame,f1>,<c4,c5,event_follower_hit,f1>,<c5,c6,event_follower_start,f1>,<c5,c6,event_follower___frame,f1>,<c5,c6,event_follower_hit,f1>}
-changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,l1>,<c1,c2,f1>,<c2,c3,l1>,<c2,c3,f1>,<c3,c4,l1>,<c3,c4,f1>,<c4,c5,l1>,<c4,c5,f1>,<c5,c6,l1>,<c5,c6,f1>}
+Instance (spec:id, instance:id) = {<leader,l1>,<follower,f1>,<follower,f2>}
+instanceInState (config:id, instance:id, state:id) >= {<c1,l1,state_uninitialized>,<c1,f1,state_uninitialized>,<c1,f2,state_uninitialized>}<= {<c1,l1,state_uninitialized>,<c1,l1,state_leader_active>,<c1,l1,state_finalized>,<c1,f1,state_uninitialized>,<c1,f1,state_finalized>,<c1,f1,state_follower_active>,<c1,f2,state_uninitialized>,<c1,f2,state_finalized>,<c1,f2,state_follower_active>,<c2,l1,state_uninitialized>,<c2,l1,state_leader_active>,<c2,l1,state_finalized>,<c2,f1,state_uninitialized>,<c2,f1,state_finalized>,<c2,f1,state_follower_active>,<c2,f2,state_uninitialized>,<c2,f2,state_finalized>,<c2,f2,state_follower_active>,<c3,l1,state_uninitialized>,<c3,l1,state_leader_active>,<c3,l1,state_finalized>,<c3,f1,state_uninitialized>,<c3,f1,state_finalized>,<c3,f1,state_follower_active>,<c3,f2,state_uninitialized>,<c3,f2,state_finalized>,<c3,f2,state_follower_active>,<c4,l1,state_uninitialized>,<c4,l1,state_leader_active>,<c4,l1,state_finalized>,<c4,f1,state_uninitialized>,<c4,f1,state_finalized>,<c4,f1,state_follower_active>,<c4,f2,state_uninitialized>,<c4,f2,state_finalized>,<c4,f2,state_follower_active>,<c5,l1,state_uninitialized>,<c5,l1,state_leader_active>,<c5,l1,state_finalized>,<c5,f1,state_uninitialized>,<c5,f1,state_finalized>,<c5,f1,state_follower_active>,<c5,f2,state_uninitialized>,<c5,f2,state_finalized>,<c5,f2,state_follower_active>,<c6,l1,state_uninitialized>,<c6,l1,state_leader_active>,<c6,l1,state_finalized>,<c6,f1,state_uninitialized>,<c6,f1,state_finalized>,<c6,f1,state_follower_active>,<c6,f2,state_uninitialized>,<c6,f2,state_finalized>,<c6,f2,state_follower_active>}
+raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_leader_hit,l1>,<c1,c2,event_leader_start,l1>,<c1,c2,event_leader___frame,l1>,<c2,c3,event_leader_hit,l1>,<c2,c3,event_leader_start,l1>,<c2,c3,event_leader___frame,l1>,<c3,c4,event_leader_hit,l1>,<c3,c4,event_leader_start,l1>,<c3,c4,event_leader___frame,l1>,<c4,c5,event_leader_hit,l1>,<c4,c5,event_leader_start,l1>,<c4,c5,event_leader___frame,l1>,<c5,c6,event_leader_hit,l1>,<c5,c6,event_leader_start,l1>,<c5,c6,event_leader___frame,l1>,<c1,c2,event_follower_start,f1>,<c1,c2,event_follower___frame,f1>,<c1,c2,event_follower_hit,f1>,<c2,c3,event_follower_start,f1>,<c2,c3,event_follower___frame,f1>,<c2,c3,event_follower_hit,f1>,<c3,c4,event_follower_start,f1>,<c3,c4,event_follower___frame,f1>,<c3,c4,event_follower_hit,f1>,<c4,c5,event_follower_start,f1>,<c4,c5,event_follower___frame,f1>,<c4,c5,event_follower_hit,f1>,<c5,c6,event_follower_start,f1>,<c5,c6,event_follower___frame,f1>,<c5,c6,event_follower_hit,f1>,<c1,c2,event_follower_start,f2>,<c1,c2,event_follower___frame,f2>,<c1,c2,event_follower_hit,f2>,<c2,c3,event_follower_start,f2>,<c2,c3,event_follower___frame,f2>,<c2,c3,event_follower_hit,f2>,<c3,c4,event_follower_start,f2>,<c3,c4,event_follower___frame,f2>,<c3,c4,event_follower_hit,f2>,<c4,c5,event_follower_start,f2>,<c4,c5,event_follower___frame,f2>,<c4,c5,event_follower_hit,f2>,<c5,c6,event_follower_start,f2>,<c5,c6,event_follower___frame,f2>,<c5,c6,event_follower_hit,f2>}
+changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,l1>,<c1,c2,f1>,<c1,c2,f2>,<c2,c3,l1>,<c2,c3,f1>,<c2,c3,f2>,<c3,c4,l1>,<c3,c4,f1>,<c3,c4,f2>,<c4,c5,l1>,<c4,c5,f1>,<c4,c5,f2>,<c5,c6,l1>,<c5,c6,f1>,<c5,c6,f2>}
 
-SVLeaderOnePrims (config:id, instance:id, id:int, times:int) <= {<c1,l1,?,?>,<c2,l1,?,?>,<c3,l1,?,?>,<c4,l1,?,?>,<c5,l1,?,?>,<c6,l1,?,?>}
-SVLeaderFollower (config:id, instance:id, follower:id) <= {<c1,l1,f1>,<c2,l1,f1>,<c3,l1,f1>,<c4,l1,f1>,<c5,l1,f1>,<c6,l1,f1>}
+SVLeaderOnePrims (config:id, instance:id, times:int) <= {<c1,l1,?>,<c2,l1,?>,<c3,l1,?>,<c4,l1,?>,<c5,l1,?>,<c6,l1,?>}
+SVLeaderFollower (config:id, instance:id, follower:id) <= {<c1,l1,f1>,<c1,l1,f2>,<c2,l1,f1>,<c2,l1,f2>,<c3,l1,f1>,<c3,l1,f2>,<c4,l1,f1>,<c4,l1,f2>,<c5,l1,f1>,<c5,l1,f2>,<c6,l1,f1>,<c6,l1,f2>}
 
-SVFollowerOnePrims (config:id, instance:id, id:int, times:int) <= {<c1,f1,?,?>,<c2,f1,?,?>,<c3,f1,?,?>,<c4,f1,?,?>,<c5,f1,?,?>,<c6,f1,?,?>}
-
-
-
-ParamsEventLeaderStartPrimitives (cur:id, nxt:id, id:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>}
-ParamsEventLeaderStartFollower (cur:id, nxt:id, follower:id) <= {<c1,c2,f1>,<c2,c3,f1>,<c3,c4,f1>,<c4,c5,f1>,<c5,c6,f1>,<c6,c7,f1>} 
+SVFollowerOnePrims (config:id, instance:id, times:int) <= {<c1,f1,?>,<c1,f2,?>,<c2,f1,?>,<c2,f2,?>,<c3,f1,?>,<c3,f2,?>,<c4,f1,?>,<c4,f2,?>,<c5,f1,?>,<c5,f2,?>,<c6,f1,?>,<c6,f2,?>}
 
 
 
 
 
-ParamsEventFollowerStartPrimitives (cur:id, nxt:id, id:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>}
+
+ParamsEventLeaderStartFollower (cur:id, nxt:id, follower:id) <= {<c1,c2,f1>,<c1,c2,f2>,<c2,c3,f1>,<c2,c3,f2>,<c3,c4,f1>,<c3,c4,f2>,<c4,c5,f1>,<c4,c5,f2>,<c5,c6,f1>,<c5,c6,f2>,<c6,c7,f1>,<c6,c7,f2>} 
+
+
+
+
 
 
 
@@ -59,17 +59,11 @@ changedInstance ⊆ order ⨯ Instance[instance]
 SVLeaderOnePrims[config,instance] ⊆ Config ⨯ Instance[instance]
 SVFollowerOnePrims[config,instance] ⊆ Config ⨯ Instance[instance]
 
-ParamsEventLeaderStartPrimitives[cur,nxt] ⊆ order
 ParamsEventLeaderStartFollower ⊆ order ⨯ (Instance ⨝ Follower)[instance->follower]
-ParamsEventFollowerStartPrimitives[cur,nxt] ⊆ order
-
 
 // Specific per event
 ∀ o ∈ order ⨝ raisedEvent | (
-    (some (o ⨝ EventLeaderStart) ⇔ one (o ⨝ ParamsEventLeaderStartPrimitives))
-   ∧   (some (o ⨝ EventLeaderStart) ⇔ one (o ⨝ ParamsEventLeaderStartFollower))
-   ∧   (some (o ⨝ EventFollowerStart) ⇔ one (o ⨝ ParamsEventFollowerStartPrimitives))
-
+  (some (o ⨝ EventLeaderStart) ⇔ one (o ⨝ ParamsEventLeaderStartFollower))
 )
 // Generic: All configurations are reachable
 ∀ c ∈ Config ∖ InitialConfig | c ⊆ (InitialConfig[config as cur] ⨝ ^<cur,nxt>order)[nxt -> config]
@@ -96,68 +90,67 @@ ParamsEventFollowerStartPrimitives[cur,nxt] ⊆ order
       // Iff this is the instance that raised the event then one of the transitions must have happened 
       (some inst ∩ ((raisedEvent ⨝ o)[instance]) ⇔ 
         // Event Leader.hit
-        let curLeaderState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
-            nxtLeaderState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
-            curLeaderFlattened = (SVLeaderOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,times->curTimes],
-            nxtLeaderFlattened = (SVLeaderOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,times->nxtTimes],
-            curLeaderFollower = (o[cur -> config] ⨝ SVLeaderFollower ⨝ inst)[follower],
-            nxtLeaderFollower = (o[nxt -> config] ⨝ SVLeaderFollower ⨝ inst)[follower] |
+        (let curLeaderState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+             nxtLeaderState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+             curLeaderFlattened = (SVLeaderOnePrims ⨝ o[cur -> config] ⨝ inst)[times->curTimes],
+             nxtLeaderFlattened = (SVLeaderOnePrims ⨝ o[nxt -> config] ⨝ inst)[times->nxtTimes],
+             curLeaderFollower = (o[cur -> config] ⨝ SVLeaderFollower ⨝ inst)[follower],
+             nxtLeaderFollower = (o[nxt -> config] ⨝ SVLeaderFollower ⨝ inst)[follower] |
           ( 
             // Preconditions 
             // Event Follower.hit
-            let curFollowerState = (instanceInState ⨝ o[cur->config] ⨝ curLeaderFollower[follower][follower->instance])[state],
-                nxtFollowerState = (instanceInState ⨝ o[nxt->config] ⨝ curLeaderFollower[follower][follower->instance])[state],
-                curFollowerFlattened = (SVFollowerOnePrims ⨝ o[cur -> config] ⨝ curLeaderFollower[follower][follower->instance])[id->curId,times->curTimes],
-                nxtFollowerFlattened = (SVFollowerOnePrims ⨝ o[nxt -> config] ⨝ curLeaderFollower[follower][follower->instance])[id->nxtId,times->nxtTimes] |
+            (let curFollowerState = (instanceInState ⨝ o[cur->config] ⨝ curLeaderFollower[follower][follower->instance])[state],
+                 nxtFollowerState = (instanceInState ⨝ o[nxt->config] ⨝ curLeaderFollower[follower][follower->instance])[state],
+                 curFollowerFlattened = (SVFollowerOnePrims ⨝ o[cur -> config] ⨝ curLeaderFollower[follower][follower->instance])[times->curTimes],
+                 nxtFollowerFlattened = (SVFollowerOnePrims ⨝ o[nxt -> config] ⨝ curLeaderFollower[follower][follower->instance])[times->nxtTimes] |
               ( 
                  
                 // Postconditions
-                (some (curFollowerFlattened ⨯ nxtFollowerFlattened) where (nxtId = curId)) ∧
                 (some (curFollowerFlattened ⨯ nxtFollowerFlattened) where (nxtTimes = curTimes  +  1))  ∧ 
                 // Generic event conditions
-                nxtFollowerState = (curFollowerState[state as from] ⨝ (allowedTransitions ⨝ EventFollowerHit))[to->state] 
-              )  ∧ 
+                nxtFollowerState = (curFollowerState[state as from] ⨝ (allowedTransitions ⨝ EventFollowerHit))[to->state]
+              
+              )
+            )  ∧ 
             // Postconditions
             nxtLeaderFollower[follower] = curLeaderFollower[follower] ∧
-            (some (curLeaderFlattened ⨯ nxtLeaderFlattened) where (nxtId = curId)) ∧
             (some (curLeaderFlattened ⨯ nxtLeaderFlattened) where (nxtTimes = curTimes  +  1))  ∧ 
             // Generic event conditions
-            (o ⨝ raisedEvent)[event] = EventLeaderHit ∧
-            nxtLeaderState = (curLeaderState[state as from] ⨝ (allowedTransitions ⨝ EventLeaderHit))[to->state] ∧ 
+            nxtLeaderState = (curLeaderState[state as from] ⨝ (allowedTransitions ⨝ EventLeaderHit))[to->state]
+             ∧ (o ⨝ raisedEvent)[event] = EventLeaderHit  ∧ 
             (changedInstance ⨝ o)[instance] = inst ∪ curLeaderFollower[follower][follower->instance]
           )
+        )
          ∨ 
         // Event Leader.start
-        let curLeaderState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
-            nxtLeaderState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
-            curLeaderFlattened = (SVLeaderOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,times->curTimes],
-            nxtLeaderFlattened = (SVLeaderOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,times->nxtTimes],
-            curLeaderFollower = (o[cur -> config] ⨝ SVLeaderFollower ⨝ inst)[follower],
-            nxtLeaderFollower = (o[nxt -> config] ⨝ SVLeaderFollower ⨝ inst)[follower],
-            paramLeaderStartFlattened = (o ⨝ ParamsEventLeaderStartPrimitives)[id],
-            paramsLeaderStartFollower = (o ⨝ ParamsEventLeaderStartFollower)[follower] |
+        (let curLeaderState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+             nxtLeaderState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+             curLeaderFlattened = (SVLeaderOnePrims ⨝ o[cur -> config] ⨝ inst)[times->curTimes],
+             nxtLeaderFlattened = (SVLeaderOnePrims ⨝ o[nxt -> config] ⨝ inst)[times->nxtTimes],
+             curLeaderFollower = (o[cur -> config] ⨝ SVLeaderFollower ⨝ inst)[follower],
+             nxtLeaderFollower = (o[nxt -> config] ⨝ SVLeaderFollower ⨝ inst)[follower],
+             paramsLeaderStartFollower = (o ⨝ ParamsEventLeaderStartFollower)[follower] |
           ( 
             // Preconditions 
-            ((paramsLeaderStartFollower[follower->instance] ⨯ o[cur->config]) ⨝ instanceInState)[state] ⊆ StateFollowerActive ∧
-            (some (paramLeaderStartFlattened) where (id > 0))  ∧ 
+            ((paramsLeaderStartFollower[follower->instance] ⨯ o[cur->config]) ⨝ instanceInState)[state] ⊆ StateFollowerActive  ∧ 
             // Postconditions
-            (some (nxtLeaderFlattened ⨯ paramLeaderStartFlattened) where (nxtId = id)) ∧
             nxtLeaderFollower[follower] = paramsLeaderStartFollower[follower] ∧
             (some (nxtLeaderFlattened) where (nxtTimes = 0))  ∧ 
             // Generic event conditions
-            (o ⨝ raisedEvent)[event] = EventLeaderStart ∧
-            nxtLeaderState = (curLeaderState[state as from] ⨝ (allowedTransitions ⨝ EventLeaderStart))[to->state] ∧ 
+            nxtLeaderState = (curLeaderState[state as from] ⨝ (allowedTransitions ⨝ EventLeaderStart))[to->state]
+             ∧ (o ⨝ raisedEvent)[event] = EventLeaderStart  ∧ 
             (changedInstance ⨝ o)[instance] = inst
           )
+        )
       ) 
       ∧
-      // If it is not a transitioning instance, frame the values
+      // Iff it is not a transitioning instance, frame the values
       (no inst ∩ (changedInstance ⨝ o)[instance] ⇔
         // Frame values if needed
         let curLeaderState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
             nxtLeaderState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
-            curLeaderFlattened = (SVLeaderOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,times->curTimes],
-            nxtLeaderFlattened = (SVLeaderOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,times->nxtTimes],
+            curLeaderFlattened = (SVLeaderOnePrims ⨝ o[cur -> config] ⨝ inst)[times->curTimes],
+            nxtLeaderFlattened = (SVLeaderOnePrims ⨝ o[nxt -> config] ⨝ inst)[times->nxtTimes],
             curLeaderFollower = (o[cur -> config] ⨝ SVLeaderFollower ⨝ inst)[follower],
             nxtLeaderFollower = (o[nxt -> config] ⨝ SVLeaderFollower ⨝ inst)[follower] | (
           // State must stay the same
@@ -167,7 +160,6 @@ ParamsEventFollowerStartPrimitives[cur,nxt] ⊆ order
             (no curLeaderFlattened) ∨ 
             (  
               // Postconditions
-              (some (curLeaderFlattened ⨯ nxtLeaderFlattened) where (nxtId = curId)) ∧
               (some (curLeaderFlattened ⨯ nxtLeaderFlattened) where (nxtTimes = curTimes)) ∧
               nxtLeaderFollower[follower] = curLeaderFollower[follower]
             )
@@ -182,47 +174,45 @@ ParamsEventFollowerStartPrimitives[cur,nxt] ⊆ order
       // Iff this is the instance that raised the event then one of the transitions must have happened 
       (some inst ∩ ((raisedEvent ⨝ o)[instance]) ⇔ 
         // Event Follower.start
-        let curFollowerState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
-            nxtFollowerState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
-            curFollowerFlattened = (SVFollowerOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,times->curTimes],
-            nxtFollowerFlattened = (SVFollowerOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,times->nxtTimes],
-            paramFollowerStartFlattened = (o ⨝ ParamsEventFollowerStartPrimitives)[id] |
-          ( 
-            // Preconditions 
-            (some (paramFollowerStartFlattened) where (id > 0))  ∧ 
-            // Postconditions
-            (some (nxtFollowerFlattened ⨯ paramFollowerStartFlattened) where (nxtId = id)) ∧
-            (some (nxtFollowerFlattened) where (nxtTimes = 0))  ∧ 
-            // Generic event conditions
-            (o ⨝ raisedEvent)[event] = EventFollowerStart ∧
-            nxtFollowerState = (curFollowerState[state as from] ⨝ (allowedTransitions ⨝ EventFollowerStart))[to->state] ∧ 
-            (changedInstance ⨝ o)[instance] = inst
-          )
-         ∨ 
-        // Event Follower.hit
-        let curFollowerState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
-            nxtFollowerState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
-            curFollowerFlattened = (SVFollowerOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,times->curTimes],
-            nxtFollowerFlattened = (SVFollowerOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,times->nxtTimes] |
+        (let curFollowerState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+             nxtFollowerState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+             curFollowerFlattened = (SVFollowerOnePrims ⨝ o[cur -> config] ⨝ inst)[times->curTimes],
+             nxtFollowerFlattened = (SVFollowerOnePrims ⨝ o[nxt -> config] ⨝ inst)[times->nxtTimes] |
           ( 
              
             // Postconditions
-            (some (curFollowerFlattened ⨯ nxtFollowerFlattened) where (nxtId = curId)) ∧
-            (some (curFollowerFlattened ⨯ nxtFollowerFlattened) where (nxtTimes = curTimes  +  1))  ∧ 
+            (some (nxtFollowerFlattened) where (nxtTimes = 0))  ∧ 
             // Generic event conditions
-            (o ⨝ raisedEvent)[event] = EventFollowerHit ∧
-            nxtFollowerState = (curFollowerState[state as from] ⨝ (allowedTransitions ⨝ EventFollowerHit))[to->state] ∧ 
+            nxtFollowerState = (curFollowerState[state as from] ⨝ (allowedTransitions ⨝ EventFollowerStart))[to->state]
+             ∧ (o ⨝ raisedEvent)[event] = EventFollowerStart  ∧ 
             (changedInstance ⨝ o)[instance] = inst
           )
+        )
+         ∨ 
+        // Event Follower.hit
+        (let curFollowerState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+             nxtFollowerState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+             curFollowerFlattened = (SVFollowerOnePrims ⨝ o[cur -> config] ⨝ inst)[times->curTimes],
+             nxtFollowerFlattened = (SVFollowerOnePrims ⨝ o[nxt -> config] ⨝ inst)[times->nxtTimes] |
+          ( 
+             
+            // Postconditions
+            (some (curFollowerFlattened ⨯ nxtFollowerFlattened) where (nxtTimes = curTimes  +  1))  ∧ 
+            // Generic event conditions
+            nxtFollowerState = (curFollowerState[state as from] ⨝ (allowedTransitions ⨝ EventFollowerHit))[to->state]
+             ∧ (o ⨝ raisedEvent)[event] = EventFollowerHit  ∧ 
+            (changedInstance ⨝ o)[instance] = inst
+          )
+        )
       ) 
       ∧
-      // If it is not a transitioning instance, frame the values
+      // Iff it is not a transitioning instance, frame the values
       (no inst ∩ (changedInstance ⨝ o)[instance] ⇔
         // Frame values if needed
         let curFollowerState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
             nxtFollowerState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
-            curFollowerFlattened = (SVFollowerOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,times->curTimes],
-            nxtFollowerFlattened = (SVFollowerOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,times->nxtTimes] | (
+            curFollowerFlattened = (SVFollowerOnePrims ⨝ o[cur -> config] ⨝ inst)[times->curTimes],
+            nxtFollowerFlattened = (SVFollowerOnePrims ⨝ o[nxt -> config] ⨝ inst)[times->nxtTimes] | (
           // State must stay the same
           nxtFollowerState = curFollowerState
           ∧
@@ -230,7 +220,6 @@ ParamsEventFollowerStartPrimitives[cur,nxt] ⊆ order
             (no curFollowerFlattened) ∨ 
             (  
               // Postconditions
-              (some (curFollowerFlattened ⨯ nxtFollowerFlattened) where (nxtId = curId)) ∧
               (some (curFollowerFlattened ⨯ nxtFollowerFlattened) where (nxtTimes = curTimes))
             )
           )  
@@ -239,6 +228,6 @@ ParamsEventFollowerStartPrimitives[cur,nxt] ⊆ order
   )
 
 // Asserts: this is where the checks get added
-∃ c ∈ Config, f ∈ SVFollowerOnePrims, l ∈ SVLeaderOnePrims | (some (c ⨝ f) where times = 2 ∧ some (c ⨝ l) where times = 2)
+∃ c ∈ Config, f ∈ SVFollowerOnePrims, l ∈ SVLeaderOnePrims | (some (c ⨝ f) where times = 3 ∧ some (c ⨝ l) where times = 3)
 
 objectives: minimize(Config[count()])
