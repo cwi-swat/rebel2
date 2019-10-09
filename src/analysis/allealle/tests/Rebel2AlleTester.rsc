@@ -92,9 +92,11 @@ void translateLeaderFollowerAndTailer() {
   instances = {<getSpec(f, "Follower"), "f1", uninitialized()>, 
                <getSpec(f, "Follower"), "f2", uninitialized()>, 
                <getSpec(t, "Tailer"), "t1", uninitialized()>,
-               <getSpec(l, "Leader"), "l1", uninitialized()>};
+               <getSpec(t, "Tailer"), "t2", uninitialized()>,
+               <getSpec(l, "Leader"), "l1", uninitialized()>,
+               <getSpec(l, "Leader"), "l2", uninitialized()>};
                
   initialValues = {};  
   
-  translateSpecs(config(instances, initialValues, tm, 10), "∃ c ∈ Config | (some (c ⨝ SVLeaderOnePrims) where times = 2)");
+  translateSpecs(config(instances, initialValues, tm, 10), "∃ c ∈ Config, l: (Instance |x| Leader)[instance] | (some (c ⨝ SVLeaderOnePrims) where times = 2 && (l |x| instanceInState |x| c)[state] in initialized) ");
 }

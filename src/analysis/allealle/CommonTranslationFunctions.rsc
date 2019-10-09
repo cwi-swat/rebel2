@@ -31,6 +31,9 @@ str getCapitalizedEventName(Event e) = capitalize("<e.name>");
 str getCapitalizedParamName(FormalParam p) = capitalize("<p.name>");
 
 @memo
+str getCapitalizedFieldName(Field f) = capitalize("<f.name>");
+
+@memo
 str getOnePrimStateVectorName(Spec spc) = "SV<getCapitalizedSpecName(spc)>OnePrims";
 
 @memo
@@ -136,6 +139,9 @@ list[Field] lookupNonPrimFieldsWithOneMult(Spec s, TModel tm) = [f | /Field f <-
 
 @memo
 list[Field] lookupPrimFieldsWithOtherMult(Spec s, TModel tm) = [f | /Field f <- s.fields, isPrim(f.tipe, tm) && !hasMultOfOne(f.tipe, tm)];
+
+@memo
+bool hasOnePrimitiveFields(Spec s, TModel tm) = lookupOnePrimitiveFields(s,tm) != [];
 
 @memo
 list[Field] lookupOnePrimitiveFields(Spec s, TModel tm) = [f | /f:(Field)`<Id name> : <Type tipe>` <- s.fields, isPrim(tipe, tm) && hasMultOfOne(tipe, tm)];

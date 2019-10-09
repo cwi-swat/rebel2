@@ -7,15 +7,20 @@ spec Follower
   times: Integer;
   
   init event start(tailer: Tailer) 
-    pre: tailer is active;
+    pre: 
+      tailer is waiting,
+      tailer.connected();
     post: 
       this.times' = 0,
       this.tailer' = tailer;
+    
+  event connected()  
           
   event hit() 
     pre: this.tailer.hit();  
     post: this.times' = this.times + 1;
  
   states:
-    (*) -> active: start; 
+    (*) -> waiting: start;
+    waiting -> active: connected; 
     active -> active: hit;     

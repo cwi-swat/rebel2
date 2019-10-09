@@ -1,64 +1,54 @@
 // Static configuration of state machines
-CoffeeMachine (spec:id) = {<coffeemachine>}
+Follower (spec:id) = {<follower>}
+Leader (spec:id) = {<leader>}
+Tailer (spec:id) = {<tailer>}
 
-State (state:id) = {<state_uninitialized>,<state_finalized>,<state_coffeemachine_waiting>,<state_coffeemachine_serve>,<state_coffeemachine_acceptingpayment>}
-initialized (state:id) = {<state_coffeemachine_waiting>,<state_coffeemachine_serve>,<state_coffeemachine_acceptingpayment>}
+State (state:id) = {<state_uninitialized>,<state_finalized>,<state_follower_active>,<state_follower_waiting>,<state_leader_active>,<state_tailer_active>,<state_tailer_waiting>}
+initialized (state:id) = {<state_follower_active>,<state_follower_waiting>,<state_leader_active>,<state_tailer_active>,<state_tailer_waiting>}
 finalized (state:id) = {<state_finalized>}
 uninitialized (state:id) = {<state_uninitialized>}
-StateCoffeeMachineServe (state:id) = {<state_coffeemachine_serve>}
-StateCoffeeMachineWaiting (state:id) = {<state_coffeemachine_waiting>}
-StateCoffeeMachineAcceptingPayment (state:id) = {<state_coffeemachine_acceptingpayment>}
+StateFollowerWaiting (state:id) = {<state_follower_waiting>}
+StateFollowerActive (state:id) = {<state_follower_active>}
 
+StateLeaderActive (state:id) = {<state_leader_active>}
 
-allowedTransitions (from:id, to:id, event:id) = {<state_coffeemachine_waiting,state_coffeemachine_acceptingpayment,event_coffeemachine_selectamericano>,<state_coffeemachine_waiting,state_coffeemachine_acceptingpayment,event_coffeemachine_selectespresso>,<state_coffeemachine_serve,state_coffeemachine_waiting,event_coffeemachine_empty>,<state_coffeemachine_acceptingpayment,state_coffeemachine_serve,event_coffeemachine_pay_amountmet>,<state_coffeemachine_waiting,state_finalized,event_coffeemachine_poweroff>,<state_coffeemachine_serve,state_finalized,event_coffeemachine_poweroff>,<state_coffeemachine_waiting,state_coffeemachine_acceptingpayment,event_coffeemachine_selectlatte>,<state_coffeemachine_waiting,state_coffeemachine_acceptingpayment,event_coffeemachine_selectnormal>,<state_coffeemachine_acceptingpayment,state_coffeemachine_acceptingpayment,event_coffeemachine_pay>,<state_coffeemachine_acceptingpayment,state_coffeemachine_waiting,event_coffeemachine_cancel>,<state_uninitialized,state_coffeemachine_waiting,event_coffeemachine_poweron>,<state_coffeemachine_acceptingpayment,state_finalized,event_coffeemachine_poweroff>}
+StateTailerWaiting (state:id) = {<state_tailer_waiting>}
+StateTailerActive (state:id) = {<state_tailer_active>}
 
-EventCoffeeMachineSelectNormal (event:id) = {<event_coffeemachine_selectnormal>}
-EventCoffeeMachineSelectEspresso (event:id) = {<event_coffeemachine_selectespresso>}
-EventCoffeeMachine__frame (event:id) = {<event_coffeemachine___frame>}
-EventCoffeeMachineSelectAmericano (event:id) = {<event_coffeemachine_selectamericano>}
-EventCoffeeMachinePay_amountMet (event:id) = {<event_coffeemachine_pay_amountmet>}
-EventCoffeeMachineSelectLatte (event:id) = {<event_coffeemachine_selectlatte>}
-EventCoffeeMachinePay (event:id) = {<event_coffeemachine_pay>}
-EventCoffeeMachineEmpty (event:id) = {<event_coffeemachine_empty>}
-EventCoffeeMachinePowerOn (event:id) = {<event_coffeemachine_poweron>}
-EventCoffeeMachinePowerOff (event:id) = {<event_coffeemachine_poweroff>}
-EventCoffeeMachineCancel (event:id) = {<event_coffeemachine_cancel>}
+allowedTransitions (from:id, to:id, event:id) = {<state_follower_waiting,state_follower_active,event_follower_connected>,<state_follower_active,state_follower_active,event_follower_hit>,<state_uninitialized,state_follower_waiting,event_follower_start>,<state_uninitialized,state_leader_active,event_leader_start>,<state_leader_active,state_leader_active,event_leader_hit>,<state_tailer_waiting,state_tailer_active,event_tailer_connected>,<state_uninitialized,state_tailer_waiting,event_tailer_start>,<state_tailer_active,state_tailer_active,event_tailer_hit>}
+
+EventTailer__frame (event:id) = {<event_tailer___frame>}
+EventLeader__frame (event:id) = {<event_leader___frame>}
+EventFollower__frame (event:id) = {<event_follower___frame>}
+EventTailerStart (event:id) = {<event_tailer_start>}
+EventLeaderStart (event:id) = {<event_leader_start>}
+EventFollowerStart (event:id) = {<event_follower_start>}
+EventLeaderHit (event:id) = {<event_leader_hit>}
+EventFollowerHit (event:id) = {<event_follower_hit>}
+EventTailerHit (event:id) = {<event_tailer_hit>}
+EventFollowerConnected (event:id) = {<event_follower_connected>}
+EventTailerConnected (event:id) = {<event_tailer_connected>}
 
 // Dynamic configuration of state machines
 Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>,<c9>,<c10>}
 order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>,<c6,c7>,<c7,c8>,<c8,c9>,<c9,c10>}
 InitialConfig (config:id) = {<c1>}
 
-Instance (spec:id, instance:id) = {<coffeemachine,cm1>}
-instanceInState (config:id, instance:id, state:id) >= {<c1,cm1,state_uninitialized>}<= {<c1,cm1,state_uninitialized>,<c1,cm1,state_finalized>,<c1,cm1,state_coffeemachine_waiting>,<c1,cm1,state_coffeemachine_serve>,<c1,cm1,state_coffeemachine_acceptingpayment>,<c2,cm1,state_uninitialized>,<c2,cm1,state_finalized>,<c2,cm1,state_coffeemachine_waiting>,<c2,cm1,state_coffeemachine_serve>,<c2,cm1,state_coffeemachine_acceptingpayment>,<c3,cm1,state_uninitialized>,<c3,cm1,state_finalized>,<c3,cm1,state_coffeemachine_waiting>,<c3,cm1,state_coffeemachine_serve>,<c3,cm1,state_coffeemachine_acceptingpayment>,<c4,cm1,state_uninitialized>,<c4,cm1,state_finalized>,<c4,cm1,state_coffeemachine_waiting>,<c4,cm1,state_coffeemachine_serve>,<c4,cm1,state_coffeemachine_acceptingpayment>,<c5,cm1,state_uninitialized>,<c5,cm1,state_finalized>,<c5,cm1,state_coffeemachine_waiting>,<c5,cm1,state_coffeemachine_serve>,<c5,cm1,state_coffeemachine_acceptingpayment>,<c6,cm1,state_uninitialized>,<c6,cm1,state_finalized>,<c6,cm1,state_coffeemachine_waiting>,<c6,cm1,state_coffeemachine_serve>,<c6,cm1,state_coffeemachine_acceptingpayment>,<c7,cm1,state_uninitialized>,<c7,cm1,state_finalized>,<c7,cm1,state_coffeemachine_waiting>,<c7,cm1,state_coffeemachine_serve>,<c7,cm1,state_coffeemachine_acceptingpayment>,<c8,cm1,state_uninitialized>,<c8,cm1,state_finalized>,<c8,cm1,state_coffeemachine_waiting>,<c8,cm1,state_coffeemachine_serve>,<c8,cm1,state_coffeemachine_acceptingpayment>,<c9,cm1,state_uninitialized>,<c9,cm1,state_finalized>,<c9,cm1,state_coffeemachine_waiting>,<c9,cm1,state_coffeemachine_serve>,<c9,cm1,state_coffeemachine_acceptingpayment>,<c10,cm1,state_uninitialized>,<c10,cm1,state_finalized>,<c10,cm1,state_coffeemachine_waiting>,<c10,cm1,state_coffeemachine_serve>,<c10,cm1,state_coffeemachine_acceptingpayment>}
-raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_coffeemachine_cancel,cm1>,<c1,c2,event_coffeemachine_selectamericano,cm1>,<c1,c2,event_coffeemachine_selectlatte,cm1>,<c1,c2,event_coffeemachine_selectnormal,cm1>,<c1,c2,event_coffeemachine_poweroff,cm1>,<c1,c2,event_coffeemachine_poweron,cm1>,<c1,c2,event_coffeemachine___frame,cm1>,<c1,c2,event_coffeemachine_pay_amountmet,cm1>,<c1,c2,event_coffeemachine_empty,cm1>,<c1,c2,event_coffeemachine_selectespresso,cm1>,<c1,c2,event_coffeemachine_pay,cm1>,<c2,c3,event_coffeemachine_cancel,cm1>,<c2,c3,event_coffeemachine_selectamericano,cm1>,<c2,c3,event_coffeemachine_selectlatte,cm1>,<c2,c3,event_coffeemachine_selectnormal,cm1>,<c2,c3,event_coffeemachine_poweroff,cm1>,<c2,c3,event_coffeemachine_poweron,cm1>,<c2,c3,event_coffeemachine___frame,cm1>,<c2,c3,event_coffeemachine_pay_amountmet,cm1>,<c2,c3,event_coffeemachine_empty,cm1>,<c2,c3,event_coffeemachine_selectespresso,cm1>,<c2,c3,event_coffeemachine_pay,cm1>,<c3,c4,event_coffeemachine_cancel,cm1>,<c3,c4,event_coffeemachine_selectamericano,cm1>,<c3,c4,event_coffeemachine_selectlatte,cm1>,<c3,c4,event_coffeemachine_selectnormal,cm1>,<c3,c4,event_coffeemachine_poweroff,cm1>,<c3,c4,event_coffeemachine_poweron,cm1>,<c3,c4,event_coffeemachine___frame,cm1>,<c3,c4,event_coffeemachine_pay_amountmet,cm1>,<c3,c4,event_coffeemachine_empty,cm1>,<c3,c4,event_coffeemachine_selectespresso,cm1>,<c3,c4,event_coffeemachine_pay,cm1>,<c4,c5,event_coffeemachine_cancel,cm1>,<c4,c5,event_coffeemachine_selectamericano,cm1>,<c4,c5,event_coffeemachine_selectlatte,cm1>,<c4,c5,event_coffeemachine_selectnormal,cm1>,<c4,c5,event_coffeemachine_poweroff,cm1>,<c4,c5,event_coffeemachine_poweron,cm1>,<c4,c5,event_coffeemachine___frame,cm1>,<c4,c5,event_coffeemachine_pay_amountmet,cm1>,<c4,c5,event_coffeemachine_empty,cm1>,<c4,c5,event_coffeemachine_selectespresso,cm1>,<c4,c5,event_coffeemachine_pay,cm1>,<c5,c6,event_coffeemachine_cancel,cm1>,<c5,c6,event_coffeemachine_selectamericano,cm1>,<c5,c6,event_coffeemachine_selectlatte,cm1>,<c5,c6,event_coffeemachine_selectnormal,cm1>,<c5,c6,event_coffeemachine_poweroff,cm1>,<c5,c6,event_coffeemachine_poweron,cm1>,<c5,c6,event_coffeemachine___frame,cm1>,<c5,c6,event_coffeemachine_pay_amountmet,cm1>,<c5,c6,event_coffeemachine_empty,cm1>,<c5,c6,event_coffeemachine_selectespresso,cm1>,<c5,c6,event_coffeemachine_pay,cm1>,<c6,c7,event_coffeemachine_cancel,cm1>,<c6,c7,event_coffeemachine_selectamericano,cm1>,<c6,c7,event_coffeemachine_selectlatte,cm1>,<c6,c7,event_coffeemachine_selectnormal,cm1>,<c6,c7,event_coffeemachine_poweroff,cm1>,<c6,c7,event_coffeemachine_poweron,cm1>,<c6,c7,event_coffeemachine___frame,cm1>,<c6,c7,event_coffeemachine_pay_amountmet,cm1>,<c6,c7,event_coffeemachine_empty,cm1>,<c6,c7,event_coffeemachine_selectespresso,cm1>,<c6,c7,event_coffeemachine_pay,cm1>,<c7,c8,event_coffeemachine_cancel,cm1>,<c7,c8,event_coffeemachine_selectamericano,cm1>,<c7,c8,event_coffeemachine_selectlatte,cm1>,<c7,c8,event_coffeemachine_selectnormal,cm1>,<c7,c8,event_coffeemachine_poweroff,cm1>,<c7,c8,event_coffeemachine_poweron,cm1>,<c7,c8,event_coffeemachine___frame,cm1>,<c7,c8,event_coffeemachine_pay_amountmet,cm1>,<c7,c8,event_coffeemachine_empty,cm1>,<c7,c8,event_coffeemachine_selectespresso,cm1>,<c7,c8,event_coffeemachine_pay,cm1>,<c8,c9,event_coffeemachine_cancel,cm1>,<c8,c9,event_coffeemachine_selectamericano,cm1>,<c8,c9,event_coffeemachine_selectlatte,cm1>,<c8,c9,event_coffeemachine_selectnormal,cm1>,<c8,c9,event_coffeemachine_poweroff,cm1>,<c8,c9,event_coffeemachine_poweron,cm1>,<c8,c9,event_coffeemachine___frame,cm1>,<c8,c9,event_coffeemachine_pay_amountmet,cm1>,<c8,c9,event_coffeemachine_empty,cm1>,<c8,c9,event_coffeemachine_selectespresso,cm1>,<c8,c9,event_coffeemachine_pay,cm1>,<c9,c10,event_coffeemachine_cancel,cm1>,<c9,c10,event_coffeemachine_selectamericano,cm1>,<c9,c10,event_coffeemachine_selectlatte,cm1>,<c9,c10,event_coffeemachine_selectnormal,cm1>,<c9,c10,event_coffeemachine_poweroff,cm1>,<c9,c10,event_coffeemachine_poweron,cm1>,<c9,c10,event_coffeemachine___frame,cm1>,<c9,c10,event_coffeemachine_pay_amountmet,cm1>,<c9,c10,event_coffeemachine_empty,cm1>,<c9,c10,event_coffeemachine_selectespresso,cm1>,<c9,c10,event_coffeemachine_pay,cm1>}
-changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,cm1>,<c2,c3,cm1>,<c3,c4,cm1>,<c4,c5,cm1>,<c5,c6,cm1>,<c6,c7,cm1>,<c7,c8,cm1>,<c8,c9,cm1>,<c9,c10,cm1>}
+Instance (spec:id, instance:id) = {<leader,l1>,<leader,l2>,<tailer,t2>,<follower,f1>,<follower,f2>,<tailer,t1>}
+instanceInState (config:id, instance:id, state:id) >= {<c1,l1,state_uninitialized>,<c1,l2,state_uninitialized>,<c1,t2,state_uninitialized>,<c1,f1,state_uninitialized>,<c1,f2,state_uninitialized>,<c1,t1,state_uninitialized>}<= {<c1,f1,state_uninitialized>,<c1,f1,state_finalized>,<c1,f1,state_follower_active>,<c1,f1,state_follower_waiting>,<c1,f2,state_uninitialized>,<c1,f2,state_finalized>,<c1,f2,state_follower_active>,<c1,f2,state_follower_waiting>,<c1,l1,state_uninitialized>,<c1,l1,state_leader_active>,<c1,l1,state_finalized>,<c1,l2,state_uninitialized>,<c1,l2,state_leader_active>,<c1,l2,state_finalized>,<c1,t1,state_uninitialized>,<c1,t1,state_finalized>,<c1,t1,state_tailer_waiting>,<c1,t1,state_tailer_active>,<c1,t2,state_uninitialized>,<c1,t2,state_finalized>,<c1,t2,state_tailer_waiting>,<c1,t2,state_tailer_active>,<c2,f1,state_uninitialized>,<c2,f1,state_finalized>,<c2,f1,state_follower_active>,<c2,f1,state_follower_waiting>,<c2,f2,state_uninitialized>,<c2,f2,state_finalized>,<c2,f2,state_follower_active>,<c2,f2,state_follower_waiting>,<c2,l1,state_uninitialized>,<c2,l1,state_leader_active>,<c2,l1,state_finalized>,<c2,l2,state_uninitialized>,<c2,l2,state_leader_active>,<c2,l2,state_finalized>,<c2,t1,state_uninitialized>,<c2,t1,state_finalized>,<c2,t1,state_tailer_waiting>,<c2,t1,state_tailer_active>,<c2,t2,state_uninitialized>,<c2,t2,state_finalized>,<c2,t2,state_tailer_waiting>,<c2,t2,state_tailer_active>,<c3,f1,state_uninitialized>,<c3,f1,state_finalized>,<c3,f1,state_follower_active>,<c3,f1,state_follower_waiting>,<c3,f2,state_uninitialized>,<c3,f2,state_finalized>,<c3,f2,state_follower_active>,<c3,f2,state_follower_waiting>,<c3,l1,state_uninitialized>,<c3,l1,state_leader_active>,<c3,l1,state_finalized>,<c3,l2,state_uninitialized>,<c3,l2,state_leader_active>,<c3,l2,state_finalized>,<c3,t1,state_uninitialized>,<c3,t1,state_finalized>,<c3,t1,state_tailer_waiting>,<c3,t1,state_tailer_active>,<c3,t2,state_uninitialized>,<c3,t2,state_finalized>,<c3,t2,state_tailer_waiting>,<c3,t2,state_tailer_active>,<c4,f1,state_uninitialized>,<c4,f1,state_finalized>,<c4,f1,state_follower_active>,<c4,f1,state_follower_waiting>,<c4,f2,state_uninitialized>,<c4,f2,state_finalized>,<c4,f2,state_follower_active>,<c4,f2,state_follower_waiting>,<c4,l1,state_uninitialized>,<c4,l1,state_leader_active>,<c4,l1,state_finalized>,<c4,l2,state_uninitialized>,<c4,l2,state_leader_active>,<c4,l2,state_finalized>,<c4,t1,state_uninitialized>,<c4,t1,state_finalized>,<c4,t1,state_tailer_waiting>,<c4,t1,state_tailer_active>,<c4,t2,state_uninitialized>,<c4,t2,state_finalized>,<c4,t2,state_tailer_waiting>,<c4,t2,state_tailer_active>,<c5,f1,state_uninitialized>,<c5,f1,state_finalized>,<c5,f1,state_follower_active>,<c5,f1,state_follower_waiting>,<c5,f2,state_uninitialized>,<c5,f2,state_finalized>,<c5,f2,state_follower_active>,<c5,f2,state_follower_waiting>,<c5,l1,state_uninitialized>,<c5,l1,state_leader_active>,<c5,l1,state_finalized>,<c5,l2,state_uninitialized>,<c5,l2,state_leader_active>,<c5,l2,state_finalized>,<c5,t1,state_uninitialized>,<c5,t1,state_finalized>,<c5,t1,state_tailer_waiting>,<c5,t1,state_tailer_active>,<c5,t2,state_uninitialized>,<c5,t2,state_finalized>,<c5,t2,state_tailer_waiting>,<c5,t2,state_tailer_active>,<c6,f1,state_uninitialized>,<c6,f1,state_finalized>,<c6,f1,state_follower_active>,<c6,f1,state_follower_waiting>,<c6,f2,state_uninitialized>,<c6,f2,state_finalized>,<c6,f2,state_follower_active>,<c6,f2,state_follower_waiting>,<c6,l1,state_uninitialized>,<c6,l1,state_leader_active>,<c6,l1,state_finalized>,<c6,l2,state_uninitialized>,<c6,l2,state_leader_active>,<c6,l2,state_finalized>,<c6,t1,state_uninitialized>,<c6,t1,state_finalized>,<c6,t1,state_tailer_waiting>,<c6,t1,state_tailer_active>,<c6,t2,state_uninitialized>,<c6,t2,state_finalized>,<c6,t2,state_tailer_waiting>,<c6,t2,state_tailer_active>,<c7,f1,state_uninitialized>,<c7,f1,state_finalized>,<c7,f1,state_follower_active>,<c7,f1,state_follower_waiting>,<c7,f2,state_uninitialized>,<c7,f2,state_finalized>,<c7,f2,state_follower_active>,<c7,f2,state_follower_waiting>,<c7,l1,state_uninitialized>,<c7,l1,state_leader_active>,<c7,l1,state_finalized>,<c7,l2,state_uninitialized>,<c7,l2,state_leader_active>,<c7,l2,state_finalized>,<c7,t1,state_uninitialized>,<c7,t1,state_finalized>,<c7,t1,state_tailer_waiting>,<c7,t1,state_tailer_active>,<c7,t2,state_uninitialized>,<c7,t2,state_finalized>,<c7,t2,state_tailer_waiting>,<c7,t2,state_tailer_active>,<c8,f1,state_uninitialized>,<c8,f1,state_finalized>,<c8,f1,state_follower_active>,<c8,f1,state_follower_waiting>,<c8,f2,state_uninitialized>,<c8,f2,state_finalized>,<c8,f2,state_follower_active>,<c8,f2,state_follower_waiting>,<c8,l1,state_uninitialized>,<c8,l1,state_leader_active>,<c8,l1,state_finalized>,<c8,l2,state_uninitialized>,<c8,l2,state_leader_active>,<c8,l2,state_finalized>,<c8,t1,state_uninitialized>,<c8,t1,state_finalized>,<c8,t1,state_tailer_waiting>,<c8,t1,state_tailer_active>,<c8,t2,state_uninitialized>,<c8,t2,state_finalized>,<c8,t2,state_tailer_waiting>,<c8,t2,state_tailer_active>,<c9,f1,state_uninitialized>,<c9,f1,state_finalized>,<c9,f1,state_follower_active>,<c9,f1,state_follower_waiting>,<c9,f2,state_uninitialized>,<c9,f2,state_finalized>,<c9,f2,state_follower_active>,<c9,f2,state_follower_waiting>,<c9,l1,state_uninitialized>,<c9,l1,state_leader_active>,<c9,l1,state_finalized>,<c9,l2,state_uninitialized>,<c9,l2,state_leader_active>,<c9,l2,state_finalized>,<c9,t1,state_uninitialized>,<c9,t1,state_finalized>,<c9,t1,state_tailer_waiting>,<c9,t1,state_tailer_active>,<c9,t2,state_uninitialized>,<c9,t2,state_finalized>,<c9,t2,state_tailer_waiting>,<c9,t2,state_tailer_active>,<c10,f1,state_uninitialized>,<c10,f1,state_finalized>,<c10,f1,state_follower_active>,<c10,f1,state_follower_waiting>,<c10,f2,state_uninitialized>,<c10,f2,state_finalized>,<c10,f2,state_follower_active>,<c10,f2,state_follower_waiting>,<c10,l1,state_uninitialized>,<c10,l1,state_leader_active>,<c10,l1,state_finalized>,<c10,l2,state_uninitialized>,<c10,l2,state_leader_active>,<c10,l2,state_finalized>,<c10,t1,state_uninitialized>,<c10,t1,state_finalized>,<c10,t1,state_tailer_waiting>,<c10,t1,state_tailer_active>,<c10,t2,state_uninitialized>,<c10,t2,state_finalized>,<c10,t2,state_tailer_waiting>,<c10,t2,state_tailer_active>}
+raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_follower_start,f1>,<c1,c2,event_follower_connected,f1>,<c1,c2,event_follower___frame,f1>,<c1,c2,event_follower_hit,f1>,<c2,c3,event_follower_start,f1>,<c2,c3,event_follower_connected,f1>,<c2,c3,event_follower___frame,f1>,<c2,c3,event_follower_hit,f1>,<c3,c4,event_follower_start,f1>,<c3,c4,event_follower_connected,f1>,<c3,c4,event_follower___frame,f1>,<c3,c4,event_follower_hit,f1>,<c4,c5,event_follower_start,f1>,<c4,c5,event_follower_connected,f1>,<c4,c5,event_follower___frame,f1>,<c4,c5,event_follower_hit,f1>,<c5,c6,event_follower_start,f1>,<c5,c6,event_follower_connected,f1>,<c5,c6,event_follower___frame,f1>,<c5,c6,event_follower_hit,f1>,<c6,c7,event_follower_start,f1>,<c6,c7,event_follower_connected,f1>,<c6,c7,event_follower___frame,f1>,<c6,c7,event_follower_hit,f1>,<c7,c8,event_follower_start,f1>,<c7,c8,event_follower_connected,f1>,<c7,c8,event_follower___frame,f1>,<c7,c8,event_follower_hit,f1>,<c8,c9,event_follower_start,f1>,<c8,c9,event_follower_connected,f1>,<c8,c9,event_follower___frame,f1>,<c8,c9,event_follower_hit,f1>,<c9,c10,event_follower_start,f1>,<c9,c10,event_follower_connected,f1>,<c9,c10,event_follower___frame,f1>,<c9,c10,event_follower_hit,f1>,<c1,c2,event_follower_start,f2>,<c1,c2,event_follower_connected,f2>,<c1,c2,event_follower___frame,f2>,<c1,c2,event_follower_hit,f2>,<c2,c3,event_follower_start,f2>,<c2,c3,event_follower_connected,f2>,<c2,c3,event_follower___frame,f2>,<c2,c3,event_follower_hit,f2>,<c3,c4,event_follower_start,f2>,<c3,c4,event_follower_connected,f2>,<c3,c4,event_follower___frame,f2>,<c3,c4,event_follower_hit,f2>,<c4,c5,event_follower_start,f2>,<c4,c5,event_follower_connected,f2>,<c4,c5,event_follower___frame,f2>,<c4,c5,event_follower_hit,f2>,<c5,c6,event_follower_start,f2>,<c5,c6,event_follower_connected,f2>,<c5,c6,event_follower___frame,f2>,<c5,c6,event_follower_hit,f2>,<c6,c7,event_follower_start,f2>,<c6,c7,event_follower_connected,f2>,<c6,c7,event_follower___frame,f2>,<c6,c7,event_follower_hit,f2>,<c7,c8,event_follower_start,f2>,<c7,c8,event_follower_connected,f2>,<c7,c8,event_follower___frame,f2>,<c7,c8,event_follower_hit,f2>,<c8,c9,event_follower_start,f2>,<c8,c9,event_follower_connected,f2>,<c8,c9,event_follower___frame,f2>,<c8,c9,event_follower_hit,f2>,<c9,c10,event_follower_start,f2>,<c9,c10,event_follower_connected,f2>,<c9,c10,event_follower___frame,f2>,<c9,c10,event_follower_hit,f2>,<c1,c2,event_leader_hit,l1>,<c1,c2,event_leader_start,l1>,<c1,c2,event_leader___frame,l1>,<c2,c3,event_leader_hit,l1>,<c2,c3,event_leader_start,l1>,<c2,c3,event_leader___frame,l1>,<c3,c4,event_leader_hit,l1>,<c3,c4,event_leader_start,l1>,<c3,c4,event_leader___frame,l1>,<c4,c5,event_leader_hit,l1>,<c4,c5,event_leader_start,l1>,<c4,c5,event_leader___frame,l1>,<c5,c6,event_leader_hit,l1>,<c5,c6,event_leader_start,l1>,<c5,c6,event_leader___frame,l1>,<c6,c7,event_leader_hit,l1>,<c6,c7,event_leader_start,l1>,<c6,c7,event_leader___frame,l1>,<c7,c8,event_leader_hit,l1>,<c7,c8,event_leader_start,l1>,<c7,c8,event_leader___frame,l1>,<c8,c9,event_leader_hit,l1>,<c8,c9,event_leader_start,l1>,<c8,c9,event_leader___frame,l1>,<c9,c10,event_leader_hit,l1>,<c9,c10,event_leader_start,l1>,<c9,c10,event_leader___frame,l1>,<c1,c2,event_leader_hit,l2>,<c1,c2,event_leader_start,l2>,<c1,c2,event_leader___frame,l2>,<c2,c3,event_leader_hit,l2>,<c2,c3,event_leader_start,l2>,<c2,c3,event_leader___frame,l2>,<c3,c4,event_leader_hit,l2>,<c3,c4,event_leader_start,l2>,<c3,c4,event_leader___frame,l2>,<c4,c5,event_leader_hit,l2>,<c4,c5,event_leader_start,l2>,<c4,c5,event_leader___frame,l2>,<c5,c6,event_leader_hit,l2>,<c5,c6,event_leader_start,l2>,<c5,c6,event_leader___frame,l2>,<c6,c7,event_leader_hit,l2>,<c6,c7,event_leader_start,l2>,<c6,c7,event_leader___frame,l2>,<c7,c8,event_leader_hit,l2>,<c7,c8,event_leader_start,l2>,<c7,c8,event_leader___frame,l2>,<c8,c9,event_leader_hit,l2>,<c8,c9,event_leader_start,l2>,<c8,c9,event_leader___frame,l2>,<c9,c10,event_leader_hit,l2>,<c9,c10,event_leader_start,l2>,<c9,c10,event_leader___frame,l2>,<c1,c2,event_tailer_start,t1>,<c1,c2,event_tailer_connected,t1>,<c1,c2,event_tailer___frame,t1>,<c1,c2,event_tailer_hit,t1>,<c2,c3,event_tailer_start,t1>,<c2,c3,event_tailer_connected,t1>,<c2,c3,event_tailer___frame,t1>,<c2,c3,event_tailer_hit,t1>,<c3,c4,event_tailer_start,t1>,<c3,c4,event_tailer_connected,t1>,<c3,c4,event_tailer___frame,t1>,<c3,c4,event_tailer_hit,t1>,<c4,c5,event_tailer_start,t1>,<c4,c5,event_tailer_connected,t1>,<c4,c5,event_tailer___frame,t1>,<c4,c5,event_tailer_hit,t1>,<c5,c6,event_tailer_start,t1>,<c5,c6,event_tailer_connected,t1>,<c5,c6,event_tailer___frame,t1>,<c5,c6,event_tailer_hit,t1>,<c6,c7,event_tailer_start,t1>,<c6,c7,event_tailer_connected,t1>,<c6,c7,event_tailer___frame,t1>,<c6,c7,event_tailer_hit,t1>,<c7,c8,event_tailer_start,t1>,<c7,c8,event_tailer_connected,t1>,<c7,c8,event_tailer___frame,t1>,<c7,c8,event_tailer_hit,t1>,<c8,c9,event_tailer_start,t1>,<c8,c9,event_tailer_connected,t1>,<c8,c9,event_tailer___frame,t1>,<c8,c9,event_tailer_hit,t1>,<c9,c10,event_tailer_start,t1>,<c9,c10,event_tailer_connected,t1>,<c9,c10,event_tailer___frame,t1>,<c9,c10,event_tailer_hit,t1>,<c1,c2,event_tailer_start,t2>,<c1,c2,event_tailer_connected,t2>,<c1,c2,event_tailer___frame,t2>,<c1,c2,event_tailer_hit,t2>,<c2,c3,event_tailer_start,t2>,<c2,c3,event_tailer_connected,t2>,<c2,c3,event_tailer___frame,t2>,<c2,c3,event_tailer_hit,t2>,<c3,c4,event_tailer_start,t2>,<c3,c4,event_tailer_connected,t2>,<c3,c4,event_tailer___frame,t2>,<c3,c4,event_tailer_hit,t2>,<c4,c5,event_tailer_start,t2>,<c4,c5,event_tailer_connected,t2>,<c4,c5,event_tailer___frame,t2>,<c4,c5,event_tailer_hit,t2>,<c5,c6,event_tailer_start,t2>,<c5,c6,event_tailer_connected,t2>,<c5,c6,event_tailer___frame,t2>,<c5,c6,event_tailer_hit,t2>,<c6,c7,event_tailer_start,t2>,<c6,c7,event_tailer_connected,t2>,<c6,c7,event_tailer___frame,t2>,<c6,c7,event_tailer_hit,t2>,<c7,c8,event_tailer_start,t2>,<c7,c8,event_tailer_connected,t2>,<c7,c8,event_tailer___frame,t2>,<c7,c8,event_tailer_hit,t2>,<c8,c9,event_tailer_start,t2>,<c8,c9,event_tailer_connected,t2>,<c8,c9,event_tailer___frame,t2>,<c8,c9,event_tailer_hit,t2>,<c9,c10,event_tailer_start,t2>,<c9,c10,event_tailer_connected,t2>,<c9,c10,event_tailer___frame,t2>,<c9,c10,event_tailer_hit,t2>}
+changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,l1>,<c1,c2,l2>,<c1,c2,f1>,<c1,c2,f2>,<c1,c2,t1>,<c1,c2,t2>,<c2,c3,l1>,<c2,c3,l2>,<c2,c3,f1>,<c2,c3,f2>,<c2,c3,t1>,<c2,c3,t2>,<c3,c4,l1>,<c3,c4,l2>,<c3,c4,f1>,<c3,c4,f2>,<c3,c4,t1>,<c3,c4,t2>,<c4,c5,l1>,<c4,c5,l2>,<c4,c5,f1>,<c4,c5,f2>,<c4,c5,t1>,<c4,c5,t2>,<c5,c6,l1>,<c5,c6,l2>,<c5,c6,f1>,<c5,c6,f2>,<c5,c6,t1>,<c5,c6,t2>,<c6,c7,l1>,<c6,c7,l2>,<c6,c7,f1>,<c6,c7,f2>,<c6,c7,t1>,<c6,c7,t2>,<c7,c8,l1>,<c7,c8,l2>,<c7,c8,f1>,<c7,c8,f2>,<c7,c8,t1>,<c7,c8,t2>,<c8,c9,l1>,<c8,c9,l2>,<c8,c9,f1>,<c8,c9,f2>,<c8,c9,t1>,<c8,c9,t2>,<c9,c10,l1>,<c9,c10,l2>,<c9,c10,f1>,<c9,c10,f2>,<c9,c10,t1>,<c9,c10,t2>}
 
-SVCoffeeMachineOnePrims (config:id, instance:id, id:int, amountNeeded:int) <= {<c1,cm1,?,?>,<c2,cm1,?,?>,<c3,cm1,?,?>,<c4,cm1,?,?>,<c5,cm1,?,?>,<c6,cm1,?,?>,<c7,cm1,?,?>,<c8,cm1,?,?>,<c9,cm1,?,?>,<c10,cm1,?,?>}
+SVFollowerOnePrims (config:id, instance:id, times:int) <= {<c1,f1,?>,<c1,f2,?>,<c2,f1,?>,<c2,f2,?>,<c3,f1,?>,<c3,f2,?>,<c4,f1,?>,<c4,f2,?>,<c5,f1,?>,<c5,f2,?>,<c6,f1,?>,<c6,f2,?>,<c7,f1,?>,<c7,f2,?>,<c8,f1,?>,<c8,f2,?>,<c9,f1,?>,<c9,f2,?>,<c10,f1,?>,<c10,f2,?>}
+SVFollowerTailer (config:id, instance:id, tailer:id) <= {<c1,f1,t1>,<c1,f1,t2>,<c1,f2,t1>,<c1,f2,t2>,<c2,f1,t1>,<c2,f1,t2>,<c2,f2,t1>,<c2,f2,t2>,<c3,f1,t1>,<c3,f1,t2>,<c3,f2,t1>,<c3,f2,t2>,<c4,f1,t1>,<c4,f1,t2>,<c4,f2,t1>,<c4,f2,t2>,<c5,f1,t1>,<c5,f1,t2>,<c5,f2,t1>,<c5,f2,t2>,<c6,f1,t1>,<c6,f1,t2>,<c6,f2,t1>,<c6,f2,t2>,<c7,f1,t1>,<c7,f1,t2>,<c7,f2,t1>,<c7,f2,t2>,<c8,f1,t1>,<c8,f1,t2>,<c8,f2,t1>,<c8,f2,t2>,<c9,f1,t1>,<c9,f1,t2>,<c9,f2,t1>,<c9,f2,t2>,<c10,f1,t1>,<c10,f1,t2>,<c10,f2,t1>,<c10,f2,t2>}
 
+SVLeaderOnePrims (config:id, instance:id, times:int) <= {<c1,l1,?>,<c1,l2,?>,<c2,l1,?>,<c2,l2,?>,<c3,l1,?>,<c3,l2,?>,<c4,l1,?>,<c4,l2,?>,<c5,l1,?>,<c5,l2,?>,<c6,l1,?>,<c6,l2,?>,<c7,l1,?>,<c7,l2,?>,<c8,l1,?>,<c8,l2,?>,<c9,l1,?>,<c9,l2,?>,<c10,l1,?>,<c10,l2,?>}
+SVLeaderFollower (config:id, instance:id, follower:id) <= {<c1,l1,f1>,<c1,l1,f2>,<c1,l2,f1>,<c1,l2,f2>,<c2,l1,f1>,<c2,l1,f2>,<c2,l2,f1>,<c2,l2,f2>,<c3,l1,f1>,<c3,l1,f2>,<c3,l2,f1>,<c3,l2,f2>,<c4,l1,f1>,<c4,l1,f2>,<c4,l2,f1>,<c4,l2,f2>,<c5,l1,f1>,<c5,l1,f2>,<c5,l2,f1>,<c5,l2,f2>,<c6,l1,f1>,<c6,l1,f2>,<c6,l2,f1>,<c6,l2,f2>,<c7,l1,f1>,<c7,l1,f2>,<c7,l2,f1>,<c7,l2,f2>,<c8,l1,f1>,<c8,l1,f2>,<c8,l2,f1>,<c8,l2,f2>,<c9,l1,f1>,<c9,l1,f2>,<c9,l2,f1>,<c9,l2,f2>,<c10,l1,f1>,<c10,l1,f2>,<c10,l2,f1>,<c10,l2,f2>}
 
+SVTailerOnePrims (config:id, instance:id, nrOfHits:int) <= {<c1,t1,?>,<c1,t2,?>,<c2,t1,?>,<c2,t2,?>,<c3,t1,?>,<c3,t2,?>,<c4,t1,?>,<c4,t2,?>,<c5,t1,?>,<c5,t2,?>,<c6,t1,?>,<c6,t2,?>,<c7,t1,?>,<c7,t2,?>,<c8,t1,?>,<c8,t2,?>,<c9,t1,?>,<c9,t2,?>,<c10,t1,?>,<c10,t2,?>}
 
-
-
-ParamsEventCoffeeMachinePowerOnPrimitives (cur:id, nxt:id, id:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>,<c7,c8,?>,<c8,c9,?>,<c9,c10,?>}
-
-
-
-
-
-
-
-ParamsEventCoffeeMachinePayPrimitives (cur:id, nxt:id, amount:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>,<c7,c8,?>,<c8,c9,?>,<c9,c10,?>}
-
-
-
-ParamsEventCoffeeMachinePay_amountMetPrimitives (cur:id, nxt:id, amount:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>,<c7,c8,?>,<c8,c9,?>,<c9,c10,?>}
-
-
-
-
-
-
+ParamsEventFollowerStartTailer (cur:id, nxt:id, tailer:id) <= {<c1,c2,t1>,<c1,c2,t2>,<c2,c3,t1>,<c2,c3,t2>,<c3,c4,t1>,<c3,c4,t2>,<c4,c5,t1>,<c4,c5,t2>,<c5,c6,t1>,<c5,c6,t2>,<c6,c7,t1>,<c6,c7,t2>,<c7,c8,t1>,<c7,c8,t2>,<c8,c9,t1>,<c8,c9,t2>,<c9,c10,t1>,<c9,c10,t2>,<c10,c11,t1>,<c10,c11,t2>} 
+ParamsEventLeaderStartFollower (cur:id, nxt:id, follower:id) <= {<c1,c2,f1>,<c1,c2,f2>,<c2,c3,f1>,<c2,c3,f2>,<c3,c4,f1>,<c3,c4,f2>,<c4,c5,f1>,<c4,c5,f2>,<c5,c6,f1>,<c5,c6,f2>,<c6,c7,f1>,<c6,c7,f2>,<c7,c8,f1>,<c7,c8,f2>,<c8,c9,f1>,<c8,c9,f2>,<c9,c10,f1>,<c9,c10,f2>,<c10,c11,f1>,<c10,c11,f2>} 
 
 // Generic 'Type' constraints
 order ⊆ Config[config as cur] ⨯ Config[config as nxt]
@@ -66,17 +56,20 @@ raisedEvent ⊆ order ⨯ allowedTransitions[event] ⨯ Instance[instance]
 instanceInState ⊆ Instance[instance] ⨯ Config ⨯ State
 changedInstance ⊆ order ⨯ Instance[instance]
     
-// Machine specific 'Type' constraints
-SVCoffeeMachineOnePrims[config,instance] ⊆ Config ⨯ Instance[instance]
+// Machine specific `type` constraints
+SVFollowerOnePrims[config,instance] ⊆ Config ⨯ (Instance ⨝ Follower)[instance]
+SVFollowerTailer ⊆ Config ⨯ (Instance ⨝ Follower)[instance] ⨯ (Instance ⨝ Tailer)[instance->tailer]
+SVLeaderOnePrims[config,instance] ⊆ Config ⨯ (Instance ⨝ Leader)[instance]
+SVLeaderFollower ⊆ Config ⨯ (Instance ⨝ Leader)[instance] ⨯ (Instance ⨝ Follower)[instance->follower]
+SVTailerOnePrims[config,instance] ⊆ Config ⨯ (Instance ⨝ Tailer)[instance]
 
-ParamsEventCoffeeMachinePowerOnPrimitives[cur,nxt] ⊆ order
-ParamsEventCoffeeMachinePayPrimitives[cur,nxt] ⊆ order
-ParamsEventCoffeeMachinePay_amountMetPrimitives[cur,nxt] ⊆ order
+ParamsEventFollowerStartTailer ⊆ order ⨯ (Instance ⨝ Tailer)[instance->tailer]
+ParamsEventLeaderStartFollower ⊆ order ⨯ (Instance ⨝ Follower)[instance->follower]
+
 // Specific per event
 ∀ o ∈ order ⨝ raisedEvent | (
-  (some (o ⨝ EventCoffeeMachinePowerOn) ⇒ one (o ⨝ ParamsEventCoffeeMachinePowerOnPrimitives)) ∧
-  (some (o ⨝ EventCoffeeMachinePay) ⇒ one (o ⨝ ParamsEventCoffeeMachinePayPrimitives)) ∧
-  (some (o ⨝ EventCoffeeMachinePay_amountMet) ⇒ one (o ⨝ ParamsEventCoffeeMachinePay_amountMetPrimitives))
+  (some (o ⨝ EventFollowerStart) ⇒ one (o ⨝ ParamsEventFollowerStartTailer)) ∧
+  (some (o ⨝ EventLeaderStart) ⇒ one (o ⨝ ParamsEventLeaderStartFollower))
 )
 // Generic: All configurations are reachable
 ∀ c ∈ Config ∖ InitialConfig | c ⊆ (InitialConfig[config as cur] ⨝ ^<cur,nxt>order)[nxt -> config]
@@ -88,8 +81,13 @@ ParamsEventCoffeeMachinePay_amountMetPrimitives[cur,nxt] ⊆ order
 ∀ c ∈ Config, inst ∈ Instance | one instanceInState ⨝ c ⨝ inst
 
 // Specific per machine: In every configuration iff a machine is in an initialized state then it must have values
-∀ c ∈ Config, inst ∈ (Instance ⨝ CoffeeMachine)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one SVCoffeeMachineOnePrims ⨝ c ⨝ inst)
-
+∀ c ∈ Config, inst ∈ (Instance ⨝ Follower)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one SVFollowerOnePrims ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Follower)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one SVFollowerTailer ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Follower)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no SVFollowerTailer ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Leader)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one SVLeaderOnePrims ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Leader)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one SVLeaderFollower ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Leader)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no SVLeaderFollower ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Tailer)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one SVTailerOnePrims ⨝ c ⨝ inst)
 
 // Generic: Transitions are only allowed between if an event is specified between two states
 ∀ o ∈ order ⨝ raisedEvent | (o[cur as config] ⨝ instanceInState)[state->from] ⨯ (o[nxt as config] ⨝ instanceInState)[state->to] ⨯ o[event] ⊆ allowedTransitions
@@ -97,247 +95,375 @@ ParamsEventCoffeeMachinePay_amountMetPrimitives[cur,nxt] ⊆ order
 // Transition function
 ∀ o ∈ order |  
   (
-    // Events from CoffeeMachine  
-    ∀ inst ∈ (Instance ⨝ CoffeeMachine)[instance] |  
+    // Events from Follower  
+    ∀ inst ∈ (Instance ⨝ Follower)[instance] |  
       // Iff this is the instance that raised the event then one of the transitions must have happened 
       (some inst ∩ ((raisedEvent ⨝ o)[instance]) ⇔ 
-        // Event CoffeeMachine.selectLatte
+        // Event Follower.hit
         (let thisInst = inst,
-             curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
-             nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
-             curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
-             nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded] |
-          ( 
-             
-            // Postconditions
-            (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtId = curId)) ∧
-            (some (nxtCoffeeMachineFlattened) where (nxtAmountNeeded = 150))  ∧ 
-            // Generic event conditions
-            // Force the instance to go to the correct next state
-            nxtCoffeeMachineState = (curCoffeeMachineState[state as from] ⨝ (allowedTransitions ⨝ EventCoffeeMachineSelectLatte))[to->state] ∧
-            // Make sure this instance is in the change set
-            thisInst ⊆ (changedInstance ⨝ o)[instance]
-            // Make sure the right event is raised
-            ∧ (o ⨝ raisedEvent)[event] = EventCoffeeMachineSelectLatte ∧ 
-            // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
-            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
-          
-          )
-        )
-         ∨ 
-        // Event CoffeeMachine.empty
-        (let thisInst = inst,
-             curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
-             nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
-             curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
-             nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded] |
-          ( 
-             
-             
-            // Generic event conditions
-            // Force the instance to go to the correct next state
-            nxtCoffeeMachineState = (curCoffeeMachineState[state as from] ⨝ (allowedTransitions ⨝ EventCoffeeMachineEmpty))[to->state] ∧
-            // Make sure this instance is in the change set
-            thisInst ⊆ (changedInstance ⨝ o)[instance]
-            // Make sure the right event is raised
-            ∧ (o ⨝ raisedEvent)[event] = EventCoffeeMachineEmpty ∧ 
-            // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
-            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
-          
-          )
-        )
-         ∨ 
-        // Event CoffeeMachine.powerOn
-        (let thisInst = inst,
-             curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
-             nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
-             curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
-             nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded],
-             paramCoffeeMachinePowerOnFlattened = (o ⨝ ParamsEventCoffeeMachinePowerOnPrimitives)[id] |
-          ( 
-             
-            // Postconditions
-            (some (nxtCoffeeMachineFlattened ⨯ paramCoffeeMachinePowerOnFlattened) where (nxtId = id)) ∧
-            (some (nxtCoffeeMachineFlattened) where (nxtAmountNeeded = 0))  ∧ 
-            // Generic event conditions
-            // Force the instance to go to the correct next state
-            nxtCoffeeMachineState = (curCoffeeMachineState[state as from] ⨝ (allowedTransitions ⨝ EventCoffeeMachinePowerOn))[to->state] ∧
-            // Make sure this instance is in the change set
-            thisInst ⊆ (changedInstance ⨝ o)[instance]
-            // Make sure the right event is raised
-            ∧ (o ⨝ raisedEvent)[event] = EventCoffeeMachinePowerOn ∧ 
-            // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
-            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
-          
-          )
-        )
-         ∨ 
-        // Event CoffeeMachine.cancel
-        (let thisInst = inst,
-             curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
-             nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
-             curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
-             nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded] |
-          ( 
-             
-            // Postconditions
-            (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtId = curId)) ∧
-            (some (nxtCoffeeMachineFlattened) where (nxtAmountNeeded = 0))  ∧ 
-            // Generic event conditions
-            // Force the instance to go to the correct next state
-            nxtCoffeeMachineState = (curCoffeeMachineState[state as from] ⨝ (allowedTransitions ⨝ EventCoffeeMachineCancel))[to->state] ∧
-            // Make sure this instance is in the change set
-            thisInst ⊆ (changedInstance ⨝ o)[instance]
-            // Make sure the right event is raised
-            ∧ (o ⨝ raisedEvent)[event] = EventCoffeeMachineCancel ∧ 
-            // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
-            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
-          
-          )
-        )
-         ∨ 
-        // Event CoffeeMachine.selectEspresso
-        (let thisInst = inst,
-             curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
-             nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
-             curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
-             nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded] |
-          ( 
-             
-            // Postconditions
-            (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtId = curId)) ∧
-            (some (nxtCoffeeMachineFlattened) where (nxtAmountNeeded = 120))  ∧ 
-            // Generic event conditions
-            // Force the instance to go to the correct next state
-            nxtCoffeeMachineState = (curCoffeeMachineState[state as from] ⨝ (allowedTransitions ⨝ EventCoffeeMachineSelectEspresso))[to->state] ∧
-            // Make sure this instance is in the change set
-            thisInst ⊆ (changedInstance ⨝ o)[instance]
-            // Make sure the right event is raised
-            ∧ (o ⨝ raisedEvent)[event] = EventCoffeeMachineSelectEspresso ∧ 
-            // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
-            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
-          
-          )
-        )
-         ∨ 
-        // Event CoffeeMachine.selectAmericano
-        (let thisInst = inst,
-             curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
-             nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
-             curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
-             nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded] |
-          ( 
-             
-            // Postconditions
-            (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtId = curId)) ∧
-            (some (nxtCoffeeMachineFlattened) where (nxtAmountNeeded = 130))  ∧ 
-            // Generic event conditions
-            // Force the instance to go to the correct next state
-            nxtCoffeeMachineState = (curCoffeeMachineState[state as from] ⨝ (allowedTransitions ⨝ EventCoffeeMachineSelectAmericano))[to->state] ∧
-            // Make sure this instance is in the change set
-            thisInst ⊆ (changedInstance ⨝ o)[instance]
-            // Make sure the right event is raised
-            ∧ (o ⨝ raisedEvent)[event] = EventCoffeeMachineSelectAmericano ∧ 
-            // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
-            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
-          
-          )
-        )
-         ∨ 
-        // Event CoffeeMachine.pay
-        (let thisInst = inst,
-             curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
-             nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
-             curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
-             nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded],
-             paramCoffeeMachinePayFlattened = (o ⨝ ParamsEventCoffeeMachinePayPrimitives)[amount] |
+             curFollowerState = (instanceInState ⨝ o[cur->config] ⨝ thisInst)[state],
+             nxtFollowerState = (instanceInState ⨝ o[nxt->config] ⨝ thisInst)[state],
+             curFollowerFlattened = (SVFollowerOnePrims ⨝ o[cur -> config] ⨝ thisInst)[times->curTimes],
+             nxtFollowerFlattened = (SVFollowerOnePrims ⨝ o[nxt -> config] ⨝ thisInst)[times->nxtTimes],
+             curFollowerTailer = (o[cur -> config] ⨝ SVFollowerTailer ⨝ thisInst)[tailer],
+             nxtFollowerTailer = (o[nxt -> config] ⨝ SVFollowerTailer ⨝ thisInst)[tailer] |
           ( 
             // Preconditions 
-            (some (curCoffeeMachineFlattened ⨯ paramCoffeeMachinePayFlattened) where (curAmountNeeded  -  amount > 0))  ∧ 
+            // Synchronised event, constraint input param values of synced event
+            
+            // Event Tailer.hit
+            (let thisInst = curFollowerTailer[tailer][tailer->instance],
+                 curTailerState = (instanceInState ⨝ o[cur->config] ⨝ thisInst)[state],
+                 nxtTailerState = (instanceInState ⨝ o[nxt->config] ⨝ thisInst)[state],
+                 curTailerFlattened = (SVTailerOnePrims ⨝ o[cur -> config] ⨝ thisInst)[nrOfHits->curNrOfHits],
+                 nxtTailerFlattened = (SVTailerOnePrims ⨝ o[nxt -> config] ⨝ thisInst)[nrOfHits->nxtNrOfHits] |
+              ( 
+                 
+                // Postconditions
+                (some (curTailerFlattened ⨯ nxtTailerFlattened) where (nxtNrOfHits = curNrOfHits  +  1))  ∧ 
+                // Generic event conditions
+                // Force the instance to go to the correct next state
+                nxtTailerState = (curTailerState[state as from] ⨝ (allowedTransitions ⨝ EventTailerHit))[to->state] ∧
+                // Make sure this instance is in the change set
+                thisInst ⊆ (changedInstance ⨝ o)[instance]
+              
+              )
+            )  ∧ 
             // Postconditions
-            (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtId = curId)) ∧
-            (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened ⨯ paramCoffeeMachinePayFlattened) where (nxtAmountNeeded = curAmountNeeded  -  amount))  ∧ 
+            nxtFollowerTailer[tailer] = curFollowerTailer[tailer] ∧
+            (some (curFollowerFlattened ⨯ nxtFollowerFlattened) where (nxtTimes = curTimes  +  1))  ∧ 
             // Generic event conditions
             // Force the instance to go to the correct next state
-            nxtCoffeeMachineState = (curCoffeeMachineState[state as from] ⨝ (allowedTransitions ⨝ EventCoffeeMachinePay))[to->state] ∧
+            nxtFollowerState = (curFollowerState[state as from] ⨝ (allowedTransitions ⨝ EventFollowerHit))[to->state] ∧
             // Make sure this instance is in the change set
             thisInst ⊆ (changedInstance ⨝ o)[instance]
             // Make sure the right event is raised
-            ∧ (o ⨝ raisedEvent)[event] = EventCoffeeMachinePay ∧ 
+            ∧ (o ⨝ raisedEvent)[event] = EventFollowerHit ∧ 
             // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
-            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
+            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 2
           
           )
         )
          ∨ 
-        // Event CoffeeMachine.powerOff
+        // Event Follower.connected
         (let thisInst = inst,
-             curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
-             nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
-             curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
-             nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded] |
+             curFollowerState = (instanceInState ⨝ o[cur->config] ⨝ thisInst)[state],
+             nxtFollowerState = (instanceInState ⨝ o[nxt->config] ⨝ thisInst)[state],
+             curFollowerFlattened = (SVFollowerOnePrims ⨝ o[cur -> config] ⨝ thisInst)[times->curTimes],
+             nxtFollowerFlattened = (SVFollowerOnePrims ⨝ o[nxt -> config] ⨝ thisInst)[times->nxtTimes],
+             curFollowerTailer = (o[cur -> config] ⨝ SVFollowerTailer ⨝ thisInst)[tailer],
+             nxtFollowerTailer = (o[nxt -> config] ⨝ SVFollowerTailer ⨝ thisInst)[tailer] |
           ( 
              
             // Postconditions
-            (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtId = curId)) ∧
-            (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtAmountNeeded = curAmountNeeded))  ∧ 
+            nxtFollowerTailer[tailer] = curFollowerTailer[tailer] ∧
+            (some (curFollowerFlattened ⨯ nxtFollowerFlattened) where (nxtTimes = curTimes))  ∧ 
             // Generic event conditions
             // Force the instance to go to the correct next state
-            nxtCoffeeMachineState = (curCoffeeMachineState[state as from] ⨝ (allowedTransitions ⨝ EventCoffeeMachinePowerOff))[to->state] ∧
+            nxtFollowerState = (curFollowerState[state as from] ⨝ (allowedTransitions ⨝ EventFollowerConnected))[to->state] ∧
             // Make sure this instance is in the change set
             thisInst ⊆ (changedInstance ⨝ o)[instance]
             // Make sure the right event is raised
-            ∧ (o ⨝ raisedEvent)[event] = EventCoffeeMachinePowerOff ∧ 
+            ∧ (o ⨝ raisedEvent)[event] = EventFollowerConnected ∧ 
             // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
             some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
           
           )
         )
          ∨ 
-        // Event CoffeeMachine.pay_amountMet
+        // Event Follower.start
         (let thisInst = inst,
-             curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
-             nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
-             curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
-             nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded],
-             paramCoffeeMachinePay_amountMetFlattened = (o ⨝ ParamsEventCoffeeMachinePay_amountMetPrimitives)[amount] |
+             curFollowerState = (instanceInState ⨝ o[cur->config] ⨝ thisInst)[state],
+             nxtFollowerState = (instanceInState ⨝ o[nxt->config] ⨝ thisInst)[state],
+             curFollowerFlattened = (SVFollowerOnePrims ⨝ o[cur -> config] ⨝ thisInst)[times->curTimes],
+             nxtFollowerFlattened = (SVFollowerOnePrims ⨝ o[nxt -> config] ⨝ thisInst)[times->nxtTimes],
+             curFollowerTailer = (o[cur -> config] ⨝ SVFollowerTailer ⨝ thisInst)[tailer],
+             nxtFollowerTailer = (o[nxt -> config] ⨝ SVFollowerTailer ⨝ thisInst)[tailer],
+             paramsFollowerStartTailer = (o ⨝ ParamsEventFollowerStartTailer)[tailer] |
           ( 
             // Preconditions 
-            (some (curCoffeeMachineFlattened ⨯ paramCoffeeMachinePay_amountMetFlattened) where (curAmountNeeded  -  amount = 0))  ∧ 
+            ((paramsFollowerStartTailer[tailer->instance] ⨯ o[cur->config]) ⨝ instanceInState)[state] ⊆ StateTailerWaiting ∧
+            // Synchronised event, constraint input param values of synced event
+            
+            // Event Tailer.connected
+            (let thisInst = paramsFollowerStartTailer[tailer][tailer->instance],
+                 curTailerState = (instanceInState ⨝ o[cur->config] ⨝ thisInst)[state],
+                 nxtTailerState = (instanceInState ⨝ o[nxt->config] ⨝ thisInst)[state],
+                 curTailerFlattened = (SVTailerOnePrims ⨝ o[cur -> config] ⨝ thisInst)[nrOfHits->curNrOfHits],
+                 nxtTailerFlattened = (SVTailerOnePrims ⨝ o[nxt -> config] ⨝ thisInst)[nrOfHits->nxtNrOfHits] |
+              ( 
+                 
+                // Postconditions
+                (some (curTailerFlattened ⨯ nxtTailerFlattened) where (nxtNrOfHits = curNrOfHits))  ∧ 
+                // Generic event conditions
+                // Force the instance to go to the correct next state
+                nxtTailerState = (curTailerState[state as from] ⨝ (allowedTransitions ⨝ EventTailerConnected))[to->state] ∧
+                // Make sure this instance is in the change set
+                thisInst ⊆ (changedInstance ⨝ o)[instance]
+              
+              )
+            )  ∧ 
             // Postconditions
-            (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtId = curId)) ∧
-            (some (nxtCoffeeMachineFlattened) where (nxtAmountNeeded = 0))  ∧ 
+            (some (nxtFollowerFlattened) where (nxtTimes = 0)) ∧
+            nxtFollowerTailer[tailer] = paramsFollowerStartTailer[tailer]  ∧ 
             // Generic event conditions
             // Force the instance to go to the correct next state
-            nxtCoffeeMachineState = (curCoffeeMachineState[state as from] ⨝ (allowedTransitions ⨝ EventCoffeeMachinePay_amountMet))[to->state] ∧
+            nxtFollowerState = (curFollowerState[state as from] ⨝ (allowedTransitions ⨝ EventFollowerStart))[to->state] ∧
             // Make sure this instance is in the change set
             thisInst ⊆ (changedInstance ⨝ o)[instance]
             // Make sure the right event is raised
-            ∧ (o ⨝ raisedEvent)[event] = EventCoffeeMachinePay_amountMet ∧ 
+            ∧ (o ⨝ raisedEvent)[event] = EventFollowerStart ∧ 
+            // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
+            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 2
+          
+          )
+        )
+      ) 
+      ∧
+      // Iff it is not a transitioning instance, frame the values
+      (no inst ∩ (changedInstance ⨝ o)[instance] ⇔
+        // Frame values if needed
+        let thisInst = inst,
+            curFollowerState = (instanceInState ⨝ o[cur->config] ⨝ thisInst)[state],
+            nxtFollowerState = (instanceInState ⨝ o[nxt->config] ⨝ thisInst)[state],
+            curFollowerFlattened = (SVFollowerOnePrims ⨝ o[cur -> config] ⨝ thisInst)[times->curTimes],
+            nxtFollowerFlattened = (SVFollowerOnePrims ⨝ o[nxt -> config] ⨝ thisInst)[times->nxtTimes],
+            curFollowerTailer = (o[cur -> config] ⨝ SVFollowerTailer ⨝ thisInst)[tailer],
+            nxtFollowerTailer = (o[nxt -> config] ⨝ SVFollowerTailer ⨝ thisInst)[tailer] | (
+          // State must stay the same
+          nxtFollowerState = curFollowerState
+          ∧
+          (
+            (no curFollowerFlattened) ∨ 
+            (  
+              // Postconditions
+              nxtFollowerTailer[tailer] = curFollowerTailer[tailer] ∧
+              (some (curFollowerFlattened ⨯ nxtFollowerFlattened) where (nxtTimes = curTimes))
+            )
+          )  
+        )
+      )
+  )
+   ∧ 
+  (
+    // Events from Leader  
+    ∀ inst ∈ (Instance ⨝ Leader)[instance] |  
+      // Iff this is the instance that raised the event then one of the transitions must have happened 
+      (some inst ∩ ((raisedEvent ⨝ o)[instance]) ⇔ 
+        // Event Leader.start
+        (let thisInst = inst,
+             curLeaderState = (instanceInState ⨝ o[cur->config] ⨝ thisInst)[state],
+             nxtLeaderState = (instanceInState ⨝ o[nxt->config] ⨝ thisInst)[state],
+             curLeaderFlattened = (SVLeaderOnePrims ⨝ o[cur -> config] ⨝ thisInst)[times->curTimes],
+             nxtLeaderFlattened = (SVLeaderOnePrims ⨝ o[nxt -> config] ⨝ thisInst)[times->nxtTimes],
+             curLeaderFollower = (o[cur -> config] ⨝ SVLeaderFollower ⨝ thisInst)[follower],
+             nxtLeaderFollower = (o[nxt -> config] ⨝ SVLeaderFollower ⨝ thisInst)[follower],
+             paramsLeaderStartFollower = (o ⨝ ParamsEventLeaderStartFollower)[follower] |
+          ( 
+            // Preconditions 
+            ((paramsLeaderStartFollower[follower->instance] ⨯ o[cur->config]) ⨝ instanceInState)[state] ⊆ StateFollowerWaiting ∧
+            // Synchronised event, constraint input param values of synced event
+            
+            // Event Follower.connected
+            (let thisInst = paramsLeaderStartFollower[follower][follower->instance],
+                 curFollowerState = (instanceInState ⨝ o[cur->config] ⨝ thisInst)[state],
+                 nxtFollowerState = (instanceInState ⨝ o[nxt->config] ⨝ thisInst)[state],
+                 curFollowerFlattened = (SVFollowerOnePrims ⨝ o[cur -> config] ⨝ thisInst)[times->curTimes],
+                 nxtFollowerFlattened = (SVFollowerOnePrims ⨝ o[nxt -> config] ⨝ thisInst)[times->nxtTimes],
+                 curFollowerTailer = (o[cur -> config] ⨝ SVFollowerTailer ⨝ thisInst)[tailer],
+                 nxtFollowerTailer = (o[nxt -> config] ⨝ SVFollowerTailer ⨝ thisInst)[tailer] |
+              ( 
+                 
+                // Postconditions
+                nxtFollowerTailer[tailer] = curFollowerTailer[tailer] ∧
+                (some (curFollowerFlattened ⨯ nxtFollowerFlattened) where (nxtTimes = curTimes))  ∧ 
+                // Generic event conditions
+                // Force the instance to go to the correct next state
+                nxtFollowerState = (curFollowerState[state as from] ⨝ (allowedTransitions ⨝ EventFollowerConnected))[to->state] ∧
+                // Make sure this instance is in the change set
+                thisInst ⊆ (changedInstance ⨝ o)[instance]
+              
+              )
+            )  ∧ 
+            // Postconditions
+            nxtLeaderFollower[follower] = paramsLeaderStartFollower[follower] ∧
+            (some (nxtLeaderFlattened) where (nxtTimes = 0))  ∧ 
+            // Generic event conditions
+            // Force the instance to go to the correct next state
+            nxtLeaderState = (curLeaderState[state as from] ⨝ (allowedTransitions ⨝ EventLeaderStart))[to->state] ∧
+            // Make sure this instance is in the change set
+            thisInst ⊆ (changedInstance ⨝ o)[instance]
+            // Make sure the right event is raised
+            ∧ (o ⨝ raisedEvent)[event] = EventLeaderStart ∧ 
+            // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
+            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 2
+          
+          )
+        )
+         ∨ 
+        // Event Leader.hit
+        (let thisInst = inst,
+             curLeaderState = (instanceInState ⨝ o[cur->config] ⨝ thisInst)[state],
+             nxtLeaderState = (instanceInState ⨝ o[nxt->config] ⨝ thisInst)[state],
+             curLeaderFlattened = (SVLeaderOnePrims ⨝ o[cur -> config] ⨝ thisInst)[times->curTimes],
+             nxtLeaderFlattened = (SVLeaderOnePrims ⨝ o[nxt -> config] ⨝ thisInst)[times->nxtTimes],
+             curLeaderFollower = (o[cur -> config] ⨝ SVLeaderFollower ⨝ thisInst)[follower],
+             nxtLeaderFollower = (o[nxt -> config] ⨝ SVLeaderFollower ⨝ thisInst)[follower] |
+          ( 
+            // Preconditions 
+            // Synchronised event, constraint input param values of synced event
+            
+            // Event Follower.hit
+            (let thisInst = curLeaderFollower[follower][follower->instance],
+                 curFollowerState = (instanceInState ⨝ o[cur->config] ⨝ thisInst)[state],
+                 nxtFollowerState = (instanceInState ⨝ o[nxt->config] ⨝ thisInst)[state],
+                 curFollowerFlattened = (SVFollowerOnePrims ⨝ o[cur -> config] ⨝ thisInst)[times->curTimes],
+                 nxtFollowerFlattened = (SVFollowerOnePrims ⨝ o[nxt -> config] ⨝ thisInst)[times->nxtTimes],
+                 curFollowerTailer = (o[cur -> config] ⨝ SVFollowerTailer ⨝ thisInst)[tailer],
+                 nxtFollowerTailer = (o[nxt -> config] ⨝ SVFollowerTailer ⨝ thisInst)[tailer] |
+              ( 
+                // Preconditions 
+                // Synchronised event, constraint input param values of synced event
+                
+                // Event Tailer.hit
+                (let thisInst = curFollowerTailer[tailer][tailer->instance],
+                     curTailerState = (instanceInState ⨝ o[cur->config] ⨝ thisInst)[state],
+                     nxtTailerState = (instanceInState ⨝ o[nxt->config] ⨝ thisInst)[state],
+                     curTailerFlattened = (SVTailerOnePrims ⨝ o[cur -> config] ⨝ thisInst)[nrOfHits->curNrOfHits],
+                     nxtTailerFlattened = (SVTailerOnePrims ⨝ o[nxt -> config] ⨝ thisInst)[nrOfHits->nxtNrOfHits] |
+                  ( 
+                     
+                    // Postconditions
+                    (some (curTailerFlattened ⨯ nxtTailerFlattened) where (nxtNrOfHits = curNrOfHits  +  1))  ∧ 
+                    // Generic event conditions
+                    // Force the instance to go to the correct next state
+                    nxtTailerState = (curTailerState[state as from] ⨝ (allowedTransitions ⨝ EventTailerHit))[to->state] ∧
+                    // Make sure this instance is in the change set
+                    thisInst ⊆ (changedInstance ⨝ o)[instance]
+                  
+                  )
+                )  ∧ 
+                // Postconditions
+                nxtFollowerTailer[tailer] = curFollowerTailer[tailer] ∧
+                (some (curFollowerFlattened ⨯ nxtFollowerFlattened) where (nxtTimes = curTimes  +  1))  ∧ 
+                // Generic event conditions
+                // Force the instance to go to the correct next state
+                nxtFollowerState = (curFollowerState[state as from] ⨝ (allowedTransitions ⨝ EventFollowerHit))[to->state] ∧
+                // Make sure this instance is in the change set
+                thisInst ⊆ (changedInstance ⨝ o)[instance]
+              
+              )
+            )  ∧ 
+            // Postconditions
+            nxtLeaderFollower[follower] = curLeaderFollower[follower] ∧
+            (some (curLeaderFlattened ⨯ nxtLeaderFlattened) where (nxtTimes = curTimes  +  1))  ∧ 
+            // Generic event conditions
+            // Force the instance to go to the correct next state
+            nxtLeaderState = (curLeaderState[state as from] ⨝ (allowedTransitions ⨝ EventLeaderHit))[to->state] ∧
+            // Make sure this instance is in the change set
+            thisInst ⊆ (changedInstance ⨝ o)[instance]
+            // Make sure the right event is raised
+            ∧ (o ⨝ raisedEvent)[event] = EventLeaderHit ∧ 
+            // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
+            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 3
+          
+          )
+        )
+      ) 
+      ∧
+      // Iff it is not a transitioning instance, frame the values
+      (no inst ∩ (changedInstance ⨝ o)[instance] ⇔
+        // Frame values if needed
+        let thisInst = inst,
+            curLeaderState = (instanceInState ⨝ o[cur->config] ⨝ thisInst)[state],
+            nxtLeaderState = (instanceInState ⨝ o[nxt->config] ⨝ thisInst)[state],
+            curLeaderFlattened = (SVLeaderOnePrims ⨝ o[cur -> config] ⨝ thisInst)[times->curTimes],
+            nxtLeaderFlattened = (SVLeaderOnePrims ⨝ o[nxt -> config] ⨝ thisInst)[times->nxtTimes],
+            curLeaderFollower = (o[cur -> config] ⨝ SVLeaderFollower ⨝ thisInst)[follower],
+            nxtLeaderFollower = (o[nxt -> config] ⨝ SVLeaderFollower ⨝ thisInst)[follower] | (
+          // State must stay the same
+          nxtLeaderState = curLeaderState
+          ∧
+          (
+            (no curLeaderFlattened) ∨ 
+            (  
+              // Postconditions
+              (some (curLeaderFlattened ⨯ nxtLeaderFlattened) where (nxtTimes = curTimes)) ∧
+              nxtLeaderFollower[follower] = curLeaderFollower[follower]
+            )
+          )  
+        )
+      )
+  )
+   ∧ 
+  (
+    // Events from Tailer  
+    ∀ inst ∈ (Instance ⨝ Tailer)[instance] |  
+      // Iff this is the instance that raised the event then one of the transitions must have happened 
+      (some inst ∩ ((raisedEvent ⨝ o)[instance]) ⇔ 
+        // Event Tailer.connected
+        (let thisInst = inst,
+             curTailerState = (instanceInState ⨝ o[cur->config] ⨝ thisInst)[state],
+             nxtTailerState = (instanceInState ⨝ o[nxt->config] ⨝ thisInst)[state],
+             curTailerFlattened = (SVTailerOnePrims ⨝ o[cur -> config] ⨝ thisInst)[nrOfHits->curNrOfHits],
+             nxtTailerFlattened = (SVTailerOnePrims ⨝ o[nxt -> config] ⨝ thisInst)[nrOfHits->nxtNrOfHits] |
+          ( 
+             
+            // Postconditions
+            (some (curTailerFlattened ⨯ nxtTailerFlattened) where (nxtNrOfHits = curNrOfHits))  ∧ 
+            // Generic event conditions
+            // Force the instance to go to the correct next state
+            nxtTailerState = (curTailerState[state as from] ⨝ (allowedTransitions ⨝ EventTailerConnected))[to->state] ∧
+            // Make sure this instance is in the change set
+            thisInst ⊆ (changedInstance ⨝ o)[instance]
+            // Make sure the right event is raised
+            ∧ (o ⨝ raisedEvent)[event] = EventTailerConnected ∧ 
             // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
             some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
           
           )
         )
          ∨ 
-        // Event CoffeeMachine.selectNormal
+        // Event Tailer.hit
         (let thisInst = inst,
-             curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
-             nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
-             curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
-             nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded] |
+             curTailerState = (instanceInState ⨝ o[cur->config] ⨝ thisInst)[state],
+             nxtTailerState = (instanceInState ⨝ o[nxt->config] ⨝ thisInst)[state],
+             curTailerFlattened = (SVTailerOnePrims ⨝ o[cur -> config] ⨝ thisInst)[nrOfHits->curNrOfHits],
+             nxtTailerFlattened = (SVTailerOnePrims ⨝ o[nxt -> config] ⨝ thisInst)[nrOfHits->nxtNrOfHits] |
           ( 
              
             // Postconditions
-            (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtId = curId)) ∧
-            (some (nxtCoffeeMachineFlattened) where (nxtAmountNeeded = 100))  ∧ 
+            (some (curTailerFlattened ⨯ nxtTailerFlattened) where (nxtNrOfHits = curNrOfHits  +  1))  ∧ 
             // Generic event conditions
             // Force the instance to go to the correct next state
-            nxtCoffeeMachineState = (curCoffeeMachineState[state as from] ⨝ (allowedTransitions ⨝ EventCoffeeMachineSelectNormal))[to->state] ∧
+            nxtTailerState = (curTailerState[state as from] ⨝ (allowedTransitions ⨝ EventTailerHit))[to->state] ∧
             // Make sure this instance is in the change set
             thisInst ⊆ (changedInstance ⨝ o)[instance]
             // Make sure the right event is raised
-            ∧ (o ⨝ raisedEvent)[event] = EventCoffeeMachineSelectNormal ∧ 
+            ∧ (o ⨝ raisedEvent)[event] = EventTailerHit ∧ 
+            // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
+            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
+          
+          )
+        )
+         ∨ 
+        // Event Tailer.start
+        (let thisInst = inst,
+             curTailerState = (instanceInState ⨝ o[cur->config] ⨝ thisInst)[state],
+             nxtTailerState = (instanceInState ⨝ o[nxt->config] ⨝ thisInst)[state],
+             curTailerFlattened = (SVTailerOnePrims ⨝ o[cur -> config] ⨝ thisInst)[nrOfHits->curNrOfHits],
+             nxtTailerFlattened = (SVTailerOnePrims ⨝ o[nxt -> config] ⨝ thisInst)[nrOfHits->nxtNrOfHits] |
+          ( 
+             
+            // Postconditions
+            (some (nxtTailerFlattened) where (nxtNrOfHits = 0))  ∧ 
+            // Generic event conditions
+            // Force the instance to go to the correct next state
+            nxtTailerState = (curTailerState[state as from] ⨝ (allowedTransitions ⨝ EventTailerStart))[to->state] ∧
+            // Make sure this instance is in the change set
+            thisInst ⊆ (changedInstance ⨝ o)[instance]
+            // Make sure the right event is raised
+            ∧ (o ⨝ raisedEvent)[event] = EventTailerStart ∧ 
             // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
             some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
           
@@ -349,19 +475,18 @@ ParamsEventCoffeeMachinePay_amountMetPrimitives[cur,nxt] ⊆ order
       (no inst ∩ (changedInstance ⨝ o)[instance] ⇔
         // Frame values if needed
         let thisInst = inst,
-            curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
-            nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
-            curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
-            nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded] | (
+            curTailerState = (instanceInState ⨝ o[cur->config] ⨝ thisInst)[state],
+            nxtTailerState = (instanceInState ⨝ o[nxt->config] ⨝ thisInst)[state],
+            curTailerFlattened = (SVTailerOnePrims ⨝ o[cur -> config] ⨝ thisInst)[nrOfHits->curNrOfHits],
+            nxtTailerFlattened = (SVTailerOnePrims ⨝ o[nxt -> config] ⨝ thisInst)[nrOfHits->nxtNrOfHits] | (
           // State must stay the same
-          nxtCoffeeMachineState = curCoffeeMachineState
+          nxtTailerState = curTailerState
           ∧
           (
-            (no curCoffeeMachineFlattened) ∨ 
+            (no curTailerFlattened) ∨ 
             (  
               // Postconditions
-              (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtId = curId)) ∧
-              (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtAmountNeeded = curAmountNeeded))
+              (some (curTailerFlattened ⨯ nxtTailerFlattened) where (nxtNrOfHits = curNrOfHits))
             )
           )  
         )
@@ -369,6 +494,6 @@ ParamsEventCoffeeMachinePay_amountMetPrimitives[cur,nxt] ⊆ order
   )
 
 // Asserts: this is where the checks get added
-exists c: Config | (c |x| instanceInState)[state] in StateCoffeeMachineServe
+∃ c ∈ Config, l ∈ (Instance ⨝ Leader)[instance] | (some (c ⨝ SVLeaderOnePrims) where times = 2 ∧ (l ⨝ instanceInState ⨝ c)[state] ⊆ initialized) 
 
 objectives: minimize Config[count()]

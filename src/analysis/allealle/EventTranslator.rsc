@@ -77,24 +77,24 @@ private tuple[list[str], map[str,str]] buildLetAndVarLookup(Spec spc, Event even
   // first generate needed relational variables
   tmpRels += "thisInst = <instRel>";
  
-  tmpRels += "cur<getCapitalizedSpecName(spc)>State = (instanceInState ⨝ o[cur-\>config] ⨝ <instRel>)[state]";
-  tmpRels += "nxt<getCapitalizedSpecName(spc)>State = (instanceInState ⨝ o[nxt-\>config] ⨝ <instRel>)[state]";
+  tmpRels += "cur<getCapitalizedSpecName(spc)>State = (instanceInState ⨝ o[cur-\>config] ⨝ thisInst)[state]";
+  tmpRels += "nxt<getCapitalizedSpecName(spc)>State = (instanceInState ⨝ o[nxt-\>config] ⨝ thisInst)[state]";
   
   varMapping += ("cur_state": "cur<getCapitalizedSpecName(spc)>State", 
                  "nxt_state": "nxt<getCapitalizedSpecName(spc)>State");  
   
   list[Field] flattenFields = lookupOnePrimitiveFields(spc, cfg.tm);
   if (flattenFields != []) {
-    tmpRels += "cur<getCapitalizedSpecName(spc)>Flattened = (<getOnePrimStateVectorName(spc)> ⨝ o[cur -\> config] ⨝ <instRel>)[<renameFlattenedFields(flattenFields, "cur")>]";
-    tmpRels += "nxt<getCapitalizedSpecName(spc)>Flattened = (<getOnePrimStateVectorName(spc)> ⨝ o[nxt -\> config] ⨝ <instRel>)[<renameFlattenedFields(flattenFields, "nxt")>]";
+    tmpRels += "cur<getCapitalizedSpecName(spc)>Flattened = (<getOnePrimStateVectorName(spc)> ⨝ o[cur -\> config] ⨝ thisInst)[<renameFlattenedFields(flattenFields, "cur")>]";
+    tmpRels += "nxt<getCapitalizedSpecName(spc)>Flattened = (<getOnePrimStateVectorName(spc)> ⨝ o[nxt -\> config] ⨝ thisInst)[<renameFlattenedFields(flattenFields, "nxt")>]";
   
     varMapping += ("cur_flattened": "cur<getCapitalizedSpecName(spc)>Flattened",
                    "nxt_flattened": "nxt<getCapitalizedSpecName(spc)>Flattened");
   }
   
   for (Field f <- lookupNonPrimFields(spc, cfg.tm)) {
-    tmpRels += "cur<getCapitalizedSpecName(spc)><capitalize("<f.name>")> = (o[cur -\> config] ⨝ SV<getCapitalizedSpecName(spc)><capitalize("<f.name>")> ⨝ <instRel>)[<f.name>]";
-    tmpRels += "nxt<getCapitalizedSpecName(spc)><capitalize("<f.name>")> = (o[nxt -\> config] ⨝ SV<getCapitalizedSpecName(spc)><capitalize("<f.name>")> ⨝ <instRel>)[<f.name>]";    
+    tmpRels += "cur<getCapitalizedSpecName(spc)><capitalize("<f.name>")> = (o[cur -\> config] ⨝ SV<getCapitalizedSpecName(spc)><capitalize("<f.name>")> ⨝ thisInst)[<f.name>]";
+    tmpRels += "nxt<getCapitalizedSpecName(spc)><capitalize("<f.name>")> = (o[nxt -\> config] ⨝ SV<getCapitalizedSpecName(spc)><capitalize("<f.name>")> ⨝ thisInst)[<f.name>]";    
   
     varMapping += ("cur_<f.name>": "cur<getCapitalizedSpecName(spc)><capitalize("<f.name>")>",
                    "nxt_<f.name>": "nxt<getCapitalizedSpecName(spc)><capitalize("<f.name>")>");  

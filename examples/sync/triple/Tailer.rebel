@@ -6,10 +6,13 @@ spec Tailer
   init event start()
     post: this.nrOfHits' = 0;
   
+  event connected()
+  
   event hit() 
     post: this.nrOfHits' = this.nrOfHits + 1;
   
   states:
-    (*) -> active: start;
+    (*) -> waiting: start;
+    waiting -> active: connected;
     active -> active: hit;
     

@@ -14,12 +14,12 @@ import ParseTree;
 
 str translateConstraints(set[Spec] spcs, Config cfg, str check) {
   str cons = "<genericTypeConstraints()>
-             '<machineTypeConstraints(spcs)>
+             '<machineFieldTypeConstraints(spcs, cfg)>
              '<eventParamTypeAndMultiplicityConstraints(spcs, cfg)>
              '<allConfigsAreReachable()>
              '<onlyOneTriggeringEvent()>
              '<noMachineWithoutState()>
-             '<machineOnlyHasValuesWhenInitialized(spcs)>
+             '<machineOnlyHasValuesWhenInitialized(spcs, cfg)>
              '<noTransitionsBetweenUnrelatedStates()>
              '<transitionFunction(spcs, cfg)>
              '<encodeAsserts(check)>
@@ -38,10 +38,23 @@ private str genericTypeConstraints()
     'changedInstance ⊆ order ⨯ Instance[instance]
     ";
     
-private str machineTypeConstraints(set[Spec] spcs)
-  = "// Machine specific \'Type\' constraints
-    '<for (Spec s <- spcs) {>SV<getCapitalizedSpecName(s)>OnePrims[config,instance] ⊆ Config ⨯ Instance[instance]
-    '<}>";
+private str machineFieldTypeConstraints(set[Spec] spcs, Config cfg) {
+  list[str] typeCons = [];
+  
+  for (Spec spc <- spcs) {    
+    if (hasOnePrimitiveFields(spc, cfg.tm)) {
+      typeCons += "SV<getCapitalizedSpecName(spc)>OnePrims[config,instance] ⊆ Config ⨯ (Instance ⨝ <getCapitalizedSpecName(spc)>)[instance]"; 
+    }
+    
+    for (Field f <- lookupNonPrimFields(spc, cfg.tm)) {
+      typeCons += "SV<getCapitalizedSpecName(spc)><getCapitalizedFieldName(f)> ⊆ Config ⨯ (Instance ⨝ <getCapitalizedSpecName(spc)>)[instance] ⨯ (Instance ⨝ <f.tipe.tp>)[instance-\><f.name>]";  
+    }
+  } 
+  
+  return "// Machine specific `type` constraints
+         '<for (tc <- typeCons) {><tc>
+         '<}>";   
+}
    
 private str allConfigsAreReachable()
   = "// Generic: All configurations are reachable
@@ -58,11 +71,25 @@ private str noMachineWithoutState()
     '∀ c ∈ Config, inst ∈ Instance | one instanceInState ⨝ c ⨝ inst
     '"; 
     
-private str machineOnlyHasValuesWhenInitialized(set[Spec] spcs)
-  = "// Specific per machine: In every configuration iff a machine is in an initialized state then it must have values
-    '<for (Spec s <- spcs) {>∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one SV<getCapitalizedSpecName(s)>OnePrims ⨝ c ⨝ inst)
-    '<}>
-    '";
+private str machineOnlyHasValuesWhenInitialized(set[Spec] spcs, Config cfg) {
+  list[str] cons = [];
+  
+  for (Spec s <- spcs) {    
+    if (hasOnePrimitiveFields(s, cfg.tm)) {
+      cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one SV<getCapitalizedSpecName(s)>OnePrims ⨝ c ⨝ inst)"; 
+    }
+    
+    for (Field f <- lookupNonPrimFields(s, cfg.tm)) {
+      cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one SV<getCapitalizedSpecName(s)><getCapitalizedFieldName(f)> ⨝ c ⨝ inst)";  
+      cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no SV<getCapitalizedSpecName(s)><getCapitalizedFieldName(f)> ⨝ c ⨝ inst)";  
+    }
+  } 
+  
+  return "// Specific per machine: In every configuration iff a machine is in an initialized state then it must have values
+         '<for (c <- cons) {><c>
+         '<}>
+         '";
+}
 
 private str eventParamTypeAndMultiplicityConstraints(set[Spec] spcs, Config cfg) {
   list[str] typeCons = [];
