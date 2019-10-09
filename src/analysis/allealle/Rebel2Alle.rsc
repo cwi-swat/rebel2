@@ -25,7 +25,7 @@ void translateSpecs(Config config, str check, bool debug = true) {
                  '<translateConstraints(specs, config, check)>";
   
   if (debug) {
-    writeFile(project(getOneFrom(specs)@\loc.top) + "bin/latest-alle-spc.alle", alleSpec);
+    writeFile(project(getOneFrom(specs)@\loc.top) + "examples/latest-alle-spc.alle", alleSpec);
   }
   
   ModelFinderResult mfr = checkInitialSolution(implodeProblem(alleSpec));
@@ -56,8 +56,8 @@ void translateSpecs(Config config, str check, bool debug = true) {
 //  ;
 
 data Trace
-  = step(Configuration cur, Configuration next, RaisedEvent re, Trace tail)
-  | empty()
+  = step(Configuration conf, RaisedEvent re, Trace next)
+  | goal(Configuration conf)
   ;
 
 data Configuration 

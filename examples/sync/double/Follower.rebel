@@ -1,0 +1,15 @@
+module sync::double::Follower
+
+spec Follower 
+  times: Integer;
+  
+  init event start() 
+    post: 
+      this.times' = 0;
+   
+  event hit()
+    post: this.times' = this.times + 1;
+  
+  states : 
+    (*) -> active : start;
+    active -> active : hit;

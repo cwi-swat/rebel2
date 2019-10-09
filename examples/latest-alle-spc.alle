@@ -1,0 +1,374 @@
+// Static configuration of state machines
+CoffeeMachine (spec:id) = {<coffeemachine>}
+
+State (state:id) = {<state_uninitialized>,<state_finalized>,<state_coffeemachine_waiting>,<state_coffeemachine_serve>,<state_coffeemachine_acceptingpayment>}
+initialized (state:id) = {<state_coffeemachine_waiting>,<state_coffeemachine_serve>,<state_coffeemachine_acceptingpayment>}
+finalized (state:id) = {<state_finalized>}
+uninitialized (state:id) = {<state_uninitialized>}
+StateCoffeeMachineServe (state:id) = {<state_coffeemachine_serve>}
+StateCoffeeMachineWaiting (state:id) = {<state_coffeemachine_waiting>}
+StateCoffeeMachineAcceptingPayment (state:id) = {<state_coffeemachine_acceptingpayment>}
+
+
+allowedTransitions (from:id, to:id, event:id) = {<state_coffeemachine_waiting,state_coffeemachine_acceptingpayment,event_coffeemachine_selectamericano>,<state_coffeemachine_waiting,state_coffeemachine_acceptingpayment,event_coffeemachine_selectespresso>,<state_coffeemachine_serve,state_coffeemachine_waiting,event_coffeemachine_empty>,<state_coffeemachine_acceptingpayment,state_coffeemachine_serve,event_coffeemachine_pay_amountmet>,<state_coffeemachine_waiting,state_finalized,event_coffeemachine_poweroff>,<state_coffeemachine_serve,state_finalized,event_coffeemachine_poweroff>,<state_coffeemachine_waiting,state_coffeemachine_acceptingpayment,event_coffeemachine_selectlatte>,<state_coffeemachine_waiting,state_coffeemachine_acceptingpayment,event_coffeemachine_selectnormal>,<state_coffeemachine_acceptingpayment,state_coffeemachine_acceptingpayment,event_coffeemachine_pay>,<state_coffeemachine_acceptingpayment,state_coffeemachine_waiting,event_coffeemachine_cancel>,<state_uninitialized,state_coffeemachine_waiting,event_coffeemachine_poweron>,<state_coffeemachine_acceptingpayment,state_finalized,event_coffeemachine_poweroff>}
+
+EventCoffeeMachineSelectNormal (event:id) = {<event_coffeemachine_selectnormal>}
+EventCoffeeMachineSelectEspresso (event:id) = {<event_coffeemachine_selectespresso>}
+EventCoffeeMachine__frame (event:id) = {<event_coffeemachine___frame>}
+EventCoffeeMachineSelectAmericano (event:id) = {<event_coffeemachine_selectamericano>}
+EventCoffeeMachinePay_amountMet (event:id) = {<event_coffeemachine_pay_amountmet>}
+EventCoffeeMachineSelectLatte (event:id) = {<event_coffeemachine_selectlatte>}
+EventCoffeeMachinePay (event:id) = {<event_coffeemachine_pay>}
+EventCoffeeMachineEmpty (event:id) = {<event_coffeemachine_empty>}
+EventCoffeeMachinePowerOn (event:id) = {<event_coffeemachine_poweron>}
+EventCoffeeMachinePowerOff (event:id) = {<event_coffeemachine_poweroff>}
+EventCoffeeMachineCancel (event:id) = {<event_coffeemachine_cancel>}
+
+// Dynamic configuration of state machines
+Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>,<c9>,<c10>}
+order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>,<c6,c7>,<c7,c8>,<c8,c9>,<c9,c10>}
+InitialConfig (config:id) = {<c1>}
+
+Instance (spec:id, instance:id) = {<coffeemachine,cm1>}
+instanceInState (config:id, instance:id, state:id) >= {<c1,cm1,state_uninitialized>}<= {<c1,cm1,state_uninitialized>,<c1,cm1,state_finalized>,<c1,cm1,state_coffeemachine_waiting>,<c1,cm1,state_coffeemachine_serve>,<c1,cm1,state_coffeemachine_acceptingpayment>,<c2,cm1,state_uninitialized>,<c2,cm1,state_finalized>,<c2,cm1,state_coffeemachine_waiting>,<c2,cm1,state_coffeemachine_serve>,<c2,cm1,state_coffeemachine_acceptingpayment>,<c3,cm1,state_uninitialized>,<c3,cm1,state_finalized>,<c3,cm1,state_coffeemachine_waiting>,<c3,cm1,state_coffeemachine_serve>,<c3,cm1,state_coffeemachine_acceptingpayment>,<c4,cm1,state_uninitialized>,<c4,cm1,state_finalized>,<c4,cm1,state_coffeemachine_waiting>,<c4,cm1,state_coffeemachine_serve>,<c4,cm1,state_coffeemachine_acceptingpayment>,<c5,cm1,state_uninitialized>,<c5,cm1,state_finalized>,<c5,cm1,state_coffeemachine_waiting>,<c5,cm1,state_coffeemachine_serve>,<c5,cm1,state_coffeemachine_acceptingpayment>,<c6,cm1,state_uninitialized>,<c6,cm1,state_finalized>,<c6,cm1,state_coffeemachine_waiting>,<c6,cm1,state_coffeemachine_serve>,<c6,cm1,state_coffeemachine_acceptingpayment>,<c7,cm1,state_uninitialized>,<c7,cm1,state_finalized>,<c7,cm1,state_coffeemachine_waiting>,<c7,cm1,state_coffeemachine_serve>,<c7,cm1,state_coffeemachine_acceptingpayment>,<c8,cm1,state_uninitialized>,<c8,cm1,state_finalized>,<c8,cm1,state_coffeemachine_waiting>,<c8,cm1,state_coffeemachine_serve>,<c8,cm1,state_coffeemachine_acceptingpayment>,<c9,cm1,state_uninitialized>,<c9,cm1,state_finalized>,<c9,cm1,state_coffeemachine_waiting>,<c9,cm1,state_coffeemachine_serve>,<c9,cm1,state_coffeemachine_acceptingpayment>,<c10,cm1,state_uninitialized>,<c10,cm1,state_finalized>,<c10,cm1,state_coffeemachine_waiting>,<c10,cm1,state_coffeemachine_serve>,<c10,cm1,state_coffeemachine_acceptingpayment>}
+raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_coffeemachine_cancel,cm1>,<c1,c2,event_coffeemachine_selectamericano,cm1>,<c1,c2,event_coffeemachine_selectlatte,cm1>,<c1,c2,event_coffeemachine_selectnormal,cm1>,<c1,c2,event_coffeemachine_poweroff,cm1>,<c1,c2,event_coffeemachine_poweron,cm1>,<c1,c2,event_coffeemachine___frame,cm1>,<c1,c2,event_coffeemachine_pay_amountmet,cm1>,<c1,c2,event_coffeemachine_empty,cm1>,<c1,c2,event_coffeemachine_selectespresso,cm1>,<c1,c2,event_coffeemachine_pay,cm1>,<c2,c3,event_coffeemachine_cancel,cm1>,<c2,c3,event_coffeemachine_selectamericano,cm1>,<c2,c3,event_coffeemachine_selectlatte,cm1>,<c2,c3,event_coffeemachine_selectnormal,cm1>,<c2,c3,event_coffeemachine_poweroff,cm1>,<c2,c3,event_coffeemachine_poweron,cm1>,<c2,c3,event_coffeemachine___frame,cm1>,<c2,c3,event_coffeemachine_pay_amountmet,cm1>,<c2,c3,event_coffeemachine_empty,cm1>,<c2,c3,event_coffeemachine_selectespresso,cm1>,<c2,c3,event_coffeemachine_pay,cm1>,<c3,c4,event_coffeemachine_cancel,cm1>,<c3,c4,event_coffeemachine_selectamericano,cm1>,<c3,c4,event_coffeemachine_selectlatte,cm1>,<c3,c4,event_coffeemachine_selectnormal,cm1>,<c3,c4,event_coffeemachine_poweroff,cm1>,<c3,c4,event_coffeemachine_poweron,cm1>,<c3,c4,event_coffeemachine___frame,cm1>,<c3,c4,event_coffeemachine_pay_amountmet,cm1>,<c3,c4,event_coffeemachine_empty,cm1>,<c3,c4,event_coffeemachine_selectespresso,cm1>,<c3,c4,event_coffeemachine_pay,cm1>,<c4,c5,event_coffeemachine_cancel,cm1>,<c4,c5,event_coffeemachine_selectamericano,cm1>,<c4,c5,event_coffeemachine_selectlatte,cm1>,<c4,c5,event_coffeemachine_selectnormal,cm1>,<c4,c5,event_coffeemachine_poweroff,cm1>,<c4,c5,event_coffeemachine_poweron,cm1>,<c4,c5,event_coffeemachine___frame,cm1>,<c4,c5,event_coffeemachine_pay_amountmet,cm1>,<c4,c5,event_coffeemachine_empty,cm1>,<c4,c5,event_coffeemachine_selectespresso,cm1>,<c4,c5,event_coffeemachine_pay,cm1>,<c5,c6,event_coffeemachine_cancel,cm1>,<c5,c6,event_coffeemachine_selectamericano,cm1>,<c5,c6,event_coffeemachine_selectlatte,cm1>,<c5,c6,event_coffeemachine_selectnormal,cm1>,<c5,c6,event_coffeemachine_poweroff,cm1>,<c5,c6,event_coffeemachine_poweron,cm1>,<c5,c6,event_coffeemachine___frame,cm1>,<c5,c6,event_coffeemachine_pay_amountmet,cm1>,<c5,c6,event_coffeemachine_empty,cm1>,<c5,c6,event_coffeemachine_selectespresso,cm1>,<c5,c6,event_coffeemachine_pay,cm1>,<c6,c7,event_coffeemachine_cancel,cm1>,<c6,c7,event_coffeemachine_selectamericano,cm1>,<c6,c7,event_coffeemachine_selectlatte,cm1>,<c6,c7,event_coffeemachine_selectnormal,cm1>,<c6,c7,event_coffeemachine_poweroff,cm1>,<c6,c7,event_coffeemachine_poweron,cm1>,<c6,c7,event_coffeemachine___frame,cm1>,<c6,c7,event_coffeemachine_pay_amountmet,cm1>,<c6,c7,event_coffeemachine_empty,cm1>,<c6,c7,event_coffeemachine_selectespresso,cm1>,<c6,c7,event_coffeemachine_pay,cm1>,<c7,c8,event_coffeemachine_cancel,cm1>,<c7,c8,event_coffeemachine_selectamericano,cm1>,<c7,c8,event_coffeemachine_selectlatte,cm1>,<c7,c8,event_coffeemachine_selectnormal,cm1>,<c7,c8,event_coffeemachine_poweroff,cm1>,<c7,c8,event_coffeemachine_poweron,cm1>,<c7,c8,event_coffeemachine___frame,cm1>,<c7,c8,event_coffeemachine_pay_amountmet,cm1>,<c7,c8,event_coffeemachine_empty,cm1>,<c7,c8,event_coffeemachine_selectespresso,cm1>,<c7,c8,event_coffeemachine_pay,cm1>,<c8,c9,event_coffeemachine_cancel,cm1>,<c8,c9,event_coffeemachine_selectamericano,cm1>,<c8,c9,event_coffeemachine_selectlatte,cm1>,<c8,c9,event_coffeemachine_selectnormal,cm1>,<c8,c9,event_coffeemachine_poweroff,cm1>,<c8,c9,event_coffeemachine_poweron,cm1>,<c8,c9,event_coffeemachine___frame,cm1>,<c8,c9,event_coffeemachine_pay_amountmet,cm1>,<c8,c9,event_coffeemachine_empty,cm1>,<c8,c9,event_coffeemachine_selectespresso,cm1>,<c8,c9,event_coffeemachine_pay,cm1>,<c9,c10,event_coffeemachine_cancel,cm1>,<c9,c10,event_coffeemachine_selectamericano,cm1>,<c9,c10,event_coffeemachine_selectlatte,cm1>,<c9,c10,event_coffeemachine_selectnormal,cm1>,<c9,c10,event_coffeemachine_poweroff,cm1>,<c9,c10,event_coffeemachine_poweron,cm1>,<c9,c10,event_coffeemachine___frame,cm1>,<c9,c10,event_coffeemachine_pay_amountmet,cm1>,<c9,c10,event_coffeemachine_empty,cm1>,<c9,c10,event_coffeemachine_selectespresso,cm1>,<c9,c10,event_coffeemachine_pay,cm1>}
+changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,cm1>,<c2,c3,cm1>,<c3,c4,cm1>,<c4,c5,cm1>,<c5,c6,cm1>,<c6,c7,cm1>,<c7,c8,cm1>,<c8,c9,cm1>,<c9,c10,cm1>}
+
+SVCoffeeMachineOnePrims (config:id, instance:id, id:int, amountNeeded:int) <= {<c1,cm1,?,?>,<c2,cm1,?,?>,<c3,cm1,?,?>,<c4,cm1,?,?>,<c5,cm1,?,?>,<c6,cm1,?,?>,<c7,cm1,?,?>,<c8,cm1,?,?>,<c9,cm1,?,?>,<c10,cm1,?,?>}
+
+
+
+
+
+ParamsEventCoffeeMachinePowerOnPrimitives (cur:id, nxt:id, id:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>,<c7,c8,?>,<c8,c9,?>,<c9,c10,?>}
+
+
+
+
+
+
+
+ParamsEventCoffeeMachinePayPrimitives (cur:id, nxt:id, amount:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>,<c7,c8,?>,<c8,c9,?>,<c9,c10,?>}
+
+
+
+ParamsEventCoffeeMachinePay_amountMetPrimitives (cur:id, nxt:id, amount:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>,<c7,c8,?>,<c8,c9,?>,<c9,c10,?>}
+
+
+
+
+
+
+
+// Generic 'Type' constraints
+order ⊆ Config[config as cur] ⨯ Config[config as nxt]
+raisedEvent ⊆ order ⨯ allowedTransitions[event] ⨯ Instance[instance]
+instanceInState ⊆ Instance[instance] ⨯ Config ⨯ State
+changedInstance ⊆ order ⨯ Instance[instance]
+    
+// Machine specific 'Type' constraints
+SVCoffeeMachineOnePrims[config,instance] ⊆ Config ⨯ Instance[instance]
+
+ParamsEventCoffeeMachinePowerOnPrimitives[cur,nxt] ⊆ order
+ParamsEventCoffeeMachinePayPrimitives[cur,nxt] ⊆ order
+ParamsEventCoffeeMachinePay_amountMetPrimitives[cur,nxt] ⊆ order
+// Specific per event
+∀ o ∈ order ⨝ raisedEvent | (
+  (some (o ⨝ EventCoffeeMachinePowerOn) ⇒ one (o ⨝ ParamsEventCoffeeMachinePowerOnPrimitives)) ∧
+  (some (o ⨝ EventCoffeeMachinePay) ⇒ one (o ⨝ ParamsEventCoffeeMachinePayPrimitives)) ∧
+  (some (o ⨝ EventCoffeeMachinePay_amountMet) ⇒ one (o ⨝ ParamsEventCoffeeMachinePay_amountMetPrimitives))
+)
+// Generic: All configurations are reachable
+∀ c ∈ Config ∖ InitialConfig | c ⊆ (InitialConfig[config as cur] ⨝ ^<cur,nxt>order)[nxt -> config]
+
+// Generic: Every transition can only happen by exactly one event
+∀ o ∈ order | one o ⨝ raisedEvent
+
+// Generic: In every configuration all machines have a state
+∀ c ∈ Config, inst ∈ Instance | one instanceInState ⨝ c ⨝ inst
+
+// Specific per machine: In every configuration iff a machine is in an initialized state then it must have values
+∀ c ∈ Config, inst ∈ (Instance ⨝ CoffeeMachine)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one SVCoffeeMachineOnePrims ⨝ c ⨝ inst)
+
+
+// Generic: Transitions are only allowed between if an event is specified between two states
+∀ o ∈ order ⨝ raisedEvent | (o[cur as config] ⨝ instanceInState)[state->from] ⨯ (o[nxt as config] ⨝ instanceInState)[state->to] ⨯ o[event] ⊆ allowedTransitions
+
+// Transition function
+∀ o ∈ order |  
+  (
+    // Events from CoffeeMachine  
+    ∀ inst ∈ (Instance ⨝ CoffeeMachine)[instance] |  
+      // Iff this is the instance that raised the event then one of the transitions must have happened 
+      (some inst ∩ ((raisedEvent ⨝ o)[instance]) ⇔ 
+        // Event CoffeeMachine.selectLatte
+        (let thisInst = inst,
+             curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+             nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+             curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
+             nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded] |
+          ( 
+             
+            // Postconditions
+            (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtId = curId)) ∧
+            (some (nxtCoffeeMachineFlattened) where (nxtAmountNeeded = 150))  ∧ 
+            // Generic event conditions
+            // Force the instance to go to the correct next state
+            nxtCoffeeMachineState = (curCoffeeMachineState[state as from] ⨝ (allowedTransitions ⨝ EventCoffeeMachineSelectLatte))[to->state] ∧
+            // Make sure this instance is in the change set
+            thisInst ⊆ (changedInstance ⨝ o)[instance]
+            // Make sure the right event is raised
+            ∧ (o ⨝ raisedEvent)[event] = EventCoffeeMachineSelectLatte ∧ 
+            // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
+            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
+          
+          )
+        )
+         ∨ 
+        // Event CoffeeMachine.empty
+        (let thisInst = inst,
+             curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+             nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+             curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
+             nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded] |
+          ( 
+             
+             
+            // Generic event conditions
+            // Force the instance to go to the correct next state
+            nxtCoffeeMachineState = (curCoffeeMachineState[state as from] ⨝ (allowedTransitions ⨝ EventCoffeeMachineEmpty))[to->state] ∧
+            // Make sure this instance is in the change set
+            thisInst ⊆ (changedInstance ⨝ o)[instance]
+            // Make sure the right event is raised
+            ∧ (o ⨝ raisedEvent)[event] = EventCoffeeMachineEmpty ∧ 
+            // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
+            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
+          
+          )
+        )
+         ∨ 
+        // Event CoffeeMachine.powerOn
+        (let thisInst = inst,
+             curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+             nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+             curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
+             nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded],
+             paramCoffeeMachinePowerOnFlattened = (o ⨝ ParamsEventCoffeeMachinePowerOnPrimitives)[id] |
+          ( 
+             
+            // Postconditions
+            (some (nxtCoffeeMachineFlattened ⨯ paramCoffeeMachinePowerOnFlattened) where (nxtId = id)) ∧
+            (some (nxtCoffeeMachineFlattened) where (nxtAmountNeeded = 0))  ∧ 
+            // Generic event conditions
+            // Force the instance to go to the correct next state
+            nxtCoffeeMachineState = (curCoffeeMachineState[state as from] ⨝ (allowedTransitions ⨝ EventCoffeeMachinePowerOn))[to->state] ∧
+            // Make sure this instance is in the change set
+            thisInst ⊆ (changedInstance ⨝ o)[instance]
+            // Make sure the right event is raised
+            ∧ (o ⨝ raisedEvent)[event] = EventCoffeeMachinePowerOn ∧ 
+            // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
+            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
+          
+          )
+        )
+         ∨ 
+        // Event CoffeeMachine.cancel
+        (let thisInst = inst,
+             curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+             nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+             curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
+             nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded] |
+          ( 
+             
+            // Postconditions
+            (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtId = curId)) ∧
+            (some (nxtCoffeeMachineFlattened) where (nxtAmountNeeded = 0))  ∧ 
+            // Generic event conditions
+            // Force the instance to go to the correct next state
+            nxtCoffeeMachineState = (curCoffeeMachineState[state as from] ⨝ (allowedTransitions ⨝ EventCoffeeMachineCancel))[to->state] ∧
+            // Make sure this instance is in the change set
+            thisInst ⊆ (changedInstance ⨝ o)[instance]
+            // Make sure the right event is raised
+            ∧ (o ⨝ raisedEvent)[event] = EventCoffeeMachineCancel ∧ 
+            // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
+            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
+          
+          )
+        )
+         ∨ 
+        // Event CoffeeMachine.selectEspresso
+        (let thisInst = inst,
+             curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+             nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+             curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
+             nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded] |
+          ( 
+             
+            // Postconditions
+            (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtId = curId)) ∧
+            (some (nxtCoffeeMachineFlattened) where (nxtAmountNeeded = 120))  ∧ 
+            // Generic event conditions
+            // Force the instance to go to the correct next state
+            nxtCoffeeMachineState = (curCoffeeMachineState[state as from] ⨝ (allowedTransitions ⨝ EventCoffeeMachineSelectEspresso))[to->state] ∧
+            // Make sure this instance is in the change set
+            thisInst ⊆ (changedInstance ⨝ o)[instance]
+            // Make sure the right event is raised
+            ∧ (o ⨝ raisedEvent)[event] = EventCoffeeMachineSelectEspresso ∧ 
+            // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
+            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
+          
+          )
+        )
+         ∨ 
+        // Event CoffeeMachine.selectAmericano
+        (let thisInst = inst,
+             curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+             nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+             curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
+             nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded] |
+          ( 
+             
+            // Postconditions
+            (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtId = curId)) ∧
+            (some (nxtCoffeeMachineFlattened) where (nxtAmountNeeded = 130))  ∧ 
+            // Generic event conditions
+            // Force the instance to go to the correct next state
+            nxtCoffeeMachineState = (curCoffeeMachineState[state as from] ⨝ (allowedTransitions ⨝ EventCoffeeMachineSelectAmericano))[to->state] ∧
+            // Make sure this instance is in the change set
+            thisInst ⊆ (changedInstance ⨝ o)[instance]
+            // Make sure the right event is raised
+            ∧ (o ⨝ raisedEvent)[event] = EventCoffeeMachineSelectAmericano ∧ 
+            // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
+            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
+          
+          )
+        )
+         ∨ 
+        // Event CoffeeMachine.pay
+        (let thisInst = inst,
+             curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+             nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+             curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
+             nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded],
+             paramCoffeeMachinePayFlattened = (o ⨝ ParamsEventCoffeeMachinePayPrimitives)[amount] |
+          ( 
+            // Preconditions 
+            (some (curCoffeeMachineFlattened ⨯ paramCoffeeMachinePayFlattened) where (curAmountNeeded  -  amount > 0))  ∧ 
+            // Postconditions
+            (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtId = curId)) ∧
+            (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened ⨯ paramCoffeeMachinePayFlattened) where (nxtAmountNeeded = curAmountNeeded  -  amount))  ∧ 
+            // Generic event conditions
+            // Force the instance to go to the correct next state
+            nxtCoffeeMachineState = (curCoffeeMachineState[state as from] ⨝ (allowedTransitions ⨝ EventCoffeeMachinePay))[to->state] ∧
+            // Make sure this instance is in the change set
+            thisInst ⊆ (changedInstance ⨝ o)[instance]
+            // Make sure the right event is raised
+            ∧ (o ⨝ raisedEvent)[event] = EventCoffeeMachinePay ∧ 
+            // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
+            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
+          
+          )
+        )
+         ∨ 
+        // Event CoffeeMachine.powerOff
+        (let thisInst = inst,
+             curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+             nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+             curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
+             nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded] |
+          ( 
+             
+            // Postconditions
+            (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtId = curId)) ∧
+            (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtAmountNeeded = curAmountNeeded))  ∧ 
+            // Generic event conditions
+            // Force the instance to go to the correct next state
+            nxtCoffeeMachineState = (curCoffeeMachineState[state as from] ⨝ (allowedTransitions ⨝ EventCoffeeMachinePowerOff))[to->state] ∧
+            // Make sure this instance is in the change set
+            thisInst ⊆ (changedInstance ⨝ o)[instance]
+            // Make sure the right event is raised
+            ∧ (o ⨝ raisedEvent)[event] = EventCoffeeMachinePowerOff ∧ 
+            // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
+            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
+          
+          )
+        )
+         ∨ 
+        // Event CoffeeMachine.pay_amountMet
+        (let thisInst = inst,
+             curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+             nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+             curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
+             nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded],
+             paramCoffeeMachinePay_amountMetFlattened = (o ⨝ ParamsEventCoffeeMachinePay_amountMetPrimitives)[amount] |
+          ( 
+            // Preconditions 
+            (some (curCoffeeMachineFlattened ⨯ paramCoffeeMachinePay_amountMetFlattened) where (curAmountNeeded  -  amount = 0))  ∧ 
+            // Postconditions
+            (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtId = curId)) ∧
+            (some (nxtCoffeeMachineFlattened) where (nxtAmountNeeded = 0))  ∧ 
+            // Generic event conditions
+            // Force the instance to go to the correct next state
+            nxtCoffeeMachineState = (curCoffeeMachineState[state as from] ⨝ (allowedTransitions ⨝ EventCoffeeMachinePay_amountMet))[to->state] ∧
+            // Make sure this instance is in the change set
+            thisInst ⊆ (changedInstance ⨝ o)[instance]
+            // Make sure the right event is raised
+            ∧ (o ⨝ raisedEvent)[event] = EventCoffeeMachinePay_amountMet ∧ 
+            // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
+            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
+          
+          )
+        )
+         ∨ 
+        // Event CoffeeMachine.selectNormal
+        (let thisInst = inst,
+             curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+             nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+             curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
+             nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded] |
+          ( 
+             
+            // Postconditions
+            (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtId = curId)) ∧
+            (some (nxtCoffeeMachineFlattened) where (nxtAmountNeeded = 100))  ∧ 
+            // Generic event conditions
+            // Force the instance to go to the correct next state
+            nxtCoffeeMachineState = (curCoffeeMachineState[state as from] ⨝ (allowedTransitions ⨝ EventCoffeeMachineSelectNormal))[to->state] ∧
+            // Make sure this instance is in the change set
+            thisInst ⊆ (changedInstance ⨝ o)[instance]
+            // Make sure the right event is raised
+            ∧ (o ⨝ raisedEvent)[event] = EventCoffeeMachineSelectNormal ∧ 
+            // Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
+            some (changedInstance ⨝ o)[instance][count() as nci] where nci = 1
+          
+          )
+        )
+      ) 
+      ∧
+      // Iff it is not a transitioning instance, frame the values
+      (no inst ∩ (changedInstance ⨝ o)[instance] ⇔
+        // Frame values if needed
+        let thisInst = inst,
+            curCoffeeMachineState = (instanceInState ⨝ o[cur->config] ⨝ inst)[state],
+            nxtCoffeeMachineState = (instanceInState ⨝ o[nxt->config] ⨝ inst)[state],
+            curCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[cur -> config] ⨝ inst)[id->curId,amountNeeded->curAmountNeeded],
+            nxtCoffeeMachineFlattened = (SVCoffeeMachineOnePrims ⨝ o[nxt -> config] ⨝ inst)[id->nxtId,amountNeeded->nxtAmountNeeded] | (
+          // State must stay the same
+          nxtCoffeeMachineState = curCoffeeMachineState
+          ∧
+          (
+            (no curCoffeeMachineFlattened) ∨ 
+            (  
+              // Postconditions
+              (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtId = curId)) ∧
+              (some (curCoffeeMachineFlattened ⨯ nxtCoffeeMachineFlattened) where (nxtAmountNeeded = curAmountNeeded))
+            )
+          )  
+        )
+      )
+  )
+
+// Asserts: this is where the checks get added
+exists c: Config | (c |x| instanceInState)[state] in StateCoffeeMachineServe
+
+objectives: minimize Config[count()]

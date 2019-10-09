@@ -1,0 +1,15 @@
+module sync::triple::Tailer
+
+spec Tailer 
+  nrOfHits: Integer;
+  
+  init event start()
+    post: this.nrOfHits' = 0;
+  
+  event hit() 
+    post: this.nrOfHits' = this.nrOfHits + 1;
+  
+  states:
+    (*) -> active: start;
+    active -> active: hit;
+    

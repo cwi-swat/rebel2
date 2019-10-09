@@ -1,0 +1,22 @@
+module sync::double::Leader
+
+import sync::double::Follower 
+  
+spec Leader   
+  times: Integer,
+  follower: Follower; 
+
+  init event start(follower: Follower) 
+    pre: 
+      follower is active; 
+    post: 
+      this.follower' = follower, 
+      this.times' = 0; 
+   
+  event hit() 
+    pre: this.follower.hit();
+    post: this.times' = this.times + 1; 
+  
+  states : 
+    (*) -> active : start;
+    active -> active : hit;

@@ -1,0 +1,21 @@
+module sync::triple::Follower
+
+import sync::triple::Tailer
+
+spec Follower
+  tailer: Tailer,
+  times: Integer;
+  
+  init event start(tailer: Tailer) 
+    pre: tailer is active;
+    post: 
+      this.times' = 0,
+      this.tailer' = tailer;
+          
+  event hit() 
+    pre: this.tailer.hit();  
+    post: this.times' = this.times + 1;
+ 
+  states:
+    (*) -> active: start; 
+    active -> active: hit;     

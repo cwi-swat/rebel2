@@ -16,14 +16,29 @@ private data Reference
   | param()
   ;
   
-data Context = ctx(map[str var, str relation] varLookup, void (str) addChangedInstance, Config cfg);
+data Context = ctx(map[str var, str relation] varLookup, void () incNrOfChangedInstances, int () getNrOfChangedInstances, Config cfg);
 
 str translateEvent(Spec spc, Event event, str instRel, Config cfg, bool topLevel = true) {
+  int nrOfChangedInstances = 1; 
+  
+  void inc() { nrOfChangedInstances += 1;};
+  int get() { return nrOfChangedInstances;};
+  
   tuple[list[str] rels, map[str,str] lookup] l = buildLetAndVarLookup(spc, event, instRel, cfg);
   
   return "// Event <spc.name>.<event.name>
          '(let <intercalate(",\n", l.rels)> |
-         '  <translateEvent(spc, event, topLevel, ctx(l.lookup, emptyAdd, cfg))>
+         '  <translateEventBody(spc, event, ctx(l.lookup, inc, get, cfg))>
+         ')";     
+}
+
+str translateSyncedEvent(Spec spc, Event event, str instRel, Context ctx) {
+  tuple[list[str] rels, map[str,str] lookup] l = buildLetAndVarLookup(spc, event, instRel, ctx.cfg);
+  ctx.varLookup = l.lookup;
+  
+  return "// Event <spc.name>.<event.name>
+         '(let <intercalate(",\n", l.rels)> |
+         '  <translateEventBody(spc, event, ctx, topLevel=false)>
          ')";     
 }
 
@@ -46,13 +61,11 @@ str translateFrameEvent(Spec spc, Event frameEvent, str instRel, Config cfg) {
          '  (
          '    <getNoValues()> ∨ 
          '    (  
-         '      <translatePost(frameEvent, ctx(l.lookup, emptyAdd, cfg))>
+         '      <translatePost(frameEvent, ctx(l.lookup, void () {;}, int () {return 1;}, cfg))>
          '    )
          '  )  
          ')";
 }
-
-private void emptyAdd(str inst) {}
 
 private tuple[list[str], map[str,str]] buildLetAndVarLookup(Spec spc, Event event, str instRel, Config cfg) {
   str renameFlattenedFields(list[Field] fields, str prefix) =
@@ -62,6 +75,8 @@ private tuple[list[str], map[str,str]] buildLetAndVarLookup(Spec spc, Event even
   map[str,str] varMapping = ();
 
   // first generate needed relational variables
+  tmpRels += "thisInst = <instRel>";
+ 
   tmpRels += "cur<getCapitalizedSpecName(spc)>State = (instanceInState ⨝ o[cur-\>config] ⨝ <instRel>)[state]";
   tmpRels += "nxt<getCapitalizedSpecName(spc)>State = (instanceInState ⨝ o[nxt-\>config] ⨝ <instRel>)[state]";
   
@@ -99,19 +114,14 @@ private tuple[list[str], map[str,str]] buildLetAndVarLookup(Spec spc, Event even
   return <tmpRels, varMapping>;
 }
 
-private str translateEvent(Spec spc, Event event, bool topLevel, Context ctx) {
-  set[str] changedInstances = {"inst"};
-  void addChangedInstance(str relation) { changedInstances += relation; }
-
-  ctx.addChangedInstance = addChangedInstance;
-
+private str translateEventBody(Spec spc, Event event, Context ctx, bool topLevel = true) {
   str pre = translatePre(event, ctx);
   str post = translatePost(event, ctx);
 
   return  "( 
           '  <pre> <if (pre != "") {> ∧ <}>
           '  <post> <if (post != "") {> ∧ <}>
-          '  <translateGenericPart(spc, event, topLevel, changedInstances, ctx)>
+          '  <translateGenericPart(spc, event, topLevel, ctx)>
           ')";
 }
 
@@ -129,12 +139,19 @@ private str translatePost(Event event, Context ctx)
 
 private default str translatePost(Event event, Context ctx) = "";     
 
-private str translateGenericPart(Spec spc, Event event, bool topLevel, set[str] changedInstances, Context ctx)
+private str translateGenericPart(Spec spc, Event event, bool topLevel, Context ctx)
   = "// Generic event conditions
-    '<ctx.varLookup["nxt_state"]> = (<ctx.varLookup["cur_state"]>[state as from] ⨝ (allowedTransitions ⨝ <eventName>))[to-\>state]
-    '<if (topLevel){> ∧ (o ⨝ raisedEvent)[event] = <eventName> ∧ 
-    '(changedInstance ⨝ o)[instance] = <intercalate(" ∪ ", [*changedInstances])><}>"
+    '// Force the instance to go to the correct next state
+    '<ctx.varLookup["nxt_state"]> = (<ctx.varLookup["cur_state"]>[state as from] ⨝ (allowedTransitions ⨝ <eventName>))[to-\>state] ∧
+    '// Make sure this instance is in the change set
+    'thisInst ⊆ (changedInstance ⨝ o)[instance]
+    '<if (topLevel){>// Make sure the right event is raised
+    '∧ (o ⨝ raisedEvent)[event] = <eventName> ∧ 
+    '// Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
+    'some (changedInstance ⨝ o)[instance][count() as nci] where nci = <ctx.getNrOfChangedInstances()>
+    '<}>"
   when str eventName := "Event<getCapitalizedSpecName(spc)><capitalize("<event.name>")>"; 
+    //'(changedInstance ⨝ o)[instance] = <intercalate(" ∪ ", [*changedInstances])><}>"
 
 str translate((Formula)`(<Formula f>)`, Context ctx) = "(<translate(f,ctx)>)";
 
@@ -147,7 +164,8 @@ str translate((Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, Context ct
     case (Expr)`<Id field>`: return "<field>";
   };
   
-  ctx.addChangedInstance("<relOfSync>[<getFieldName(spc)>-\>instance]");
+  //ctx.addChangedInstance("<relOfSync>[<getFieldName(spc)>-\>instance]");
+  ctx.incNrOfChangedInstances();
   
   Spec syncedSpec = getSpecByType(spc, ctx.cfg.instances, ctx.cfg.tm);
   Event syncedEvent = lookupEventByName("<event>", syncedSpec);
@@ -167,15 +185,11 @@ str translate((Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, Context ct
       paramConst += "<translate(args[i],ctx)> = (o ⨝ ParamsEvent<getCapitalizedSpecName(syncedSpec)><getCapitalizedEventName(syncedEvent)><capitalize("<formals[i].name>")>)[<formals[i].name>-\><getFieldName(args[i])>]";
     }
   }
-  
-  //for (FormalParam p <- lookupNonPrimParams(event, cfg.tm)) {
-  //  paramConst += "(o ⨝ ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(event)><capitalize("<p.name>")>)[<p.name>-\>s_<p.name>]";
-  //}  
    
   return "// Synchronised event, constraint input param values of synced event
          '<for (c <- paramConst) {><c> ∧
          '<}>
-         '<translateEvent(syncedSpec, syncedEvent, "<relOfSync>[<getFieldName(spc)>-\>instance]", ctx.cfg, topLevel = false)>";
+         '<translateSyncedEvent(syncedSpec, syncedEvent, "<relOfSync>[<getFieldName(spc)>-\>instance]", ctx)>";
 }  
 
 str translate(f: (Formula)`<Expr lhs> is <Id state>`, Context ctx) {
@@ -183,7 +197,7 @@ str translate(f: (Formula)`<Expr lhs> is <Id state>`, Context ctx) {
    
   str specRel = isParam(lhs, ctx.cfg.tm) ?
     "(<ctx.varLookup["param_<lhs>"]>[<lhs>-\>instance] ⨯ o[cur-\>config])" : 
-    "(o[cur -\> config] ⨯ (Instance ⨝ <capitalize(specOfLhs)>)";  
+    "(o[cur -\> config] ⨯ (Instance ⨝ <capitalize(specOfLhs)>))";  
   
   str stateRel = "<state>" == "initialized" ?
     "initialized" :

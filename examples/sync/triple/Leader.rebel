@@ -1,6 +1,6 @@
-module sync::Leader
+module sync::triple::Leader
 
-import sync::Follower 
+import sync::triple::Follower 
   
 spec Leader   
   times: Integer,
@@ -13,9 +13,9 @@ spec Leader
       this.follower' = follower, 
       this.times' = 0; 
       
-  event hit(times: Integer) 
+  event hit() 
     pre:  
-      this.follower.hit(times);
+      this.follower.hit();
     post: 
       this.times' = this.times + 1; 
 

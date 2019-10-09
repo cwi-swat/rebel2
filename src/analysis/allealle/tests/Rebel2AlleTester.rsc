@@ -57,11 +57,11 @@ void translateCoffeeMachine() {
 }
 
 void translateLeaderAndFollower() {
-  loc leaderFile = |project://rebel2/bin/normalized/sync/Leader.rebel|;
-  loc followerFile = |project://rebel2/bin/normalized/sync/Follower.rebel|;
+  loc leaderFile = |project://rebel2/bin/normalized/sync/double/Leader.rebel|;
+  loc followerFile = |project://rebel2/bin/normalized/sync/double/Follower.rebel|;
   
-  normalize(parseModule(|project://rebel2/examples/sync/Leader.rebel|));
-  normalize(parseModule(|project://rebel2/examples/sync/Follower.rebel|));
+  normalize(parseModule(|project://rebel2/examples/sync/double/Leader.rebel|));
+  normalize(parseModule(|project://rebel2/examples/sync/double/Follower.rebel|));
 
   Module f = parseModule(followerFile);
   Module l = parseModule(leaderFile);
@@ -72,4 +72,29 @@ void translateLeaderAndFollower() {
   initialValues = {};  
   
   translateSpecs(config(instances, initialValues, tm, 6), "∃ c ∈ Config, f ∈ SVFollowerOnePrims, l ∈ SVLeaderOnePrims | (some (c ⨝ f) where times = 3 ∧ some (c ⨝ l) where times = 3)");
+}
+
+void translateLeaderFollowerAndTailer() {
+  loc leaderFile = |project://rebel2/bin/normalized/sync/triple/Leader.rebel|;
+  loc followerFile = |project://rebel2/bin/normalized/sync/triple/Follower.rebel|;
+  loc tailerFile = |project://rebel2/bin/normalized/sync/triple/Tailer.rebel|;
+  
+  normalize(parseModule(|project://rebel2/examples/sync/triple/Leader.rebel|));
+  normalize(parseModule(|project://rebel2/examples/sync/triple/Follower.rebel|));
+  normalize(parseModule(|project://rebel2/examples/sync/triple/Tailer.rebel|));
+
+  Module l = parseModule(leaderFile);
+  Module f = parseModule(followerFile);
+  Module t = parseModule(tailerFile);
+
+  TModel tm = rebelTModelFromTree(l, debug = false, pathConf = normPathConfig());
+
+  instances = {<getSpec(f, "Follower"), "f1", uninitialized()>, 
+               <getSpec(f, "Follower"), "f2", uninitialized()>, 
+               <getSpec(t, "Tailer"), "t1", uninitialized()>,
+               <getSpec(l, "Leader"), "l1", uninitialized()>};
+               
+  initialValues = {};  
+  
+  translateSpecs(config(instances, initialValues, tm, 10), "∃ c ∈ Config | (some (c ⨝ SVLeaderOnePrims) where times = 2)");
 }
