@@ -7,7 +7,7 @@ import String;
 import Node;
 
 data Config = config(rel[Spec spc, str instance, State initialState] instances, 
-                     rel[Spec spc, str instance, str field, set[str] val] initialValues, 
+                     rel[Spec spc, str instance, str field, str val] initialValues, 
                      TModel tm,
                      int numberOfTransitions,
                      int maxSizeIntegerSets = 5);

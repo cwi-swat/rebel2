@@ -186,9 +186,10 @@ str translate((Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, Context ct
     }
   }
    
-  return "// Synchronised event, constraint input param values of synced event
+  return "// Synchronised with `<syncedSpec.name>.<syncedEvent.name>` event
+         '<if (paramConst != []) {>// Constrain input param values of synced event 
          '<for (c <- paramConst) {><c> ∧
-         '<}>
+         '<}><}>
          '<translateSyncedEvent(syncedSpec, syncedEvent, "<relOfSync>[<getFieldName(spc)>-\>instance]", ctx)>";
 }  
 

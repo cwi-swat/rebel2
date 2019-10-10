@@ -26,12 +26,18 @@ str translateDynamicPart(Config cfg) {
   return def;
 }
 
-private str buildEventParamRels(set[Spec] specs, Config cfg)
-  = "<for (s <- specs, e <- lookupEvents(s)) {><buildEventFlattenedParamRel(s,e,cfg)>
-    '<buildOtherParamRels(s,e,cfg)>
-    '<}>";
+private str buildEventParamRels(set[Spec] specs, Config cfg) {
+  list[str] rels = [];
+  
+  for (Spec s <- specs, e <- lookupEvents(s)) {
+    rels += buildEventFlattenedParamRel(s,e,cfg);
+    rels += buildOtherParamRels(s,e,cfg);
+  }
+  
+  return intercalate("\n", [r | r <- rels, r != ""]);
+}
 
-private str buildEventFlattenedParamRel(Spec s, Event e, Config cfg)
+private str buildEventFlattenedParamRel(Spec s, Event e, Config cfg) 
  = "ParamsEvent<getCapitalizedSpecName(s)><getCapitalizedEventName(e)>Primitives (cur:id, nxt:id, <intercalate(",", [toLowerCase("<p.name>:<convertType(p.tipe)>") | p <- params])>) \<= {<buildParamTuples(cfg.numberOfTransitions, size(params))>}"
  when 
   list[FormalParam] params := lookupPrimitiveParams(e, cfg.tm), 
@@ -43,9 +49,15 @@ private str buildParamTuples(int numberOfTransitions, int numberOfPrimFields)
   = intercalate(",", ["\<c<c>,c<c+1>,<fields>\>" | int c <- [1..numberOfTransitions]])
   when str fields := intercalate(",", ["?" | int i <- [0..numberOfPrimFields]]);
 
-private str buildOtherParamRels(Spec s, Event e, Config cfg)
-  = "<for (FormalParam p <- lookupNonPrimParams(e,cfg.tm)) {>ParamsEvent<getCapitalizedSpecName(s)><getCapitalizedEventName(e)><capitalize("<p.name>")> (cur:id, nxt:id, <toLowerCase("<p.name>")>:id) \<= {<intercalate(",", ["\<c<c>,c<c+1>,<i>\>" | int c <- [1..cfg.numberOfTransitions+1], str i <- getInstancesOfType(p.tipe, cfg.instances<0,1>)])>} 
-    '<}>";
+private str buildOtherParamRels(Spec s, Event e, Config cfg) {
+  list[str] rels = [];
+  
+  for (FormalParam p <- lookupNonPrimParams(e,cfg.tm)) {
+    rels += "ParamsEvent<getCapitalizedSpecName(s)><getCapitalizedEventName(e)><capitalize("<p.name>")> (cur:id, nxt:id, <toLowerCase("<p.name>")>:id) \<= {<intercalate(",", ["\<c<c>,c<c+1>,<i>\>" | int c <- [1..cfg.numberOfTransitions+1], str i <- getInstancesOfType(p.tipe, cfg.instances<0,1>)])>}";  
+  }
+  
+  return intercalate("\n", rels);
+}
 
 private str buildStateVectors(set[Spec] specs, Config cfg) //rel[Spec spc, str instance] instances, rel[Spec spc, str instance, str field, set[str] val] initialValues, int numberOfTransitions)
   = "<for (Spec s <- specs) {>

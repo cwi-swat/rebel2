@@ -110,10 +110,12 @@ private str eventParamTypeAndMultiplicityConstraints(set[Spec] spcs, Config cfg)
   }
   
   return "<intercalate("\n", typeCons)>
+         '<if (multCons != []) {>
          '// Specific per event
          '∀ o ∈ order ⨝ raisedEvent | (
          '  <intercalate(" ∧\n", multCons)>
-         ')";
+         ')<}>
+         '";
 }
    
 private str noTransitionsBetweenUnrelatedStates() 

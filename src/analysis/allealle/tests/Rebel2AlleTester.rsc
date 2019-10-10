@@ -26,7 +26,7 @@ void translatePingPong() {
   instances = {<pp, "p1", uninitialized()>, <pp, "p2", uninitialized()>};
   initialValues = {};  
   
-  translateSpecs(config(instances, initialValues, tm, 20), "exists c: Config, p: SVPingPongOnePrims | some (c |x| p) where times = 5");
+  translateSpecs(config(instances, initialValues, tm, 7), "exists c: Config, p: SVPingPongOnePrims | some (c |x| p) where times = 5");
 }
 
 private PathConfig normPathConfig() = pathConfig(srcs=[|project://rebel2/bin/normalized|]);

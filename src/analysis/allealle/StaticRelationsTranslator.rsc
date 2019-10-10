@@ -11,21 +11,22 @@ str translateStaticPart(set[Spec] spcs) {
             '<buildSpecRel(spcs)>
             '<buildStateRel(spcs)>
             '<buildAllowedTransitionRel(spcs)>
-            '<buildEventsAsSingleRels(spcs)>
-            '"; 
+            '<buildEventsAsSingleRels(spcs)>"; 
 
   return def;
 }
 
 private str buildSpecRel(set[Spec] spcs) 
-  = "<for (s <- spcs) {><buildSpecRel(s)><}>
-    '";
+  = "// Define the specs that can take place in the transition system
+    '<for (s <- spcs) {><buildSpecRel(s)>
+    '<}>";
   
 private str buildSpecRel(Spec spc) 
   = "<getCapitalizedSpecName(spc)> (spec:id) = {\<<getLowerCaseSpecName(spc)>\>}";  
   
 private str buildStateRel(set[Spec] spcs) 
-  = "State (state:id) = {\<state_uninitialized\>,\<state_finalized\>,<stateTuples>}
+  = "// Define all possible states for all machines
+    'State (state:id) = {\<state_uninitialized\>,\<state_finalized\>,<stateTuples>}
     'initialized (state:id) = {<stateTuples>}
     'finalized (state:id) = {\<state_finalized\>}
     'uninitialized (state:id) = {\<state_uninitialized\>}
@@ -37,8 +38,7 @@ private str buildIndividualStateRels(set[Spec] spcs)
     '<}>";
 
 private str buildIndividualStateRel(Spec spc)
-  = "<for (lang::Syntax::State s <- states) {>State<getCapitalizedSpecName(spc)><capitalize("<s>")> (state:id) = {\<<getStateLabel(spc, s)>\>}
-    '<}>"
+  = "<for (lang::Syntax::State s <- states) {>State<getCapitalizedSpecName(spc)><capitalize("<s>")> (state:id) = {\<<getStateLabel(spc, s)>\>}<}>"
     when set[lang::Syntax::State] states := lookupStates(spc);
   
 private str buildStateTuples(Spec spc) 
@@ -48,14 +48,16 @@ private str buildStateTuples(Spec spc)
     set[str] states := {"<name>_<toLowerCase("<s.name>")>" | /lang::Syntax::State s := spc.states, s has name};
 
 private str buildAllowedTransitionRel(set[Spec] spcs)
-  = "allowedTransitions (from:id, to:id, event:id) = {<intercalate(",",[buildAllowedTransitionTuples(s) | s <- spcs])>}";
+  = "// Define which transitions are allowed (in the form of `from a state` -\> ` via an event` -\> `to a state`
+    'allowedTransitions (from:id, to:id, event:id) = {<intercalate(",",[buildAllowedTransitionTuples(s) | s <- spcs])>}";
 
 private str buildAllowedTransitionTuples(Spec spc)
   = intercalate(",", ["\<<f>,<t>,<e>\>" | <f,t,e> <- flattenTransitions(spc)]);
   
 private str buildEventsAsSingleRels(set[Spec] spcs)
-  = "<for (r <- rels) {>
-    '<r><}>"
+  = "// Define each event as single relation so that the events can be used as variables in the constraints 
+    '<for (r <- rels) {><r>
+    '<}>"
     when
       set[str] rels := {buildSingleEventRel("<s.name>", e) | s <- spcs, /Event e := s.events};
     

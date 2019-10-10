@@ -1,20 +1,17 @@
 module PingPong
 
 spec PingPong 
-  id: Integer,
   times: Integer;
 
   identity id;
   
-  init event start(id: Integer) 
+  init event start() 
     post: 
-      this.id' = id, 
       this.times' = 0;
   
   event hit()
     post: 
-      this.times' = this.times + 1, 
-      this.id' = this.id;
+      this.times' = this.times + 1; 
     
   states:
     (*) -> ping: start;
