@@ -2,8 +2,6 @@ module PingPong
 
 spec PingPong 
   times: Integer;
-
-  identity id;
   
   init event start() 
     post: 

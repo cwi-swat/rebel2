@@ -1,14 +1,10 @@
 module CoffeeMachine
 
 spec CoffeeMachine
-  id: Integer,
   amountNeeded: Integer;
-  
-  identity id;
-  
-  init event powerOn(id: Integer) 
+   
+  init event powerOn() 
     post: 
-      this.id' = id,
       this.amountNeeded' = 0;
     
   event powerOff()
@@ -31,12 +27,14 @@ spec CoffeeMachine
        
   event pay(amount: Integer)
     pre: 
+      (amount = 5 || amount = 10 || amount = 20 || amount = 50),
       this.amountNeeded - amount > 0;
     post: 
       this.amountNeeded' = this.amountNeeded - amount;
   
     success amountMet
       pre: 
+        (amount = 5 || amount = 10 || amount = 20 || amount = 50),
         this.amountNeeded - amount = 0;
       post: 
         this.amountNeeded' = 0;

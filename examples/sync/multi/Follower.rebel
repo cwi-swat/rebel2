@@ -1,6 +1,6 @@
-module sync::triple::Tailer
+module sync::multi::Follower
 
-spec Tailer 
+spec Follower 
   nrOfHits: Integer;
   
   init event start()
@@ -8,11 +8,8 @@ spec Tailer
   
   event hit() 
     post: this.nrOfHits' = this.nrOfHits + 1;
-  
-  event connected()
-  
+    
   states:
-    (*) -> waiting: start;
-    waiting -> active: connected;
+    (*) -> active: start;
     active -> active: hit;
-      
+   

@@ -1,9 +1,8 @@
 module Plugin
 
-import lang::Syntax;
-import lang::Parser;
-
-import analysis::Checker;
+import rebel::lang::SpecSyntax;
+import rebel::lang::SpecParser;
+import rebel::lang::SpecTypeChecker;
 
 import util::IDE;
 import util::HtmlDisplay;

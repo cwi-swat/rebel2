@@ -35,3 +35,22 @@ test MultipleSpecs [[
   
   spec Follower
 ]]
+
+test SetOfFollowers [[
+  module Multiple
+  
+  spec Leader
+    followers: set Follower;
+    
+    event start()
+      post: this.followers' = {};
+      
+    event add(follower: Follower)
+      post: this.followers' = this.followers + follower; 
+
+    event hit()
+      pre: forall f: this.followers | f.hit();
+            
+  spec Follower
+    event hit()
+]]

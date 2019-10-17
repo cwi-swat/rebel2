@@ -158,7 +158,7 @@ private Post emptyPost() = (Post)`post: ;`;
 
 private Event normalizeVariant(EventVariant ev, Event e) {
   Event var = e;
-  var.name = [Id]"<e.name>_<ev.name>";
+  var.name = [Id]"<e.name>__<ev.name>";
   
   var.body = buildEventBody(ev.body.pre, ev.body.post);
   
@@ -211,7 +211,7 @@ private States? normalizeStates(States? states) {
 
 private Transition normalizeEventRefs(Transition t) {
   return visit (t) {
-    case (TransEvent)`<Id event>::<Id variant>` => [TransEvent]"<event>_<variant>"
+    case (TransEvent)`<Id event>::<Id variant>` => [TransEvent]"<event>__<variant>"
   }
 }
 

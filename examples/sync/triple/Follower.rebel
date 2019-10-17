@@ -13,14 +13,11 @@ spec Follower
     post: 
       this.times' = 0,
       this.tailer' = tailer;
-    
-  event connected()  
-          
+              
   event hit() 
     pre: this.tailer.hit();  
     post: this.times' = this.times + 1;
  
   states:
-    (*) -> waiting: start;
-    waiting -> active: connected; 
+    (*) -> active: start;
     active -> active: hit;     

@@ -8,8 +8,7 @@ spec Leader
 
   init event start(follower: Follower) 
     pre: 
-      follower is waiting,
-      follower.connected(); 
+      follower is active;
     post: 
       this.follower' = follower, 
       this.times' = 0; 
@@ -21,5 +20,5 @@ spec Leader
       this.times' = this.times + 1; 
 
   states:
-    (*) -> active: start;
+    (*) -> active: start; 
     active -> active: hit;     

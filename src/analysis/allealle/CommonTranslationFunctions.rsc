@@ -16,6 +16,7 @@ data State
   = uninitialized()
   | finalized()
   | state(str name)
+  | anyState()
   ;
 
 @memo
@@ -154,6 +155,9 @@ list[FormalParam] lookupPrimitiveParams(Event e, TModel tm) = [p | /FormalParam 
 
 @memo
 list[FormalParam] lookupNonPrimParams(Event e, TModel tm) = [p | /FormalParam p <- e.params, !isPrim(p.tipe,tm)];
+
+@memo
+list[FormalParam] lookupPrimParamsWithOtherMult(Event e, TModel tm) = [p | /FormalParam p <- e.params, isPrim(p.tipe,tm) && !hasMultOfOne(p.tipe, tm)];
 
 @memo
 bool hasMultOfOne(Type tipe, TModel tm) = hasMultOfOne(t) when tipe@\loc in tm.facts, AType t := tm.facts[tipe@\loc];

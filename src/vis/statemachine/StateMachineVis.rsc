@@ -1,7 +1,7 @@
 module vis::statemachine::StateMachineVis
 
-import lang::Syntax;
-import lang::Parser;
+import rebel::lang::SpecSyntax;
+import rebel::lang::SpecParser;
 import List;
 import Set;
 

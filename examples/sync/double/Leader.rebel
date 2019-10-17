@@ -9,7 +9,7 @@ spec Leader
   init event start(follower: Follower) 
     pre: 
       follower is active; 
-    post: 
+    post:  
       this.follower' = follower, 
       this.times' = 0; 
    

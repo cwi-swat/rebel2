@@ -6,9 +6,9 @@ start syntax Module
   = ModuleId module Import* imports Part+ parts
   ;
 
-syntax Import = "import" QualifiedName module;
-
 syntax ModuleId = "module" QualifiedName name; 
+
+syntax Import = "import" QualifiedName module;
 
 syntax QualifiedName = {Id "::"}+ names !>> "::";
 
@@ -128,19 +128,21 @@ syntax TransEvent
   
 syntax Lit
   = Int
-  | StringConstant 
+  | StringConstant
+  | emptySet: "{}" 
   ;
 
 syntax Type
   = TypeName tp
-  | Multiplicity mult TypeName tp
+  | "set" TypeName elem
+  | "?" TypeName elem
   ;  
   
-syntax Multiplicity
-  = "one"
-  | "lone"
-  | "set"
-  ;
+//syntax Multiplicity
+//  = "one"
+//  | "lone"
+//  | "set"
+//  ;
   
 lexical Id = [a-z A-Z 0-9 _] !<< ([a-z A-Z_][a-z A-Z 0-9 _]* !>> [a-z A-Z 0-9 _]) \ Keywords;
 lexical TypeName = @category="Type" [a-z A-Z 0-9 _] !<< [A-Z][a-z A-Z 0-9 _]* !>> [a-z A-Z 0-9 _] \ Keywords;

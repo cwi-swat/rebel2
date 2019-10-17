@@ -1,0 +1,23 @@
+module sync::multi::Leader
+
+import sync::multi::Follower
+
+spec Leader
+  nrOfHits: Integer,
+  followers: set Follower;
+  
+  init event start()  
+    post: 
+      this.nrOfHits' = 0, 
+      this.followers' = {};    
+      
+  event add(follower: Follower) 
+    pre: 
+      follower is initialized; 
+    post: 
+      this.followers' = this.followers + follower; 
+  
+  event hit()
+    pre: forall f: this.followers | f.hit();
+    post: this.nrOfHits' = this.nrOfHits + 1;
+    
