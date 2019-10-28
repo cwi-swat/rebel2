@@ -18,123 +18,140 @@ private data Reference
   
 data Context = ctx(map[str var, str relation] varLookup, void () incNrOfChangedInstances, int () getNrOfChangedInstances, Config cfg);
 
-//pred eventTailerConnected[step: (cur:id, nxt:id), tailer: (instance:id)]
-//  = let cur = step[cur->config],
-//        nxt = step[nxt->config],
-//        curPrims = (SVTailerOnePrims ⨝ cur ⨝ tailer)[nrOfHits->curNrOfHits], 
-//        nxtPrims = (SVTailerOnePrims ⨝ nxt ⨝ tailer)[nrOfHits->nxtNrOfHits] | 
-//    (some (curPrims ⨯ nxtPrims) where (nxtNrOfHits = curNrOfHits))    
-//  ∧ forceState[(instanceInState ⨝ tailer ⨝ cur)[state], (instanceInState ⨝ tailer ⨝ nxt)[state], EventTailerConnected]
-//  ∧ tailer ⊆ (changedInstance ⨝ step)[instance]
-
-str translateEventToPred(Spec spc, Event event, Config cfg) {
+str constructTransitionFunction(Spec spc, Config cfg) {
+  list[str] getEventParams(Event e) { 
+    list[str] actuals = ["step", "inst"];
     
+    list[FormalParam] params = lookupPrimitiveParams(e, cfg.tm);
+    if (params != []) {
+      actuals += "(step ⨝ ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(e)>Primitives)[<intercalate(",", ["<p.name>" | p <- params])>]";
+    }  
+    
+    for (FormalParam p <- lookupNonPrimParams(e, cfg.tm)) {
+      actuals += "(step ⨝ ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(e)><capitalize("<p.name>")>)[<p.name>]";
+    }
+
+    return actuals;
+  }
+  
+  str buildTransCond(Event e) =
+    "(event<getCapitalizedSpecName(spc)><getCapitalizedEventName(e)>[<intercalate(",", getEventParams(e))>] ∧
+    '(step ⨝ raisedEvent)[event] = Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(e)> ∧
+    '(changedInstance ⨝ step)[instance] ⊆  inst) // todo: Needs to be extended for synced events!";
+  
+  list[str] eventTrans = [buildTransCond(e) | Event e <- lookupEvents(spc), !isFrameEvent(e)];
+  
+  return "pred possibleTransitions<getCapitalizedSpecName(spc)>[step: (cur:id, nxt:id)] 
+         '  = ∀ inst ∈ (Instance ⨝ <getCapitalizedSpecName(spc)>)[instance] |
+         '    (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
+         '      <intercalate("\n∨\n", eventTrans)>
+         '    ))
+         '    ∧
+         '    (no inst ∩ (changedInstance ⨝ step)[instance] ⇔ frame<getCapitalizedSpecName(spc)>[step, inst])"; 
 }
 
-str translateEvent(Spec spc, Event event, str instRel, Config cfg, bool topLevel = true) {
-  int nrOfChangedInstances = 1; 
+str translateEventsToPreds(Spec spc, Config cfg) =
+  "<for (Event e <- events) {><if (isFrameEvent(e)) {><translateFrameEvent(spc, e, getLowerCaseSpecName(spc), cfg)><} else {><translateEventToPred(spc, e, getLowerCaseSpecName(spc), cfg)><}>
+  '<}>"
+  when set[Event] events := lookupEvents(spc);
+
+private bool isFrameEvent(Event e) = "<e.name>" == "__frame";
+
+str translateEventToPred(Spec spc, Event event, str instanceRel, Config cfg) {
+  list[str] letRels = buildLetVars(spc, event, instanceRel, cfg);
+  list[str] paramVars = ["step:(cur:id, nxt:id)", "<getLowerCaseSpecName(spc)>: (instance:id)"] + buildParamVars(event, cfg);
   
-  void inc() { nrOfChangedInstances += 1;};
-  int get() { return nrOfChangedInstances;};
-  
-  tuple[list[str] rels, map[str,str] lookup] l = buildLetAndVarLookup(spc, event, instRel, cfg);
-  
-  return "// Event <spc.name>.<event.name>
-         '(let <intercalate(",\n", l.rels)> |
-         '  <translateEventBody(spc, event, ctx(l.lookup, inc, get, cfg))>
-         ')";     
+  return "pred event<getCapitalizedSpecName(spc)><getCapitalizedEventName(event)>[<intercalate(", ", paramVars)>]
+         '  = let <intercalate(",\n", letRels)> |
+         '    <translateEventBody(spc, event, ctx((), () {;}, int () {return -1;}, cfg))>
+         '";
 }
 
 str translateSyncedEvent(Spec spc, Event event, str instRel, Context ctx) {
-  tuple[list[str] rels, map[str,str] lookup] l = buildLetAndVarLookup(spc, event, instRel, ctx.cfg);
+  tuple[list[str] rels, map[str,str] lookup] l = buildLetVars(spc, event, instRel, ctx.cfg);
   ctx.varLookup = l.lookup;
   
   return "// Event <spc.name>.<event.name>
          '(let <intercalate(",\n", l.rels)> |
-         '  <translateEventBody(spc, event, ctx, topLevel=false)>
+         '  <translateEventBody(spc, event, ctx)>
          ')";     
 }
 
 str translateFrameEvent(Spec spc, Event frameEvent, str instRel, Config cfg) {
-  tuple[list[str] rels, map[str,str] lookup] l = buildLetAndVarLookup(spc, frameEvent, instRel, cfg);
-
   str getNoValues() {
-    if ("cur_flattened" in l.lookup) {
-      return "(no <l.lookup["cur_flattened"]>)";
+    if (lookupOnePrimitiveFields(spc,cfg.tm) != []) {
+      return "(no curFlat)";
     } else {
-      return "(<intercalate(" ∨ ", ["(no <l.lookup["cur_<f.name>"]>)" | Field f <- lookupNonPrimFieldsWithOneMult(spc, cfg.tm)])>)"; 
+      return "(<intercalate(" ∨ ", ["(no cur<capitalize(f.name)>)" | Field f <- lookupNonPrimFieldsWithOneMult(spc, cfg.tm)])>)"; 
     }     
   }
 
-  return "// Frame values if needed
-         'let <intercalate(",\n", l.rels)> | (
-         '  // State must stay the same
-         '  <l.lookup["nxt_state"]> = <l.lookup["cur_state"]>
-         '  ∧
-         '  (
-         '    <getNoValues()> ∨ 
-         '    (  
-         '      <translatePost(frameEvent, ctx(l.lookup, void () {;}, int () {return 1;}, cfg))>
+  list[str] letRels = buildLetVars(spc, frameEvent, instRel, cfg);
+  
+  return "pred frame<getCapitalizedSpecName(spc)>[step: (cur:id, nxt:id), <getLowerCaseSpecName(spc)>: (instance:id)] 
+         '  = let <intercalate(",\n", letRels)> | (
+         '    nxtState = curState ∧
+         '    (
+         '      <getNoValues()> ∨ 
+         '      (<translatePost(frameEvent, ctx((), void () {;}, int () {return -1;}, cfg))>)
          '    )
-         '  )  
-         ')";
+         '  )
+         '";
 }
 
-private tuple[list[str], map[str,str]] buildLetAndVarLookup(Spec spc, Event event, str instRel, Config cfg) {
+private list[str] buildLetVars(Spec spc, Event event, str instRel, Config cfg) {
   str renameFlattenedFields(list[Field] fields, str prefix) =
     intercalate(",", ["<f.name>-\><prefix><capitalize("<f.name>")>" | f <- fields]);
 
   list[str] tmpRels = [];
-  map[str,str] varMapping = ();
 
-  // first generate needed relational variables
-  tmpRels += "thisInst = <instRel>";
- 
-  tmpRels += "cur<getCapitalizedSpecName(spc)>State = (instanceInState ⨝ o[cur-\>config] ⨝ thisInst)[state]";
-  tmpRels += "nxt<getCapitalizedSpecName(spc)>State = (instanceInState ⨝ o[nxt-\>config] ⨝ thisInst)[state]";
-  
-  varMapping += ("cur_state": "cur<getCapitalizedSpecName(spc)>State", 
-                 "nxt_state": "nxt<getCapitalizedSpecName(spc)>State");  
+  tmpRels += "cur = step[cur-\>config]";
+  tmpRels += "nxt = step[nxt-\>config]";
+  tmpRels += "curState = (instanceInState ⨝ cur ⨝ <instRel>)[state]";
+  tmpRels += "nxtState = (instanceInState ⨝ nxt ⨝ <instRel>)[state]";
   
   list[Field] flattenFields = lookupOnePrimitiveFields(spc, cfg.tm);
   if (flattenFields != []) {
-    tmpRels += "cur<getCapitalizedSpecName(spc)>Flattened = (<getOnePrimStateVectorName(spc)> ⨝ o[cur -\> config] ⨝ thisInst)[<renameFlattenedFields(flattenFields, "cur")>]";
-    tmpRels += "nxt<getCapitalizedSpecName(spc)>Flattened = (<getOnePrimStateVectorName(spc)> ⨝ o[nxt -\> config] ⨝ thisInst)[<renameFlattenedFields(flattenFields, "nxt")>]";
-  
-    varMapping += ("cur_flattened": "cur<getCapitalizedSpecName(spc)>Flattened",
-                   "nxt_flattened": "nxt<getCapitalizedSpecName(spc)>Flattened");
+    tmpRels += "curFlat = (<getOnePrimStateVectorName(spc)> ⨝ cur ⨝ <instRel>)[<renameFlattenedFields(flattenFields, "cur")>]";
+    tmpRels += "nxtFlat = (<getOnePrimStateVectorName(spc)> ⨝ nxt ⨝ <instRel>)[<renameFlattenedFields(flattenFields, "nxt")>]";
   }
   
   for (Field f <- lookupNonPrimFields(spc, cfg.tm)) {
-    tmpRels += "cur<getCapitalizedSpecName(spc)><capitalize("<f.name>")> = (o[cur -\> config] ⨝ SV<getCapitalizedSpecName(spc)><capitalize("<f.name>")> ⨝ thisInst)[<f.name>]";
-    tmpRels += "nxt<getCapitalizedSpecName(spc)><capitalize("<f.name>")> = (o[nxt -\> config] ⨝ SV<getCapitalizedSpecName(spc)><capitalize("<f.name>")> ⨝ thisInst)[<f.name>]";    
-  
-    varMapping += ("cur_<f.name>": "cur<getCapitalizedSpecName(spc)><capitalize("<f.name>")>",
-                   "nxt_<f.name>": "nxt<getCapitalizedSpecName(spc)><capitalize("<f.name>")>");  
+    tmpRels += "cur<capitalize("<f.name>")> = (cur ⨝ SV<getCapitalizedSpecName(spc)><capitalize("<f.name>")> ⨝ <instRel>)[<f.name>]";
+    tmpRels += "nxt<capitalize("<f.name>")> = (nxt ⨝ SV<getCapitalizedSpecName(spc)><capitalize("<f.name>")> ⨝ <instRel>)[<f.name>]";      
   }
-  
-  list[FormalParam] params = lookupPrimitiveParams(event, cfg.tm);
-  for (params != []) {
-    tmpRels += "param<getCapitalizedSpecName(spc)><getCapitalizedEventName(event)>Flattened = (o ⨝ ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(event)>Primitives)[<intercalate(",", ["<p.name>" | p <- params])>]";
-    varMapping += ("params_flattened": "param<getCapitalizedSpecName(spc)><getCapitalizedEventName(event)>Flattened");
-  }  
-  
-  for (FormalParam p <- lookupNonPrimParams(event, cfg.tm)) {
-    tmpRels += "params<getCapitalizedSpecName(spc)><getCapitalizedEventName(event)><capitalize("<p.name>")> = (o ⨝ ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(event)><capitalize("<p.name>")>)[<p.name>]";
-    varMapping += ("param_<p.name>" : "params<getCapitalizedSpecName(spc)><getCapitalizedEventName(event)><capitalize("<p.name>")>"); 
-  }
-  
-  return <tmpRels, varMapping>;
+    
+  return tmpRels;
 }
 
-private str translateEventBody(Spec spc, Event event, Context ctx, bool topLevel = true) {
+private list[str] buildParamVars(Event event, Config cfg) {
+  list[str] varDefs = [];
+  
+  list[FormalParam] params = lookupPrimitiveParams(event, cfg.tm);
+  // <getCapitalizedSpecName(spc)><getCapitalizedEventName(event)>Flattened = (o ⨝ ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(event)>Primitives)[<intercalate(",", ["<p.name>" | p <- params])>]
+  if (params != []) {
+    varDefs += "paramFlat: (<intercalate(",", ["<p.name>:<convertType(p.tipe)>" | p <- params])>)";
+  }  
+  
+  // "params<getCapitalizedSpecName(spc)><getCapitalizedEventName(event)><capitalize("<p.name>")> = (o ⨝ ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(event)><capitalize("<p.name>")>)[<p.name>]";
+  for (FormalParam p <- lookupNonPrimParams(event, cfg.tm)) {
+    varDefs += "param<getCapitalizedParamName(p)>: (<p.name>:id)";
+  }
+  
+  return varDefs;
+} 
+
+private str translateEventBody(Spec spc, Event event, Context ctx) {
   str pre = translatePre(event, ctx);
   str post = translatePost(event, ctx);
 
   return  "( 
           '  <pre> <if (pre != "") {> ∧ <}>
           '  <post> <if (post != "") {> ∧ <}>
-          '  <translateGenericPart(spc, event, topLevel, ctx)>
+          '  // Generic event conditions
+          '  forceState[curState, nxtState, Event<getCapitalizedSpecName(spc)><capitalize("<event.name>")>] ∧
+          '  // Make sure this instance is in the change set
+          '  <getLowerCaseSpecName(spc)> ⊆ (changedInstance ⨝ step)[instance]
           ')";
 }
 
@@ -151,20 +168,6 @@ private str translatePost(Event event, Context ctx)
     when /Post post := event;
 
 private default str translatePost(Event event, Context ctx) = "";     
-
-private str translateGenericPart(Spec spc, Event event, bool topLevel, Context ctx)
-  = "// Generic event conditions
-    '// Force the instance to go to the correct next state
-    '<ctx.varLookup["nxt_state"]> = (<ctx.varLookup["cur_state"]>[state as from] ⨝ (allowedTransitions ⨝ <eventName>))[to-\>state] ∧
-    '// Make sure this instance is in the change set
-    'thisInst ⊆ (changedInstance ⨝ o)[instance]
-    '<if (topLevel){>// Make sure the right event is raised
-    '∧ (o ⨝ raisedEvent)[event] = <eventName> ∧ 
-    '// Make sure that the changed instance set only contains as many tuples as where asserted as beign members 
-    'some (changedInstance ⨝ o)[instance][count() as nci] where nci = <ctx.getNrOfChangedInstances()>
-    '<}>"
-  when str eventName := "Event<getCapitalizedSpecName(spc)><capitalize("<event.name>")>"; 
-    //'(changedInstance ⨝ o)[instance] = <intercalate(" ∪ ", [*changedInstances])><}>"
 
 str translate((Formula)`(<Formula f>)`, Context ctx) = "(<translate(f,ctx)>)";
 
@@ -272,22 +275,22 @@ list[str] findReferencedRels(set[Reference] refs, Context ctx) {
   list[str] refRels = [];
   
   if (cur() in refs) {
-    refRels += ctx.varLookup["cur_flattened"];
+    refRels += "curFlat"; //ctx.varLookup["cur_flattened"];
   }
   if (next() in refs) {
-    refRels += ctx.varLookup["nxt_flattened"];
+    refRels += "nxtFlat"; //ctx.varLookup["nxt_flattened"];
   }
   if (param() in refs) {
-    refRels += ctx.varLookup["params_flattened"];
+    refRels += "paramFlat"; //ctx.varLookup["params_flattened"];
   }
   
   return refRels; 
 }
   
 str translate((Expr)`(<Expr e>)`, Context ctx) = "(<translate(e,ctx,prefix)>)"; 
-str translate((Expr)`<Id id>`, Context ctx) = "<ctx.varLookup["param_<id>"]>[<id>]";
-str translate((Expr)`this.<Id id>`, Context ctx) = "<ctx.varLookup["cur_<id>"]>[<id>]";
-str translate((Expr)`this.<Id id>'`, Context ctx) = "<ctx.varLookup["nxt_<id>"]>[<id>]";
+str translate((Expr)`<Id id>`, Context ctx) = "param<capitalize(id)>";
+str translate((Expr)`this.<Id id>`, Context ctx) = "cur<capitalize("<id>")>[<id>]";
+str translate((Expr)`this.<Id id>'`, Context ctx) = "nxt<capitalize("<id>")>[<id>]";
 
 str translateAttr((Expr)`(<Expr e>)`, Context ctx) = "(<translateAttr(e,ctx,prefix)>)"; 
 str translateAttr((Expr)`<Id id>`, Context ctx) = "<id>";
@@ -302,6 +305,8 @@ str translateAttr((Expr)`<Expr lhs> * <Expr rhs>`, Context ctx) = "<translateAtt
 str translateAttr((Expr)`<Expr lhs> \\ <Expr rhs>`, Context ctx) = "<translateAttr(lhs,ctx)> \\ <translateAttr(rhs,ctx)>";
 str translateAttr((Expr)`<Expr lhs> + <Expr rhs>`, Context ctx) = "<translateAttr(lhs,ctx)>  +  <translateAttr(rhs,ctx)>";
 str translateAttr((Expr)`<Expr lhs> - <Expr rhs>`, Context ctx) = "<translateAttr(lhs,ctx)>  -  <translateAttr(rhs,ctx)>";
+
+default str translate(Expr e, Context ctx) { throw "Can not translate expression `<e>` at location <e@\loc>"; }
 
 str translate((Lit)`<Int i>`) = "<i>";
 str translate((Lit)`<StringConstant s>`) { throw "Not yet supported"; }

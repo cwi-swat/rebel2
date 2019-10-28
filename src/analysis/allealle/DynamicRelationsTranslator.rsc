@@ -1,8 +1,9 @@
 module analysis::allealle::DynamicRelationsTranslator
 
-import lang::Syntax;
+import rebel::lang::SpecSyntax;
+import rebel::lang::SpecTypeChecker;
+
 import analysis::allealle::CommonTranslationFunctions;
-import analysis::Checker;
 
 import String;
 import Set;
@@ -66,8 +67,12 @@ private str buildStateVectors(set[Spec] specs, Config cfg) //rel[Spec spc, str i
 
 private str buildFlattenedStateVector(Spec s, Config cfg) {
   list[Field] fields = lookupOnePrimitiveFields(s, cfg.tm);
-      
-  return "<getOnePrimStateVectorName(s)> (config:id, instance:id, <buildFieldDecls(fields)>) <buildFlattenedStateVectorTuples(s, fields, cfg)>";
+  
+  if (fields != []) {    
+    return "<getOnePrimStateVectorName(s)> (config:id, instance:id, <buildFieldDecls(fields)>) <buildFlattenedStateVectorTuples(s, fields, cfg)>";
+  } else {
+    return "";
+  } 
 }
 
 private str buildFlattenedStateVectorTuples(Spec s, list[Field] fields, Config cfg) {
@@ -126,9 +131,6 @@ private str buildOtherRelUpperBounds(Spec spc, Field f, Config cfg)
       
 private str buildFieldDecls(list[Field] fields) 
   = intercalate(", ", ["<f.name>:<convertType(f.tipe)>" | Field f <- fields]);
-  
-private str convertType((Type)`<Multiplicity _> Integer`) = "int";
-private default str convertType(Type t) = "id";
 
 private str buildChangedInstancesRel(set[str] instances, int numberOfTransitions) 
   = "changedInstance (cur:id, nxt:id, instance:id) \<= {<intercalate(",", ["\<c<c>,c<c+1>,<i>\>" | int c <- [1..numberOfTransitions], str i <- instances])>}";

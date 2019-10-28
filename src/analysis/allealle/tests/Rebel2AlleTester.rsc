@@ -2,11 +2,11 @@ module analysis::allealle::tests::Rebel2AlleTester
 
 import analysis::allealle::Rebel2Alle;
 
-import lang::Syntax;
-import lang::Parser;
+import rebel::lang::SpecSyntax;
+import rebel::lang::SpecParser;
+import rebel::lang::SpecTypeChecker;
 
 import analysis::allealle::CommonTranslationFunctions;
-import analysis::Checker;
 
 import String;
 import IO;
@@ -50,10 +50,12 @@ void translateCoffeeMachine() {
   
   TModel tm = rebelTModelFromTree(normalizedCm, pathConf = normPathConfig());
     
-  instances = {<getSpec(normalizedCm, "CoffeeMachine"), "cm1", uninitialized()>};
+  instances = {<getSpec(normalizedCm, "CoffeeMachine"), "cm1", uninitialized()>,
+               <getSpec(normalizedCm, "CoffeeMachine"), "cm2", uninitialized()>};
+               
   initialValues = {};  
   
-  translateSpecs(config(instances, initialValues, tm, 10), "exists c: Config | (c |x| instanceInState)[state] in StateCoffeeMachineServe");
+  translateSpecs(config(instances, initialValues, tm, 10), "exists c: Config, cm: (Instance ⨝ CoffeeMachine)[instance] | (c ⨝ instanceInState ⨝ cm)[state] in StateCoffeeMachineServe");
 }
 
 void translateLeaderAndFollower() {

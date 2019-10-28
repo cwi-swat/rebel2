@@ -1,7 +1,7 @@
 module analysis::allealle::CommonTranslationFunctions
 
-import lang::Syntax;
-import analysis::Checker;
+import rebel::lang::SpecSyntax;
+import rebel::lang::SpecTypeChecker;
 
 import String;
 import Node;
@@ -46,17 +46,20 @@ list[str] getInstancesOfType(Type tipe, rel[Spec spc, str instance] instances)
 
 bool isAttributeType(Expr expr, TModel tm) {
   switch (getType(expr, tm)) {
-    case intType(oneMult()) : return true;
+    case intType() : return true;
     default: return false;
   }
 }
 
 bool isAttributeType(FormalParam p, TModel tm) {
   switch (getType(p, tm)) {
-    case intType(oneMult()) : return true;
+    case intType() : return true;
     default: return false;
   }
 }
+
+str convertType((Type)`Integer`) = "int";
+default str convertType(Type t) = "id";
 
 AType getType(Field f, TModel tm) = tm.facts[f@\loc] when f@\loc in tm.facts;
 default AType getType(Field f, TModel tm) { throw "No type info available for `<f>`"; }
@@ -136,39 +139,40 @@ Event lookupEventByName(str eventName, Spec spc) {
 list[Field] lookupNonPrimFields(Spec s, TModel tm) = [f | /Field f <- s.fields, !isPrim(f.tipe, tm)];
 
 @memo 
-list[Field] lookupNonPrimFieldsWithOneMult(Spec s, TModel tm) = [f | /Field f <- s.fields, !isPrim(f.tipe, tm) && hasMultOfOne(f.tipe, tm)];
+list[Field] lookupNonPrimFieldsWithOneMult(Spec s, TModel tm) = [f | /Field f <- s.fields, !isPrim(f.tipe, tm) && isNonOptionalScalar(f.tipe, tm)];
 
 @memo
-list[Field] lookupPrimFieldsWithOtherMult(Spec s, TModel tm) = [f | /Field f <- s.fields, isPrim(f.tipe, tm) && !hasMultOfOne(f.tipe, tm)];
+list[Field] lookupPrimFieldsWithOtherMult(Spec s, TModel tm) = [f | /Field f <- s.fields, isPrim(f.tipe, tm) && !isNonOptionalScalar(f.tipe, tm)];
 
 @memo
 bool hasOnePrimitiveFields(Spec s, TModel tm) = lookupOnePrimitiveFields(s,tm) != [];
 
 @memo
-list[Field] lookupOnePrimitiveFields(Spec s, TModel tm) = [f | /f:(Field)`<Id name> : <Type tipe>` <- s.fields, isPrim(tipe, tm) && hasMultOfOne(tipe, tm)];
+list[Field] lookupOnePrimitiveFields(Spec s, TModel tm) = [f | /f:(Field)`<Id name> : <Type tipe>` <- s.fields, isPrim(tipe, tm) && isNonOptionalScalar(tipe, tm)];
 
 @memo
 list[str] lookupOnePrimitiveFieldNames(Spec s, TModel tm) = ["<f.name>" | Field f <- lookupOnePrimitiveFields(s,tm)];
 
 @memo
-list[FormalParam] lookupPrimitiveParams(Event e, TModel tm) = [p | /FormalParam p <- e.params, isPrim(p.tipe,tm) && hasMultOfOne(p.tipe,tm)];
+list[FormalParam] lookupPrimitiveParams(Event e, TModel tm) = [p | /FormalParam p <- e.params, isPrim(p.tipe,tm) && isNonOptionalScalar(p.tipe,tm)];
 
 @memo
 list[FormalParam] lookupNonPrimParams(Event e, TModel tm) = [p | /FormalParam p <- e.params, !isPrim(p.tipe,tm)];
 
 @memo
-list[FormalParam] lookupPrimParamsWithOtherMult(Event e, TModel tm) = [p | /FormalParam p <- e.params, isPrim(p.tipe,tm) && !hasMultOfOne(p.tipe, tm)];
+list[FormalParam] lookupPrimParamsWithOtherMult(Event e, TModel tm) = [p | /FormalParam p <- e.params, isPrim(p.tipe,tm) && !isNonOptionalScalar(p.tipe, tm)];
 
 @memo
-bool hasMultOfOne(Type tipe, TModel tm) = hasMultOfOne(t) when tipe@\loc in tm.facts, AType t := tm.facts[tipe@\loc];
-default bool hasMultOfOne(Type tipe, TModel _) { throw "No type information found for `<tipe>`"; }
+bool isNonOptionalScalar(Type tipe, TModel tm) = isNonOptionalScalar(t) when tipe@\loc in tm.facts, AType t := tm.facts[tipe@\loc];
+default bool isNonOptionalScalar(Type tipe, TModel tm)  { throw "No type information found for `<tipe>`"; }
 
-bool hasMultOfOne(AType t) = t.mult == oneMult() when t has mult;
-default bool hasMultOfOne(AType t) { throw "Type `<t>` does not have a multiplicity associated with it"; }
+bool isNonOptionalScalar(setType(_)) = false;
+bool isNonOptionalScalar(optionalType(_)) = false;
+default bool isNonOptionalScalar(AType _) = true;
 
 @memo
 bool isPrim(Type tipe, TModel tm) = isPrim(t) when tipe@\loc in tm.facts, AType t := tm.facts[tipe@\loc];
 bool isPrim(Type tipe, TModel tm) { throw "No type information found for `<tipe>`"; }
 
-bool isPrim(intType(_)) = true;
+bool isPrim(intType()) = true;
 bool isPrim(AType _) = false; 

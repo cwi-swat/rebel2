@@ -1,12 +1,13 @@
 module analysis::allealle::Rebel2Alle
 
-import lang::Syntax;
-import lang::Parser;
+import rebel::lang::SpecSyntax;
+import rebel::lang::SpecParser;
+import rebel::lang::SpecTypeChecker;
+
 import analysis::allealle::StaticRelationsTranslator;
 import analysis::allealle::DynamicRelationsTranslator;
 import analysis::allealle::ConstraintsTranslator;
 import analysis::allealle::CommonTranslationFunctions;
-import analysis::Checker;
 import util::PathUtil;
 
 import ide::CombinedModelFinder; // From AlleAlle

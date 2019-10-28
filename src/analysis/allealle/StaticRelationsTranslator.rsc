@@ -1,6 +1,7 @@
 module analysis::allealle::StaticRelationsTranslator
 
-import lang::Syntax;
+import rebel::lang::SpecSyntax;
+
 import analysis::allealle::CommonTranslationFunctions;
 
 import String;

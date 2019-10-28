@@ -1,9 +1,10 @@
 module analysis::allealle::ConstraintsTranslator
 
-import lang::Syntax;
+import rebel::lang::SpecSyntax;
+import rebel::lang::SpecTypeChecker;
+
 import analysis::allealle::CommonTranslationFunctions;
 import analysis::allealle::EventTranslator;
-import analysis::Checker;
 
 import String;
 import IO;
@@ -21,6 +22,8 @@ str translateConstraints(set[Spec] spcs, Config cfg, str check) {
              '<noMachineWithoutState()>
              '<machineOnlyHasValuesWhenInitialized(spcs, cfg)>
              '<noTransitionsBetweenUnrelatedStates()>
+             '<helperPredicates()>
+             '<translateEventPredicates(spcs, cfg)>
              '<transitionFunction(spcs, cfg)>
              '<encodeAsserts(check)>
              '<findMinimumExample(spcs)>
@@ -52,8 +55,8 @@ private str machineFieldTypeConstraints(set[Spec] spcs, Config cfg) {
   } 
   
   return "// Machine specific `type` constraints
-         '<for (tc <- typeCons) {><tc>
-         '<}>";   
+         '<for (tc <- typeCons) {><tc><}>
+         '";   
 }
    
 private str allConfigsAreReachable()
@@ -129,45 +132,19 @@ private str helperPredicates()
     '  = nxtState = (curState[state as from] ⨝ (allowedTransitions ⨝ raisedEvent))[to-\>state]
     '
     'pred inState[config: (config:id), instance: (instance:id), state: (state:id)]
-    '  = ((instance ⨯ config) ⨝ instanceInState)[state] ⊆ state";
-  
-
-private str transitionFunction(set[Spec] spcs, Config cfg) {
-  str trans = 
-    "// Transition function
-    '∀ o ∈ order |  
-    '  <intercalate("\n ∧ \n", ["(
-                                '  <transitionFunction(s, cfg)>
-                                ')" | s <- spcs])>
+    '  = ((instance ⨯ config) ⨝ instanceInState)[state] ⊆ state
     '";
   
-  return trans;
-}
 
-private str transitionFunction(Spec spc, Config cfg) 
-  = "// Events from <getCapitalizedSpecName(spc)>  
-    '∀ inst ∈ (Instance ⨝ <getCapitalizedSpecName(spc)>)[instance] |  
-    '  // Iff this is the instance that raised the event then one of the transitions must have happened 
-    '  (some inst ∩ ((raisedEvent ⨝ o)[instance]) ⇔ 
-    '    <translateEvents(spc, "inst", cfg)>
-    '  ) 
-    '  ∧
-    '  // Iff it is not a transitioning instance, frame the values
-    '  (no inst ∩ (changedInstance ⨝ o)[instance] ⇔
-    '    <translateFrameEvent(spc, getFrameEvent(spc), "inst", cfg)>
-    '  )"; 
+private str translateEventPredicates(set[Spec] spcs, Config cfg)
+  = "<for (Spec s <- spcs) {><translateEventsToPreds(s, cfg)>
+    '<constructTransitionFunction(s, cfg)>
+    '<}>";
 
-private str translateEvents(Spec spc, str instRel, Config cfg) 
-  = "<intercalate("\n ∨ \n", [translateEvent(spc, e, instRel, cfg) | Event e <- events, !isFrameEvent(e)])>"
-  when set[Event] events := lookupEvents(spc);
-
-private Event getFrameEvent(Spec spc) {
-  for (Event e <- lookupEvents(spc), isFrameEvent(e)) {
-    return e;
-  }
-  
-  throw "No frame event found in `<spc.name>`";
-}  
+private str transitionFunction(set[Spec] spcs, Config cfg) 
+  = "// Transition function
+    '∀ step ∈ order | <intercalate(" ∧ ", ["possibleTransitions<getCapitalizedSpecName(s)>[step]" | s <- spcs])>
+    '";  
 
 private bool isFrameEvent(Event e) = "<e.name>" == "__frame";
     
@@ -176,7 +153,6 @@ private str encodeAsserts(str check)
     '<check>
     '";
 
-private str findMinimumExample(set[Spec] spcs) {
-  // minimize all Parameter relations to minimize junk
-  return "objectives: minimize Config[count()]"; 
-}
+private str findMinimumExample(set[Spec] spcs) 
+  = "// Minimize the number of steps by minimizing the number of Configurations
+    'objectives: minimize Config[count()]"; 
