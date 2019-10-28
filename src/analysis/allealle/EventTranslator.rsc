@@ -18,6 +18,19 @@ private data Reference
   
 data Context = ctx(map[str var, str relation] varLookup, void () incNrOfChangedInstances, int () getNrOfChangedInstances, Config cfg);
 
+//pred eventTailerConnected[step: (cur:id, nxt:id), tailer: (instance:id)]
+//  = let cur = step[cur->config],
+//        nxt = step[nxt->config],
+//        curPrims = (SVTailerOnePrims ⨝ cur ⨝ tailer)[nrOfHits->curNrOfHits], 
+//        nxtPrims = (SVTailerOnePrims ⨝ nxt ⨝ tailer)[nrOfHits->nxtNrOfHits] | 
+//    (some (curPrims ⨯ nxtPrims) where (nxtNrOfHits = curNrOfHits))    
+//  ∧ forceState[(instanceInState ⨝ tailer ⨝ cur)[state], (instanceInState ⨝ tailer ⨝ nxt)[state], EventTailerConnected]
+//  ∧ tailer ⊆ (changedInstance ⨝ step)[instance]
+
+str translateEventToPred(Spec spc, Event event, Config cfg) {
+    
+}
+
 str translateEvent(Spec spc, Event event, str instRel, Config cfg, bool topLevel = true) {
   int nrOfChangedInstances = 1; 
   

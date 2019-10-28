@@ -123,6 +123,15 @@ private str noTransitionsBetweenUnrelatedStates()
     '∀ o ∈ order ⨝ raisedEvent | (o[cur as config] ⨝ instanceInState)[state-\>from] ⨯ (o[nxt as config] ⨝ instanceInState)[state-\>to] ⨯ o[event] ⊆ allowedTransitions
     '";
 
+private str helperPredicates() 
+  = "// Generic predicates
+    'pred forceState[curState: (state:id), nxtState: (state:id), raisedEvent: (event:id)]
+    '  = nxtState = (curState[state as from] ⨝ (allowedTransitions ⨝ raisedEvent))[to-\>state]
+    '
+    'pred inState[config: (config:id), instance: (instance:id), state: (state:id)]
+    '  = ((instance ⨯ config) ⨝ instanceInState)[state] ⊆ state";
+  
+
 private str transitionFunction(set[Spec] spcs, Config cfg) {
   str trans = 
     "// Transition function

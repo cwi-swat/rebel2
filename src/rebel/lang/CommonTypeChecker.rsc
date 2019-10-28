@@ -158,21 +158,25 @@ private void collectQuant([], Formula f, Collector c) {
 }
   
 private void collectQuant([Decl hd, *tl], Formula f, Collector c) {
-  //c.enterScope(current);
     collect(hd, c);
     collectQuant(tl, f, c);
-  //c.leaveScope(current);
 }
 
 
 void collect(current: (Formula)`forall <{Decl ","}+ dcls> | <Formula frm>`, Collector c) {
   c.fact(current, boolType());
-  collectQuant([d | d <- dcls], frm, c);
+
+  c.enterScope(current);
+    collectQuant([d | d <- dcls], frm, c);
+  c.leaveScope(current);
 }
 
 void collect(current: (Formula)`exists <{Decl ","}+ dcls> | <Formula frm>`, Collector c) {
   c.fact(current, boolType());
-  collectQuant([d | d <- dcls], frm, c);
+
+  c.enterScope(current);
+    collectQuant([d | d <- dcls], frm, c);
+  c.leaveScope(current);
 }
 
 void collect(current: (Decl)`<{Id ","}+ vars> : <Expr expr>`, Collector c) {

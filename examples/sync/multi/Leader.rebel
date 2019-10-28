@@ -17,7 +17,18 @@ spec Leader
     post: 
       this.followers' = this.followers + follower; 
   
-  event hit()
+  event complete()
+  
+  event hitAll()
     pre: forall f: this.followers | f.hit();
     post: this.nrOfHits' = this.nrOfHits + 1;
+  
+  event hitSome()
+    pre: exists f: this.followers | f.hit();
+    post: this.nrOfHits' = this.nrOfHits + 1;
     
+  states:
+    (*) -> link: start;
+    link -> link: add;
+    link -> active: complete;
+    active -> active: hitAll, hitSome; 

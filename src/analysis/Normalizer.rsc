@@ -37,15 +37,9 @@ Spec normalize(Spec spc) {
   
   spc.events = buildNormEvents(normEvents);
   spc.states = normalizeStates(spc.states);
-  spc = addImplicitMultiplicities(spc);
 
   return spc;
 }
-
-Spec addImplicitMultiplicities(Spec spc) 
-  = visit (spc) {
-    case (Type)`<TypeName tp>` => (Type)`one <TypeName tp>`
-  };
 
 Event createFrameEvent(Spec spc) {
   str frameCond = "<intercalate(",\n", ["this.<f.name>\' = this.<f.name>" | /Field f <- spc.fields])>";
