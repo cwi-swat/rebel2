@@ -27,7 +27,7 @@ void translatePingPong() {
                
   initialValues = {};  
   
-  translateSpecs(config(instances, initialValues, tm, 8), "exists c: Config, p: SVPingPongOnePrims | some (c |x| p) where times = 5");
+  translateSpecs(config(instances, initialValues, tm, 8), "exists c: Config, p: PingPongTimes | some (c |x| p) where times = 5");
 }
 
 private PathConfig normPathConfig() = pathConfig(srcs=[|project://rebel2/bin/normalized|]);
@@ -79,7 +79,7 @@ void translateLeaderAndFollower() {
                
   initialValues = {};  
   
-  translateSpecs(config(instances, initialValues, tm, 6), "∃ c ∈ Config, f ∈ SVFollowerOnePrims, l ∈ SVLeaderOnePrims | (some (c ⨝ f) where times = 1 ∧ some (c ⨝ l) where times = 1)");
+  translateSpecs(config(instances, initialValues, tm, 6), "∃ c ∈ Config, f ∈ FollowerTimes, l ∈ LeaderTimes | (some (c ⨝ f) where times = 1 ∧ some (c ⨝ l) where times = 1)");
 }
 
 void translateLeaderFollowerAndTailer() {

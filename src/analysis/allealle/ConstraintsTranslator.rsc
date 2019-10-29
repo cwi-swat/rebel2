@@ -44,19 +44,17 @@ private str genericTypeConstraints()
 private str machineFieldTypeConstraints(set[Spec] spcs, Config cfg) {
   list[str] typeCons = [];
   
-  for (Spec spc <- spcs) {    
-    if (hasOnePrimitiveFields(spc, cfg.tm)) {
-      typeCons += "SV<getCapitalizedSpecName(spc)>OnePrims[config,instance] ⊆ Config ⨯ (Instance ⨝ <getCapitalizedSpecName(spc)>)[instance]"; 
-    }
-    
-    for (Field f <- lookupNonPrimFields(spc, cfg.tm)) {
-      typeCons += "SV<getCapitalizedSpecName(spc)><getCapitalizedFieldName(f)> ⊆ Config ⨯ (Instance ⨝ <getCapitalizedSpecName(spc)>)[instance] ⨯ (Instance ⨝ <f.tipe.tp>)[instance-\><f.name>]";  
+  for (Spec spc <- spcs, /Field f <- spc.fields) {    
+    if (isPrim(f.tipe, cfg.tm)) {
+      typeCons += "<getCapitalizedSpecName(spc)><getCapitalizedFieldName(f)>[config,instance]  ⊆ Config ⨯ (Instance ⨝ <getCapitalizedSpecName(spc)>)[instance]";
+    } else {
+      typeCons += "<getCapitalizedSpecName(spc)><getCapitalizedFieldName(f)>  ⊆ Config ⨯ (Instance ⨝ <getCapitalizedSpecName(spc)>)[instance] ⨯ (Instance ⨝ <f.tipe.tp>)[instance-\><f.name>]";
     }
   } 
   
   return "// Machine specific `type` constraints
-         '<for (tc <- typeCons) {><tc><}>
-         '";   
+         '<for (tc <- typeCons) {><tc>
+         '<}>";
 }
    
 private str allConfigsAreReachable()
@@ -77,14 +75,16 @@ private str noMachineWithoutState()
 private str machineOnlyHasValuesWhenInitialized(set[Spec] spcs, Config cfg) {
   list[str] cons = [];
   
-  for (Spec s <- spcs) {    
-    if (hasOnePrimitiveFields(s, cfg.tm)) {
-      cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one SV<getCapitalizedSpecName(s)>OnePrims ⨝ c ⨝ inst)"; 
-    }
+  for (Spec s <- spcs, /Field f <- s.fields) {    
+    str relName = "<getCapitalizedSpecName(s)><getCapitalizedFieldName(f)>";
     
-    for (Field f <- lookupNonPrimFields(s, cfg.tm)) {
-      cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one SV<getCapitalizedSpecName(s)><getCapitalizedFieldName(f)> ⨝ c ⨝ inst)";  
-      cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no SV<getCapitalizedSpecName(s)><getCapitalizedFieldName(f)> ⨝ c ⨝ inst)";  
+    if (isPrim(f.tipe,cfg.tm)) {
+      cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one <relName> ⨝ c ⨝ inst)"; 
+    } else {
+      str mult = (setType(_) := getType(f,cfg.tm)) ? "some" : "one";
+    
+      cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ <mult> <relName> ⨝ c ⨝ inst)";  
+      //cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no <relName> ⨝ c ⨝ inst)";  
     }
   } 
   
@@ -98,24 +98,24 @@ private str eventParamTypeAndMultiplicityConstraints(set[Spec] spcs, Config cfg)
   list[str] typeCons = [];
   list[str] multCons = [];
 
-  for (Spec spc <- spcs, Event ev <- spc.events) {
-    if (size(lookupPrimitiveParams(ev, cfg.tm)) > 0) {
-      typeCons += "ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>Primitives[cur,nxt] ⊆ order";
-      multCons += "(some (o ⨝ Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>) ⇔ one (o ⨝ ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>Primitives))";                 
-    }
-    
-    for (FormalParam p <- lookupNonPrimParams(ev, cfg.tm)) {
-      typeCons += "ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)><getCapitalizedParamName(p)> ⊆ order ⨯ (Instance ⨝ <p.tipe.tp>)[instance-\><toLowerCase("<p.name>")>]";
+  for (Spec spc <- spcs, Event ev <- spc.events, /FormalParam p <- ev.params) {
+    str relName = "ParamEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)><getCapitalizedParamName(p)>";
+
+    if (isPrim(p.tipe, cfg.tm)) {
+      typeCons += "<relName>[cur,nxt] ⊆ order";
+      multCons += "(some (step ⨝ Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>) ⇔ one (step ⨝ <relName>))"; 
+    } else {
+      typeCons += "<relName> ⊆ order ⨯ (Instance ⨝ <p.tipe.tp>)[instance-\><toLowerCase("<p.name>")>]";
 
       str mult = (setType(_) := getType(p, cfg.tm)) ? "some" : "one";
-      multCons += "(some (o ⨝ Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>) ⇔ <mult> (o ⨝ ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)><getCapitalizedParamName(p)>))";                 
+      multCons += "(some (step ⨝ Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>) ⇔ <mult> (step ⨝ <relName>))";                 
     }
   }
   
   return "<intercalate("\n", typeCons)>
          '<if (multCons != []) {>
          '// Specific per event
-         '∀ o ∈ order ⨝ raisedEvent | (
+         '∀ step ∈ order ⨝ raisedEvent | (
          '  <intercalate(" ∧\n", multCons)>
          ')<}>
          '";

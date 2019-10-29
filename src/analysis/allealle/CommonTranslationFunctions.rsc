@@ -61,7 +61,7 @@ bool isAttributeType(FormalParam p, TModel tm) {
 str convertType((Type)`Integer`) = "int";
 default str convertType(Type t) = "id";
 
-AType getType(Field f, TModel tm) = tm.facts[f@\loc] when f@\loc in tm.facts;
+AType getType(Field f, TModel tm) = tm.facts[f.name@\loc] when f.name@\loc in tm.facts;
 default AType getType(Field f, TModel tm) { throw "No type info available for `<f>`"; }
 
 AType getType(Expr expr, TModel tm) = tm.facts[expr@\loc] when expr@\loc in tm.facts;

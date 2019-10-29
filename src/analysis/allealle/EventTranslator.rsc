@@ -10,25 +10,14 @@ import Set;
 import List;
 import ParseTree;
 
-private data Reference 
-  = cur()
-  | next()
-  | param()
-  ;
-  
 data Context = ctx(map[str var, str relation] varLookup, void () incNrOfChangedInstances, int () getNrOfChangedInstances, Config cfg);
 
 str constructTransitionFunction(Spec spc, Config cfg) {
   list[str] getEventParams(Event e) { 
     list[str] actuals = ["step", "inst"];
     
-    list[FormalParam] params = lookupPrimitiveParams(e, cfg.tm);
-    if (params != []) {
-      actuals += "(step ⨝ ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(e)>Primitives)[<intercalate(",", ["<p.name>" | p <- params])>]";
-    }  
-    
-    for (FormalParam p <- lookupNonPrimParams(e, cfg.tm)) {
-      actuals += "(step ⨝ ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(e)><capitalize("<p.name>")>)[<p.name>]";
+    for (/FormalParam p <- e.params) {
+      actuals += "(step ⨝ ParamEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(e)><capitalize("<p.name>")>)[<p.name>]";
     }
 
     return actuals;
@@ -94,7 +83,7 @@ str translateFrameEvent(Spec spc, Event frameEvent, str instRel, Config cfg) {
          '  = let <intercalate(",\n", letRels)> | (
          '    nxtState = curState ∧
          '    (
-         '      <getNoValues()> ∨ 
+         '      curState ⊆ uninitialized ∨ 
          '      (<translatePost(frameEvent, ctx((), void () {;}, int () {return -1;}, cfg))>)
          '    )
          '  )
@@ -102,42 +91,25 @@ str translateFrameEvent(Spec spc, Event frameEvent, str instRel, Config cfg) {
 }
 
 private list[str] buildLetVars(Spec spc, Event event, str instRel, Config cfg) {
-  str renameFlattenedFields(list[Field] fields, str prefix) =
-    intercalate(",", ["<f.name>-\><prefix><capitalize("<f.name>")>" | f <- fields]);
-
-  list[str] tmpRels = [];
-
-  tmpRels += "cur = step[cur-\>config]";
-  tmpRels += "nxt = step[nxt-\>config]";
-  tmpRels += "curState = (instanceInState ⨝ cur ⨝ <instRel>)[state]";
-  tmpRels += "nxtState = (instanceInState ⨝ nxt ⨝ <instRel>)[state]";
+  str renamePrimField(Field f, str prefix) = "<f.name>-\><prefix><getCapitalizedFieldName(f)>";
+  list[str] letRels = ["cur = step[cur-\>config]", "nxt = step[nxt-\>config]", "curState = (instanceInState ⨝ cur ⨝ <instRel>)[state]", "nxtState = (instanceInState ⨝ nxt ⨝ <instRel>)[state]"];
   
-  list[Field] flattenFields = lookupOnePrimitiveFields(spc, cfg.tm);
-  if (flattenFields != []) {
-    tmpRels += "curFlat = (<getOnePrimStateVectorName(spc)> ⨝ cur ⨝ <instRel>)[<renameFlattenedFields(flattenFields, "cur")>]";
-    tmpRels += "nxtFlat = (<getOnePrimStateVectorName(spc)> ⨝ nxt ⨝ <instRel>)[<renameFlattenedFields(flattenFields, "nxt")>]";
-  }
-  
-  for (Field f <- lookupNonPrimFields(spc, cfg.tm)) {
-    tmpRels += "cur<capitalize("<f.name>")> = (cur ⨝ SV<getCapitalizedSpecName(spc)><capitalize("<f.name>")> ⨝ <instRel>)[<f.name>]";
-    tmpRels += "nxt<capitalize("<f.name>")> = (nxt ⨝ SV<getCapitalizedSpecName(spc)><capitalize("<f.name>")> ⨝ <instRel>)[<f.name>]";      
-  }
-    
-  return tmpRels;
+  for (/Field f <- spc.fields) {
+    str relName = "<getCapitalizedSpecName(spc)><getCapitalizedFieldName(f)>";
+
+    letRels += "cur<getCapitalizedFieldName(f)> = (cur ⨝ <relName> ⨝ <instRel>)<if (isPrim(f.tipe,cfg.tm)) {>[<renamePrimField(f, "cur")>]<} else {>[<f.name>]<}>";
+    letRels += "nxt<getCapitalizedFieldName(f)> = (nxt ⨝ <relName> ⨝ <instRel>)<if (isPrim(f.tipe,cfg.tm)) {>[<renamePrimField(f, "nxt")>]<} else {>[<f.name>]<}>";
+  }    
+
+  return letRels;
 }
 
 private list[str] buildParamVars(Event event, Config cfg) {
   list[str] varDefs = [];
   
-  list[FormalParam] params = lookupPrimitiveParams(event, cfg.tm);
-  // <getCapitalizedSpecName(spc)><getCapitalizedEventName(event)>Flattened = (o ⨝ ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(event)>Primitives)[<intercalate(",", ["<p.name>" | p <- params])>]
-  if (params != []) {
-    varDefs += "paramFlat: (<intercalate(",", ["<p.name>:<convertType(p.tipe)>" | p <- params])>)";
-  }  
-  
   // "params<getCapitalizedSpecName(spc)><getCapitalizedEventName(event)><capitalize("<p.name>")> = (o ⨝ ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(event)><capitalize("<p.name>")>)[<p.name>]";
-  for (FormalParam p <- lookupNonPrimParams(event, cfg.tm)) {
-    varDefs += "param<getCapitalizedParamName(p)>: (<p.name>:id)";
+  for (/FormalParam p <- event.params) {
+    varDefs += "param<getCapitalizedParamName(p)>: (<p.name>:<convertType(p.tipe)>)";
   }
   
   return varDefs;
@@ -257,43 +229,39 @@ str translateEq(Expr lhs, Expr rhs, str op, Context ctx) {
 str translateRelEquality(Expr lhs, Expr rhs, str op, Context ctx) = "<translate(lhs, ctx)> <op> <translate(rhs, ctx)>"; 
 
 str translateRestrictionEquality(Expr lhs, Expr rhs, str operator, Context ctx) {
-  set[Reference] r = findReferences(lhs, ctx); 
-  r += findReferences(rhs, ctx);
-  
-  list[str] refRels = findReferencedRels(r, ctx);
+  set[str] refRels = findReferencedRels(lhs, ctx) + findReferencedRels(rhs, ctx);
 
-  return "(some (<intercalate(" ⨯ ", refRels)>) where (<translateAttr(lhs,ctx)> <operator> <translateAttr(rhs,ctx)>))";
+  return "(some (<intercalate(" ⨯ ", [*refRels])>) where (<translateAttr(lhs,ctx)> <operator> <translateAttr(rhs,ctx)>))";
 }  
 
-set[Reference] findReferences(Expr expr, Context ctx) {
-  set[Reference] r = {};
-
+set[str] findReferencedRels(Expr expr, Context ctx) {
+  set[str] rels = {};
   set[loc] nr = {};
 
   top-down visit(expr) {
-    case (Expr)`this.<Id id>` : {if (id@\loc notin nr) r += cur();} // current state is referenced
-    case (Expr)`this.<Id id>'`: {r += next(); nr += id@\loc;}// next state is referenced
-    case (Expr)`<Id _>`      : r += param();  // event param is referenced
+    case (Expr)`this.<Id field>` : {if (field@\loc notin nr) rels += "cur<capitalize("<field>")>";} 
+    case (Expr)`this.<Id field>'`: {rels += "nxt<capitalize("<field>")>"; nr += field@\loc;}
+    case (Expr)`<Id param>`      : rels += "param<capitalize("<param>")>";  // event param is referenced
   }
   
-  return r;
+  return rels;
 }
 
-list[str] findReferencedRels(set[Reference] refs, Context ctx) {
-  list[str] refRels = [];
-  
-  if (cur() in refs) {
-    refRels += "curFlat"; //ctx.varLookup["cur_flattened"];
-  }
-  if (next() in refs) {
-    refRels += "nxtFlat"; //ctx.varLookup["nxt_flattened"];
-  }
-  if (param() in refs) {
-    refRels += "paramFlat"; //ctx.varLookup["params_flattened"];
-  }
-  
-  return refRels; 
-}
+//list[str] findReferencedRels(set[Reference] refs, Context ctx) {
+//  list[str] refRels = [];
+//  
+//  if (cur() in refs) {
+//    refRels += "curFlat"; //ctx.varLookup["cur_flattened"];
+//  }
+//  if (next() in refs) {
+//    refRels += "nxtFlat"; //ctx.varLookup["nxt_flattened"];
+//  }
+//  if (param() in refs) {
+//    refRels += "paramFlat"; //ctx.varLookup["params_flattened"];
+//  }
+//  
+//  return refRels; 
+//}
   
 str translate((Expr)`(<Expr e>)`, Context ctx) = "(<translate(e,ctx,prefix)>)"; 
 
@@ -310,10 +278,10 @@ str translateAttr((Expr)`now`, Context ctx) { throw "Not yet supported"; }
 str translateAttr((Expr)`<Lit l>`, Context ctx) = translate(l);
 
 str translateAttr((Expr)`- <Expr e>`, Context ctx) = "-<translateAttr(e,ctx)>";
-str translateAttr((Expr)`<Expr lhs> * <Expr rhs>`, Context ctx) = "<translateAttr(lhs,ctx)>  *  <translateAttr(rhs,ctx)>";
+str translateAttr((Expr)`<Expr lhs> * <Expr rhs>`, Context ctx) = "<translateAttr(lhs,ctx)> * <translateAttr(rhs,ctx)>";
 str translateAttr((Expr)`<Expr lhs> \\ <Expr rhs>`, Context ctx) = "<translateAttr(lhs,ctx)> \\ <translateAttr(rhs,ctx)>";
-str translateAttr((Expr)`<Expr lhs> + <Expr rhs>`, Context ctx) = "<translateAttr(lhs,ctx)>  +  <translateAttr(rhs,ctx)>";
-str translateAttr((Expr)`<Expr lhs> - <Expr rhs>`, Context ctx) = "<translateAttr(lhs,ctx)>  -  <translateAttr(rhs,ctx)>";
+str translateAttr((Expr)`<Expr lhs> + <Expr rhs>`, Context ctx) = "<translateAttr(lhs,ctx)> + <translateAttr(rhs,ctx)>";
+str translateAttr((Expr)`<Expr lhs> - <Expr rhs>`, Context ctx) = "<translateAttr(lhs,ctx)> - <translateAttr(rhs,ctx)>";
 
 default str translate(Expr e, Context ctx) { throw "Can not translate expression `<e>` at location <e@\loc>"; }
 

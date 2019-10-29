@@ -43,26 +43,6 @@ void translateSpecs(Config config, str check, bool debug = true) {
   }
 }  
 
-//data ModelAttribute
-//  = idAttribute(str name, str id)
-//  | fixedAttribute(str name, Term val)
-//  | varAttribute(str name, Term val, str smtVarName)
-//  ;
-//  
-//data ModelTuple
-//  = fixedTuple(list[ModelAttribute] attributes)
-//  | varTuple(list[ModelAttribute] attributes, str smtVarName)
-//  ;  
-//
-//data ModelRelation 
-//  = mRelation(str name, Heading heading, list[ModelTuple] tuples)
-//  ;
-//    
-//data Model 
-//  = model(set[ModelRelation] relations)
-//  | empty()
-//  ;
-
 data Trace
   = step(Configuration conf, RaisedEvent re, Trace next)
   | goal(Configuration conf)
@@ -122,7 +102,6 @@ ModelRelation findRelation(Model m, str name) {
 rel[Spec spc, str instance, State state] getStateInConfig(int step, Spec spc, set[str] instances, Model alleModel, TModel tm) {
   rel[Spec,str,State] instanceStates = {};
   
-  // check 'primitive' values, they are all in the 'flattened' relation
   ModelRelation r = findRelation(alleModel, "instanceInState");
 
   State getState(str inst) {
@@ -174,19 +153,9 @@ rel[Spec spc, str instance, str field, str val] getValuesInConfig(int step, Spec
     
     return nothing();
   }
-    
-  list[Field] primFields = lookupOnePrimitiveFields(spc, tm);
-  if (primFields != []) {
-    ModelRelation r = findRelation(alleModel, "SV<getCapitalizedSpecName(spc)>OnePrims");
 
-    for (Field f <- primFields, inst <- instances, just(str val) := getValue(r, inst, "<f.name>")) {
-      values += <spc, inst, "<f.name>", val>;    
-    }
-  }
-  
-  list[Field] otherFields = lookupNonPrimFields(spc, tm) + lookupPrimFieldsWithOtherMult(spc, tm);
-  for (Field f <- otherFields) {
-    ModelRelation r = findRelation(alleModel, "SV<getCapitalizedSpecName(spc)><getCapitalizedFieldName(f)>");
+  for (/Field f <- spc.fields) {
+    ModelRelation r = findRelation(alleModel, "<getCapitalizedSpecName(spc)><getCapitalizedFieldName(f)>");
     for (inst <- instances, just(str val) := getValue(r, inst, "<f.name>")) {
       values += <spc, inst, "<f.name>", val>;
     }
@@ -195,8 +164,6 @@ rel[Spec spc, str instance, str field, str val] getValuesInConfig(int step, Spec
 }
 
 RaisedEvent getRaisedEvent(int step, set[Spec] specs, rel[Spec spc, str instance] instances, Model alleModel, TModel tm) {
-//  = raisedEvent(Spec spc, Event event, map[str,str] arguments, set[str] affectedInstances);
-
   ModelRelation r = findRelation(alleModel, "raisedEvent");
 
   tuple[str,str] findInstanceAndEvent() {
@@ -229,18 +196,9 @@ RaisedEvent getRaisedEvent(int step, set[Spec] specs, rel[Spec spc, str instance
   Event ev = findEvent(spc, replaceAll(ie.event, "event_<toLowerCase("<spc.name>")>_", ""));
 
   rel[str param, str val] args = {};
-  list[FormalParam] primParams = lookupPrimitiveParams(ev, tm);
-  if (primParams != []) {
-    ModelRelation paramVals = findRelation(alleModel, "ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>Primitives");
 
-    for (p <- primParams, just(str val) := getValue(paramVals, "<p.name>")) {
-      args += <"<p.name>", val>;
-    }
-  }
-  
-  list[FormalParam] otherParams = lookupNonPrimParams(ev, tm) + lookupPrimParamsWithOtherMult(ev, tm);
-  for (p <- otherParams) {
-    ModelRelation op = findRelation(alleModel, "ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)><getCapitalizedParamName(p)>");
+  for (FormalParam p <- ev.params) {
+    ModelRelation op = findRelation(alleModel, "ParamEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)><getCapitalizedParamName(p)>");
     
     for (just(str val) := getValue(op, "<p.name>")) {
       args += <"<p.name>", val>;
