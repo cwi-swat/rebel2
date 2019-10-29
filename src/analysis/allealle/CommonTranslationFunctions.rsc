@@ -99,19 +99,19 @@ Spec lookupSpecByName(str specName, rel[Spec spc, str instance, State initialSta
 }
 
 @memo 
-set[lang::Syntax::State] lookupStates(Spec spc) 
-  = {delAnnotationsRec(st) | /lang::Syntax::State st <- spc.states, st has name};
+set[rebel::lang::SpecSyntax::State] lookupStates(Spec spc) 
+  = {delAnnotationsRec(st) | /rebel::lang::SpecSyntax::State st <- spc.states, st has name};
 
 @memo
 set[str] lookupStateLabels(Spec spc) 
-  = {getStateLabel(spc, st) | lang::Syntax::State st <- lookupStates(spc)} 
+  = {getStateLabel(spc, st) | rebel::lang::SpecSyntax::State st <- lookupStates(spc)} 
   when str specName := toLowerCase("<spc.name>");
 
 @memo
 set[str] lookupStateLabelsWithDefaultState(Spec spc)
   = lookupStateLabels(spc) + {"state_uninitialized", "state_finalized"};   
 
-str getStateLabel(Spec spc, lang::Syntax::State state)
+str getStateLabel(Spec spc, rebel::lang::SpecSyntax::State state)
   = "state_<getLowerCaseSpecName(spc)>_<toLowerCase("<state>")>";
 
 @memo

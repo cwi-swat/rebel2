@@ -1,8 +1,9 @@
 module analysis::allealle::EventTranslator
 
-import lang::Syntax;
 import analysis::allealle::CommonTranslationFunctions;
-import analysis::Checker;
+import analysis::allealle::SyncedEventGraphBuilder;
+import rebel::lang::SpecSyntax;
+import rebel::lang::SpecTypeChecker;
 
 import String;
 import IO;
@@ -12,12 +13,12 @@ import ParseTree;
 
 data Context = ctx(map[str var, str relation] varLookup, void () incNrOfChangedInstances, int () getNrOfChangedInstances, Config cfg);
 
-str constructTransitionFunction(Spec spc, Config cfg) {
+str constructTransitionFunction(Spec spc, Graph[SyncedWith] syncDep, Config cfg) {
   list[str] getEventParams(Event e) { 
     list[str] actuals = ["step", "inst"];
     
     for (/FormalParam p <- e.params) {
-      actuals += "(step ⨝ ParamEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(e)><capitalize("<p.name>")>)[<p.name>]";
+      actuals += "(step ⨝ ParamEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(e)><getCapitalizedParamName(p)>)[<p.name>]";
     }
 
     return actuals;
@@ -69,14 +70,6 @@ str translateSyncedEvent(Spec spc, Event event, str instRel, Context ctx) {
 }
 
 str translateFrameEvent(Spec spc, Event frameEvent, str instRel, Config cfg) {
-  str getNoValues() {
-    if (lookupOnePrimitiveFields(spc,cfg.tm) != []) {
-      return "(no curFlat)";
-    } else {
-      return "(<intercalate(" ∨ ", ["(no cur<capitalize(f.name)>)" | Field f <- lookupNonPrimFieldsWithOneMult(spc, cfg.tm)])>)"; 
-    }     
-  }
-
   list[str] letRels = buildLetVars(spc, frameEvent, instRel, cfg);
   
   return "pred frame<getCapitalizedSpecName(spc)>[step: (cur:id, nxt:id), <getLowerCaseSpecName(spc)>: (instance:id)] 
@@ -107,7 +100,6 @@ private list[str] buildLetVars(Spec spc, Event event, str instRel, Config cfg) {
 private list[str] buildParamVars(Event event, Config cfg) {
   list[str] varDefs = [];
   
-  // "params<getCapitalizedSpecName(spc)><getCapitalizedEventName(event)><capitalize("<p.name>")> = (o ⨝ ParamsEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(event)><capitalize("<p.name>")>)[<p.name>]";
   for (/FormalParam p <- event.params) {
     varDefs += "param<getCapitalizedParamName(p)>: (<p.name>:<convertType(p.tipe)>)";
   }

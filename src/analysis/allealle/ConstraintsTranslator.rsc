@@ -5,6 +5,7 @@ import rebel::lang::SpecTypeChecker;
 
 import analysis::allealle::CommonTranslationFunctions;
 import analysis::allealle::EventTranslator;
+import analysis::allealle::SyncedEventGraphBuilder;
 
 import String;
 import IO;
@@ -136,10 +137,13 @@ private str helperPredicates()
     '";
   
 
-private str translateEventPredicates(set[Spec] spcs, Config cfg)
-  = "<for (Spec s <- spcs) {><translateEventsToPreds(s, cfg)>
-    '<constructTransitionFunction(s, cfg)>
-    '<}>";
+private str translateEventPredicates(set[Spec] spcs, Config cfg) {
+  Graph[SyncedWith] syncDep = buildSyncGraph(spcs, cfg.tm);
+  
+  return "<for (Spec s <- spcs) {><translateEventsToPreds(s, cfg)>
+         '<constructTransitionFunction(s, syncDep, cfg)>
+         '<}>";
+}
 
 private str transitionFunction(set[Spec] spcs, Config cfg) 
   = "// Transition function

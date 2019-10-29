@@ -1,6 +1,7 @@
 module analysis::allealle::tests::Rebel2AlleTester
 
 import analysis::allealle::Rebel2Alle;
+import analysis::allealle::SyncedEventGraphBuilder;
 
 import rebel::lang::SpecSyntax;
 import rebel::lang::SpecParser;
@@ -15,13 +16,14 @@ import ParseTree;
 
 import analysis::Normalizer;
 import util::PathUtil;
+import analysis::graphs::Graph;
 
 void translatePingPong() {
   Module pp = parseModule(|project://rebel2/examples/pingpong.rebel|);
   Module normalizedPp = normalize(pp);
   
   TModel tm = rebelTModelFromTree(normalizedPp, pathConf = normPathConfig());
-  
+    
   instances = {<getSpec(normalizedPp, "PingPong"), "p1", uninitialized()>, 
                <getSpec(normalizedPp, "PingPong"), "p2", uninitialized()>};
                

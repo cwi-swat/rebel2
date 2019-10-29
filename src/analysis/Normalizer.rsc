@@ -1,6 +1,6 @@
 module analysis::Normalizer
 
-import lang::Syntax;
+import rebel::lang::SpecSyntax;
 
 import ParseTree;
 import List;
@@ -8,7 +8,7 @@ import String;
 import IO;
 
 // Test imports
-import lang::Parser;
+import rebel::lang::SpecParser;
 import util::PathUtil;
 
 Module normalizeCoffeeMachine() = normalize(parseModule(|project://rebel2/examples/CoffeeMachine.rebel|)); 

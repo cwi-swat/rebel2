@@ -147,8 +147,7 @@ pred possibleTransitionsLeader[step: (cur:id, nxt:id)]
     (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
       (eventLeaderHit[step,inst] ∧
       (step ⨝ raisedEvent)[event] = EventLeaderHit ∧
-      let leader = inst, follower = (LeaderFollower ⨝ leader ⨝ step[cur->config])[follower->instance] |
-       (changedInstance ⨝ step)[instance] ⊆  leader ∪ follower) // todo: Needs to be extended for synced events!
+      (changedInstance ⨝ step)[instance] ⊆  inst) // todo: Needs to be extended for synced events!
       ∨
       (eventLeaderStart[step,inst,(step ⨝ ParamEventLeaderStartFollower)[follower]] ∧
       (step ⨝ raisedEvent)[event] = EventLeaderStart ∧

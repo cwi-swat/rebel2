@@ -40,14 +40,14 @@ private str buildIndividualStateRels(set[Spec] spcs)
     '<}>";
 
 private str buildIndividualStateRel(Spec spc)
-  = "<for (lang::Syntax::State s <- states) {>State<getCapitalizedSpecName(spc)><capitalize("<s>")> (state:id) = {\<<getStateLabel(spc, s)>\>}<}>"
-    when set[lang::Syntax::State] states := lookupStates(spc);
+  = "<for (rebel::lang::SpecSyntax::State s <- states) {>State<getCapitalizedSpecName(spc)><capitalize("<s>")> (state:id) = {\<<getStateLabel(spc, s)>\>}<}>"
+    when set[rebel::lang::SpecSyntax::State] states := lookupStates(spc);
   
 private str buildStateTuples(Spec spc) 
   = intercalate(",", ["\<state_<s>\>" | str s <- states])
   when 
     str name := getLowerCaseSpecName(spc),
-    set[str] states := {"<name>_<toLowerCase("<s.name>")>" | /lang::Syntax::State s := spc.states, s has name};
+    set[str] states := {"<name>_<toLowerCase("<s.name>")>" | /rebel::lang::SpecSyntax::State s := spc.states, s has name};
 
 private str buildAllowedTransitionRel(set[Spec] spcs)
   = "// Define which transitions are allowed (in the form of `from a state` -\> ` via an event` -\> `to a state`
@@ -86,9 +86,9 @@ private rel[str,str,str] flattenTransitions(Spec s)
       str event <- {toLowerCase(replaceAll("<e>", "::", "_")) | TransEvent e <- events}};
 
 private str convertFromState((State)`(*)`, str _) = "state_uninitialized";
-private default str convertFromState(lang::Syntax::State st, str spec) = convertState(st, spec);   
+private default str convertFromState(rebel::lang::SpecSyntax::State st, str spec) = convertState(st, spec);   
 
 private str convertToState((State)`(*)`, str _) = "state_finalized";
-private default str convertToState(lang::Syntax::State st, str spec) = convertState(st, spec);
+private default str convertToState(rebel::lang::SpecSyntax::State st, str spec) = convertState(st, spec);
 
-private str convertState(lang::Syntax::State st, str spec) = "state_<spec>_<toLowerCase("<st>")>";   
+private str convertState(rebel::lang::SpecSyntax::State st, str spec) = "state_<spec>_<toLowerCase("<st>")>";   
