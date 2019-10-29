@@ -8,7 +8,7 @@ spec Follower
       this.times' = 0;
    
   event hit()
-    post: this.times' = this.times + 1;
+    post: this.times' = this.times + 2;
   
   states : 
     (*) -> active : start;

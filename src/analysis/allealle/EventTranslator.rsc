@@ -24,10 +24,15 @@ str constructTransitionFunction(Spec spc, Graph[SyncedWith] syncDep, Config cfg)
     return actuals;
   }
   
-  str buildTransCond(Event e) =
-    "(event<getCapitalizedSpecName(spc)><getCapitalizedEventName(e)>[<intercalate(",", getEventParams(e))>] ∧
-    '(step ⨝ raisedEvent)[event] = Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(e)> ∧
-    '(changedInstance ⨝ step)[instance] ⊆  inst) // todo: Needs to be extended for synced events!";
+  str buildTransCond(Event e) {
+    tuple[set[str] names, list[str] syncs] lets = syncedInstanceRels(spc, e, "inst", syncDep, cfg.tm);
+    lets.names += {"inst"};
+    if (lets.syncs != []) lets.syncs = ["cur = step[cur-\>config]"] + lets.syncs;
+    
+    return "(event<getCapitalizedSpecName(spc)><getCapitalizedEventName(e)>[<intercalate(",", getEventParams(e))>] ∧
+           '(step ⨝ raisedEvent)[event] = Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(e)> ∧
+           '<if (lets.syncs != []) {>let <intercalate(", ", lets.syncs)> | <}>(changedInstance ⨝ step)[instance] ⊆ <intercalate(" ∪ ", [*lets.names])>)";
+  }
   
   list[str] eventTrans = [buildTransCond(e) | Event e <- lookupEvents(spc), !isFrameEvent(e)];
   
@@ -39,6 +44,41 @@ str constructTransitionFunction(Spec spc, Graph[SyncedWith] syncDep, Config cfg)
          '    ∧
          '    (no inst ∩ (changedInstance ⨝ step)[instance] ⇔ frame<getCapitalizedSpecName(spc)>[step, inst])
          '"; 
+}
+
+private tuple[set[str],list[str]] syncedInstanceRels(Spec s, Event e, str instRel, Graph[SyncedWith] syncDep, TModel tm) {
+  bool isField(Expr exp) {
+    visit (exp) {
+      case (Expr)`this.<Id field>`: return true;
+    }
+    return false;
+  }
+  
+  list[str] syncLets = [];
+  set[str] relNames = {};
+  
+  for (SyncedWith synced <- syncDep[<s,e>]) {
+    if (/f:(Formula)`<Expr exp>.<Id ev>(<{Expr ","}* args>)` := e.body, "<ev>" == "<synced.e.name>", getSpecTypeName(exp,tm) == "<synced.s.name>") {
+      str fieldName = getFieldName(exp);      
+      relNames += fieldName;      
+      
+      if (isField(exp)) {
+        syncLets += "<fieldName> = (<getCapitalizedSpecName(s)><capitalize(fieldName)> |x| cur |x| <instRel>)[<fieldName>-\>instance]";
+      } else {
+        syncLets += "<fieldName> = (ParamEvent<getCapitalizedSpecName(s)><getCapitalizedEventName(e)><capitalize(fieldName)> |x| step)[<fieldName>-\>instance]";
+      }
+      
+      if (<n,sl> := syncedInstanceRels(synced.s, synced.e, fieldName, syncDep, tm)) {
+        syncLets += sl;
+        relNames += n;
+      } 
+      
+    } else {
+      throw "Unable to find syncing event expression in event body";
+    }   
+  }
+  
+  return <relNames, syncLets>;
 }
 
 str translateEventsToPreds(Spec spc, Config cfg) =
@@ -56,17 +96,6 @@ str translateEventToPred(Spec spc, Event event, str instanceRel, Config cfg) {
          '  = let <intercalate(",\n", letRels)> |
          '    <translateEventBody(spc, event, ctx((), () {;}, int () {return -1;}, cfg))>
          '";
-}
-
-str translateSyncedEvent(Spec spc, Event event, str instRel, Context ctx) {
-  //tuple[list[str] rels, map[str,str] lookup] l = buildLetVars(spc, event, instRel, ctx.cfg);
-  //ctx.varLookup = l.lookup;
-  
-  return "";
-  //// Event <spc.name>.<event.name>
-  //       '(let <intercalate(",\n", l.rels)> |
-  //       '  <translateEventBody(spc, event, ctx)>
-  //       ')";     
 }
 
 str translateFrameEvent(Spec spc, Event frameEvent, str instRel, Config cfg) {
@@ -157,31 +186,21 @@ str translate((Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, Context ct
   list[Expr] args = [a | Expr a <- params];
    
   for (int i <- [0..size(formals)]) {
-    str actualRel = "";
-    if ((Expr)`<Int i>` := args[i]) {
-      actualRel = "__C<i>"; 
+    if ((Expr)`<Int ii>` := args[i]) {
+      actuals += "__C<ii>[val-\><formals[i].name>]"; 
     } else {
-      actualRel = translate(args[i], ctx);
+      actuals += "<translate(args[i], ctx)>";
     }
-    
-    actuals += "<actualRel>";
-  //    list[str] refRels = findReferencedRels(findReferences(args[i], ctx), ctx) +
-  //                        "(o ⨝ ParamsEvent<getCapitalizedSpecName(syncedSpec)><getCapitalizedEventName(syncedEvent)>Primitives)[<formals[i].name>-\>s_<formals[i].name>]";
-  //    
-  //    paramConst += "(some (<intercalate(" ⨯ ", refRels)>) where <translateAttr(args[i],ctx)> = s_<formals[i].name>)"; 
-  //  } else {
-  //    paramConst += "<translate(args[i],ctx)> = (o ⨝ ParamsEvent<getCapitalizedSpecName(syncedSpec)><getCapitalizedEventName(syncedEvent)><capitalize("<formals[i].name>")>)[<formals[i].name>-\><getFieldName(args[i])>]";
-  //  }
   }
    
   return "event<getCapitalizedSpecName(syncedSpec)><getCapitalizedEventName(syncedEvent)>[<intercalate(", ", actuals)>]";  
 }  
 
-str getSpecTypeName(Expr expr, Context ctx) = name when specType(str name) := getType(expr, ctx.cfg.tm);
-default str getSpecType(Expr expr, Context ctx) { throw "Expression `<expr>` is not a Spec Type"; }
+str getSpecTypeName(Expr expr, TModel tm) = name when specType(str name) := getType(expr, tm);
+default str getSpecTypeName(Expr expr, TModel tm) { throw "Expression `<expr>` is not a Spec Type"; }
 
 str translate(f: (Formula)`<Expr lhs> is <Id state>`, Context ctx) {
-  str specOfLhs = getSpecTypeName(lhs, ctx);
+  str specOfLhs = getSpecTypeName(lhs, ctx.cfg.tm);
   str fieldName = getFieldName(lhs);
    
   str specRel = isParam(lhs, ctx.cfg.tm) ?

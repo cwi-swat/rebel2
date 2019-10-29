@@ -81,17 +81,13 @@ void translateLeaderAndFollower() {
                
   initialValues = {};  
   
-  translateSpecs(config(instances, initialValues, tm, 6), "∃ c ∈ Config, f ∈ FollowerTimes, l ∈ LeaderTimes | (some (c ⨝ f) where times = 1 ∧ some (c ⨝ l) where times = 1)");
+  translateSpecs(config(instances, initialValues, tm, 7), "∃ c ∈ Config, f ∈ FollowerTimes, l ∈ LeaderTimes | (some (c ⨝ f) where times = 2 ∧ some (c ⨝ l) where times = 2)");
 }
 
 void translateLeaderFollowerAndTailer() {
   loc leaderFile = |project://rebel2/bin/normalized/sync/triple/Leader.rebel|;
   loc followerFile = |project://rebel2/bin/normalized/sync/triple/Follower.rebel|;
   loc tailerFile = |project://rebel2/bin/normalized/sync/triple/Tailer.rebel|;
-  
-  Module l = parseModule(leaderFile);
-  Module f = parseModule(followerFile);
-  Module t = parseModule(tailerFile);
   
   normalize(parseModule(|project://rebel2/examples/sync/triple/Leader.rebel|));
   normalize(parseModule(|project://rebel2/examples/sync/triple/Follower.rebel|));
@@ -113,6 +109,6 @@ void translateLeaderFollowerAndTailer() {
   initialValues = {};  
   
   translateSpecs(config(instances, initialValues, tm, 9), 
-    "∃ c ∈ Config | (some (c ⨝ SVLeaderOnePrims) where times = 2)
+    "∃ c ∈ Config | (some (c ⨝ LeaderTimes) where times = 2)
     'exists c: Config | forall l : (Instance |x| Leader)[instance] | (l |x| instanceInState |x| c)[state] in initialized");
 }
