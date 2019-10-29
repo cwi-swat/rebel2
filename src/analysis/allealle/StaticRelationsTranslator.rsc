@@ -12,7 +12,8 @@ str translateStaticPart(set[Spec] spcs) {
             '<buildSpecRel(spcs)>
             '<buildStateRel(spcs)>
             '<buildAllowedTransitionRel(spcs)>
-            '<buildEventsAsSingleRels(spcs)>"; 
+            '<buildEventsAsSingleRels(spcs)>
+            '<buildConstantRels(spcs)>"; 
 
   return def;
 }
@@ -65,6 +66,17 @@ private str buildEventsAsSingleRels(set[Spec] spcs)
 private str buildSingleEventRel(str specName, Event e) 
   = "Event<capitalize(specName)><capitalize(event)> (event:id) = {\<event_<toLowerCase(specName)>_<toLowerCase(event)>\>}"
   when str event := replaceAll("<e.name>", "::", "_");
+
+private str buildConstantRels(set[Spec] spcs) {
+  set[int] argConstants = {};
+  
+  for (Spec s <- spcs, Event e <- s.events, /(Formula)`<Expr _>.<Id _>(<{Expr ","}* params>)` := e.body, /(Lit)`<Int i>` := params) {
+    argConstants += toInt("<i>");
+  }
+  
+  return "<for (i <- argConstants) {>__C<i> (val:int) = {\<<i>\>}
+         '<}>";  
+}
 
 private rel[str,str,str] flattenTransitions(Spec s)
   = {<"<cfrom>", "<cto>", "event_<name>_<event>"> | 

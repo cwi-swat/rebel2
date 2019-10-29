@@ -79,7 +79,7 @@ bool isParam(Expr expr, TModel lookup)
 default bool isParam(Expr _, TModel _) = false;
 
 Spec getSpecByType(Expr expr, rel[Spec spc, str instance, State initialState] instances, TModel tm) {
-  if (specType(_, str specName) := getType(expr, tm)) {
+  if (specType(str specName) := getType(expr, tm)) {
     return lookupSpecByName(specName, instances);
   }
   

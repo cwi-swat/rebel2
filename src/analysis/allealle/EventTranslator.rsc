@@ -47,7 +47,8 @@ str constructTransitionFunction(Spec spc, Config cfg) {
          '      <intercalate("\n∨\n", eventTrans)>
          '    ))
          '    ∧
-         '    (no inst ∩ (changedInstance ⨝ step)[instance] ⇔ frame<getCapitalizedSpecName(spc)>[step, inst])"; 
+         '    (no inst ∩ (changedInstance ⨝ step)[instance] ⇔ frame<getCapitalizedSpecName(spc)>[step, inst])
+         '"; 
 }
 
 str translateEventsToPreds(Spec spc, Config cfg) =
@@ -68,13 +69,14 @@ str translateEventToPred(Spec spc, Event event, str instanceRel, Config cfg) {
 }
 
 str translateSyncedEvent(Spec spc, Event event, str instRel, Context ctx) {
-  tuple[list[str] rels, map[str,str] lookup] l = buildLetVars(spc, event, instRel, ctx.cfg);
-  ctx.varLookup = l.lookup;
+  //tuple[list[str] rels, map[str,str] lookup] l = buildLetVars(spc, event, instRel, ctx.cfg);
+  //ctx.varLookup = l.lookup;
   
-  return "// Event <spc.name>.<event.name>
-         '(let <intercalate(",\n", l.rels)> |
-         '  <translateEventBody(spc, event, ctx)>
-         ')";     
+  return "";
+  //// Event <spc.name>.<event.name>
+  //       '(let <intercalate(",\n", l.rels)> |
+  //       '  <translateEventBody(spc, event, ctx)>
+  //       ')";     
 }
 
 str translateFrameEvent(Spec spc, Event frameEvent, str instRel, Config cfg) {
@@ -171,56 +173,62 @@ private default str translatePost(Event event, Context ctx) = "";
 
 str translate((Formula)`(<Formula f>)`, Context ctx) = "(<translate(f,ctx)>)";
 
-str translate((Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, Context ctx) { 
-  // inline synced event
-  str relOfSync = translate(spc, ctx);
+str getFieldName(Expr expr) = visit(expr) {
+  case (Expr)`this.<Id field>`: return "<field>";
+  case (Expr)`<Id field>`: return "<field>";
+};
 
-  str getFieldName(Expr expr) = visit(expr) {
-    case (Expr)`this.<Id field>`: return "<field>";
-    case (Expr)`<Id field>`: return "<field>";
-  };
+str translate((Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, Context ctx) { 
+  str relOfSync = translate(spc, ctx);
   
   //ctx.addChangedInstance("<relOfSync>[<getFieldName(spc)>-\>instance]");
-  ctx.incNrOfChangedInstances();
   
   Spec syncedSpec = getSpecByType(spc, ctx.cfg.instances, ctx.cfg.tm);
   Event syncedEvent = lookupEventByName("<event>", syncedSpec);
-  
+
   // Fix synced event param values
-  list[str] paramConst = [];
+  list[str] actuals = ["step", "<relOfSync>[<getFieldName(spc)> as instance]"];
+  
   list[FormalParam] formals = [p | FormalParam p <- syncedEvent.params];
   list[Expr] args = [a | Expr a <- params];
    
   for (int i <- [0..size(formals)]) {
-    if (isAttributeType(args[i],ctx.cfg.tm) && isAttributeType(formals[i], ctx.cfg.tm)) {
-      list[str] refRels = findReferencedRels(findReferences(args[i], ctx), ctx) +
-                          "(o ⨝ ParamsEvent<getCapitalizedSpecName(syncedSpec)><getCapitalizedEventName(syncedEvent)>Primitives)[<formals[i].name>-\>s_<formals[i].name>]";
-      
-      paramConst += "(some (<intercalate(" ⨯ ", refRels)>) where <translateAttr(args[i],ctx)> = s_<formals[i].name>)"; 
+    str actualRel = "";
+    if ((Expr)`<Int i>` := args[i]) {
+      actualRel = "__C<i>"; 
     } else {
-      paramConst += "<translate(args[i],ctx)> = (o ⨝ ParamsEvent<getCapitalizedSpecName(syncedSpec)><getCapitalizedEventName(syncedEvent)><capitalize("<formals[i].name>")>)[<formals[i].name>-\><getFieldName(args[i])>]";
+      actualRel = translate(args[i], ctx);
     }
+    
+    actuals += "<actualRel>";
+  //    list[str] refRels = findReferencedRels(findReferences(args[i], ctx), ctx) +
+  //                        "(o ⨝ ParamsEvent<getCapitalizedSpecName(syncedSpec)><getCapitalizedEventName(syncedEvent)>Primitives)[<formals[i].name>-\>s_<formals[i].name>]";
+  //    
+  //    paramConst += "(some (<intercalate(" ⨯ ", refRels)>) where <translateAttr(args[i],ctx)> = s_<formals[i].name>)"; 
+  //  } else {
+  //    paramConst += "<translate(args[i],ctx)> = (o ⨝ ParamsEvent<getCapitalizedSpecName(syncedSpec)><getCapitalizedEventName(syncedEvent)><capitalize("<formals[i].name>")>)[<formals[i].name>-\><getFieldName(args[i])>]";
+  //  }
   }
    
-  return "// Synchronised with `<syncedSpec.name>.<syncedEvent.name>` event
-         '<if (paramConst != []) {>// Constrain input param values of synced event 
-         '<for (c <- paramConst) {><c> ∧
-         '<}><}>
-         '<translateSyncedEvent(syncedSpec, syncedEvent, "<relOfSync>[<getFieldName(spc)>-\>instance]", ctx)>";
+  return "event<getCapitalizedSpecName(syncedSpec)><getCapitalizedEventName(syncedEvent)>[<intercalate(", ", actuals)>]";  
 }  
 
+str getSpecTypeName(Expr expr, Context ctx) = name when specType(str name) := getType(expr, ctx.cfg.tm);
+default str getSpecType(Expr expr, Context ctx) { throw "Expression `<expr>` is not a Spec Type"; }
+
 str translate(f: (Formula)`<Expr lhs> is <Id state>`, Context ctx) {
-  str specOfLhs = getType(lhs, ctx.cfg.tm).name;
+  str specOfLhs = getSpecTypeName(lhs, ctx);
+  str fieldName = getFieldName(lhs);
    
   str specRel = isParam(lhs, ctx.cfg.tm) ?
-    "(<ctx.varLookup["param_<lhs>"]>[<lhs>-\>instance] ⨯ o[cur-\>config])" : 
-    "(o[cur -\> config] ⨯ (Instance ⨝ <capitalize(specOfLhs)>))";  
+    "param<capitalize(fieldName)>[<fieldName>-\>instance]" : 
+    "cur<capitalize(fieldName)>[<fieldName>-\>instance])";  
   
   str stateRel = "<state>" == "initialized" ?
     "initialized" :
     "State<capitalize(specOfLhs)><capitalize("<state>")>";
     
-  return "(<specRel> ⨝ instanceInState)[state] ⊆ <stateRel>";    
+  return "inState[cur, <specRel>, <stateRel>]";    
 } 
 
 str translate((Formula)`<Formula lhs> && <Formula rhs>`,    Context ctx) = "(<translate(lhs,ctx)> ∧ <translate(rhs,ctx)>)";
@@ -288,7 +296,8 @@ list[str] findReferencedRels(set[Reference] refs, Context ctx) {
 }
   
 str translate((Expr)`(<Expr e>)`, Context ctx) = "(<translate(e,ctx,prefix)>)"; 
-str translate((Expr)`<Id id>`, Context ctx) = "param<capitalize(id)>";
+
+str translate((Expr)`<Id id>`, Context ctx) = "param<capitalize("<id>")>";
 str translate((Expr)`this.<Id id>`, Context ctx) = "cur<capitalize("<id>")>[<id>]";
 str translate((Expr)`this.<Id id>'`, Context ctx) = "nxt<capitalize("<id>")>[<id>]";
 

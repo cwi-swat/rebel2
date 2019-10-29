@@ -79,7 +79,7 @@ void translateLeaderAndFollower() {
                
   initialValues = {};  
   
-  translateSpecs(config(instances, initialValues, tm, 6), "∃ c ∈ Config, f ∈ SVFollowerOnePrims, l ∈ SVLeaderOnePrims | (some (c ⨝ f) where times = 3 ∧ some (c ⨝ l) where times = 3)");
+  translateSpecs(config(instances, initialValues, tm, 6), "∃ c ∈ Config, f ∈ SVFollowerOnePrims, l ∈ SVLeaderOnePrims | (some (c ⨝ f) where times = 1 ∧ some (c ⨝ l) where times = 1)");
 }
 
 void translateLeaderFollowerAndTailer() {
