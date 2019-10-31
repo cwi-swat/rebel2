@@ -32,7 +32,7 @@ syntax Formula
   | right Formula "\<=\>" Formula
   ;
 
-syntax Decl = {Id ","}+ ":" Expr;
+syntax Decl = {Id ","}+ vars ":" Expr expr;
   
 syntax Expr
   = brackets: "(" Expr ")"

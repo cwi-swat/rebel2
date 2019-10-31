@@ -5,6 +5,7 @@ import rebel::lang::SpecTypeChecker;
 
 import String;
 import Node;
+import IO;
 
 data Config = config(rel[Spec spc, str instance, State initialState] instances, 
                      rel[Spec spc, str instance, str field, str val] initialValues, 
@@ -41,8 +42,18 @@ str getOnePrimStateVectorName(Spec spc) = "SV<getCapitalizedSpecName(spc)>OnePri
 str getMultStateVectorName(Spec spc, Field fld) = "SV<getCapitalizedSpecName(spc)><capitalize("<fld.name>")>";
 
 @memo
-list[str] getInstancesOfType(Type tipe, rel[Spec spc, str instance] instances)
-  = ["<i.instance>" | i <- instances, "<i.spc.name>" == "<tipe.tp>"];
+list[str] getInstancesOfType(Type tipe, rel[Spec spc, str instance] instances, TModel tm) 
+  = ["<i.instance>" | i <- instances, "<i.spc.name>" == getSpecOfType(tipe, tm)];
+
+str getSpecOfType(Type tipe, TModel tm) {
+  if (setType(specType(str spc)) := getType(tipe, tm)) {
+    return spc;
+  } else if (specType(str spc) := getType(tipe, tm)) {
+    return spc;
+  } else {
+    throw "<tipe> is not a (set) spec type";
+  }
+}
 
 bool isAttributeType(Expr expr, TModel tm) {
   switch (getType(expr, tm)) {
@@ -70,12 +81,16 @@ default AType getType(Expr expr, TModel tm) { throw "No type info available for 
 AType getType(FormalParam p, TModel tm) = tm.facts[p.name@\loc] when p.name@\loc in tm.facts;
 default AType getType(FormalParam p, TModel tm) { throw "No type info available for `<p>`"; }
 
-bool isParam(Expr expr, TModel lookup) 
-  = d.idRole == paramId()
-  when 
-    {loc def} := lookup.useDef[expr@\loc],
-    Define d := lookup.definitions[def];
+AType getType(Type t, TModel tm) = tm.facts[t@\loc] when t@\loc in tm.facts;
+default AType getType(Type t, TModel tm) { throw "No type info available for `<t>`"; }
 
+IdRole getIdRole(expr:(Expr)`<Id id>`, TModel tm) = tm.definitions[def].idRole when {loc def} := tm.useDef[id@\loc];
+IdRole getIdRole(expr:(Expr)`this.<Id id>`, TModel tm) = tm.definitions[def].idRole when {loc def} := tm.useDef[id@\loc];
+
+default IdRole getIdRole(Expr expr, TModel tm) { throw "Role of identifier `<expr>` can not be found in type model"; }
+
+bool isParam(Expr expr, TModel tm) 
+  = getIdRole(expr,tm) == paramId();
 default bool isParam(Expr _, TModel _) = false;
 
 Spec getSpecByType(Expr expr, rel[Spec spc, str instance, State initialState] instances, TModel tm) {
@@ -134,33 +149,6 @@ Event lookupEventByName(str eventName, Spec spc) {
   
   throw "Event with name `<eventName>` could not be found";
 }
-
-@memo 
-list[Field] lookupNonPrimFields(Spec s, TModel tm) = [f | /Field f <- s.fields, !isPrim(f.tipe, tm)];
-
-@memo 
-list[Field] lookupNonPrimFieldsWithOneMult(Spec s, TModel tm) = [f | /Field f <- s.fields, !isPrim(f.tipe, tm) && isNonOptionalScalar(f.tipe, tm)];
-
-@memo
-list[Field] lookupPrimFieldsWithOtherMult(Spec s, TModel tm) = [f | /Field f <- s.fields, isPrim(f.tipe, tm) && !isNonOptionalScalar(f.tipe, tm)];
-
-@memo
-bool hasOnePrimitiveFields(Spec s, TModel tm) = lookupOnePrimitiveFields(s,tm) != [];
-
-@memo
-list[Field] lookupOnePrimitiveFields(Spec s, TModel tm) = [f | /f:(Field)`<Id name> : <Type tipe>` <- s.fields, isPrim(tipe, tm) && isNonOptionalScalar(tipe, tm)];
-
-@memo
-list[str] lookupOnePrimitiveFieldNames(Spec s, TModel tm) = ["<f.name>" | Field f <- lookupOnePrimitiveFields(s,tm)];
-
-@memo
-list[FormalParam] lookupPrimitiveParams(Event e, TModel tm) = [p | /FormalParam p <- e.params, isPrim(p.tipe,tm) && isNonOptionalScalar(p.tipe,tm)];
-
-@memo
-list[FormalParam] lookupNonPrimParams(Event e, TModel tm) = [p | /FormalParam p <- e.params, !isPrim(p.tipe,tm)];
-
-@memo
-list[FormalParam] lookupPrimParamsWithOtherMult(Event e, TModel tm) = [p | /FormalParam p <- e.params, isPrim(p.tipe,tm) && !isNonOptionalScalar(p.tipe, tm)];
 
 @memo
 bool isNonOptionalScalar(Type tipe, TModel tm) = isNonOptionalScalar(t) when tipe@\loc in tm.facts, AType t := tm.facts[tipe@\loc];

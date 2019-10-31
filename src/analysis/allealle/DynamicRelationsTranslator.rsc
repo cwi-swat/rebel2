@@ -48,7 +48,7 @@ private str buildParamTuples(Spec s, Event e, FormalParam p, Config cfg) {
     if (isPrim(p.tipe, cfg.tm)) {
       upperBound += "\<c<i>,c<i+1>,?\>";
     } else {
-      for (str otherInst <- getInstancesOfType(p.tipe, cfg.instances<0,1>)) {
+      for (str otherInst <- getInstancesOfType(p.tipe, cfg.instances<0,1>, cfg.tm)) {
         upperBound += "\<c<i>,c<i+1>,<otherInst>\>";
       }
     } 
@@ -82,7 +82,7 @@ private str buildFieldTuples(Spec spc, Field f, Config cfg) {
     if (isPrim(f.tipe, cfg.tm)) {
       upperBound += "\<c<i>,<inst>,?\>";
     } else {
-      for (str otherInst <- getInstancesOfType(f.tipe, cfg.instances<0,1>)) {
+      for (str otherInst <- getInstancesOfType(f.tipe, cfg.instances<0,1>, cfg.tm)) {
         upperBound += "\<c<i>,<inst>,<otherInst>\>";
       }
     } 

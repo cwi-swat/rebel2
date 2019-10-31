@@ -4,6 +4,7 @@ extend rebel::lang::CommonSyntax;
 
 syntax Part 
   = Spec spc
+  | Enum enum
   ;
 
 syntax Spec = "spec" Id name Fields? fields Constraints? constraints Event* events States? states;
@@ -85,6 +86,8 @@ syntax TransEvent
   | "empty"
   ;  
  
+syntax Enum = "enum" Id {Id ","}+ values ";";
+ 
 keyword Keywords = "spec"
                  | "failure" 
                  | "success" 
@@ -93,5 +96,6 @@ keyword Keywords = "spec"
                  | "post"
                  | "init"
                  | "states"
+                 | "enum"
                  ;
  

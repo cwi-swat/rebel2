@@ -288,17 +288,15 @@ void collect(current: (Expr)`<Expr expr>'`, Collector c) {
   }
   
   c.fact(current, expr);
-  c.push("ref", postPhase);
-  
   collect(expr, c);
 }
 
 void collect(current: (Expr)`<Expr lhs> + <Expr rhs>`, Collector c) {
   c.calculate("addition", current, [lhs, rhs],
     AType (Solver s) {
-      switch({s.getType(lhs), s.getType(rhs)}){
-        case {intType()}: return intType();
-        case {setType(AType elem), elem}: return setType(elem);
+      switch([s.getType(lhs), s.getType(rhs)]){
+        case [intType(),intType()]: return intType();
+        case [setType(AType elem), elem]: return setType(elem);
         default:
           s.report(error(current, "`+` not defined for %t and %t", lhs, rhs));
       }

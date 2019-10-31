@@ -49,7 +49,7 @@ private str machineFieldTypeConstraints(set[Spec] spcs, Config cfg) {
     if (isPrim(f.tipe, cfg.tm)) {
       typeCons += "<getCapitalizedSpecName(spc)><getCapitalizedFieldName(f)>[config,instance]  ⊆ Config ⨯ (Instance ⨝ <getCapitalizedSpecName(spc)>)[instance]";
     } else {
-      typeCons += "<getCapitalizedSpecName(spc)><getCapitalizedFieldName(f)>  ⊆ Config ⨯ (Instance ⨝ <getCapitalizedSpecName(spc)>)[instance] ⨯ (Instance ⨝ <f.tipe.tp>)[instance-\><f.name>]";
+      typeCons += "<getCapitalizedSpecName(spc)><getCapitalizedFieldName(f)>  ⊆ Config ⨯ (Instance ⨝ <getCapitalizedSpecName(spc)>)[instance] ⨯ (Instance ⨝ <getSpecOfType(f.tipe, cfg.tm)>)[instance-\><f.name>]";
     }
   } 
   
@@ -82,10 +82,11 @@ private str machineOnlyHasValuesWhenInitialized(set[Spec] spcs, Config cfg) {
     if (isPrim(f.tipe,cfg.tm)) {
       cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one <relName> ⨝ c ⨝ inst)"; 
     } else {
-      str mult = (setType(_) := getType(f,cfg.tm)) ? "some" : "one";
-    
-      cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ <mult> <relName> ⨝ c ⨝ inst)";  
       cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no <relName> ⨝ c ⨝ inst)";  
+
+      if (setType(_) !:= getType(f,cfg.tm) && optionalType(_) !:= getType(f,cfg.tm)) {
+        cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one <relName> ⨝ c ⨝ inst)";  
+      }
     }
   } 
   

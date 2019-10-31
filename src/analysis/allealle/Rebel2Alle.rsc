@@ -125,38 +125,40 @@ rel[Spec spc, str instance, State state] getStateInConfig(int step, Spec spc, se
   return instanceStates;
 }
 
-Maybe[str] findAssignedValue(ModelTuple t, str field) {
+str findAssignedValue(ModelTuple t, str field) {
   str parseTerm(lit(Literal l)) = model2Str(l);
   str parseTerm(neg(Term t)) = "-<model2Str(t)>";
   str parseTerm(\int(int i)) = "<i>";
 
   if (/idAttribute(field, str id) := t.attributes) {
-    return just(id);
+    return id;
   } else if (/fixedAttribute(field, Term val) := t.attributes) {
-    return just(parseTerm(val));
+    return parseTerm(val);
   } else if (/varAttribute(field, Term val, _) := t.attributes) {
-    return just(parseTerm(val));
+    return parseTerm(val);
   } else {
-    return nothing();
+    throw "Unable to parse value for field `<field>` in tuples `<t>`";
   }
 }
 
 rel[Spec spc, str instance, str field, str val] getValuesInConfig(int step, Spec spc, set[str instance] instances, Model alleModel, TModel tm) {
   rel[Spec,str,str,str] values = {};
     
-  Maybe[str] getValue(ModelRelation r, str inst, str field) {
+  list[str] getValues(ModelRelation r, str inst, str field) {
+    list[str] foundValues = [];
+    
     for (t <- r.tuples) {
       if (/idAttribute("config", "c<step>") := t.attributes && /idAttribute("instance", inst) := t.attributes) {
-        return findAssignedValue(t, field);
+        foundValues += findAssignedValue(t, field);
       }
     }
-    
-    return nothing();
+
+    return foundValues;
   }
 
   for (/Field f <- spc.fields) {
     ModelRelation r = findRelation(alleModel, "<getCapitalizedSpecName(spc)><getCapitalizedFieldName(f)>");
-    for (inst <- instances, just(str val) := getValue(r, inst, "<f.name>")) {
+    for (inst <- instances, str val <- getValues(r, inst, "<f.name>")) {
       values += <spc, inst, "<f.name>", val>;
     }
   }
@@ -167,7 +169,7 @@ RaisedEvent getRaisedEvent(int step, set[Spec] specs, rel[Spec spc, str instance
   ModelRelation r = findRelation(alleModel, "raisedEvent");
 
   tuple[str,str] findInstanceAndEvent() {
-    for (t <- r.tuples, /idAttribute("cur", "c<step>") := t.attributes, just(str instance) := findAssignedValue(t, "instance"), just(str event) := findAssignedValue(t, "event")) {
+    for (t <- r.tuples, /idAttribute("cur", "c<step>") := t.attributes, str instance := findAssignedValue(t, "instance"), str event := findAssignedValue(t, "event")) {
       return <instance,event>;
     }
     
@@ -181,14 +183,14 @@ RaisedEvent getRaisedEvent(int step, set[Spec] specs, rel[Spec spc, str instance
   
   Event findEvent(Spec spc, str eventName) = e when /Event e := spc.events, "<toLowerCase("<e.name>")>" == eventName;
 
-  Maybe[str] getValue(ModelRelation r, str param) {
+  str getValue(ModelRelation r, str param) {
     for (t <- r.tuples) {
       if (/idAttribute("cur", "c<step>") := t.attributes) {
         return findAssignedValue(t, param);
       }
     }
     
-    return nothing();
+    throw "Unable to find value for param `<param>` in step <step>";
   }
 
   tuple[str instance, str event] ie = findInstanceAndEvent();   
@@ -200,13 +202,13 @@ RaisedEvent getRaisedEvent(int step, set[Spec] specs, rel[Spec spc, str instance
   for (FormalParam p <- ev.params) {
     ModelRelation op = findRelation(alleModel, "ParamEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)><getCapitalizedParamName(p)>");
     
-    for (just(str val) := getValue(op, "<p.name>")) {
+    for (str val := getValue(op, "<p.name>")) {
       args += <"<p.name>", val>;
     } 
   }
   
   ModelRelation ai = findRelation(alleModel, "changedInstance");
-  set[str] affectedInstances = {instance | t <- ai.tuples, /idAttribute("cur", "c<step>") := t.attributes, just(str instance) := findAssignedValue(t, "instance")};
+  set[str] affectedInstances = {instance | t <- ai.tuples, /idAttribute("cur", "c<step>") := t.attributes, str instance := findAssignedValue(t, "instance")};
 
   if (/^<evName:.*>__<varName:.*>$/ := "<ev.name>") {
     return raisedEventVariant(spc, ev, evName, varName, ie.instance, args, affectedInstances);  
@@ -234,7 +236,7 @@ str trace2Str(int step, goal(Configuration cfg))
     '<config2Str(cfg)>";
 
 private str getVal({str v}) = v;
-private default str getVal(set[str] val) = val;
+private default str getVal(set[str] val) = "{<intercalate(",", [*val])>}";
 
 str config2Str(Configuration cfg) {
   str getState(uninitialized()) = "uninitialized";

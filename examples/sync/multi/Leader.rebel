@@ -3,32 +3,29 @@ module sync::multi::Leader
 import sync::multi::Follower
 
 spec Leader
-  nrOfHits: Integer,
-  followers: set Follower;
+  followers: set Follower,
+  nrOfHits: Integer;
   
   init event start()  
     post: 
-      this.nrOfHits' = 0, 
+      this.nrOfHits' = 0,  
       this.followers' = {};    
       
   event add(follower: Follower) 
     pre: 
       follower is initialized; 
     post: 
-      this.followers' = this.followers + follower; 
+     this.followers' = this.followers + follower; 
   
   event complete()
   
-  event hitAll()
-    pre: forall f: this.followers | f.hit();
+  event hitAll() 
+    pre: forall f:this.followers | f.hit();
     post: this.nrOfHits' = this.nrOfHits + 1;
   
-  event hitSome()
-    pre: exists f: this.followers | f.hit();
-    post: this.nrOfHits' = this.nrOfHits + 1;
-    
   states:
     (*) -> link: start;
     link -> link: add;
     link -> active: complete;
-    active -> active: hitAll, hitSome; 
+    active -> active: hitAll; 
+     

@@ -53,7 +53,8 @@ void translateCoffeeMachine() {
   TModel tm = rebelTModelFromTree(normalizedCm, pathConf = normPathConfig());
     
   instances = {<getSpec(normalizedCm, "CoffeeMachine"), "cm1", uninitialized()>,
-               <getSpec(normalizedCm, "CoffeeMachine"), "cm2", uninitialized()>};
+               <getSpec(normalizedCm, "CoffeeMachine"), "cm2", uninitialized()>,
+               <getSpec(normalizedCm, "CoffeeMachine"), "cm3", uninitialized()>};
                
   initialValues = {};  
   
@@ -111,4 +112,29 @@ void translateLeaderFollowerAndTailer() {
   translateSpecs(config(instances, initialValues, tm, 9), 
     "∃ c ∈ Config | (some (c ⨝ LeaderTimes) where times = 2)
     'exists c: Config | forall l : (Instance |x| Leader)[instance] | (l |x| instanceInState |x| c)[state] in initialized");
+}
+
+void translateMultiFollowers() {
+  loc followerFile = |project://rebel2/bin/normalized/sync/multi/Follower.rebel|;
+  loc leaderFile = |project://rebel2/bin/normalized/sync/multi/Leader.rebel|;
+  
+  Module f = parseModule(|project://rebel2/examples/sync/multi/Follower.rebel|);
+  Module l = parseModule(|project://rebel2/examples/sync/multi/Leader.rebel|);
+  
+  normalize(f);
+  normalize(l);
+
+  Module normalizedF = parseModule(followerFile);
+  Module normalizedL = parseModule(leaderFile);
+
+  TModel tm = rebelTModelFromTree(normalizedL, debug = false, pathConf = normPathConfig());
+
+  instances = {<getSpec(normalizedF, "Follower"), "f1", uninitialized()>, 
+               <getSpec(normalizedF, "Follower"), "f2", uninitialized()>,
+               <getSpec(normalizedL, "Leader"), "l1", uninitialized()>};
+               
+  initialValues = {};  
+  
+  translateSpecs(config(instances, initialValues, tm, 10), "∃ c ∈ Config, l ∈ (Instance ⨝ Leader)[instance] | ((some (LeaderFollowers ⨝ c ⨝ l)[count() as nr] where nr = 2) && (instanceInState |x| l |x| c)[state] in StateLeaderActive)
+                                                           '∃ c ∈ Config | (some (c |x| LeaderNrOfHits) where nrOfHits = 2)");
 }
