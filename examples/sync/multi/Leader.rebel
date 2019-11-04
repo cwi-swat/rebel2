@@ -25,7 +25,7 @@ spec Leader
   
   states:
     (*) -> link: start;
-    link -> link: add;
+    link -> link: add; 
     link -> active: complete;
     active -> active: hitAll; 
      

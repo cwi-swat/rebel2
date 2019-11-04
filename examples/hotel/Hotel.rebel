@@ -1,0 +1,70 @@
+module hotel::Hotel
+
+spec Key
+
+spec Card
+  first: Key,
+  second: Key;
+  
+  init event create(fst: Key, snd: Key) 
+    post: this.first' = fst, this.second' = snd;
+  
+  event equal(fst: Key, snd: Key)
+    pre: this.first = fst, this.second = snd;
+  
+  event checkFirst(key: Key) 
+    pre: this.first = key; 
+    
+  event checkSecond(key: Key)
+    pre: this.second = key;
+    
+  states:
+    (*) -> created: create;
+    created -> created: checkFirst, checkSecond, equal;
+  
+spec Guest
+  card: Card;
+ 
+  event checkin(card: Card)
+    post: this.card' = card; 
+    
+  states:
+    (*) -> checkedin: checkin;
+
+spec Room
+  key: Key;
+  
+  init event create(initialKey: Key) 
+    post: this.key' = initialKey; 
+    
+  event update(newKey: Key) 
+    post: this.key' = newKey;  
+  
+  event checkKey(key: Key)
+    pre: this.key = key; 
+  
+  states:
+    (*) -> created: create;
+    created -> created: update, checkKey;
+  
+spec FrontDesk
+  issued: set Key,
+  guests: set Guest;
+    
+  init event initialize()
+    post: this.issued' = {}, this.guests' = {};
+    
+  event checkin(fst: Key, snd: Key, c: Card, room: Room, g: Guest)
+    pre: 
+      g.checkin(c),
+      room.checkKey(fst),
+      c.checkFirst(fst), 
+      snd notin this.issued, 
+      g notin this.guests;
+    post: 
+      this.issued' = this.issued + snd,
+      this.guests' = this.guests + g;
+  
+  states:
+    (*) -> open: initialize;
+    open -> open: checkin;   

@@ -33,7 +33,7 @@ private str buildStateRel(set[Spec] spcs)
     'finalized (state:id) = {\<state_finalized\>}
     'uninitialized (state:id) = {\<state_uninitialized\>}
     '<buildIndividualStateRels(spcs)>"
-  when stateTuples := intercalate(",", [buildStateTuples(s) | s <- spcs]);
+  when stateTuples := intercalate(",", [st | s <- spcs, str st := buildStateTuples(s), st != ""]);
 
 private str buildIndividualStateRels(set[Spec] spcs)
   = "<for (s <- spcs) {><buildIndividualStateRel(s)>
@@ -51,10 +51,13 @@ private str buildStateTuples(Spec spc)
 
 private str buildAllowedTransitionRel(set[Spec] spcs)
   = "// Define which transitions are allowed (in the form of `from a state` -\> ` via an event` -\> `to a state`
-    'allowedTransitions (from:id, to:id, event:id) = {<intercalate(",",[buildAllowedTransitionTuples(s) | s <- spcs])>}";
+    'allowedTransitions (from:id, to:id, event:id) = {<intercalate(",", [tt | s <- spcs, str tt := buildAllowedTransitionTuples(s), tt != ""])>}";
 
 private str buildAllowedTransitionTuples(Spec spc)
-  = intercalate(",", ["\<<f>,<t>,<e>\>" | <f,t,e> <- flattenTransitions(spc)]);
+  = intercalate(",", ["\<<f>,<t>,<e>\>" | <f,t,e> <- flattenTransitions(spc)])
+  when /Transition _ := spc.states;
+
+private default str buildAllowedTransitionTuples(Spec s) = "";
   
 private str buildEventsAsSingleRels(set[Spec] spcs)
   = "// Define each event as single relation so that the events can be used as variables in the constraints 

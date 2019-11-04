@@ -16,8 +16,10 @@ syntax QualifiedName = {Id "::"}+ names !>> "::";
 
 syntax Formula
   = brackets: "(" Formula ")"
-  > sync: Expr spc "." Id event  "(" {Expr ","}* params ")"  
-  | Expr "is" Id
+  > sync: Expr spc "." Id event  "(" {Expr ","}* params ")" 
+  | inState: Expr "is" Id
+  | membership: Expr "in" Expr
+  | nonMembership: Expr "notin" Expr
   > Expr "\<" Expr
   | Expr "\<=" Expr
   | Expr "=" Expr
@@ -30,6 +32,10 @@ syntax Formula
   | right Formula "||" Formula
   > right Formula "=\>" Formula
   | right Formula "\<=\>" Formula
+  ;
+
+syntax Formula
+  = noOp: "__noop" "(" Expr spc ")" 
   ;
 
 syntax Decl = {Id ","}+ vars ":" Expr expr;
@@ -86,5 +92,6 @@ keyword Keywords = "module"
                  | "set"
                  | "forall"
                  | "exists"
+                 | "__noop"
                  ;
  

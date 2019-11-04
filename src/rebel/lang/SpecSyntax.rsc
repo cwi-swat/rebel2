@@ -22,8 +22,7 @@ syntax Constraints
   ;
   
 syntax Constraint
-  = "identity" Id field
-  | "identity" "(" {Id ","}+ fields ")"
+  =  "unique" {Id ","}+ fields
   ;
   
 syntax Event

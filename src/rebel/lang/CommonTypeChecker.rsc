@@ -82,7 +82,7 @@ default tuple[list[str] typeNames, set[IdRole] idRoles] rebelTypeNamesAndRole(AT
 
 private str __REBEL_IMPORT_QUEUE = "__rebelImportQueue";
 
-str getFileName((QualifiedName) `<{Id "::"}+ moduleName>`) = replaceAll("<moduleName>.rebel", "::", "/");
+str getFileName((QualifiedName)`<{Id "::"}+ moduleName>`) = replaceAll("<moduleName>.rebel", "::", "/");
 
 tuple[bool, loc] lookupModule(QualifiedName name, PathConfig pcfg) {
     for (s <- pcfg.srcs) {
@@ -206,6 +206,30 @@ void collect(current: (Formula)`<Expr exp> is <Id state>`, Collector c) {
   c.useViaType(exp, state, {stateId()});
 
   collect(exp,c);
+}
+
+void collect(current: (Formula)`<Expr lhs> in <Expr rhs>`, Collector c) {
+  c.calculate("membership", current, [lhs,rhs],
+    AType (Solver s) {
+      switch(<s.getType(lhs), s.getType(rhs)>) {
+        case <AType t, setType(t)>: return boolType();
+        default: s.report(error(current, "Can only check membership of element of same type as set"));
+      }
+    });
+
+  collect(lhs,rhs,c);
+}
+
+void collect(current: (Formula)`<Expr lhs> notin <Expr rhs>`, Collector c) {
+  c.calculate("non membership", current, [lhs,rhs],
+    AType (Solver s) {
+      switch(<s.getType(lhs), s.getType(rhs)>) {
+        case <AType t, setType(t)>: return boolType();
+        default: s.report(error(current, "Can only check membership of element of same type as set"));
+      }
+    });
+
+  collect(lhs,rhs,c);
 }
 
 private void collectIntEq(Collector c, Formula f, Expr lhs, Expr rhs, str explain) {

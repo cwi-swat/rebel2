@@ -33,7 +33,9 @@ Spec normalize(Spec spc) {
   list[Event] normEvents = normalizeEvents([e | Event e <- spc.events]);
   normEvents = addFrameConditions(fields, normEvents);
   normEvents = addEmptyTransitionIfNecessary(spc, normEvents);
-  normEvents += createFrameEvent(spc);
+  if (fields != {} || /Transition _ := spc.states){
+    normEvents += createFrameEvent(spc);
+  }
   
   spc.events = buildNormEvents(normEvents);
   spc.states = normalizeStates(spc.states);
@@ -45,7 +47,7 @@ Event createFrameEvent(Spec spc) {
   str frameCond = "<intercalate(",\n", ["this.<f.name>\' = this.<f.name>" | /Field f <- spc.fields])>";
                   
   return [Event]"event __frame() 
-                '  post: <frameCond>;
+                '<if (frameCond != "") {>  post: <frameCond>;<}>
                 '";                  
 }
 

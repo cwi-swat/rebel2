@@ -107,7 +107,7 @@ private str eventParamTypeAndMultiplicityConstraints(set[Spec] spcs, Config cfg)
       typeCons += "<relName>[cur,nxt] ⊆ order";
       multCons += "(some (step ⨝ Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>) ⇔ one (step ⨝ <relName>))"; 
     } else {
-      typeCons += "<relName> ⊆ order ⨯ (Instance ⨝ <p.tipe.tp>)[instance-\><toLowerCase("<p.name>")>]";
+      typeCons += "<relName> ⊆ order ⨯ (Instance ⨝ <p.tipe.tp>)[instance-\><p.name>]";
 
       str mult = (setType(_) := getType(p, cfg.tm)) ? "some" : "one";
       multCons += "(some (step ⨝ Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>) ⇔ <mult> (step ⨝ <relName>))";                 
@@ -141,14 +141,16 @@ private str helperPredicates()
 private str translateEventPredicates(set[Spec] spcs, Config cfg) {
   Graph[SyncedWith] syncDep = buildSyncGraph(spcs, cfg.tm);
   
-  return "<for (Spec s <- spcs) {><translateEventsToPreds(s, cfg)>
+  return "<for (Spec s <- spcs, hasTransitions(s)) {><translateEventsToPreds(s, cfg)>
          '<constructTransitionFunction(s, syncDep, cfg)>
          '<}>";
 }
 
+private bool hasTransitions(Spec s) = /Transition _ := s.states;
+
 private str transitionFunction(set[Spec] spcs, Config cfg) 
   = "// Transition function
-    '∀ step ∈ order | <intercalate(" ∧ ", ["possibleTransitions<getCapitalizedSpecName(s)>[step]" | s <- spcs])>
+    '∀ step ∈ order | <intercalate(" ∧ ", ["possibleTransitions<getCapitalizedSpecName(s)>[step]" | s <- spcs, hasTransitions(s)])>
     '";  
 
 private bool isFrameEvent(Event e) = "<e.name>" == "__frame";

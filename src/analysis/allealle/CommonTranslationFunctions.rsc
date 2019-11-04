@@ -20,28 +20,28 @@ data State
   | anyState()
   ;
 
-@memo
+//@memo
 str getLowerCaseSpecName(Spec spc) = toLowerCase("<spc.name>");
 
-@memo
+//@memo
 str getCapitalizedSpecName(Spec spc) = capitalize("<spc.name>");
 
-@memo
+//@memo
 str getCapitalizedEventName(Event e) = capitalize("<e.name>");
 
-@memo
+//@memo
 str getCapitalizedParamName(FormalParam p) = capitalize("<p.name>");
 
-@memo
+//@memo
 str getCapitalizedFieldName(Field f) = capitalize("<f.name>");
 
-@memo
+//@memo
 str getOnePrimStateVectorName(Spec spc) = "SV<getCapitalizedSpecName(spc)>OnePrims";
 
-@memo
+//@memo
 str getMultStateVectorName(Spec spc, Field fld) = "SV<getCapitalizedSpecName(spc)><capitalize("<fld.name>")>";
 
-@memo
+//@memo
 list[str] getInstancesOfType(Type tipe, rel[Spec spc, str instance] instances, TModel tm) 
   = ["<i.instance>" | i <- instances, "<i.spc.name>" == getSpecOfType(tipe, tm)];
 
@@ -68,6 +68,9 @@ bool isAttributeType(FormalParam p, TModel tm) {
     default: return false;
   }
 }
+
+str type2Str(intType()) = "int";
+default str type2Str(AType t) = "id"; 
 
 str convertType((Type)`Integer`) = "int";
 default str convertType(Type t) = "id";
@@ -101,10 +104,10 @@ Spec getSpecByType(Expr expr, rel[Spec spc, str instance, State initialState] in
   throw "Expression `<expr>` is not of spec type";
 }
 
-@memo
+//@memo
 set[Spec] lookupSpecs(rel[Spec spc, str instance, State initialState] instances) = {i.spc | i <- instances}; 
 
-@memo
+//@memo
 Spec lookupSpecByName(str specName, rel[Spec spc, str instance, State initialState] instances) {
   for (s <- lookupSpecs(instances), "<s.name>" == specName) {
     return s;
@@ -113,35 +116,37 @@ Spec lookupSpecByName(str specName, rel[Spec spc, str instance, State initialSta
   throw "Spec `<specName>` could not be found";
 }
 
-@memo 
+//@memo 
 set[rebel::lang::SpecSyntax::State] lookupStates(Spec spc) 
   = {delAnnotationsRec(st) | /rebel::lang::SpecSyntax::State st <- spc.states, st has name};
 
-@memo
+//@memo
 set[str] lookupStateLabels(Spec spc) 
   = {getStateLabel(spc, st) | rebel::lang::SpecSyntax::State st <- lookupStates(spc)} 
   when str specName := toLowerCase("<spc.name>");
 
-@memo
+//@memo
 set[str] lookupStateLabelsWithDefaultState(Spec spc)
-  = lookupStateLabels(spc) + {"state_uninitialized", "state_finalized"};   
+  = lookupStateLabels(spc) + {"state_uninitialized"} + (!isEmptySpec(spc) ? {"state_finalized"} : {});   
 
 str getStateLabel(Spec spc, rebel::lang::SpecSyntax::State state)
   = "state_<getLowerCaseSpecName(spc)>_<toLowerCase("<state>")>";
 
-@memo
+bool isEmptySpec(Spec spc) = /Field _ !:= spc.fields && /Transition _ !:= spc.states;
+
+//@memo
 set[str] lookupInstances(Spec spc, rel[Spec spc, str instance] instances) 
   = instances[spc];
 
-@memo
+//@memo
 set[str] lookupEventNames(Spec spc)
   = {"event_<specName>_<ev>" | Event event <- lookupEvents(spc), str ev := toLowerCase(replaceAll("<event.name>", "::", "_"))}
   when str specName := toLowerCase("<spc.name>");
 
-@memo
+//@memo
 set[Event] lookupEvents(Spec spc) = {e | /Event e := spc.events};
 
-@memo
+//@memo
 Event lookupEventByName(str eventName, Spec spc) {
   for (Event e <- lookupEvents(spc), "<e.name>" == eventName) {
     return e;
@@ -150,7 +155,7 @@ Event lookupEventByName(str eventName, Spec spc) {
   throw "Event with name `<eventName>` could not be found";
 }
 
-@memo
+//@memo
 bool isNonOptionalScalar(Type tipe, TModel tm) = isNonOptionalScalar(t) when tipe@\loc in tm.facts, AType t := tm.facts[tipe@\loc];
 default bool isNonOptionalScalar(Type tipe, TModel tm)  { throw "No type information found for `<tipe>`"; }
 
@@ -158,7 +163,6 @@ bool isNonOptionalScalar(setType(_)) = false;
 bool isNonOptionalScalar(optionalType(_)) = false;
 default bool isNonOptionalScalar(AType _) = true;
 
-@memo
 bool isPrim(Type tipe, TModel tm) = isPrim(t) when tipe@\loc in tm.facts, AType t := tm.facts[tipe@\loc];
 bool isPrim(Type tipe, TModel tm) { throw "No type information found for `<tipe>`"; }
 

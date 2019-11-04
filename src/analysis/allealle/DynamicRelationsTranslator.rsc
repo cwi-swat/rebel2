@@ -101,7 +101,7 @@ private str buildChangedInstancesRel(set[str] instances, int numberOfTransitions
     '";
   
 private str buildRaisedEventsRel(rel[Spec spc, str instance] instances, int numberOfTransitions) 
-  = "raisedEvent (cur:id, nxt:id, event:id, instance:id) \<= {<intercalate(",", [buildRaisedEventsTuples(spc, i, numberOfTransitions) | <spc, i> <- instances])>}";
+  = "raisedEvent (cur:id, nxt:id, event:id, instance:id) \<= {<intercalate(",", [tups | <spc, i> <- instances, str tups := buildRaisedEventsTuples(spc, i, numberOfTransitions), tups != ""])>}";
 
 private str buildRaisedEventsTuples(Spec spc, str instance, int numberOfTransitions)
   = intercalate(",", ["\<c<c>,c<c+1>,<event>,<instance>\>" | int c <- [1..numberOfTransitions], str event <- lookupEventNames(spc)]);

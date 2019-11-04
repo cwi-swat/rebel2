@@ -19,8 +19,10 @@ import util::PathUtil;
 import analysis::graphs::Graph;
 
 void translatePingPong() {
-  Module pp = parseModule(|project://rebel2/examples/pingpong.rebel|);
-  Module normalizedPp = normalize(pp);
+  Module pp = parseModule(|project://rebel2/examples/PingPong.rebel|);
+  normalize(pp);
+  
+  Module normalizedPp = parseModule(|project://rebel2/bin/normalized/PingPong.rebel|);
   
   TModel tm = rebelTModelFromTree(normalizedPp, pathConf = normPathConfig());
     
@@ -131,10 +133,52 @@ void translateMultiFollowers() {
 
   instances = {<getSpec(normalizedF, "Follower"), "f1", uninitialized()>, 
                <getSpec(normalizedF, "Follower"), "f2", uninitialized()>,
+               <getSpec(normalizedF, "Follower"), "f3", uninitialized()>,
                <getSpec(normalizedL, "Leader"), "l1", uninitialized()>};
                
   initialValues = {};  
   
-  translateSpecs(config(instances, initialValues, tm, 10), "∃ c ∈ Config, l ∈ (Instance ⨝ Leader)[instance] | ((some (LeaderFollowers ⨝ c ⨝ l)[count() as nr] where nr = 2) && (instanceInState |x| l |x| c)[state] in StateLeaderActive)
+  translateSpecs(config(instances, initialValues, tm, 11), "∃ c ∈ Config, l ∈ (Instance ⨝ Leader)[instance] | ((some (LeaderFollowers ⨝ c ⨝ l)[count() as nr] where nr = 3))
                                                            '∃ c ∈ Config | (some (c |x| LeaderNrOfHits) where nrOfHits = 2)");
+}
+
+void translateHotel() {
+  normalize(parseModule(|project://rebel2/examples/hotel/Hotel.rebel|));
+  
+  Module normalizedHotel = parseModule(|project://rebel2/bin/normalized/hotel/Hotel.rebel|);
+  
+  TModel tm = rebelTModelFromTree(normalizedHotel, debug = false, pathConf = normPathConfig());
+  
+  instances = {<getSpec(normalizedHotel, "Room"), "r1", uninitialized()>, 
+               <getSpec(normalizedHotel, "Guest"), "g1", uninitialized()>,
+               <getSpec(normalizedHotel, "Guest"), "g2", uninitialized()>,
+               <getSpec(normalizedHotel, "Key"), "k1", uninitialized()>,
+               <getSpec(normalizedHotel, "Key"), "k2", uninitialized()>,
+               <getSpec(normalizedHotel, "Key"), "k3", uninitialized()>,
+               <getSpec(normalizedHotel, "Card"), "ca1", uninitialized()>,
+               <getSpec(normalizedHotel, "Card"), "ca2", uninitialized()>,
+               <getSpec(normalizedHotel, "Card"), "ca3", uninitialized()>,
+               <getSpec(normalizedHotel, "FrontDesk"), "fd1", uninitialized()>};
+
+  initialValues = {};
+  
+  translateSpecs(config(instances, initialValues, tm, 8), "∃ c ∈ Config | some (FrontDeskGuests |x| c) // (some (FrontDeskGuests ⨝ c)[count() as nr] where nr = 2)");
+  
+}
+
+
+void translateSmallHotel() {
+  normalize(parseModule(|project://rebel2/examples/hotel/SmallHotel.rebel|));
+  
+  Module normalizedHotel = parseModule(|project://rebel2/bin/normalized/hotel/SmallHotel.rebel|);
+  
+  TModel tm = rebelTModelFromTree(normalizedHotel, debug = false, pathConf = normPathConfig());
+  
+  instances = {<getSpec(normalizedHotel, "Room"), "r1", uninitialized()>, 
+               //<getSpec(normalizedHotel, "Key"), "k1", uninitialized()>,
+               <getSpec(normalizedHotel, "Key"), "k2", uninitialized()>};
+
+  initialValues = {};
+  
+  translateSpecs(config(instances, initialValues, tm, 3), "∃ stp ∈ order, r ∈ (Instance ⨝ Room)[instance] | (raisedEvent ⨝ stp)[event] ⊆ EventRoomCheckKey");
 }

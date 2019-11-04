@@ -1,44 +1,74 @@
 // Static configuration of state machines
 // Define the specs that can take place in the transition system
-Follower (spec:id) = {<follower>}
-Leader (spec:id) = {<leader>}
+Key (spec:id) = {<key>}
+Room (spec:id) = {<room>}
+Guest (spec:id) = {<guest>}
+Card (spec:id) = {<card>}
+FrontDesk (spec:id) = {<frontdesk>}
 
 // Define all possible states for all machines
-State (state:id) = {<state_uninitialized>,<state_finalized>,<state_follower_active>,<state_leader_link>,<state_leader_active>}
-initialized (state:id) = {<state_follower_active>,<state_leader_link>,<state_leader_active>}
+State (state:id) = {<state_uninitialized>,<state_finalized>,<state_room_created>,<state_guest_checkedin>,<state_card_created>,<state_frontdesk_open>}
+initialized (state:id) = {<state_room_created>,<state_guest_checkedin>,<state_card_created>,<state_frontdesk_open>}
 finalized (state:id) = {<state_finalized>}
 uninitialized (state:id) = {<state_uninitialized>}
-StateFollowerActive (state:id) = {<state_follower_active>}
-StateLeaderActive (state:id) = {<state_leader_active>}StateLeaderLink (state:id) = {<state_leader_link>}
+
+StateRoomCreated (state:id) = {<state_room_created>}
+StateGuestCheckedin (state:id) = {<state_guest_checkedin>}
+StateCardCreated (state:id) = {<state_card_created>}
+StateFrontDeskOpen (state:id) = {<state_frontdesk_open>}
 
 // Define which transitions are allowed (in the form of `from a state` -> ` via an event` -> `to a state`
-allowedTransitions (from:id, to:id, event:id) = {<state_follower_active,state_follower_active,event_follower_hit>,<state_uninitialized,state_follower_active,event_follower_start>,<state_uninitialized,state_leader_link,event_leader_start>,<state_leader_link,state_leader_link,event_leader_add>,<state_leader_active,state_leader_active,event_leader_hitall>,<state_leader_link,state_leader_active,event_leader_complete>}
+allowedTransitions (from:id, to:id, event:id) = {<state_uninitialized,state_room_created,event_room_create>,<state_room_created,state_room_created,event_room_update>,<state_room_created,state_room_created,event_room_checkkey>,<state_uninitialized,state_guest_checkedin,event_guest_checkin>,<state_card_created,state_card_created,event_card_checksecond>,<state_uninitialized,state_card_created,event_card_create>,<state_card_created,state_card_created,event_card_checkfirst>,<state_card_created,state_card_created,event_card_equal>,<state_uninitialized,state_frontdesk_open,event_frontdesk_initialize>,<state_frontdesk_open,state_frontdesk_open,event_frontdesk_checkin>}
 // Define each event as single relation so that the events can be used as variables in the constraints 
-EventLeaderAdd (event:id) = {<event_leader_add>}
-EventLeader__frame (event:id) = {<event_leader___frame>}
-EventFollower__frame (event:id) = {<event_follower___frame>}
-EventLeaderStart (event:id) = {<event_leader_start>}
-EventFollowerStart (event:id) = {<event_follower_start>}
-EventFollowerHit (event:id) = {<event_follower_hit>}
-EventLeaderComplete (event:id) = {<event_leader_complete>}
-EventLeaderHitAll (event:id) = {<event_leader_hitall>}
+EventCardEqual (event:id) = {<event_card_equal>}
+EventCardCreate (event:id) = {<event_card_create>}
+EventCardCheckFirst (event:id) = {<event_card_checkfirst>}
+EventCardCheckSecond (event:id) = {<event_card_checksecond>}
+EventCard__frame (event:id) = {<event_card___frame>}
+EventRoom__frame (event:id) = {<event_room___frame>}
+EventFrontDesk__frame (event:id) = {<event_frontdesk___frame>}
+EventFrontDeskCheckin (event:id) = {<event_frontdesk_checkin>}
+EventFrontDeskInitialize (event:id) = {<event_frontdesk_initialize>}
+EventRoomUpdate (event:id) = {<event_room_update>}
+EventRoomCheckKey (event:id) = {<event_room_checkkey>}
+EventRoomCreate (event:id) = {<event_room_create>}
+EventGuest__frame (event:id) = {<event_guest___frame>}
+EventGuestCheckin (event:id) = {<event_guest_checkin>}
 
 
 // Dynamic configuration of state machines
-Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>,<c9>,<c10>}
-order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>,<c6,c7>,<c7,c8>,<c8,c9>,<c9,c10>}
+Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>}
+order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>,<c6,c7>,<c7,c8>}
 InitialConfig (config:id) = {<c1>}
 
-Instance (spec:id, instance:id) = {<follower,f2>,<follower,f1>,<leader,l1>}
-instanceInState (config:id, instance:id, state:id) >= {<c1,f2,state_uninitialized>,<c1,f1,state_uninitialized>,<c1,l1,state_uninitialized>}<= {<c1,l1,state_leader_link>,<c1,l1,state_uninitialized>,<c1,l1,state_leader_active>,<c1,l1,state_finalized>,<c1,f1,state_uninitialized>,<c1,f1,state_finalized>,<c1,f1,state_follower_active>,<c1,f2,state_uninitialized>,<c1,f2,state_finalized>,<c1,f2,state_follower_active>,<c2,l1,state_leader_link>,<c2,l1,state_uninitialized>,<c2,l1,state_leader_active>,<c2,l1,state_finalized>,<c2,f1,state_uninitialized>,<c2,f1,state_finalized>,<c2,f1,state_follower_active>,<c2,f2,state_uninitialized>,<c2,f2,state_finalized>,<c2,f2,state_follower_active>,<c3,l1,state_leader_link>,<c3,l1,state_uninitialized>,<c3,l1,state_leader_active>,<c3,l1,state_finalized>,<c3,f1,state_uninitialized>,<c3,f1,state_finalized>,<c3,f1,state_follower_active>,<c3,f2,state_uninitialized>,<c3,f2,state_finalized>,<c3,f2,state_follower_active>,<c4,l1,state_leader_link>,<c4,l1,state_uninitialized>,<c4,l1,state_leader_active>,<c4,l1,state_finalized>,<c4,f1,state_uninitialized>,<c4,f1,state_finalized>,<c4,f1,state_follower_active>,<c4,f2,state_uninitialized>,<c4,f2,state_finalized>,<c4,f2,state_follower_active>,<c5,l1,state_leader_link>,<c5,l1,state_uninitialized>,<c5,l1,state_leader_active>,<c5,l1,state_finalized>,<c5,f1,state_uninitialized>,<c5,f1,state_finalized>,<c5,f1,state_follower_active>,<c5,f2,state_uninitialized>,<c5,f2,state_finalized>,<c5,f2,state_follower_active>,<c6,l1,state_leader_link>,<c6,l1,state_uninitialized>,<c6,l1,state_leader_active>,<c6,l1,state_finalized>,<c6,f1,state_uninitialized>,<c6,f1,state_finalized>,<c6,f1,state_follower_active>,<c6,f2,state_uninitialized>,<c6,f2,state_finalized>,<c6,f2,state_follower_active>,<c7,l1,state_leader_link>,<c7,l1,state_uninitialized>,<c7,l1,state_leader_active>,<c7,l1,state_finalized>,<c7,f1,state_uninitialized>,<c7,f1,state_finalized>,<c7,f1,state_follower_active>,<c7,f2,state_uninitialized>,<c7,f2,state_finalized>,<c7,f2,state_follower_active>,<c8,l1,state_leader_link>,<c8,l1,state_uninitialized>,<c8,l1,state_leader_active>,<c8,l1,state_finalized>,<c8,f1,state_uninitialized>,<c8,f1,state_finalized>,<c8,f1,state_follower_active>,<c8,f2,state_uninitialized>,<c8,f2,state_finalized>,<c8,f2,state_follower_active>,<c9,l1,state_leader_link>,<c9,l1,state_uninitialized>,<c9,l1,state_leader_active>,<c9,l1,state_finalized>,<c9,f1,state_uninitialized>,<c9,f1,state_finalized>,<c9,f1,state_follower_active>,<c9,f2,state_uninitialized>,<c9,f2,state_finalized>,<c9,f2,state_follower_active>,<c10,l1,state_leader_link>,<c10,l1,state_uninitialized>,<c10,l1,state_leader_active>,<c10,l1,state_finalized>,<c10,f1,state_uninitialized>,<c10,f1,state_finalized>,<c10,f1,state_follower_active>,<c10,f2,state_uninitialized>,<c10,f2,state_finalized>,<c10,f2,state_follower_active>}
-raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_leader_complete,l1>,<c1,c2,event_leader_add,l1>,<c1,c2,event_leader_start,l1>,<c1,c2,event_leader___frame,l1>,<c1,c2,event_leader_hitall,l1>,<c2,c3,event_leader_complete,l1>,<c2,c3,event_leader_add,l1>,<c2,c3,event_leader_start,l1>,<c2,c3,event_leader___frame,l1>,<c2,c3,event_leader_hitall,l1>,<c3,c4,event_leader_complete,l1>,<c3,c4,event_leader_add,l1>,<c3,c4,event_leader_start,l1>,<c3,c4,event_leader___frame,l1>,<c3,c4,event_leader_hitall,l1>,<c4,c5,event_leader_complete,l1>,<c4,c5,event_leader_add,l1>,<c4,c5,event_leader_start,l1>,<c4,c5,event_leader___frame,l1>,<c4,c5,event_leader_hitall,l1>,<c5,c6,event_leader_complete,l1>,<c5,c6,event_leader_add,l1>,<c5,c6,event_leader_start,l1>,<c5,c6,event_leader___frame,l1>,<c5,c6,event_leader_hitall,l1>,<c6,c7,event_leader_complete,l1>,<c6,c7,event_leader_add,l1>,<c6,c7,event_leader_start,l1>,<c6,c7,event_leader___frame,l1>,<c6,c7,event_leader_hitall,l1>,<c7,c8,event_leader_complete,l1>,<c7,c8,event_leader_add,l1>,<c7,c8,event_leader_start,l1>,<c7,c8,event_leader___frame,l1>,<c7,c8,event_leader_hitall,l1>,<c8,c9,event_leader_complete,l1>,<c8,c9,event_leader_add,l1>,<c8,c9,event_leader_start,l1>,<c8,c9,event_leader___frame,l1>,<c8,c9,event_leader_hitall,l1>,<c9,c10,event_leader_complete,l1>,<c9,c10,event_leader_add,l1>,<c9,c10,event_leader_start,l1>,<c9,c10,event_leader___frame,l1>,<c9,c10,event_leader_hitall,l1>,<c1,c2,event_follower_start,f1>,<c1,c2,event_follower___frame,f1>,<c1,c2,event_follower_hit,f1>,<c2,c3,event_follower_start,f1>,<c2,c3,event_follower___frame,f1>,<c2,c3,event_follower_hit,f1>,<c3,c4,event_follower_start,f1>,<c3,c4,event_follower___frame,f1>,<c3,c4,event_follower_hit,f1>,<c4,c5,event_follower_start,f1>,<c4,c5,event_follower___frame,f1>,<c4,c5,event_follower_hit,f1>,<c5,c6,event_follower_start,f1>,<c5,c6,event_follower___frame,f1>,<c5,c6,event_follower_hit,f1>,<c6,c7,event_follower_start,f1>,<c6,c7,event_follower___frame,f1>,<c6,c7,event_follower_hit,f1>,<c7,c8,event_follower_start,f1>,<c7,c8,event_follower___frame,f1>,<c7,c8,event_follower_hit,f1>,<c8,c9,event_follower_start,f1>,<c8,c9,event_follower___frame,f1>,<c8,c9,event_follower_hit,f1>,<c9,c10,event_follower_start,f1>,<c9,c10,event_follower___frame,f1>,<c9,c10,event_follower_hit,f1>,<c1,c2,event_follower_start,f2>,<c1,c2,event_follower___frame,f2>,<c1,c2,event_follower_hit,f2>,<c2,c3,event_follower_start,f2>,<c2,c3,event_follower___frame,f2>,<c2,c3,event_follower_hit,f2>,<c3,c4,event_follower_start,f2>,<c3,c4,event_follower___frame,f2>,<c3,c4,event_follower_hit,f2>,<c4,c5,event_follower_start,f2>,<c4,c5,event_follower___frame,f2>,<c4,c5,event_follower_hit,f2>,<c5,c6,event_follower_start,f2>,<c5,c6,event_follower___frame,f2>,<c5,c6,event_follower_hit,f2>,<c6,c7,event_follower_start,f2>,<c6,c7,event_follower___frame,f2>,<c6,c7,event_follower_hit,f2>,<c7,c8,event_follower_start,f2>,<c7,c8,event_follower___frame,f2>,<c7,c8,event_follower_hit,f2>,<c8,c9,event_follower_start,f2>,<c8,c9,event_follower___frame,f2>,<c8,c9,event_follower_hit,f2>,<c9,c10,event_follower_start,f2>,<c9,c10,event_follower___frame,f2>,<c9,c10,event_follower_hit,f2>}
-changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,l1>,<c1,c2,f1>,<c1,c2,f2>,<c2,c3,l1>,<c2,c3,f1>,<c2,c3,f2>,<c3,c4,l1>,<c3,c4,f1>,<c3,c4,f2>,<c4,c5,l1>,<c4,c5,f1>,<c4,c5,f2>,<c5,c6,l1>,<c5,c6,f1>,<c5,c6,f2>,<c6,c7,l1>,<c6,c7,f1>,<c6,c7,f2>,<c7,c8,l1>,<c7,c8,f1>,<c7,c8,f2>,<c8,c9,l1>,<c8,c9,f1>,<c8,c9,f2>,<c9,c10,l1>,<c9,c10,f1>,<c9,c10,f2>}
+Instance (spec:id, instance:id) = {<frontdesk,fd1>,<key,k1>,<card,ca1>,<card,ca2>,<guest,g1>,<key,k3>,<guest,g2>,<key,k2>,<room,r1>,<card,ca3>}
+instanceInState (config:id, instance:id, state:id) >= {<c1,fd1,state_uninitialized>,<c1,k1,state_uninitialized>,<c1,ca1,state_uninitialized>,<c1,ca2,state_uninitialized>,<c1,g1,state_uninitialized>,<c1,k3,state_uninitialized>,<c1,g2,state_uninitialized>,<c1,k2,state_uninitialized>,<c1,r1,state_uninitialized>,<c1,ca3,state_uninitialized>}<= {<c1,r1,state_uninitialized>,<c1,r1,state_room_created>,<c1,r1,state_finalized>,<c1,k1,state_uninitialized>,<c1,k2,state_uninitialized>,<c1,k3,state_uninitialized>,<c1,g1,state_uninitialized>,<c1,g1,state_guest_checkedin>,<c1,g1,state_finalized>,<c1,g2,state_uninitialized>,<c1,g2,state_guest_checkedin>,<c1,g2,state_finalized>,<c1,fd1,state_uninitialized>,<c1,fd1,state_frontdesk_open>,<c1,fd1,state_finalized>,<c1,ca1,state_card_created>,<c1,ca1,state_uninitialized>,<c1,ca1,state_finalized>,<c1,ca2,state_card_created>,<c1,ca2,state_uninitialized>,<c1,ca2,state_finalized>,<c1,ca3,state_card_created>,<c1,ca3,state_uninitialized>,<c1,ca3,state_finalized>,<c2,r1,state_uninitialized>,<c2,r1,state_room_created>,<c2,r1,state_finalized>,<c2,k1,state_uninitialized>,<c2,k2,state_uninitialized>,<c2,k3,state_uninitialized>,<c2,g1,state_uninitialized>,<c2,g1,state_guest_checkedin>,<c2,g1,state_finalized>,<c2,g2,state_uninitialized>,<c2,g2,state_guest_checkedin>,<c2,g2,state_finalized>,<c2,fd1,state_uninitialized>,<c2,fd1,state_frontdesk_open>,<c2,fd1,state_finalized>,<c2,ca1,state_card_created>,<c2,ca1,state_uninitialized>,<c2,ca1,state_finalized>,<c2,ca2,state_card_created>,<c2,ca2,state_uninitialized>,<c2,ca2,state_finalized>,<c2,ca3,state_card_created>,<c2,ca3,state_uninitialized>,<c2,ca3,state_finalized>,<c3,r1,state_uninitialized>,<c3,r1,state_room_created>,<c3,r1,state_finalized>,<c3,k1,state_uninitialized>,<c3,k2,state_uninitialized>,<c3,k3,state_uninitialized>,<c3,g1,state_uninitialized>,<c3,g1,state_guest_checkedin>,<c3,g1,state_finalized>,<c3,g2,state_uninitialized>,<c3,g2,state_guest_checkedin>,<c3,g2,state_finalized>,<c3,fd1,state_uninitialized>,<c3,fd1,state_frontdesk_open>,<c3,fd1,state_finalized>,<c3,ca1,state_card_created>,<c3,ca1,state_uninitialized>,<c3,ca1,state_finalized>,<c3,ca2,state_card_created>,<c3,ca2,state_uninitialized>,<c3,ca2,state_finalized>,<c3,ca3,state_card_created>,<c3,ca3,state_uninitialized>,<c3,ca3,state_finalized>,<c4,r1,state_uninitialized>,<c4,r1,state_room_created>,<c4,r1,state_finalized>,<c4,k1,state_uninitialized>,<c4,k2,state_uninitialized>,<c4,k3,state_uninitialized>,<c4,g1,state_uninitialized>,<c4,g1,state_guest_checkedin>,<c4,g1,state_finalized>,<c4,g2,state_uninitialized>,<c4,g2,state_guest_checkedin>,<c4,g2,state_finalized>,<c4,fd1,state_uninitialized>,<c4,fd1,state_frontdesk_open>,<c4,fd1,state_finalized>,<c4,ca1,state_card_created>,<c4,ca1,state_uninitialized>,<c4,ca1,state_finalized>,<c4,ca2,state_card_created>,<c4,ca2,state_uninitialized>,<c4,ca2,state_finalized>,<c4,ca3,state_card_created>,<c4,ca3,state_uninitialized>,<c4,ca3,state_finalized>,<c5,r1,state_uninitialized>,<c5,r1,state_room_created>,<c5,r1,state_finalized>,<c5,k1,state_uninitialized>,<c5,k2,state_uninitialized>,<c5,k3,state_uninitialized>,<c5,g1,state_uninitialized>,<c5,g1,state_guest_checkedin>,<c5,g1,state_finalized>,<c5,g2,state_uninitialized>,<c5,g2,state_guest_checkedin>,<c5,g2,state_finalized>,<c5,fd1,state_uninitialized>,<c5,fd1,state_frontdesk_open>,<c5,fd1,state_finalized>,<c5,ca1,state_card_created>,<c5,ca1,state_uninitialized>,<c5,ca1,state_finalized>,<c5,ca2,state_card_created>,<c5,ca2,state_uninitialized>,<c5,ca2,state_finalized>,<c5,ca3,state_card_created>,<c5,ca3,state_uninitialized>,<c5,ca3,state_finalized>,<c6,r1,state_uninitialized>,<c6,r1,state_room_created>,<c6,r1,state_finalized>,<c6,k1,state_uninitialized>,<c6,k2,state_uninitialized>,<c6,k3,state_uninitialized>,<c6,g1,state_uninitialized>,<c6,g1,state_guest_checkedin>,<c6,g1,state_finalized>,<c6,g2,state_uninitialized>,<c6,g2,state_guest_checkedin>,<c6,g2,state_finalized>,<c6,fd1,state_uninitialized>,<c6,fd1,state_frontdesk_open>,<c6,fd1,state_finalized>,<c6,ca1,state_card_created>,<c6,ca1,state_uninitialized>,<c6,ca1,state_finalized>,<c6,ca2,state_card_created>,<c6,ca2,state_uninitialized>,<c6,ca2,state_finalized>,<c6,ca3,state_card_created>,<c6,ca3,state_uninitialized>,<c6,ca3,state_finalized>,<c7,r1,state_uninitialized>,<c7,r1,state_room_created>,<c7,r1,state_finalized>,<c7,k1,state_uninitialized>,<c7,k2,state_uninitialized>,<c7,k3,state_uninitialized>,<c7,g1,state_uninitialized>,<c7,g1,state_guest_checkedin>,<c7,g1,state_finalized>,<c7,g2,state_uninitialized>,<c7,g2,state_guest_checkedin>,<c7,g2,state_finalized>,<c7,fd1,state_uninitialized>,<c7,fd1,state_frontdesk_open>,<c7,fd1,state_finalized>,<c7,ca1,state_card_created>,<c7,ca1,state_uninitialized>,<c7,ca1,state_finalized>,<c7,ca2,state_card_created>,<c7,ca2,state_uninitialized>,<c7,ca2,state_finalized>,<c7,ca3,state_card_created>,<c7,ca3,state_uninitialized>,<c7,ca3,state_finalized>,<c8,r1,state_uninitialized>,<c8,r1,state_room_created>,<c8,r1,state_finalized>,<c8,k1,state_uninitialized>,<c8,k2,state_uninitialized>,<c8,k3,state_uninitialized>,<c8,g1,state_uninitialized>,<c8,g1,state_guest_checkedin>,<c8,g1,state_finalized>,<c8,g2,state_uninitialized>,<c8,g2,state_guest_checkedin>,<c8,g2,state_finalized>,<c8,fd1,state_uninitialized>,<c8,fd1,state_frontdesk_open>,<c8,fd1,state_finalized>,<c8,ca1,state_card_created>,<c8,ca1,state_uninitialized>,<c8,ca1,state_finalized>,<c8,ca2,state_card_created>,<c8,ca2,state_uninitialized>,<c8,ca2,state_finalized>,<c8,ca3,state_card_created>,<c8,ca3,state_uninitialized>,<c8,ca3,state_finalized>}
+raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_room_update,r1>,<c1,c2,event_room___frame,r1>,<c1,c2,event_room_checkkey,r1>,<c1,c2,event_room_create,r1>,<c2,c3,event_room_update,r1>,<c2,c3,event_room___frame,r1>,<c2,c3,event_room_checkkey,r1>,<c2,c3,event_room_create,r1>,<c3,c4,event_room_update,r1>,<c3,c4,event_room___frame,r1>,<c3,c4,event_room_checkkey,r1>,<c3,c4,event_room_create,r1>,<c4,c5,event_room_update,r1>,<c4,c5,event_room___frame,r1>,<c4,c5,event_room_checkkey,r1>,<c4,c5,event_room_create,r1>,<c5,c6,event_room_update,r1>,<c5,c6,event_room___frame,r1>,<c5,c6,event_room_checkkey,r1>,<c5,c6,event_room_create,r1>,<c6,c7,event_room_update,r1>,<c6,c7,event_room___frame,r1>,<c6,c7,event_room_checkkey,r1>,<c6,c7,event_room_create,r1>,<c7,c8,event_room_update,r1>,<c7,c8,event_room___frame,r1>,<c7,c8,event_room_checkkey,r1>,<c7,c8,event_room_create,r1>,<c1,c2,event_guest___frame,g1>,<c1,c2,event_guest_checkin,g1>,<c2,c3,event_guest___frame,g1>,<c2,c3,event_guest_checkin,g1>,<c3,c4,event_guest___frame,g1>,<c3,c4,event_guest_checkin,g1>,<c4,c5,event_guest___frame,g1>,<c4,c5,event_guest_checkin,g1>,<c5,c6,event_guest___frame,g1>,<c5,c6,event_guest_checkin,g1>,<c6,c7,event_guest___frame,g1>,<c6,c7,event_guest_checkin,g1>,<c7,c8,event_guest___frame,g1>,<c7,c8,event_guest_checkin,g1>,<c1,c2,event_guest___frame,g2>,<c1,c2,event_guest_checkin,g2>,<c2,c3,event_guest___frame,g2>,<c2,c3,event_guest_checkin,g2>,<c3,c4,event_guest___frame,g2>,<c3,c4,event_guest_checkin,g2>,<c4,c5,event_guest___frame,g2>,<c4,c5,event_guest_checkin,g2>,<c5,c6,event_guest___frame,g2>,<c5,c6,event_guest_checkin,g2>,<c6,c7,event_guest___frame,g2>,<c6,c7,event_guest_checkin,g2>,<c7,c8,event_guest___frame,g2>,<c7,c8,event_guest_checkin,g2>,<c1,c2,event_frontdesk_initialize,fd1>,<c1,c2,event_frontdesk___frame,fd1>,<c1,c2,event_frontdesk_checkin,fd1>,<c2,c3,event_frontdesk_initialize,fd1>,<c2,c3,event_frontdesk___frame,fd1>,<c2,c3,event_frontdesk_checkin,fd1>,<c3,c4,event_frontdesk_initialize,fd1>,<c3,c4,event_frontdesk___frame,fd1>,<c3,c4,event_frontdesk_checkin,fd1>,<c4,c5,event_frontdesk_initialize,fd1>,<c4,c5,event_frontdesk___frame,fd1>,<c4,c5,event_frontdesk_checkin,fd1>,<c5,c6,event_frontdesk_initialize,fd1>,<c5,c6,event_frontdesk___frame,fd1>,<c5,c6,event_frontdesk_checkin,fd1>,<c6,c7,event_frontdesk_initialize,fd1>,<c6,c7,event_frontdesk___frame,fd1>,<c6,c7,event_frontdesk_checkin,fd1>,<c7,c8,event_frontdesk_initialize,fd1>,<c7,c8,event_frontdesk___frame,fd1>,<c7,c8,event_frontdesk_checkin,fd1>,<c1,c2,event_card___frame,ca1>,<c1,c2,event_card_create,ca1>,<c1,c2,event_card_equal,ca1>,<c1,c2,event_card_checkfirst,ca1>,<c1,c2,event_card_checksecond,ca1>,<c2,c3,event_card___frame,ca1>,<c2,c3,event_card_create,ca1>,<c2,c3,event_card_equal,ca1>,<c2,c3,event_card_checkfirst,ca1>,<c2,c3,event_card_checksecond,ca1>,<c3,c4,event_card___frame,ca1>,<c3,c4,event_card_create,ca1>,<c3,c4,event_card_equal,ca1>,<c3,c4,event_card_checkfirst,ca1>,<c3,c4,event_card_checksecond,ca1>,<c4,c5,event_card___frame,ca1>,<c4,c5,event_card_create,ca1>,<c4,c5,event_card_equal,ca1>,<c4,c5,event_card_checkfirst,ca1>,<c4,c5,event_card_checksecond,ca1>,<c5,c6,event_card___frame,ca1>,<c5,c6,event_card_create,ca1>,<c5,c6,event_card_equal,ca1>,<c5,c6,event_card_checkfirst,ca1>,<c5,c6,event_card_checksecond,ca1>,<c6,c7,event_card___frame,ca1>,<c6,c7,event_card_create,ca1>,<c6,c7,event_card_equal,ca1>,<c6,c7,event_card_checkfirst,ca1>,<c6,c7,event_card_checksecond,ca1>,<c7,c8,event_card___frame,ca1>,<c7,c8,event_card_create,ca1>,<c7,c8,event_card_equal,ca1>,<c7,c8,event_card_checkfirst,ca1>,<c7,c8,event_card_checksecond,ca1>,<c1,c2,event_card___frame,ca2>,<c1,c2,event_card_create,ca2>,<c1,c2,event_card_equal,ca2>,<c1,c2,event_card_checkfirst,ca2>,<c1,c2,event_card_checksecond,ca2>,<c2,c3,event_card___frame,ca2>,<c2,c3,event_card_create,ca2>,<c2,c3,event_card_equal,ca2>,<c2,c3,event_card_checkfirst,ca2>,<c2,c3,event_card_checksecond,ca2>,<c3,c4,event_card___frame,ca2>,<c3,c4,event_card_create,ca2>,<c3,c4,event_card_equal,ca2>,<c3,c4,event_card_checkfirst,ca2>,<c3,c4,event_card_checksecond,ca2>,<c4,c5,event_card___frame,ca2>,<c4,c5,event_card_create,ca2>,<c4,c5,event_card_equal,ca2>,<c4,c5,event_card_checkfirst,ca2>,<c4,c5,event_card_checksecond,ca2>,<c5,c6,event_card___frame,ca2>,<c5,c6,event_card_create,ca2>,<c5,c6,event_card_equal,ca2>,<c5,c6,event_card_checkfirst,ca2>,<c5,c6,event_card_checksecond,ca2>,<c6,c7,event_card___frame,ca2>,<c6,c7,event_card_create,ca2>,<c6,c7,event_card_equal,ca2>,<c6,c7,event_card_checkfirst,ca2>,<c6,c7,event_card_checksecond,ca2>,<c7,c8,event_card___frame,ca2>,<c7,c8,event_card_create,ca2>,<c7,c8,event_card_equal,ca2>,<c7,c8,event_card_checkfirst,ca2>,<c7,c8,event_card_checksecond,ca2>,<c1,c2,event_card___frame,ca3>,<c1,c2,event_card_create,ca3>,<c1,c2,event_card_equal,ca3>,<c1,c2,event_card_checkfirst,ca3>,<c1,c2,event_card_checksecond,ca3>,<c2,c3,event_card___frame,ca3>,<c2,c3,event_card_create,ca3>,<c2,c3,event_card_equal,ca3>,<c2,c3,event_card_checkfirst,ca3>,<c2,c3,event_card_checksecond,ca3>,<c3,c4,event_card___frame,ca3>,<c3,c4,event_card_create,ca3>,<c3,c4,event_card_equal,ca3>,<c3,c4,event_card_checkfirst,ca3>,<c3,c4,event_card_checksecond,ca3>,<c4,c5,event_card___frame,ca3>,<c4,c5,event_card_create,ca3>,<c4,c5,event_card_equal,ca3>,<c4,c5,event_card_checkfirst,ca3>,<c4,c5,event_card_checksecond,ca3>,<c5,c6,event_card___frame,ca3>,<c5,c6,event_card_create,ca3>,<c5,c6,event_card_equal,ca3>,<c5,c6,event_card_checkfirst,ca3>,<c5,c6,event_card_checksecond,ca3>,<c6,c7,event_card___frame,ca3>,<c6,c7,event_card_create,ca3>,<c6,c7,event_card_equal,ca3>,<c6,c7,event_card_checkfirst,ca3>,<c6,c7,event_card_checksecond,ca3>,<c7,c8,event_card___frame,ca3>,<c7,c8,event_card_create,ca3>,<c7,c8,event_card_equal,ca3>,<c7,c8,event_card_checkfirst,ca3>,<c7,c8,event_card_checksecond,ca3>}
+changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c1,c2,g1>,<c1,c2,g2>,<c1,c2,ca2>,<c1,c2,ca3>,<c1,c2,r1>,<c1,c2,fd1>,<c1,c2,ca1>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c2,c3,g1>,<c2,c3,g2>,<c2,c3,ca2>,<c2,c3,ca3>,<c2,c3,r1>,<c2,c3,fd1>,<c2,c3,ca1>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c3,c4,g1>,<c3,c4,g2>,<c3,c4,ca2>,<c3,c4,ca3>,<c3,c4,r1>,<c3,c4,fd1>,<c3,c4,ca1>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c4,c5,g1>,<c4,c5,g2>,<c4,c5,ca2>,<c4,c5,ca3>,<c4,c5,r1>,<c4,c5,fd1>,<c4,c5,ca1>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c5,c6,g1>,<c5,c6,g2>,<c5,c6,ca2>,<c5,c6,ca3>,<c5,c6,r1>,<c5,c6,fd1>,<c5,c6,ca1>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c6,c7,g1>,<c6,c7,g2>,<c6,c7,ca2>,<c6,c7,ca3>,<c6,c7,r1>,<c6,c7,fd1>,<c6,c7,ca1>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c7,c8,g1>,<c7,c8,g2>,<c7,c8,ca2>,<c7,c8,ca3>,<c7,c8,r1>,<c7,c8,fd1>,<c7,c8,ca1>}
 
-FollowerNrOfHits (config:id, instance:id, nrOfHits:int) <= {<c1,f1,?>,<c2,f1,?>,<c3,f1,?>,<c4,f1,?>,<c5,f1,?>,<c6,f1,?>,<c7,f1,?>,<c8,f1,?>,<c9,f1,?>,<c10,f1,?>,<c1,f2,?>,<c2,f2,?>,<c3,f2,?>,<c4,f2,?>,<c5,f2,?>,<c6,f2,?>,<c7,f2,?>,<c8,f2,?>,<c9,f2,?>,<c10,f2,?>}
-LeaderFollowers (config:id, instance:id, followers:id) <= {<c1,l1,f1>,<c1,l1,f2>,<c2,l1,f1>,<c2,l1,f2>,<c3,l1,f1>,<c3,l1,f2>,<c4,l1,f1>,<c4,l1,f2>,<c5,l1,f1>,<c5,l1,f2>,<c6,l1,f1>,<c6,l1,f2>,<c7,l1,f1>,<c7,l1,f2>,<c8,l1,f1>,<c8,l1,f2>,<c9,l1,f1>,<c9,l1,f2>,<c10,l1,f1>,<c10,l1,f2>}
-LeaderNrOfHits (config:id, instance:id, nrOfHits:int) <= {<c1,l1,?>,<c2,l1,?>,<c3,l1,?>,<c4,l1,?>,<c5,l1,?>,<c6,l1,?>,<c7,l1,?>,<c8,l1,?>,<c9,l1,?>,<c10,l1,?>}
+RoomKey (config:id, instance:id, key:id) <= {<c1,r1,k1>,<c1,r1,k2>,<c1,r1,k3>,<c2,r1,k1>,<c2,r1,k2>,<c2,r1,k3>,<c3,r1,k1>,<c3,r1,k2>,<c3,r1,k3>,<c4,r1,k1>,<c4,r1,k2>,<c4,r1,k3>,<c5,r1,k1>,<c5,r1,k2>,<c5,r1,k3>,<c6,r1,k1>,<c6,r1,k2>,<c6,r1,k3>,<c7,r1,k1>,<c7,r1,k2>,<c7,r1,k3>,<c8,r1,k1>,<c8,r1,k2>,<c8,r1,k3>}
+GuestCard (config:id, instance:id, card:id) <= {<c1,g1,ca1>,<c1,g1,ca2>,<c1,g1,ca3>,<c2,g1,ca1>,<c2,g1,ca2>,<c2,g1,ca3>,<c3,g1,ca1>,<c3,g1,ca2>,<c3,g1,ca3>,<c4,g1,ca1>,<c4,g1,ca2>,<c4,g1,ca3>,<c5,g1,ca1>,<c5,g1,ca2>,<c5,g1,ca3>,<c6,g1,ca1>,<c6,g1,ca2>,<c6,g1,ca3>,<c7,g1,ca1>,<c7,g1,ca2>,<c7,g1,ca3>,<c8,g1,ca1>,<c8,g1,ca2>,<c8,g1,ca3>,<c1,g2,ca1>,<c1,g2,ca2>,<c1,g2,ca3>,<c2,g2,ca1>,<c2,g2,ca2>,<c2,g2,ca3>,<c3,g2,ca1>,<c3,g2,ca2>,<c3,g2,ca3>,<c4,g2,ca1>,<c4,g2,ca2>,<c4,g2,ca3>,<c5,g2,ca1>,<c5,g2,ca2>,<c5,g2,ca3>,<c6,g2,ca1>,<c6,g2,ca2>,<c6,g2,ca3>,<c7,g2,ca1>,<c7,g2,ca2>,<c7,g2,ca3>,<c8,g2,ca1>,<c8,g2,ca2>,<c8,g2,ca3>}
+CardFirst (config:id, instance:id, first:id) <= {<c1,ca1,k1>,<c1,ca1,k2>,<c1,ca1,k3>,<c2,ca1,k1>,<c2,ca1,k2>,<c2,ca1,k3>,<c3,ca1,k1>,<c3,ca1,k2>,<c3,ca1,k3>,<c4,ca1,k1>,<c4,ca1,k2>,<c4,ca1,k3>,<c5,ca1,k1>,<c5,ca1,k2>,<c5,ca1,k3>,<c6,ca1,k1>,<c6,ca1,k2>,<c6,ca1,k3>,<c7,ca1,k1>,<c7,ca1,k2>,<c7,ca1,k3>,<c8,ca1,k1>,<c8,ca1,k2>,<c8,ca1,k3>,<c1,ca2,k1>,<c1,ca2,k2>,<c1,ca2,k3>,<c2,ca2,k1>,<c2,ca2,k2>,<c2,ca2,k3>,<c3,ca2,k1>,<c3,ca2,k2>,<c3,ca2,k3>,<c4,ca2,k1>,<c4,ca2,k2>,<c4,ca2,k3>,<c5,ca2,k1>,<c5,ca2,k2>,<c5,ca2,k3>,<c6,ca2,k1>,<c6,ca2,k2>,<c6,ca2,k3>,<c7,ca2,k1>,<c7,ca2,k2>,<c7,ca2,k3>,<c8,ca2,k1>,<c8,ca2,k2>,<c8,ca2,k3>,<c1,ca3,k1>,<c1,ca3,k2>,<c1,ca3,k3>,<c2,ca3,k1>,<c2,ca3,k2>,<c2,ca3,k3>,<c3,ca3,k1>,<c3,ca3,k2>,<c3,ca3,k3>,<c4,ca3,k1>,<c4,ca3,k2>,<c4,ca3,k3>,<c5,ca3,k1>,<c5,ca3,k2>,<c5,ca3,k3>,<c6,ca3,k1>,<c6,ca3,k2>,<c6,ca3,k3>,<c7,ca3,k1>,<c7,ca3,k2>,<c7,ca3,k3>,<c8,ca3,k1>,<c8,ca3,k2>,<c8,ca3,k3>}
+CardSecond (config:id, instance:id, second:id) <= {<c1,ca1,k1>,<c1,ca1,k2>,<c1,ca1,k3>,<c2,ca1,k1>,<c2,ca1,k2>,<c2,ca1,k3>,<c3,ca1,k1>,<c3,ca1,k2>,<c3,ca1,k3>,<c4,ca1,k1>,<c4,ca1,k2>,<c4,ca1,k3>,<c5,ca1,k1>,<c5,ca1,k2>,<c5,ca1,k3>,<c6,ca1,k1>,<c6,ca1,k2>,<c6,ca1,k3>,<c7,ca1,k1>,<c7,ca1,k2>,<c7,ca1,k3>,<c8,ca1,k1>,<c8,ca1,k2>,<c8,ca1,k3>,<c1,ca2,k1>,<c1,ca2,k2>,<c1,ca2,k3>,<c2,ca2,k1>,<c2,ca2,k2>,<c2,ca2,k3>,<c3,ca2,k1>,<c3,ca2,k2>,<c3,ca2,k3>,<c4,ca2,k1>,<c4,ca2,k2>,<c4,ca2,k3>,<c5,ca2,k1>,<c5,ca2,k2>,<c5,ca2,k3>,<c6,ca2,k1>,<c6,ca2,k2>,<c6,ca2,k3>,<c7,ca2,k1>,<c7,ca2,k2>,<c7,ca2,k3>,<c8,ca2,k1>,<c8,ca2,k2>,<c8,ca2,k3>,<c1,ca3,k1>,<c1,ca3,k2>,<c1,ca3,k3>,<c2,ca3,k1>,<c2,ca3,k2>,<c2,ca3,k3>,<c3,ca3,k1>,<c3,ca3,k2>,<c3,ca3,k3>,<c4,ca3,k1>,<c4,ca3,k2>,<c4,ca3,k3>,<c5,ca3,k1>,<c5,ca3,k2>,<c5,ca3,k3>,<c6,ca3,k1>,<c6,ca3,k2>,<c6,ca3,k3>,<c7,ca3,k1>,<c7,ca3,k2>,<c7,ca3,k3>,<c8,ca3,k1>,<c8,ca3,k2>,<c8,ca3,k3>}
+FrontDeskIssued (config:id, instance:id, issued:id) <= {<c1,fd1,k1>,<c1,fd1,k2>,<c1,fd1,k3>,<c2,fd1,k1>,<c2,fd1,k2>,<c2,fd1,k3>,<c3,fd1,k1>,<c3,fd1,k2>,<c3,fd1,k3>,<c4,fd1,k1>,<c4,fd1,k2>,<c4,fd1,k3>,<c5,fd1,k1>,<c5,fd1,k2>,<c5,fd1,k3>,<c6,fd1,k1>,<c6,fd1,k2>,<c6,fd1,k3>,<c7,fd1,k1>,<c7,fd1,k2>,<c7,fd1,k3>,<c8,fd1,k1>,<c8,fd1,k2>,<c8,fd1,k3>}
+FrontDeskGuests (config:id, instance:id, guests:id) <= {<c1,fd1,g1>,<c1,fd1,g2>,<c2,fd1,g1>,<c2,fd1,g2>,<c3,fd1,g1>,<c3,fd1,g2>,<c4,fd1,g1>,<c4,fd1,g2>,<c5,fd1,g1>,<c5,fd1,g2>,<c6,fd1,g1>,<c6,fd1,g2>,<c7,fd1,g1>,<c7,fd1,g2>,<c8,fd1,g1>,<c8,fd1,g2>}
+FrontDeskRooms (config:id, instance:id, rooms:id) <= {<c1,fd1,r1>,<c2,fd1,r1>,<c3,fd1,r1>,<c4,fd1,r1>,<c5,fd1,r1>,<c6,fd1,r1>,<c7,fd1,r1>,<c8,fd1,r1>}
 
-ParamEventLeaderAddFollower (cur:id, nxt:id, follower:id) <= {<c1,c2,f1>,<c1,c2,f2>,<c2,c3,f1>,<c2,c3,f2>,<c3,c4,f1>,<c3,c4,f2>,<c4,c5,f1>,<c4,c5,f2>,<c5,c6,f1>,<c5,c6,f2>,<c6,c7,f1>,<c6,c7,f2>,<c7,c8,f1>,<c7,c8,f2>,<c8,c9,f1>,<c8,c9,f2>,<c9,c10,f1>,<c9,c10,f2>}
+ParamEventRoomUpdateNewKey (cur:id, nxt:id, newKey:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>}
+ParamEventRoomCheckKeyKey (cur:id, nxt:id, key:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>}
+ParamEventRoomCreateInitialKey (cur:id, nxt:id, initialKey:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>}
+ParamEventGuestCheckinCard (cur:id, nxt:id, card:id) <= {<c1,c2,ca1>,<c1,c2,ca2>,<c1,c2,ca3>,<c2,c3,ca1>,<c2,c3,ca2>,<c2,c3,ca3>,<c3,c4,ca1>,<c3,c4,ca2>,<c3,c4,ca3>,<c4,c5,ca1>,<c4,c5,ca2>,<c4,c5,ca3>,<c5,c6,ca1>,<c5,c6,ca2>,<c5,c6,ca3>,<c6,c7,ca1>,<c6,c7,ca2>,<c6,c7,ca3>,<c7,c8,ca1>,<c7,c8,ca2>,<c7,c8,ca3>}
+ParamEventCardCheckFirstKey (cur:id, nxt:id, key:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>}
+ParamEventCardCreateFst (cur:id, nxt:id, fst:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>}
+ParamEventCardCreateSnd (cur:id, nxt:id, snd:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>}
+ParamEventCardEqualFst (cur:id, nxt:id, fst:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>}
+ParamEventCardEqualSnd (cur:id, nxt:id, snd:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>}
+ParamEventCardCheckSecondKey (cur:id, nxt:id, key:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>}
+ParamEventFrontDeskCheckinFst (cur:id, nxt:id, fst:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>}
+ParamEventFrontDeskCheckinSnd (cur:id, nxt:id, snd:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>}
+ParamEventFrontDeskCheckinC (cur:id, nxt:id, c:id) <= {<c1,c2,ca1>,<c1,c2,ca2>,<c1,c2,ca3>,<c2,c3,ca1>,<c2,c3,ca2>,<c2,c3,ca3>,<c3,c4,ca1>,<c3,c4,ca2>,<c3,c4,ca3>,<c4,c5,ca1>,<c4,c5,ca2>,<c4,c5,ca3>,<c5,c6,ca1>,<c5,c6,ca2>,<c5,c6,ca3>,<c6,c7,ca1>,<c6,c7,ca2>,<c6,c7,ca3>,<c7,c8,ca1>,<c7,c8,ca2>,<c7,c8,ca3>}
+ParamEventFrontDeskCheckinRoom (cur:id, nxt:id, room:id) <= {<c1,c2,r1>,<c2,c3,r1>,<c3,c4,r1>,<c4,c5,r1>,<c5,c6,r1>,<c6,c7,r1>,<c7,c8,r1>}
+ParamEventFrontDeskCheckinG (cur:id, nxt:id, g:id) <= {<c1,c2,g1>,<c1,c2,g2>,<c2,c3,g1>,<c2,c3,g2>,<c3,c4,g1>,<c3,c4,g2>,<c4,c5,g1>,<c4,c5,g2>,<c5,c6,g1>,<c5,c6,g2>,<c6,c7,g1>,<c6,c7,g2>,<c7,c8,g1>,<c7,c8,g2>}
 
 // Generic 'Type' constraints
 order ⊆ Config[config as cur] ⨯ Config[config as nxt]
@@ -47,15 +77,47 @@ instanceInState ⊆ Instance[instance] ⨯ Config ⨯ State
 changedInstance ⊆ order ⨯ Instance[instance]
     
 // Machine specific `type` constraints
-FollowerNrOfHits[config,instance]  ⊆ Config ⨯ (Instance ⨝ Follower)[instance]
-LeaderFollowers  ⊆ Config ⨯ (Instance ⨝ Leader)[instance] ⨯ (Instance ⨝ Follower)[instance->followers]
-LeaderNrOfHits[config,instance]  ⊆ Config ⨯ (Instance ⨝ Leader)[instance]
+RoomKey  ⊆ Config ⨯ (Instance ⨝ Room)[instance] ⨯ (Instance ⨝ Key)[instance->key]
+GuestCard  ⊆ Config ⨯ (Instance ⨝ Guest)[instance] ⨯ (Instance ⨝ Card)[instance->card]
+CardFirst  ⊆ Config ⨯ (Instance ⨝ Card)[instance] ⨯ (Instance ⨝ Key)[instance->first]
+CardSecond  ⊆ Config ⨯ (Instance ⨝ Card)[instance] ⨯ (Instance ⨝ Key)[instance->second]
+FrontDeskIssued  ⊆ Config ⨯ (Instance ⨝ FrontDesk)[instance] ⨯ (Instance ⨝ Key)[instance->issued]
+FrontDeskGuests  ⊆ Config ⨯ (Instance ⨝ FrontDesk)[instance] ⨯ (Instance ⨝ Guest)[instance->guests]
+FrontDeskRooms  ⊆ Config ⨯ (Instance ⨝ FrontDesk)[instance] ⨯ (Instance ⨝ Room)[instance->rooms]
 
-ParamEventLeaderAddFollower ⊆ order ⨯ (Instance ⨝ Follower)[instance->follower]
+ParamEventRoomCreateInitialKey ⊆ order ⨯ (Instance ⨝ Key)[instance->initialKey]
+ParamEventRoomUpdateNewKey ⊆ order ⨯ (Instance ⨝ Key)[instance->newKey]
+ParamEventRoomCheckKeyKey ⊆ order ⨯ (Instance ⨝ Key)[instance->key]
+ParamEventGuestCheckinCard ⊆ order ⨯ (Instance ⨝ Card)[instance->card]
+ParamEventCardCreateFst ⊆ order ⨯ (Instance ⨝ Key)[instance->fst]
+ParamEventCardCreateSnd ⊆ order ⨯ (Instance ⨝ Key)[instance->snd]
+ParamEventCardEqualFst ⊆ order ⨯ (Instance ⨝ Key)[instance->fst]
+ParamEventCardEqualSnd ⊆ order ⨯ (Instance ⨝ Key)[instance->snd]
+ParamEventCardCheckFirstKey ⊆ order ⨯ (Instance ⨝ Key)[instance->key]
+ParamEventCardCheckSecondKey ⊆ order ⨯ (Instance ⨝ Key)[instance->key]
+ParamEventFrontDeskCheckinFst ⊆ order ⨯ (Instance ⨝ Key)[instance->fst]
+ParamEventFrontDeskCheckinSnd ⊆ order ⨯ (Instance ⨝ Key)[instance->snd]
+ParamEventFrontDeskCheckinC ⊆ order ⨯ (Instance ⨝ Card)[instance->c]
+ParamEventFrontDeskCheckinRoom ⊆ order ⨯ (Instance ⨝ Room)[instance->room]
+ParamEventFrontDeskCheckinG ⊆ order ⨯ (Instance ⨝ Guest)[instance->g]
 
 // Specific per event
 ∀ step ∈ order ⨝ raisedEvent | (
-  (some (step ⨝ EventLeaderAdd) ⇔ one (step ⨝ ParamEventLeaderAddFollower))
+  (some (step ⨝ EventRoomCreate) ⇔ one (step ⨝ ParamEventRoomCreateInitialKey)) ∧
+  (some (step ⨝ EventRoomUpdate) ⇔ one (step ⨝ ParamEventRoomUpdateNewKey)) ∧
+  (some (step ⨝ EventRoomCheckKey) ⇔ one (step ⨝ ParamEventRoomCheckKeyKey)) ∧
+  (some (step ⨝ EventGuestCheckin) ⇔ one (step ⨝ ParamEventGuestCheckinCard)) ∧
+  (some (step ⨝ EventCardCreate) ⇔ one (step ⨝ ParamEventCardCreateFst)) ∧
+  (some (step ⨝ EventCardCreate) ⇔ one (step ⨝ ParamEventCardCreateSnd)) ∧
+  (some (step ⨝ EventCardEqual) ⇔ one (step ⨝ ParamEventCardEqualFst)) ∧
+  (some (step ⨝ EventCardEqual) ⇔ one (step ⨝ ParamEventCardEqualSnd)) ∧
+  (some (step ⨝ EventCardCheckFirst) ⇔ one (step ⨝ ParamEventCardCheckFirstKey)) ∧
+  (some (step ⨝ EventCardCheckSecond) ⇔ one (step ⨝ ParamEventCardCheckSecondKey)) ∧
+  (some (step ⨝ EventFrontDeskCheckin) ⇔ one (step ⨝ ParamEventFrontDeskCheckinFst)) ∧
+  (some (step ⨝ EventFrontDeskCheckin) ⇔ one (step ⨝ ParamEventFrontDeskCheckinSnd)) ∧
+  (some (step ⨝ EventFrontDeskCheckin) ⇔ one (step ⨝ ParamEventFrontDeskCheckinC)) ∧
+  (some (step ⨝ EventFrontDeskCheckin) ⇔ one (step ⨝ ParamEventFrontDeskCheckinRoom)) ∧
+  (some (step ⨝ EventFrontDeskCheckin) ⇔ one (step ⨝ ParamEventFrontDeskCheckinG))
 )
 
 // Generic: All configurations are reachable
@@ -68,9 +130,17 @@ ParamEventLeaderAddFollower ⊆ order ⨯ (Instance ⨝ Follower)[instance->foll
 ∀ c ∈ Config, inst ∈ Instance | one instanceInState ⨝ c ⨝ inst
 
 // Specific per machine: In every configuration iff a machine is in an initialized state then it must have values
-∀ c ∈ Config, inst ∈ (Instance ⨝ Follower)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one FollowerNrOfHits ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Leader)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no LeaderFollowers ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Leader)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one LeaderNrOfHits ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Room)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no RoomKey ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Room)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one RoomKey ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Guest)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no GuestCard ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Guest)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one GuestCard ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Card)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no CardFirst ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Card)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one CardFirst ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Card)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no CardSecond ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Card)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one CardSecond ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ FrontDesk)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no FrontDeskIssued ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ FrontDesk)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no FrontDeskGuests ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ FrontDesk)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no FrontDeskRooms ⨝ c ⨝ inst)
 
 
 // Generic: Transitions are only allowed between if an event is specified between two states
@@ -83,200 +153,353 @@ pred forceState[curState: (state:id), nxtState: (state:id), raisedEvent: (event:
 pred inState[config: (config:id), instance: (instance:id), state: (state:id)]
   = ((instance ⨯ config) ⨝ instanceInState)[state] ⊆ state
 
-pred frameFollower[step: (cur:id, nxt:id), follower: (instance:id)] 
+pred eventRoomUpdate[step:(cur:id, nxt:id), room: (instance:id), newKey: (newKey:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ follower)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ follower)[state],
-        curNrOfHits = (cur ⨝ FollowerNrOfHits ⨝ follower)[nrOfHits->curNrOfHits],
-        nxtNrOfHits = (nxt ⨝ FollowerNrOfHits ⨝ follower)[nrOfHits->nxtNrOfHits] | (
+        curState = (instanceInState ⨝ cur ⨝ room)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ room)[state],
+        curKey = (cur ⨝ RoomKey ⨝ room)[key],
+        nxtKey = (nxt ⨝ RoomKey ⨝ room)[key] |
+    ( 
+       
+      // Postconditions
+      nxtKey = newKey[newKey as key]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventRoomUpdate] ∧
+      // Make sure this instance is in the change set
+      room ⊆ (changedInstance ⨝ step)[instance]
+    )
+
+pred eventRoomCheckKey[step:(cur:id, nxt:id), room: (instance:id), key: (key:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ room)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ room)[state],
+        curKey = (cur ⨝ RoomKey ⨝ room)[key],
+        nxtKey = (nxt ⨝ RoomKey ⨝ room)[key] |
+    ( 
+      // Preconditions 
+      curKey = key  ∧ 
+      // Postconditions
+      nxtKey = curKey  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventRoomCheckKey] ∧
+      // Make sure this instance is in the change set
+      room ⊆ (changedInstance ⨝ step)[instance]
+    )
+
+pred eventRoomCreate[step:(cur:id, nxt:id), room: (instance:id), initialKey: (initialKey:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ room)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ room)[state],
+        curKey = (cur ⨝ RoomKey ⨝ room)[key],
+        nxtKey = (nxt ⨝ RoomKey ⨝ room)[key] |
+    ( 
+       
+      // Postconditions
+      nxtKey = initialKey[initialKey as key]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventRoomCreate] ∧
+      // Make sure this instance is in the change set
+      room ⊆ (changedInstance ⨝ step)[instance]
+    )
+
+pred frameRoom[step: (cur:id, nxt:id), room: (instance:id)] 
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ room)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ room)[state],
+        curKey = (cur ⨝ RoomKey ⨝ room)[key],
+        nxtKey = (nxt ⨝ RoomKey ⨝ room)[key] | (
     nxtState = curState ∧
     (
       curState ⊆ uninitialized ∨ 
       (// Postconditions
-       (some (nxtNrOfHits ⨯ curNrOfHits) where (nxtNrOfHits = curNrOfHits)))
+       nxtKey = curKey)
     )
   )
 
-pred eventFollowerHit[step:(cur:id, nxt:id), follower: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ follower)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ follower)[state],
-        curNrOfHits = (cur ⨝ FollowerNrOfHits ⨝ follower)[nrOfHits->curNrOfHits],
-        nxtNrOfHits = (nxt ⨝ FollowerNrOfHits ⨝ follower)[nrOfHits->nxtNrOfHits] |
-    ( 
-       
-      // Postconditions
-      (some (nxtNrOfHits ⨯ curNrOfHits) where (nxtNrOfHits = curNrOfHits + 1))  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventFollowerHit] ∧
-      // Make sure this instance is in the change set
-      follower ⊆ (changedInstance ⨝ step)[instance]
-    )
 
-pred eventFollowerStart[step:(cur:id, nxt:id), follower: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ follower)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ follower)[state],
-        curNrOfHits = (cur ⨝ FollowerNrOfHits ⨝ follower)[nrOfHits->curNrOfHits],
-        nxtNrOfHits = (nxt ⨝ FollowerNrOfHits ⨝ follower)[nrOfHits->nxtNrOfHits] |
-    ( 
-       
-      // Postconditions
-      (some (nxtNrOfHits) where (nxtNrOfHits = 0))  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventFollowerStart] ∧
-      // Make sure this instance is in the change set
-      follower ⊆ (changedInstance ⨝ step)[instance]
-    )
-
-
-pred possibleTransitionsFollower[step: (cur:id, nxt:id)] 
-  = ∀ inst ∈ (Instance ⨝ Follower)[instance] |
+pred possibleTransitionsRoom[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ Room)[instance] |
     (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
-      (eventFollowerHit[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventFollowerHit ∧
+      (eventRoomUpdate[step,inst,(step ⨝ ParamEventRoomUpdateNewKey)[newKey]] ∧
+      (step ⨝ raisedEvent)[event] = EventRoomUpdate ∧
       (changedInstance ⨝ step)[instance] ⊆ inst)
       ∨
-      (eventFollowerStart[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventFollowerStart ∧
+      (eventRoomCheckKey[step,inst,(step ⨝ ParamEventRoomCheckKeyKey)[key]] ∧
+      (step ⨝ raisedEvent)[event] = EventRoomCheckKey ∧
+      (changedInstance ⨝ step)[instance] ⊆ inst)
+      ∨
+      (eventRoomCreate[step,inst,(step ⨝ ParamEventRoomCreateInitialKey)[initialKey]] ∧
+      (step ⨝ raisedEvent)[event] = EventRoomCreate ∧
       (changedInstance ⨝ step)[instance] ⊆ inst)
     ))
     ∧
-    (no inst ∩ (changedInstance ⨝ step)[instance] ⇔ frameFollower[step, inst])
+    (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameRoom[step, inst])
 
-pred eventLeaderComplete[step:(cur:id, nxt:id), leader: (instance:id)]
+pred eventGuestCheckin[step:(cur:id, nxt:id), guest: (instance:id), card: (card:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ leader)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ leader)[state],
-        curFollowers = (cur ⨝ LeaderFollowers ⨝ leader)[followers],
-        nxtFollowers = (nxt ⨝ LeaderFollowers ⨝ leader)[followers],
-        curNrOfHits = (cur ⨝ LeaderNrOfHits ⨝ leader)[nrOfHits->curNrOfHits],
-        nxtNrOfHits = (nxt ⨝ LeaderNrOfHits ⨝ leader)[nrOfHits->nxtNrOfHits] |
+        curState = (instanceInState ⨝ cur ⨝ guest)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ guest)[state],
+        curCard = (cur ⨝ GuestCard ⨝ guest)[card],
+        nxtCard = (nxt ⨝ GuestCard ⨝ guest)[card] |
     ( 
        
       // Postconditions
-      (some (nxtNrOfHits ⨯ curNrOfHits) where (nxtNrOfHits = curNrOfHits)) ∧
-      nxtFollowers[followers] = curFollowers[followers]  ∧ 
+      nxtCard = card  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventLeaderComplete] ∧
+      forceState[curState, nxtState, EventGuestCheckin] ∧
       // Make sure this instance is in the change set
-      leader ⊆ (changedInstance ⨝ step)[instance]
+      guest ⊆ (changedInstance ⨝ step)[instance]
     )
 
-pred eventLeaderHitAll[step:(cur:id, nxt:id), leader: (instance:id)]
+pred frameGuest[step: (cur:id, nxt:id), guest: (instance:id)] 
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ leader)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ leader)[state],
-        curFollowers = (cur ⨝ LeaderFollowers ⨝ leader)[followers],
-        nxtFollowers = (nxt ⨝ LeaderFollowers ⨝ leader)[followers],
-        curNrOfHits = (cur ⨝ LeaderNrOfHits ⨝ leader)[nrOfHits->curNrOfHits],
-        nxtNrOfHits = (nxt ⨝ LeaderNrOfHits ⨝ leader)[nrOfHits->nxtNrOfHits] |
-    ( 
-      // Preconditions 
-      (forall f:curFollowers[followers][followers as f] | eventFollowerHit[step, f[f as instance]])  ∧ 
-      // Postconditions
-      nxtFollowers[followers] = curFollowers[followers] ∧
-      (some (nxtNrOfHits ⨯ curNrOfHits) where (nxtNrOfHits = curNrOfHits + 1))  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventLeaderHitAll] ∧
-      // Make sure this instance is in the change set
-      leader ⊆ (changedInstance ⨝ step)[instance]
-    )
-
-pred frameLeader[step: (cur:id, nxt:id), leader: (instance:id)] 
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ leader)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ leader)[state],
-        curFollowers = (cur ⨝ LeaderFollowers ⨝ leader)[followers],
-        nxtFollowers = (nxt ⨝ LeaderFollowers ⨝ leader)[followers],
-        curNrOfHits = (cur ⨝ LeaderNrOfHits ⨝ leader)[nrOfHits->curNrOfHits],
-        nxtNrOfHits = (nxt ⨝ LeaderNrOfHits ⨝ leader)[nrOfHits->nxtNrOfHits] | (
+        curState = (instanceInState ⨝ cur ⨝ guest)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ guest)[state],
+        curCard = (cur ⨝ GuestCard ⨝ guest)[card],
+        nxtCard = (nxt ⨝ GuestCard ⨝ guest)[card] | (
     nxtState = curState ∧
     (
       curState ⊆ uninitialized ∨ 
       (// Postconditions
-       nxtFollowers[followers] = curFollowers[followers] ∧
-       (some (nxtNrOfHits ⨯ curNrOfHits) where (nxtNrOfHits = curNrOfHits)))
+       nxtCard = curCard)
     )
   )
 
-pred eventLeaderStart[step:(cur:id, nxt:id), leader: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ leader)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ leader)[state],
-        curFollowers = (cur ⨝ LeaderFollowers ⨝ leader)[followers],
-        nxtFollowers = (nxt ⨝ LeaderFollowers ⨝ leader)[followers],
-        curNrOfHits = (cur ⨝ LeaderNrOfHits ⨝ leader)[nrOfHits->curNrOfHits],
-        nxtNrOfHits = (nxt ⨝ LeaderNrOfHits ⨝ leader)[nrOfHits->nxtNrOfHits] |
-    ( 
-       
-      // Postconditions
-      (some (nxtNrOfHits) where (nxtNrOfHits = 0)) ∧
-      no nxtFollowers[followers]  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventLeaderStart] ∧
-      // Make sure this instance is in the change set
-      leader ⊆ (changedInstance ⨝ step)[instance]
-    )
 
-pred eventLeaderAdd[step:(cur:id, nxt:id), leader: (instance:id), follower: (follower:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ leader)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ leader)[state],
-        curFollowers = (cur ⨝ LeaderFollowers ⨝ leader)[followers],
-        nxtFollowers = (nxt ⨝ LeaderFollowers ⨝ leader)[followers],
-        curNrOfHits = (cur ⨝ LeaderNrOfHits ⨝ leader)[nrOfHits->curNrOfHits],
-        nxtNrOfHits = (nxt ⨝ LeaderNrOfHits ⨝ leader)[nrOfHits->nxtNrOfHits] |
-    ( 
-      // Preconditions 
-      inState[cur, follower[follower->instance], initialized]  ∧ 
-      // Postconditions
-      (some (nxtNrOfHits ⨯ curNrOfHits) where (nxtNrOfHits = curNrOfHits)) ∧
-      nxtFollowers[followers] = curFollowers[followers] + (follower[follower as followers])  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventLeaderAdd] ∧
-      // Make sure this instance is in the change set
-      leader ⊆ (changedInstance ⨝ step)[instance]
-    )
-
-
-pred possibleTransitionsLeader[step: (cur:id, nxt:id)] 
-  = ∀ inst ∈ (Instance ⨝ Leader)[instance] |
+pred possibleTransitionsGuest[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ Guest)[instance] |
     (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
-      (eventLeaderComplete[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventLeaderComplete ∧
-      (changedInstance ⨝ step)[instance] ⊆ inst)
-      ∨
-      (eventLeaderHitAll[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventLeaderHitAll ∧
-      let cur = step[cur->config], followers = (LeaderFollowers |x| cur |x| inst)[followers->instance] | (changedInstance ⨝ step)[instance] ⊆ inst ∪ followers)
-      ∨
-      (eventLeaderStart[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventLeaderStart ∧
-      (changedInstance ⨝ step)[instance] ⊆ inst)
-      ∨
-      (eventLeaderAdd[step,inst,(step ⨝ ParamEventLeaderAddFollower)[follower]] ∧
-      (step ⨝ raisedEvent)[event] = EventLeaderAdd ∧
+      (eventGuestCheckin[step,inst,(step ⨝ ParamEventGuestCheckinCard)[card]] ∧
+      (step ⨝ raisedEvent)[event] = EventGuestCheckin ∧
       (changedInstance ⨝ step)[instance] ⊆ inst)
     ))
     ∧
-    (no inst ∩ (changedInstance ⨝ step)[instance] ⇔ frameLeader[step, inst])
+    (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameGuest[step, inst])
+
+pred frameCard[step: (cur:id, nxt:id), card: (instance:id)] 
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ card)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ card)[state],
+        curFirst = (cur ⨝ CardFirst ⨝ card)[first],
+        nxtFirst = (nxt ⨝ CardFirst ⨝ card)[first],
+        curSecond = (cur ⨝ CardSecond ⨝ card)[second],
+        nxtSecond = (nxt ⨝ CardSecond ⨝ card)[second] | (
+    nxtState = curState ∧
+    (
+      curState ⊆ uninitialized ∨ 
+      (// Postconditions
+       nxtFirst = curFirst ∧
+       nxtSecond = curSecond)
+    )
+  )
+
+pred eventCardCheckFirst[step:(cur:id, nxt:id), card: (instance:id), key: (key:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ card)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ card)[state],
+        curFirst = (cur ⨝ CardFirst ⨝ card)[first],
+        nxtFirst = (nxt ⨝ CardFirst ⨝ card)[first],
+        curSecond = (cur ⨝ CardSecond ⨝ card)[second],
+        nxtSecond = (nxt ⨝ CardSecond ⨝ card)[second] |
+    ( 
+      // Preconditions 
+      curFirst = key[key as first]  ∧ 
+      // Postconditions
+      nxtSecond = curSecond ∧
+      nxtFirst = curFirst  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventCardCheckFirst] ∧
+      // Make sure this instance is in the change set
+      card ⊆ (changedInstance ⨝ step)[instance]
+    )
+
+pred eventCardCreate[step:(cur:id, nxt:id), card: (instance:id), fst: (fst:id), snd: (snd:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ card)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ card)[state],
+        curFirst = (cur ⨝ CardFirst ⨝ card)[first],
+        nxtFirst = (nxt ⨝ CardFirst ⨝ card)[first],
+        curSecond = (cur ⨝ CardSecond ⨝ card)[second],
+        nxtSecond = (nxt ⨝ CardSecond ⨝ card)[second] |
+    ( 
+       
+      // Postconditions
+      nxtFirst = fst[fst as first] ∧
+      nxtSecond = snd[snd as second]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventCardCreate] ∧
+      // Make sure this instance is in the change set
+      card ⊆ (changedInstance ⨝ step)[instance]
+    )
+
+pred eventCardEqual[step:(cur:id, nxt:id), card: (instance:id), fst: (fst:id), snd: (snd:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ card)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ card)[state],
+        curFirst = (cur ⨝ CardFirst ⨝ card)[first],
+        nxtFirst = (nxt ⨝ CardFirst ⨝ card)[first],
+        curSecond = (cur ⨝ CardSecond ⨝ card)[second],
+        nxtSecond = (nxt ⨝ CardSecond ⨝ card)[second] |
+    ( 
+      // Preconditions 
+      curFirst = fst[fst as first] ∧
+      curSecond = snd[snd as second]  ∧ 
+      // Postconditions
+      nxtSecond = curSecond ∧
+      nxtFirst = curFirst  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventCardEqual] ∧
+      // Make sure this instance is in the change set
+      card ⊆ (changedInstance ⨝ step)[instance]
+    )
+
+pred eventCardCheckSecond[step:(cur:id, nxt:id), card: (instance:id), key: (key:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ card)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ card)[state],
+        curFirst = (cur ⨝ CardFirst ⨝ card)[first],
+        nxtFirst = (nxt ⨝ CardFirst ⨝ card)[first],
+        curSecond = (cur ⨝ CardSecond ⨝ card)[second],
+        nxtSecond = (nxt ⨝ CardSecond ⨝ card)[second] |
+    ( 
+      // Preconditions 
+      curSecond = key[key as second]  ∧ 
+      // Postconditions
+      nxtSecond = curSecond ∧
+      nxtFirst = curFirst  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventCardCheckSecond] ∧
+      // Make sure this instance is in the change set
+      card ⊆ (changedInstance ⨝ step)[instance]
+    )
+
+
+pred possibleTransitionsCard[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ Card)[instance] |
+    (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
+      (eventCardCheckFirst[step,inst,(step ⨝ ParamEventCardCheckFirstKey)[key]] ∧
+      (step ⨝ raisedEvent)[event] = EventCardCheckFirst ∧
+      (changedInstance ⨝ step)[instance] ⊆ inst)
+      ∨
+      (eventCardCreate[step,inst,(step ⨝ ParamEventCardCreateFst)[fst],(step ⨝ ParamEventCardCreateSnd)[snd]] ∧
+      (step ⨝ raisedEvent)[event] = EventCardCreate ∧
+      (changedInstance ⨝ step)[instance] ⊆ inst)
+      ∨
+      (eventCardEqual[step,inst,(step ⨝ ParamEventCardEqualFst)[fst],(step ⨝ ParamEventCardEqualSnd)[snd]] ∧
+      (step ⨝ raisedEvent)[event] = EventCardEqual ∧
+      (changedInstance ⨝ step)[instance] ⊆ inst)
+      ∨
+      (eventCardCheckSecond[step,inst,(step ⨝ ParamEventCardCheckSecondKey)[key]] ∧
+      (step ⨝ raisedEvent)[event] = EventCardCheckSecond ∧
+      (changedInstance ⨝ step)[instance] ⊆ inst)
+    ))
+    ∧
+    (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameCard[step, inst])
+
+pred eventFrontDeskInitialize[step:(cur:id, nxt:id), frontdesk: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ frontdesk)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ frontdesk)[state],
+        curIssued = (cur ⨝ FrontDeskIssued ⨝ frontdesk)[issued],
+        nxtIssued = (nxt ⨝ FrontDeskIssued ⨝ frontdesk)[issued],
+        curGuests = (cur ⨝ FrontDeskGuests ⨝ frontdesk)[guests],
+        nxtGuests = (nxt ⨝ FrontDeskGuests ⨝ frontdesk)[guests],
+        curRooms = (cur ⨝ FrontDeskRooms ⨝ frontdesk)[rooms],
+        nxtRooms = (nxt ⨝ FrontDeskRooms ⨝ frontdesk)[rooms] |
+    ( 
+       
+      // Postconditions
+      no nxtIssued ∧
+      no nxtGuests ∧
+      no nxtRooms  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventFrontDeskInitialize] ∧
+      // Make sure this instance is in the change set
+      frontdesk ⊆ (changedInstance ⨝ step)[instance]
+    )
+
+pred frameFrontDesk[step: (cur:id, nxt:id), frontdesk: (instance:id)] 
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ frontdesk)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ frontdesk)[state],
+        curIssued = (cur ⨝ FrontDeskIssued ⨝ frontdesk)[issued],
+        nxtIssued = (nxt ⨝ FrontDeskIssued ⨝ frontdesk)[issued],
+        curGuests = (cur ⨝ FrontDeskGuests ⨝ frontdesk)[guests],
+        nxtGuests = (nxt ⨝ FrontDeskGuests ⨝ frontdesk)[guests],
+        curRooms = (cur ⨝ FrontDeskRooms ⨝ frontdesk)[rooms],
+        nxtRooms = (nxt ⨝ FrontDeskRooms ⨝ frontdesk)[rooms] | (
+    nxtState = curState ∧
+    (
+      curState ⊆ uninitialized ∨ 
+      (// Postconditions
+       nxtIssued = curIssued ∧
+       nxtGuests = curGuests ∧
+       nxtRooms = curRooms)
+    )
+  )
+
+pred eventFrontDeskCheckin[step:(cur:id, nxt:id), frontdesk: (instance:id), fst: (fst:id), snd: (snd:id), c: (c:id), room: (room:id), g: (g:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ frontdesk)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ frontdesk)[state],
+        curIssued = (cur ⨝ FrontDeskIssued ⨝ frontdesk)[issued],
+        nxtIssued = (nxt ⨝ FrontDeskIssued ⨝ frontdesk)[issued],
+        curGuests = (cur ⨝ FrontDeskGuests ⨝ frontdesk)[guests],
+        nxtGuests = (nxt ⨝ FrontDeskGuests ⨝ frontdesk)[guests],
+        curRooms = (cur ⨝ FrontDeskRooms ⨝ frontdesk)[rooms],
+        nxtRooms = (nxt ⨝ FrontDeskRooms ⨝ frontdesk)[rooms] |
+    ( 
+      // Preconditions 
+      eventGuestCheckin[step, g[g as instance], c[c as card]] ∧
+      eventRoomCheckKey[step, room[room as instance], fst[fst as key]] ∧
+      eventCardCheckFirst[step, c[c as instance], fst[fst as key]] ∧
+      no (curIssued ∩ snd[snd -> issued]) ∧
+      no (curGuests ∩ g[g -> guests])  ∧ 
+      // Postconditions
+      nxtIssued = curIssued ∪ (snd[snd as issued]) ∧
+      nxtGuests = curGuests ∪ (g[g as guests]) ∧
+      nxtRooms = curRooms ∪ (room[room as rooms])  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventFrontDeskCheckin] ∧
+      // Make sure this instance is in the change set
+      frontdesk ⊆ (changedInstance ⨝ step)[instance]
+    )
+
+
+pred possibleTransitionsFrontDesk[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ FrontDesk)[instance] |
+    (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
+      (eventFrontDeskInitialize[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventFrontDeskInitialize ∧
+      (changedInstance ⨝ step)[instance] ⊆ inst)
+      ∨
+      (eventFrontDeskCheckin[step,inst,(step ⨝ ParamEventFrontDeskCheckinFst)[fst],(step ⨝ ParamEventFrontDeskCheckinSnd)[snd],(step ⨝ ParamEventFrontDeskCheckinC)[c],(step ⨝ ParamEventFrontDeskCheckinRoom)[room],(step ⨝ ParamEventFrontDeskCheckinG)[g]] ∧
+      (step ⨝ raisedEvent)[event] = EventFrontDeskCheckin ∧
+      let cur = step[cur->config], c = (ParamEventFrontDeskCheckinC ⨝ step)[c -> instance], room = (ParamEventFrontDeskCheckinRoom ⨝ step)[room -> instance], g = (ParamEventFrontDeskCheckinG ⨝ step)[g -> instance] | (changedInstance ⨝ step)[instance] ⊆ c ∪ inst ∪ g ∪ room)
+    ))
+    ∧
+    (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameFrontDesk[step, inst])
 
 
 // Transition function
-∀ step ∈ order | possibleTransitionsFollower[step] ∧ possibleTransitionsLeader[step]
+∀ step ∈ order | possibleTransitionsRoom[step] ∧ possibleTransitionsGuest[step] ∧ possibleTransitionsCard[step] ∧ possibleTransitionsFrontDesk[step]
 
 // Asserts: this is where the checks get added
-∃ c ∈ Config, l ∈ (Instance ⨝ Leader)[instance] | ((some (LeaderFollowers ⨝ c ⨝ l)[count() as nr] where nr = 2) && (instanceInState |x| l |x| c)[state] in StateLeaderActive)
-∃ c ∈ Config | (some (c |x| LeaderNrOfHits) where nrOfHits = 2)
+∃ c ∈ Config | some (FrontDeskGuests ⨝ c) // (some (FrontDeskGuests ⨝ c)[count() as nr] where nr = 2)
 
 // Minimize the number of steps by minimizing the number of Configurations
 objectives: minimize Config[count()]
