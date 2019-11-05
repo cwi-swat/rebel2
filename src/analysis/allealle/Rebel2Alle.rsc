@@ -23,18 +23,20 @@ import IO;
 import Set;
 import String;
 import util::Maybe;
+import util::Benchmark;
   
 void translateSpecs(Config config, str check, bool debug = true) {
   set[Spec] normalizedSpecs = {inst.spc | inst <- config.instances};
-  str alleSpec = "<translateStaticPart(normalizedSpecs)>
-                 '<translateDynamicPart(config)>
-                 '<translateConstraints(normalizedSpecs, config, check)>";
+
+  print("Translating Rebel to AlleAlle ...");
+  tuple[str alleSpec, int time] res = bmTranslate(normalizedSpecs, config, check);
+  println("done, took: <res.time> ms.");
   
   if (debug) {
-    writeFile(project(getOneFrom(normalizedSpecs)@\loc.top) + "examples/latest-alle-spc.alle", alleSpec);
+    writeFile(project(getOneFrom(normalizedSpecs)@\loc.top) + "examples/latest-alle-spc.alle", res.alleSpec);
   }
   
-  ModelFinderResult mfr = checkInitialSolution(implodeProblem(alleSpec));
+  ModelFinderResult mfr = checkInitialSolution(implodeProblem(res.alleSpec));
 
   if (sat(Model currentModel, Model (Domain) nextModel, void () stop) := mfr) {
     stop();
@@ -42,6 +44,17 @@ void translateSpecs(Config config, str check, bool debug = true) {
     println(trace2Str(trace));
   }
 }  
+
+private tuple[str, int] bmTranslate(set[Spec] normalizedSpecs, Config cfg, str check) {
+  int startTime = cpuTime();
+
+  str alleSpec = "<translateStaticPart(normalizedSpecs)>
+                 '<translateDynamicPart(cfg)>
+                 '<translateConstraints(normalizedSpecs, cfg, check)>";
+
+  return <alleSpec, (cpuTime() - startTime) / 1000000>;
+}
+
 
 data Trace
   = step(Configuration conf, RaisedEvent re, Trace next)

@@ -163,13 +163,13 @@ void translateHotel() {
   initialValues = {};
 
   str noIntruder = "∃ step1 ∈ order, g1 ∈ (Guest ⨝ Instance)[instance], g2 ∈ ((Guest ⨝ Instance)[instance] ∖ g1) | let step2 = (order ⨝ step1[nxt-\>cur]), step3 = (order ⨝ step2[nxt-\>cur]) | 
-                   '  (raisedEvent ⨝ step1)[instance,event] = (g1 ⨯ EventGuestEnterRoom)"; // ∧ 
-                  // '  (raisedEvent ⨝ step2)[instance,event] = (g2 ⨯ EventGuestEnterRoom)"; // ∧ 
-                   //'  (raisedEvent ⨝ step3)[instance,event] = (g1 ⨯ EventGuestEnterRoom)";  
+                   '  ((raisedEvent ⨝ step1)[instance,event] = (g1 ⨯ EventGuestEnterRoom) ∧ 
+                   '   (raisedEvent ⨝ step2)[instance,event] = (g2 ⨯ EventGuestEnterRoom) ∧ 
+                   '   (raisedEvent ⨝ step3)[instance,event] = (g1 ⨯ EventGuestEnterRoom))";  
   
   str twoGuestsWithSameCard = "∃ c ∈ Config, g1 ∈ (Guest ⨝ Instance)[instance], g2 ∈ (Guest ⨝ Instance)[instance] ∖ g1 | ((g1 ⨝ instanceInState ⨝ c)[state] ⊆ initialized ∧ (GuestCard ⨝ c ⨝ g1)[card] = (GuestCard ⨝ c ⨝ g2)[card])";  
   
   str twoCheckedInGuests = "∃ c ∈ Config, g1 ∈ (Guest ⨝ Instance)[instance], g2 ∈ (Guest ⨝ Instance)[instance] ∖ g1 | ((g1 ⨝ instanceInState ⨝ c)[state] ⊆ initialized ∧ (g2 ⨝ instanceInState ⨝ c)[state] ⊆ initialized)";
    
-  translateSpecs(config(instances, initialValues, tm, 10), noIntruder);
+  translateSpecs(config(instances, initialValues, tm, 20), noIntruder);
 }

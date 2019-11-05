@@ -28,13 +28,13 @@ str constructTransitionFunction(Spec spc, Graph[SyncedWith] syncDep, Config cfg)
   }
   
   str buildTransCond(Event e) {
-    tuple[set[str] names, list[str] syncs] lets = syncedInstanceRels(spc, e, "inst", syncDep, cfg);
+    tuple[set[str] names, list[str] syncs] lets = syncedInstanceRels(spc, e, "inst", syncDep, top(), cfg);
     lets.names += {"inst"};
     if (lets.syncs != []) lets.syncs = ["cur = step[cur-\>config]"] + lets.syncs;
     
     return "(event<getCapitalizedSpecName(spc)><getCapitalizedEventName(e)>[<intercalate(",", getEventParams(e))>] ∧
            '(step ⨝ raisedEvent)[event] = Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(e)> ∧
-           '<if (lets.syncs != []) {>let <intercalate(", ", lets.syncs)> | <}>(changedInstance ⨝ step)[instance] ⊆ <intercalate(" ∪ ", [*lets.names])>)";
+           '<if (lets.syncs != []) {>let <intercalate(", ", dup(lets.syncs))> | <}>(changedInstance ⨝ step)[instance] ⊆ <intercalate(" ∪ ", [*lets.names])>)";
   }
   
   list[str] eventTrans = [buildTransCond(e) | Event e <- lookupEvents(spc), !isFrameEvent(e), !isInternalEvent(e)];
@@ -49,15 +49,13 @@ str constructTransitionFunction(Spec spc, Graph[SyncedWith] syncDep, Config cfg)
          '"; 
 }
 
-private tuple[set[str],list[str]] syncedInstanceRels(Spec s, Event e, str instRel, Graph[SyncedWith] syncDep, Config cfg) {
-  map[loc,RelHeader] rl = ();
-  RelHeader lookupHeader(loc expr) = rl[expr] when expr in rl; 
-  default RelHeader lookupHeader(loc expr) { throw "Expression location not in rel header map"; }
-  void addHeader(loc expr, RelHeader header) { rl += (expr:header); }
-  Context c = ctx(lookupHeader, addHeader, cfg);
+private data SyncScope 
+  = top()
+  | scope(str inst, Spec s, Event e, map[str,Expr] actuals, SyncScope parent)
+  ;
 
+tuple[str fieldName, str relName] findRootRel(Expr exp, str instRel, Spec spc, Event evnt, SyncScope scp, Context ctx) {
   Decl findDecl(loc locOfVar) {
-    println(locOfVar);
     visit(e.body) {
       case cur:(Decl)`<{Id ","}+ vars> : <Expr expr>`: { 
         if (Id var <- vars, var@\loc == locOfVar) {
@@ -65,37 +63,51 @@ private tuple[set[str],list[str]] syncedInstanceRels(Spec s, Event e, str instRe
         }
       }
     }
-    
     throw "Unable to find binding decl";
   }
   
-  tuple[str fieldName, str relName] findRootRel(Expr exp) {
-    translateRelExpr(exp, c);
-    str fieldName = getFieldName(exp, c);
-    IdRole role = getIdRole(exp, cfg.tm);
-    switch(role) {
-      case fieldId(): return <fieldName,"(<getCapitalizedSpecName(s)><capitalize(fieldName)> ⨝ cur ⨝ <instRel>)[<fieldName> -\> instance]">;
-      case paramId(): return <fieldName, "(ParamEvent<getCapitalizedSpecName(s)><getCapitalizedEventName(e)><capitalize(fieldName)> ⨝ step)[<fieldName> -\> instance]">;
-      case quantVarId(): {
-        if ({loc def} := cfg.tm.useDef[exp@\loc]) {
-          Decl d = findDecl(def);
-          return findRootRel(d.expr);
-        }
-      }
-    } 
-  }
+  translateRelExpr(exp, ctx);
+  str fieldName = getFieldName(exp, ctx);
+  IdRole role = getIdRole(exp, ctx.cfg.tm);
   
+  switch(role) {
+    case fieldId(): return <fieldName,"(<getCapitalizedSpecName(spc)><capitalize(fieldName)> ⨝ cur ⨝ <instRel>)[<fieldName> -\> instance]">;
+    case paramId(): { 
+      if (top() := scp) {
+        return <fieldName, "(ParamEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(evnt)><capitalize(fieldName)> ⨝ step)[<fieldName> -\> instance]">;
+      } else if (scope(str inst, Spec s, Event e, map[str,Expr] actuals, SyncScope parent) := scp, fieldName in actuals) {  
+        return findRootRel(actuals[fieldName], inst, s, e, parent, ctx);
+      } else {
+        throw "Can not resolve parameter `<fieldName>` in `<spc.name>.<evnt.name>`"; 
+      }
+    }
+    case quantVarId(): {
+      if ({loc def} := cfg.tm.useDef[exp@\loc]) {
+        Decl d = findDecl(def);
+        return findRootRel(d.expr);
+      }
+    }
+  } 
+}
+
+private tuple[set[str],list[str]] syncedInstanceRels(Spec s, Event e, str instRel, Graph[SyncedWith] syncDep, SyncScope scp, Config cfg) {
+  map[loc,RelHeader] rl = ();
+  RelHeader lookupHeader(loc expr) = rl[expr] when expr in rl; 
+  default RelHeader lookupHeader(loc expr) { throw "Expression location not in rel header map"; }
+  void addHeader(loc expr, RelHeader header) { rl += (expr:header); }
+  Context c = ctx(lookupHeader, addHeader, cfg);
+
   list[str] syncLets = [];
   set[str] relNames = {};
   
   for (SyncedWith synced <- syncDep[<s,e>]) {
     if (/f:(Formula)`<Expr exp>.<Id ev>(<{Expr ","}* args>)` := e.body, "<ev>" == "<synced.e.name>", getSpecTypeName(exp,cfg.tm) == "<synced.s.name>") {
-      tuple[str fieldName, str relName] root = findRootRel(exp); 
+      tuple[str fieldName, str relName] root = findRootRel(exp, instRel, s, e, scp, c); 
 
       syncLets += "<root.fieldName> = <root.relName>";
       relNames += root.fieldName;      
       
-      if (<n,sl> := syncedInstanceRels(synced.s, synced.e, root.fieldName, syncDep, cfg)) {
+      if (<n,sl> := syncedInstanceRels(synced.s, synced.e, root.fieldName, syncDep, scope(root.fieldName, s, e, ("<fp.name>":arg | /FormalParam fp <- synced.e.params, Expr arg <- args), scp), cfg)) {
         syncLets += sl;
         relNames += n;
       } 
@@ -320,7 +332,7 @@ str translateRestrictionEq(Expr lhs, Expr rhs, str operator, Context ctx) {
 }  
 
 str translateRelExpr(current:(Expr)`(<Expr e>)`, Context ctx) {
-  str res = translateRelExpr(e,ctx,prefix);
+  str res = translateRelExpr(e,ctx);
   ctx.addHeader(current@\loc, ctx.lookupHeader(e@\loc));
   
   return  "(<res>)"; 

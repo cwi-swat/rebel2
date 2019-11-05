@@ -1,24 +1,24 @@
 // Static configuration of state machines
 // Define the specs that can take place in the transition system
+Key (spec:id) = {<key>}
+Guest (spec:id) = {<guest>}
 Room (spec:id) = {<room>}
 Card (spec:id) = {<card>}
-Key (spec:id) = {<key>}
 FrontDesk (spec:id) = {<frontdesk>}
-Guest (spec:id) = {<guest>}
 
 // Define all possible states for all machines
-State (state:id) = {<state_uninitialized>,<state_finalized>,<state_room_created>,<state_card_created>,<state_frontdesk_open>,<state_guest_checkedin>}
-initialized (state:id) = {<state_room_created>,<state_card_created>,<state_frontdesk_open>,<state_guest_checkedin>}
+State (state:id) = {<state_uninitialized>,<state_finalized>,<state_guest_checkedin>,<state_room_created>,<state_card_created>,<state_frontdesk_open>}
+initialized (state:id) = {<state_guest_checkedin>,<state_room_created>,<state_card_created>,<state_frontdesk_open>}
 finalized (state:id) = {<state_finalized>}
 uninitialized (state:id) = {<state_uninitialized>}
+
+StateGuestCheckedin (state:id) = {<state_guest_checkedin>}
 StateRoomCreated (state:id) = {<state_room_created>}
 StateCardCreated (state:id) = {<state_card_created>}
-
 StateFrontDeskOpen (state:id) = {<state_frontdesk_open>}
-StateGuestCheckedin (state:id) = {<state_guest_checkedin>}
 
 // Define which transitions are allowed (in the form of `from a state` -> ` via an event` -> `to a state`
-allowedTransitions (from:id, to:id, event:id) = {<state_uninitialized,state_room_created,event_room_create>,<state_room_created,state_room_created,event_room_update>,<state_room_created,state_room_created,event_room_check>,<state_card_created,state_card_created,event_card_equal>,<state_uninitialized,state_card_created,event_card_create>,<state_card_created,state_card_created,event_card_check>,<state_uninitialized,state_frontdesk_open,event_frontdesk_initialize>,<state_frontdesk_open,state_frontdesk_open,event_frontdesk_checkin>,<state_uninitialized,state_guest_checkedin,event_guest_checkin>,<state_guest_checkedin,state_guest_checkedin,event_guest_enterroom>}
+allowedTransitions (from:id, to:id, event:id) = {<state_uninitialized,state_guest_checkedin,event_guest_checkin>,<state_guest_checkedin,state_guest_checkedin,event_guest_enterroom>,<state_uninitialized,state_room_created,event_room_create>,<state_room_created,state_room_created,event_room_update>,<state_room_created,state_room_created,event_room_check>,<state_card_created,state_card_created,event_card_equal>,<state_uninitialized,state_card_created,event_card_create>,<state_card_created,state_card_created,event_card_check>,<state_uninitialized,state_frontdesk_open,event_frontdesk_initialize>,<state_frontdesk_open,state_frontdesk_open,event_frontdesk_checkin>}
 // Define each event as single relation so that the events can be used as variables in the constraints 
 EventCardCreate (event:id) = {<event_card_create>}
 EventCardEqual (event:id) = {<event_card_equal>}
@@ -37,37 +37,37 @@ EventRoomCheck (event:id) = {<event_room_check>}
 
 
 // Dynamic configuration of state machines
-Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>,<c9>,<c10>}
-order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>,<c6,c7>,<c7,c8>,<c8,c9>,<c9,c10>}
+Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>,<c9>,<c10>,<c11>,<c12>,<c13>,<c14>,<c15>,<c16>,<c17>,<c18>,<c19>,<c20>}
+order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>,<c6,c7>,<c7,c8>,<c8,c9>,<c9,c10>,<c10,c11>,<c11,c12>,<c12,c13>,<c13,c14>,<c14,c15>,<c15,c16>,<c16,c17>,<c17,c18>,<c18,c19>,<c19,c20>}
 InitialConfig (config:id) = {<c1>}
 
-Instance (spec:id, instance:id) = {<frontdesk,fd1>,<key,k3>,<key,k2>,<guest,g2>,<card,ca1>,<card,ca2>,<card,ca3>,<guest,g1>,<key,k1>,<room,r1>}
-instanceInState (config:id, instance:id, state:id) >= {<c1,fd1,state_uninitialized>,<c1,k3,state_uninitialized>,<c1,k2,state_uninitialized>,<c1,g2,state_uninitialized>,<c1,ca1,state_uninitialized>,<c1,ca2,state_uninitialized>,<c1,ca3,state_uninitialized>,<c1,g1,state_uninitialized>,<c1,k1,state_uninitialized>,<c1,r1,state_uninitialized>}<= {<c1,r1,state_uninitialized>,<c1,r1,state_room_created>,<c1,r1,state_finalized>,<c1,fd1,state_uninitialized>,<c1,fd1,state_frontdesk_open>,<c1,fd1,state_finalized>,<c1,ca1,state_card_created>,<c1,ca1,state_uninitialized>,<c1,ca1,state_finalized>,<c1,ca2,state_card_created>,<c1,ca2,state_uninitialized>,<c1,ca2,state_finalized>,<c1,ca3,state_card_created>,<c1,ca3,state_uninitialized>,<c1,ca3,state_finalized>,<c1,k1,state_uninitialized>,<c1,k2,state_uninitialized>,<c1,k3,state_uninitialized>,<c1,g1,state_uninitialized>,<c1,g1,state_guest_checkedin>,<c1,g1,state_finalized>,<c1,g2,state_uninitialized>,<c1,g2,state_guest_checkedin>,<c1,g2,state_finalized>,<c2,r1,state_uninitialized>,<c2,r1,state_room_created>,<c2,r1,state_finalized>,<c2,fd1,state_uninitialized>,<c2,fd1,state_frontdesk_open>,<c2,fd1,state_finalized>,<c2,ca1,state_card_created>,<c2,ca1,state_uninitialized>,<c2,ca1,state_finalized>,<c2,ca2,state_card_created>,<c2,ca2,state_uninitialized>,<c2,ca2,state_finalized>,<c2,ca3,state_card_created>,<c2,ca3,state_uninitialized>,<c2,ca3,state_finalized>,<c2,k1,state_uninitialized>,<c2,k2,state_uninitialized>,<c2,k3,state_uninitialized>,<c2,g1,state_uninitialized>,<c2,g1,state_guest_checkedin>,<c2,g1,state_finalized>,<c2,g2,state_uninitialized>,<c2,g2,state_guest_checkedin>,<c2,g2,state_finalized>,<c3,r1,state_uninitialized>,<c3,r1,state_room_created>,<c3,r1,state_finalized>,<c3,fd1,state_uninitialized>,<c3,fd1,state_frontdesk_open>,<c3,fd1,state_finalized>,<c3,ca1,state_card_created>,<c3,ca1,state_uninitialized>,<c3,ca1,state_finalized>,<c3,ca2,state_card_created>,<c3,ca2,state_uninitialized>,<c3,ca2,state_finalized>,<c3,ca3,state_card_created>,<c3,ca3,state_uninitialized>,<c3,ca3,state_finalized>,<c3,k1,state_uninitialized>,<c3,k2,state_uninitialized>,<c3,k3,state_uninitialized>,<c3,g1,state_uninitialized>,<c3,g1,state_guest_checkedin>,<c3,g1,state_finalized>,<c3,g2,state_uninitialized>,<c3,g2,state_guest_checkedin>,<c3,g2,state_finalized>,<c4,r1,state_uninitialized>,<c4,r1,state_room_created>,<c4,r1,state_finalized>,<c4,fd1,state_uninitialized>,<c4,fd1,state_frontdesk_open>,<c4,fd1,state_finalized>,<c4,ca1,state_card_created>,<c4,ca1,state_uninitialized>,<c4,ca1,state_finalized>,<c4,ca2,state_card_created>,<c4,ca2,state_uninitialized>,<c4,ca2,state_finalized>,<c4,ca3,state_card_created>,<c4,ca3,state_uninitialized>,<c4,ca3,state_finalized>,<c4,k1,state_uninitialized>,<c4,k2,state_uninitialized>,<c4,k3,state_uninitialized>,<c4,g1,state_uninitialized>,<c4,g1,state_guest_checkedin>,<c4,g1,state_finalized>,<c4,g2,state_uninitialized>,<c4,g2,state_guest_checkedin>,<c4,g2,state_finalized>,<c5,r1,state_uninitialized>,<c5,r1,state_room_created>,<c5,r1,state_finalized>,<c5,fd1,state_uninitialized>,<c5,fd1,state_frontdesk_open>,<c5,fd1,state_finalized>,<c5,ca1,state_card_created>,<c5,ca1,state_uninitialized>,<c5,ca1,state_finalized>,<c5,ca2,state_card_created>,<c5,ca2,state_uninitialized>,<c5,ca2,state_finalized>,<c5,ca3,state_card_created>,<c5,ca3,state_uninitialized>,<c5,ca3,state_finalized>,<c5,k1,state_uninitialized>,<c5,k2,state_uninitialized>,<c5,k3,state_uninitialized>,<c5,g1,state_uninitialized>,<c5,g1,state_guest_checkedin>,<c5,g1,state_finalized>,<c5,g2,state_uninitialized>,<c5,g2,state_guest_checkedin>,<c5,g2,state_finalized>,<c6,r1,state_uninitialized>,<c6,r1,state_room_created>,<c6,r1,state_finalized>,<c6,fd1,state_uninitialized>,<c6,fd1,state_frontdesk_open>,<c6,fd1,state_finalized>,<c6,ca1,state_card_created>,<c6,ca1,state_uninitialized>,<c6,ca1,state_finalized>,<c6,ca2,state_card_created>,<c6,ca2,state_uninitialized>,<c6,ca2,state_finalized>,<c6,ca3,state_card_created>,<c6,ca3,state_uninitialized>,<c6,ca3,state_finalized>,<c6,k1,state_uninitialized>,<c6,k2,state_uninitialized>,<c6,k3,state_uninitialized>,<c6,g1,state_uninitialized>,<c6,g1,state_guest_checkedin>,<c6,g1,state_finalized>,<c6,g2,state_uninitialized>,<c6,g2,state_guest_checkedin>,<c6,g2,state_finalized>,<c7,r1,state_uninitialized>,<c7,r1,state_room_created>,<c7,r1,state_finalized>,<c7,fd1,state_uninitialized>,<c7,fd1,state_frontdesk_open>,<c7,fd1,state_finalized>,<c7,ca1,state_card_created>,<c7,ca1,state_uninitialized>,<c7,ca1,state_finalized>,<c7,ca2,state_card_created>,<c7,ca2,state_uninitialized>,<c7,ca2,state_finalized>,<c7,ca3,state_card_created>,<c7,ca3,state_uninitialized>,<c7,ca3,state_finalized>,<c7,k1,state_uninitialized>,<c7,k2,state_uninitialized>,<c7,k3,state_uninitialized>,<c7,g1,state_uninitialized>,<c7,g1,state_guest_checkedin>,<c7,g1,state_finalized>,<c7,g2,state_uninitialized>,<c7,g2,state_guest_checkedin>,<c7,g2,state_finalized>,<c8,r1,state_uninitialized>,<c8,r1,state_room_created>,<c8,r1,state_finalized>,<c8,fd1,state_uninitialized>,<c8,fd1,state_frontdesk_open>,<c8,fd1,state_finalized>,<c8,ca1,state_card_created>,<c8,ca1,state_uninitialized>,<c8,ca1,state_finalized>,<c8,ca2,state_card_created>,<c8,ca2,state_uninitialized>,<c8,ca2,state_finalized>,<c8,ca3,state_card_created>,<c8,ca3,state_uninitialized>,<c8,ca3,state_finalized>,<c8,k1,state_uninitialized>,<c8,k2,state_uninitialized>,<c8,k3,state_uninitialized>,<c8,g1,state_uninitialized>,<c8,g1,state_guest_checkedin>,<c8,g1,state_finalized>,<c8,g2,state_uninitialized>,<c8,g2,state_guest_checkedin>,<c8,g2,state_finalized>,<c9,r1,state_uninitialized>,<c9,r1,state_room_created>,<c9,r1,state_finalized>,<c9,fd1,state_uninitialized>,<c9,fd1,state_frontdesk_open>,<c9,fd1,state_finalized>,<c9,ca1,state_card_created>,<c9,ca1,state_uninitialized>,<c9,ca1,state_finalized>,<c9,ca2,state_card_created>,<c9,ca2,state_uninitialized>,<c9,ca2,state_finalized>,<c9,ca3,state_card_created>,<c9,ca3,state_uninitialized>,<c9,ca3,state_finalized>,<c9,k1,state_uninitialized>,<c9,k2,state_uninitialized>,<c9,k3,state_uninitialized>,<c9,g1,state_uninitialized>,<c9,g1,state_guest_checkedin>,<c9,g1,state_finalized>,<c9,g2,state_uninitialized>,<c9,g2,state_guest_checkedin>,<c9,g2,state_finalized>,<c10,r1,state_uninitialized>,<c10,r1,state_room_created>,<c10,r1,state_finalized>,<c10,fd1,state_uninitialized>,<c10,fd1,state_frontdesk_open>,<c10,fd1,state_finalized>,<c10,ca1,state_card_created>,<c10,ca1,state_uninitialized>,<c10,ca1,state_finalized>,<c10,ca2,state_card_created>,<c10,ca2,state_uninitialized>,<c10,ca2,state_finalized>,<c10,ca3,state_card_created>,<c10,ca3,state_uninitialized>,<c10,ca3,state_finalized>,<c10,k1,state_uninitialized>,<c10,k2,state_uninitialized>,<c10,k3,state_uninitialized>,<c10,g1,state_uninitialized>,<c10,g1,state_guest_checkedin>,<c10,g1,state_finalized>,<c10,g2,state_uninitialized>,<c10,g2,state_guest_checkedin>,<c10,g2,state_finalized>}
-raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_room_create,r1>,<c2,c3,event_room_create,r1>,<c3,c4,event_room_create,r1>,<c4,c5,event_room_create,r1>,<c5,c6,event_room_create,r1>,<c6,c7,event_room_create,r1>,<c7,c8,event_room_create,r1>,<c8,c9,event_room_create,r1>,<c9,c10,event_room_create,r1>,<c1,c2,event_frontdesk_checkin,fd1>,<c1,c2,event_frontdesk_initialize,fd1>,<c2,c3,event_frontdesk_checkin,fd1>,<c2,c3,event_frontdesk_initialize,fd1>,<c3,c4,event_frontdesk_checkin,fd1>,<c3,c4,event_frontdesk_initialize,fd1>,<c4,c5,event_frontdesk_checkin,fd1>,<c4,c5,event_frontdesk_initialize,fd1>,<c5,c6,event_frontdesk_checkin,fd1>,<c5,c6,event_frontdesk_initialize,fd1>,<c6,c7,event_frontdesk_checkin,fd1>,<c6,c7,event_frontdesk_initialize,fd1>,<c7,c8,event_frontdesk_checkin,fd1>,<c7,c8,event_frontdesk_initialize,fd1>,<c8,c9,event_frontdesk_checkin,fd1>,<c8,c9,event_frontdesk_initialize,fd1>,<c9,c10,event_frontdesk_checkin,fd1>,<c9,c10,event_frontdesk_initialize,fd1>,<c1,c2,event_card_create,ca1>,<c2,c3,event_card_create,ca1>,<c3,c4,event_card_create,ca1>,<c4,c5,event_card_create,ca1>,<c5,c6,event_card_create,ca1>,<c6,c7,event_card_create,ca1>,<c7,c8,event_card_create,ca1>,<c8,c9,event_card_create,ca1>,<c9,c10,event_card_create,ca1>,<c1,c2,event_card_create,ca2>,<c2,c3,event_card_create,ca2>,<c3,c4,event_card_create,ca2>,<c4,c5,event_card_create,ca2>,<c5,c6,event_card_create,ca2>,<c6,c7,event_card_create,ca2>,<c7,c8,event_card_create,ca2>,<c8,c9,event_card_create,ca2>,<c9,c10,event_card_create,ca2>,<c1,c2,event_card_create,ca3>,<c2,c3,event_card_create,ca3>,<c3,c4,event_card_create,ca3>,<c4,c5,event_card_create,ca3>,<c5,c6,event_card_create,ca3>,<c6,c7,event_card_create,ca3>,<c7,c8,event_card_create,ca3>,<c8,c9,event_card_create,ca3>,<c9,c10,event_card_create,ca3>,<c1,c2,event_guest_enterroom,g1>,<c2,c3,event_guest_enterroom,g1>,<c3,c4,event_guest_enterroom,g1>,<c4,c5,event_guest_enterroom,g1>,<c5,c6,event_guest_enterroom,g1>,<c6,c7,event_guest_enterroom,g1>,<c7,c8,event_guest_enterroom,g1>,<c8,c9,event_guest_enterroom,g1>,<c9,c10,event_guest_enterroom,g1>,<c1,c2,event_guest_enterroom,g2>,<c2,c3,event_guest_enterroom,g2>,<c3,c4,event_guest_enterroom,g2>,<c4,c5,event_guest_enterroom,g2>,<c5,c6,event_guest_enterroom,g2>,<c6,c7,event_guest_enterroom,g2>,<c7,c8,event_guest_enterroom,g2>,<c8,c9,event_guest_enterroom,g2>,<c9,c10,event_guest_enterroom,g2>}
-changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c1,c2,g1>,<c1,c2,g2>,<c1,c2,ca2>,<c1,c2,ca3>,<c1,c2,r1>,<c1,c2,fd1>,<c1,c2,ca1>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c2,c3,g1>,<c2,c3,g2>,<c2,c3,ca2>,<c2,c3,ca3>,<c2,c3,r1>,<c2,c3,fd1>,<c2,c3,ca1>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c3,c4,g1>,<c3,c4,g2>,<c3,c4,ca2>,<c3,c4,ca3>,<c3,c4,r1>,<c3,c4,fd1>,<c3,c4,ca1>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c4,c5,g1>,<c4,c5,g2>,<c4,c5,ca2>,<c4,c5,ca3>,<c4,c5,r1>,<c4,c5,fd1>,<c4,c5,ca1>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c5,c6,g1>,<c5,c6,g2>,<c5,c6,ca2>,<c5,c6,ca3>,<c5,c6,r1>,<c5,c6,fd1>,<c5,c6,ca1>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c6,c7,g1>,<c6,c7,g2>,<c6,c7,ca2>,<c6,c7,ca3>,<c6,c7,r1>,<c6,c7,fd1>,<c6,c7,ca1>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c7,c8,g1>,<c7,c8,g2>,<c7,c8,ca2>,<c7,c8,ca3>,<c7,c8,r1>,<c7,c8,fd1>,<c7,c8,ca1>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c8,c9,g1>,<c8,c9,g2>,<c8,c9,ca2>,<c8,c9,ca3>,<c8,c9,r1>,<c8,c9,fd1>,<c8,c9,ca1>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c9,c10,g1>,<c9,c10,g2>,<c9,c10,ca2>,<c9,c10,ca3>,<c9,c10,r1>,<c9,c10,fd1>,<c9,c10,ca1>}
+Instance (spec:id, instance:id) = {<room,r1>,<frontdesk,fd1>,<card,ca1>,<card,ca2>,<card,ca3>,<key,k3>,<key,k2>,<guest,g2>,<guest,g1>,<key,k1>}
+instanceInState (config:id, instance:id, state:id) >= {<c1,r1,state_uninitialized>,<c1,fd1,state_uninitialized>,<c1,ca1,state_uninitialized>,<c1,ca2,state_uninitialized>,<c1,ca3,state_uninitialized>,<c1,k3,state_uninitialized>,<c1,k2,state_uninitialized>,<c1,g2,state_uninitialized>,<c1,g1,state_uninitialized>,<c1,k1,state_uninitialized>}<= {<c1,r1,state_uninitialized>,<c1,r1,state_room_created>,<c1,r1,state_finalized>,<c1,k1,state_uninitialized>,<c1,k2,state_uninitialized>,<c1,k3,state_uninitialized>,<c1,g1,state_uninitialized>,<c1,g1,state_guest_checkedin>,<c1,g1,state_finalized>,<c1,g2,state_uninitialized>,<c1,g2,state_guest_checkedin>,<c1,g2,state_finalized>,<c1,fd1,state_uninitialized>,<c1,fd1,state_frontdesk_open>,<c1,fd1,state_finalized>,<c1,ca1,state_card_created>,<c1,ca1,state_uninitialized>,<c1,ca1,state_finalized>,<c1,ca2,state_card_created>,<c1,ca2,state_uninitialized>,<c1,ca2,state_finalized>,<c1,ca3,state_card_created>,<c1,ca3,state_uninitialized>,<c1,ca3,state_finalized>,<c2,r1,state_uninitialized>,<c2,r1,state_room_created>,<c2,r1,state_finalized>,<c2,k1,state_uninitialized>,<c2,k2,state_uninitialized>,<c2,k3,state_uninitialized>,<c2,g1,state_uninitialized>,<c2,g1,state_guest_checkedin>,<c2,g1,state_finalized>,<c2,g2,state_uninitialized>,<c2,g2,state_guest_checkedin>,<c2,g2,state_finalized>,<c2,fd1,state_uninitialized>,<c2,fd1,state_frontdesk_open>,<c2,fd1,state_finalized>,<c2,ca1,state_card_created>,<c2,ca1,state_uninitialized>,<c2,ca1,state_finalized>,<c2,ca2,state_card_created>,<c2,ca2,state_uninitialized>,<c2,ca2,state_finalized>,<c2,ca3,state_card_created>,<c2,ca3,state_uninitialized>,<c2,ca3,state_finalized>,<c3,r1,state_uninitialized>,<c3,r1,state_room_created>,<c3,r1,state_finalized>,<c3,k1,state_uninitialized>,<c3,k2,state_uninitialized>,<c3,k3,state_uninitialized>,<c3,g1,state_uninitialized>,<c3,g1,state_guest_checkedin>,<c3,g1,state_finalized>,<c3,g2,state_uninitialized>,<c3,g2,state_guest_checkedin>,<c3,g2,state_finalized>,<c3,fd1,state_uninitialized>,<c3,fd1,state_frontdesk_open>,<c3,fd1,state_finalized>,<c3,ca1,state_card_created>,<c3,ca1,state_uninitialized>,<c3,ca1,state_finalized>,<c3,ca2,state_card_created>,<c3,ca2,state_uninitialized>,<c3,ca2,state_finalized>,<c3,ca3,state_card_created>,<c3,ca3,state_uninitialized>,<c3,ca3,state_finalized>,<c4,r1,state_uninitialized>,<c4,r1,state_room_created>,<c4,r1,state_finalized>,<c4,k1,state_uninitialized>,<c4,k2,state_uninitialized>,<c4,k3,state_uninitialized>,<c4,g1,state_uninitialized>,<c4,g1,state_guest_checkedin>,<c4,g1,state_finalized>,<c4,g2,state_uninitialized>,<c4,g2,state_guest_checkedin>,<c4,g2,state_finalized>,<c4,fd1,state_uninitialized>,<c4,fd1,state_frontdesk_open>,<c4,fd1,state_finalized>,<c4,ca1,state_card_created>,<c4,ca1,state_uninitialized>,<c4,ca1,state_finalized>,<c4,ca2,state_card_created>,<c4,ca2,state_uninitialized>,<c4,ca2,state_finalized>,<c4,ca3,state_card_created>,<c4,ca3,state_uninitialized>,<c4,ca3,state_finalized>,<c5,r1,state_uninitialized>,<c5,r1,state_room_created>,<c5,r1,state_finalized>,<c5,k1,state_uninitialized>,<c5,k2,state_uninitialized>,<c5,k3,state_uninitialized>,<c5,g1,state_uninitialized>,<c5,g1,state_guest_checkedin>,<c5,g1,state_finalized>,<c5,g2,state_uninitialized>,<c5,g2,state_guest_checkedin>,<c5,g2,state_finalized>,<c5,fd1,state_uninitialized>,<c5,fd1,state_frontdesk_open>,<c5,fd1,state_finalized>,<c5,ca1,state_card_created>,<c5,ca1,state_uninitialized>,<c5,ca1,state_finalized>,<c5,ca2,state_card_created>,<c5,ca2,state_uninitialized>,<c5,ca2,state_finalized>,<c5,ca3,state_card_created>,<c5,ca3,state_uninitialized>,<c5,ca3,state_finalized>,<c6,r1,state_uninitialized>,<c6,r1,state_room_created>,<c6,r1,state_finalized>,<c6,k1,state_uninitialized>,<c6,k2,state_uninitialized>,<c6,k3,state_uninitialized>,<c6,g1,state_uninitialized>,<c6,g1,state_guest_checkedin>,<c6,g1,state_finalized>,<c6,g2,state_uninitialized>,<c6,g2,state_guest_checkedin>,<c6,g2,state_finalized>,<c6,fd1,state_uninitialized>,<c6,fd1,state_frontdesk_open>,<c6,fd1,state_finalized>,<c6,ca1,state_card_created>,<c6,ca1,state_uninitialized>,<c6,ca1,state_finalized>,<c6,ca2,state_card_created>,<c6,ca2,state_uninitialized>,<c6,ca2,state_finalized>,<c6,ca3,state_card_created>,<c6,ca3,state_uninitialized>,<c6,ca3,state_finalized>,<c7,r1,state_uninitialized>,<c7,r1,state_room_created>,<c7,r1,state_finalized>,<c7,k1,state_uninitialized>,<c7,k2,state_uninitialized>,<c7,k3,state_uninitialized>,<c7,g1,state_uninitialized>,<c7,g1,state_guest_checkedin>,<c7,g1,state_finalized>,<c7,g2,state_uninitialized>,<c7,g2,state_guest_checkedin>,<c7,g2,state_finalized>,<c7,fd1,state_uninitialized>,<c7,fd1,state_frontdesk_open>,<c7,fd1,state_finalized>,<c7,ca1,state_card_created>,<c7,ca1,state_uninitialized>,<c7,ca1,state_finalized>,<c7,ca2,state_card_created>,<c7,ca2,state_uninitialized>,<c7,ca2,state_finalized>,<c7,ca3,state_card_created>,<c7,ca3,state_uninitialized>,<c7,ca3,state_finalized>,<c8,r1,state_uninitialized>,<c8,r1,state_room_created>,<c8,r1,state_finalized>,<c8,k1,state_uninitialized>,<c8,k2,state_uninitialized>,<c8,k3,state_uninitialized>,<c8,g1,state_uninitialized>,<c8,g1,state_guest_checkedin>,<c8,g1,state_finalized>,<c8,g2,state_uninitialized>,<c8,g2,state_guest_checkedin>,<c8,g2,state_finalized>,<c8,fd1,state_uninitialized>,<c8,fd1,state_frontdesk_open>,<c8,fd1,state_finalized>,<c8,ca1,state_card_created>,<c8,ca1,state_uninitialized>,<c8,ca1,state_finalized>,<c8,ca2,state_card_created>,<c8,ca2,state_uninitialized>,<c8,ca2,state_finalized>,<c8,ca3,state_card_created>,<c8,ca3,state_uninitialized>,<c8,ca3,state_finalized>,<c9,r1,state_uninitialized>,<c9,r1,state_room_created>,<c9,r1,state_finalized>,<c9,k1,state_uninitialized>,<c9,k2,state_uninitialized>,<c9,k3,state_uninitialized>,<c9,g1,state_uninitialized>,<c9,g1,state_guest_checkedin>,<c9,g1,state_finalized>,<c9,g2,state_uninitialized>,<c9,g2,state_guest_checkedin>,<c9,g2,state_finalized>,<c9,fd1,state_uninitialized>,<c9,fd1,state_frontdesk_open>,<c9,fd1,state_finalized>,<c9,ca1,state_card_created>,<c9,ca1,state_uninitialized>,<c9,ca1,state_finalized>,<c9,ca2,state_card_created>,<c9,ca2,state_uninitialized>,<c9,ca2,state_finalized>,<c9,ca3,state_card_created>,<c9,ca3,state_uninitialized>,<c9,ca3,state_finalized>,<c10,r1,state_uninitialized>,<c10,r1,state_room_created>,<c10,r1,state_finalized>,<c10,k1,state_uninitialized>,<c10,k2,state_uninitialized>,<c10,k3,state_uninitialized>,<c10,g1,state_uninitialized>,<c10,g1,state_guest_checkedin>,<c10,g1,state_finalized>,<c10,g2,state_uninitialized>,<c10,g2,state_guest_checkedin>,<c10,g2,state_finalized>,<c10,fd1,state_uninitialized>,<c10,fd1,state_frontdesk_open>,<c10,fd1,state_finalized>,<c10,ca1,state_card_created>,<c10,ca1,state_uninitialized>,<c10,ca1,state_finalized>,<c10,ca2,state_card_created>,<c10,ca2,state_uninitialized>,<c10,ca2,state_finalized>,<c10,ca3,state_card_created>,<c10,ca3,state_uninitialized>,<c10,ca3,state_finalized>,<c11,r1,state_uninitialized>,<c11,r1,state_room_created>,<c11,r1,state_finalized>,<c11,k1,state_uninitialized>,<c11,k2,state_uninitialized>,<c11,k3,state_uninitialized>,<c11,g1,state_uninitialized>,<c11,g1,state_guest_checkedin>,<c11,g1,state_finalized>,<c11,g2,state_uninitialized>,<c11,g2,state_guest_checkedin>,<c11,g2,state_finalized>,<c11,fd1,state_uninitialized>,<c11,fd1,state_frontdesk_open>,<c11,fd1,state_finalized>,<c11,ca1,state_card_created>,<c11,ca1,state_uninitialized>,<c11,ca1,state_finalized>,<c11,ca2,state_card_created>,<c11,ca2,state_uninitialized>,<c11,ca2,state_finalized>,<c11,ca3,state_card_created>,<c11,ca3,state_uninitialized>,<c11,ca3,state_finalized>,<c12,r1,state_uninitialized>,<c12,r1,state_room_created>,<c12,r1,state_finalized>,<c12,k1,state_uninitialized>,<c12,k2,state_uninitialized>,<c12,k3,state_uninitialized>,<c12,g1,state_uninitialized>,<c12,g1,state_guest_checkedin>,<c12,g1,state_finalized>,<c12,g2,state_uninitialized>,<c12,g2,state_guest_checkedin>,<c12,g2,state_finalized>,<c12,fd1,state_uninitialized>,<c12,fd1,state_frontdesk_open>,<c12,fd1,state_finalized>,<c12,ca1,state_card_created>,<c12,ca1,state_uninitialized>,<c12,ca1,state_finalized>,<c12,ca2,state_card_created>,<c12,ca2,state_uninitialized>,<c12,ca2,state_finalized>,<c12,ca3,state_card_created>,<c12,ca3,state_uninitialized>,<c12,ca3,state_finalized>,<c13,r1,state_uninitialized>,<c13,r1,state_room_created>,<c13,r1,state_finalized>,<c13,k1,state_uninitialized>,<c13,k2,state_uninitialized>,<c13,k3,state_uninitialized>,<c13,g1,state_uninitialized>,<c13,g1,state_guest_checkedin>,<c13,g1,state_finalized>,<c13,g2,state_uninitialized>,<c13,g2,state_guest_checkedin>,<c13,g2,state_finalized>,<c13,fd1,state_uninitialized>,<c13,fd1,state_frontdesk_open>,<c13,fd1,state_finalized>,<c13,ca1,state_card_created>,<c13,ca1,state_uninitialized>,<c13,ca1,state_finalized>,<c13,ca2,state_card_created>,<c13,ca2,state_uninitialized>,<c13,ca2,state_finalized>,<c13,ca3,state_card_created>,<c13,ca3,state_uninitialized>,<c13,ca3,state_finalized>,<c14,r1,state_uninitialized>,<c14,r1,state_room_created>,<c14,r1,state_finalized>,<c14,k1,state_uninitialized>,<c14,k2,state_uninitialized>,<c14,k3,state_uninitialized>,<c14,g1,state_uninitialized>,<c14,g1,state_guest_checkedin>,<c14,g1,state_finalized>,<c14,g2,state_uninitialized>,<c14,g2,state_guest_checkedin>,<c14,g2,state_finalized>,<c14,fd1,state_uninitialized>,<c14,fd1,state_frontdesk_open>,<c14,fd1,state_finalized>,<c14,ca1,state_card_created>,<c14,ca1,state_uninitialized>,<c14,ca1,state_finalized>,<c14,ca2,state_card_created>,<c14,ca2,state_uninitialized>,<c14,ca2,state_finalized>,<c14,ca3,state_card_created>,<c14,ca3,state_uninitialized>,<c14,ca3,state_finalized>,<c15,r1,state_uninitialized>,<c15,r1,state_room_created>,<c15,r1,state_finalized>,<c15,k1,state_uninitialized>,<c15,k2,state_uninitialized>,<c15,k3,state_uninitialized>,<c15,g1,state_uninitialized>,<c15,g1,state_guest_checkedin>,<c15,g1,state_finalized>,<c15,g2,state_uninitialized>,<c15,g2,state_guest_checkedin>,<c15,g2,state_finalized>,<c15,fd1,state_uninitialized>,<c15,fd1,state_frontdesk_open>,<c15,fd1,state_finalized>,<c15,ca1,state_card_created>,<c15,ca1,state_uninitialized>,<c15,ca1,state_finalized>,<c15,ca2,state_card_created>,<c15,ca2,state_uninitialized>,<c15,ca2,state_finalized>,<c15,ca3,state_card_created>,<c15,ca3,state_uninitialized>,<c15,ca3,state_finalized>,<c16,r1,state_uninitialized>,<c16,r1,state_room_created>,<c16,r1,state_finalized>,<c16,k1,state_uninitialized>,<c16,k2,state_uninitialized>,<c16,k3,state_uninitialized>,<c16,g1,state_uninitialized>,<c16,g1,state_guest_checkedin>,<c16,g1,state_finalized>,<c16,g2,state_uninitialized>,<c16,g2,state_guest_checkedin>,<c16,g2,state_finalized>,<c16,fd1,state_uninitialized>,<c16,fd1,state_frontdesk_open>,<c16,fd1,state_finalized>,<c16,ca1,state_card_created>,<c16,ca1,state_uninitialized>,<c16,ca1,state_finalized>,<c16,ca2,state_card_created>,<c16,ca2,state_uninitialized>,<c16,ca2,state_finalized>,<c16,ca3,state_card_created>,<c16,ca3,state_uninitialized>,<c16,ca3,state_finalized>,<c17,r1,state_uninitialized>,<c17,r1,state_room_created>,<c17,r1,state_finalized>,<c17,k1,state_uninitialized>,<c17,k2,state_uninitialized>,<c17,k3,state_uninitialized>,<c17,g1,state_uninitialized>,<c17,g1,state_guest_checkedin>,<c17,g1,state_finalized>,<c17,g2,state_uninitialized>,<c17,g2,state_guest_checkedin>,<c17,g2,state_finalized>,<c17,fd1,state_uninitialized>,<c17,fd1,state_frontdesk_open>,<c17,fd1,state_finalized>,<c17,ca1,state_card_created>,<c17,ca1,state_uninitialized>,<c17,ca1,state_finalized>,<c17,ca2,state_card_created>,<c17,ca2,state_uninitialized>,<c17,ca2,state_finalized>,<c17,ca3,state_card_created>,<c17,ca3,state_uninitialized>,<c17,ca3,state_finalized>,<c18,r1,state_uninitialized>,<c18,r1,state_room_created>,<c18,r1,state_finalized>,<c18,k1,state_uninitialized>,<c18,k2,state_uninitialized>,<c18,k3,state_uninitialized>,<c18,g1,state_uninitialized>,<c18,g1,state_guest_checkedin>,<c18,g1,state_finalized>,<c18,g2,state_uninitialized>,<c18,g2,state_guest_checkedin>,<c18,g2,state_finalized>,<c18,fd1,state_uninitialized>,<c18,fd1,state_frontdesk_open>,<c18,fd1,state_finalized>,<c18,ca1,state_card_created>,<c18,ca1,state_uninitialized>,<c18,ca1,state_finalized>,<c18,ca2,state_card_created>,<c18,ca2,state_uninitialized>,<c18,ca2,state_finalized>,<c18,ca3,state_card_created>,<c18,ca3,state_uninitialized>,<c18,ca3,state_finalized>,<c19,r1,state_uninitialized>,<c19,r1,state_room_created>,<c19,r1,state_finalized>,<c19,k1,state_uninitialized>,<c19,k2,state_uninitialized>,<c19,k3,state_uninitialized>,<c19,g1,state_uninitialized>,<c19,g1,state_guest_checkedin>,<c19,g1,state_finalized>,<c19,g2,state_uninitialized>,<c19,g2,state_guest_checkedin>,<c19,g2,state_finalized>,<c19,fd1,state_uninitialized>,<c19,fd1,state_frontdesk_open>,<c19,fd1,state_finalized>,<c19,ca1,state_card_created>,<c19,ca1,state_uninitialized>,<c19,ca1,state_finalized>,<c19,ca2,state_card_created>,<c19,ca2,state_uninitialized>,<c19,ca2,state_finalized>,<c19,ca3,state_card_created>,<c19,ca3,state_uninitialized>,<c19,ca3,state_finalized>,<c20,r1,state_uninitialized>,<c20,r1,state_room_created>,<c20,r1,state_finalized>,<c20,k1,state_uninitialized>,<c20,k2,state_uninitialized>,<c20,k3,state_uninitialized>,<c20,g1,state_uninitialized>,<c20,g1,state_guest_checkedin>,<c20,g1,state_finalized>,<c20,g2,state_uninitialized>,<c20,g2,state_guest_checkedin>,<c20,g2,state_finalized>,<c20,fd1,state_uninitialized>,<c20,fd1,state_frontdesk_open>,<c20,fd1,state_finalized>,<c20,ca1,state_card_created>,<c20,ca1,state_uninitialized>,<c20,ca1,state_finalized>,<c20,ca2,state_card_created>,<c20,ca2,state_uninitialized>,<c20,ca2,state_finalized>,<c20,ca3,state_card_created>,<c20,ca3,state_uninitialized>,<c20,ca3,state_finalized>}
+raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_room_create,r1>,<c2,c3,event_room_create,r1>,<c3,c4,event_room_create,r1>,<c4,c5,event_room_create,r1>,<c5,c6,event_room_create,r1>,<c6,c7,event_room_create,r1>,<c7,c8,event_room_create,r1>,<c8,c9,event_room_create,r1>,<c9,c10,event_room_create,r1>,<c10,c11,event_room_create,r1>,<c11,c12,event_room_create,r1>,<c12,c13,event_room_create,r1>,<c13,c14,event_room_create,r1>,<c14,c15,event_room_create,r1>,<c15,c16,event_room_create,r1>,<c16,c17,event_room_create,r1>,<c17,c18,event_room_create,r1>,<c18,c19,event_room_create,r1>,<c19,c20,event_room_create,r1>,<c1,c2,event_guest_enterroom,g1>,<c2,c3,event_guest_enterroom,g1>,<c3,c4,event_guest_enterroom,g1>,<c4,c5,event_guest_enterroom,g1>,<c5,c6,event_guest_enterroom,g1>,<c6,c7,event_guest_enterroom,g1>,<c7,c8,event_guest_enterroom,g1>,<c8,c9,event_guest_enterroom,g1>,<c9,c10,event_guest_enterroom,g1>,<c10,c11,event_guest_enterroom,g1>,<c11,c12,event_guest_enterroom,g1>,<c12,c13,event_guest_enterroom,g1>,<c13,c14,event_guest_enterroom,g1>,<c14,c15,event_guest_enterroom,g1>,<c15,c16,event_guest_enterroom,g1>,<c16,c17,event_guest_enterroom,g1>,<c17,c18,event_guest_enterroom,g1>,<c18,c19,event_guest_enterroom,g1>,<c19,c20,event_guest_enterroom,g1>,<c1,c2,event_guest_enterroom,g2>,<c2,c3,event_guest_enterroom,g2>,<c3,c4,event_guest_enterroom,g2>,<c4,c5,event_guest_enterroom,g2>,<c5,c6,event_guest_enterroom,g2>,<c6,c7,event_guest_enterroom,g2>,<c7,c8,event_guest_enterroom,g2>,<c8,c9,event_guest_enterroom,g2>,<c9,c10,event_guest_enterroom,g2>,<c10,c11,event_guest_enterroom,g2>,<c11,c12,event_guest_enterroom,g2>,<c12,c13,event_guest_enterroom,g2>,<c13,c14,event_guest_enterroom,g2>,<c14,c15,event_guest_enterroom,g2>,<c15,c16,event_guest_enterroom,g2>,<c16,c17,event_guest_enterroom,g2>,<c17,c18,event_guest_enterroom,g2>,<c18,c19,event_guest_enterroom,g2>,<c19,c20,event_guest_enterroom,g2>,<c1,c2,event_frontdesk_checkin,fd1>,<c1,c2,event_frontdesk_initialize,fd1>,<c2,c3,event_frontdesk_checkin,fd1>,<c2,c3,event_frontdesk_initialize,fd1>,<c3,c4,event_frontdesk_checkin,fd1>,<c3,c4,event_frontdesk_initialize,fd1>,<c4,c5,event_frontdesk_checkin,fd1>,<c4,c5,event_frontdesk_initialize,fd1>,<c5,c6,event_frontdesk_checkin,fd1>,<c5,c6,event_frontdesk_initialize,fd1>,<c6,c7,event_frontdesk_checkin,fd1>,<c6,c7,event_frontdesk_initialize,fd1>,<c7,c8,event_frontdesk_checkin,fd1>,<c7,c8,event_frontdesk_initialize,fd1>,<c8,c9,event_frontdesk_checkin,fd1>,<c8,c9,event_frontdesk_initialize,fd1>,<c9,c10,event_frontdesk_checkin,fd1>,<c9,c10,event_frontdesk_initialize,fd1>,<c10,c11,event_frontdesk_checkin,fd1>,<c10,c11,event_frontdesk_initialize,fd1>,<c11,c12,event_frontdesk_checkin,fd1>,<c11,c12,event_frontdesk_initialize,fd1>,<c12,c13,event_frontdesk_checkin,fd1>,<c12,c13,event_frontdesk_initialize,fd1>,<c13,c14,event_frontdesk_checkin,fd1>,<c13,c14,event_frontdesk_initialize,fd1>,<c14,c15,event_frontdesk_checkin,fd1>,<c14,c15,event_frontdesk_initialize,fd1>,<c15,c16,event_frontdesk_checkin,fd1>,<c15,c16,event_frontdesk_initialize,fd1>,<c16,c17,event_frontdesk_checkin,fd1>,<c16,c17,event_frontdesk_initialize,fd1>,<c17,c18,event_frontdesk_checkin,fd1>,<c17,c18,event_frontdesk_initialize,fd1>,<c18,c19,event_frontdesk_checkin,fd1>,<c18,c19,event_frontdesk_initialize,fd1>,<c19,c20,event_frontdesk_checkin,fd1>,<c19,c20,event_frontdesk_initialize,fd1>,<c1,c2,event_card_create,ca1>,<c2,c3,event_card_create,ca1>,<c3,c4,event_card_create,ca1>,<c4,c5,event_card_create,ca1>,<c5,c6,event_card_create,ca1>,<c6,c7,event_card_create,ca1>,<c7,c8,event_card_create,ca1>,<c8,c9,event_card_create,ca1>,<c9,c10,event_card_create,ca1>,<c10,c11,event_card_create,ca1>,<c11,c12,event_card_create,ca1>,<c12,c13,event_card_create,ca1>,<c13,c14,event_card_create,ca1>,<c14,c15,event_card_create,ca1>,<c15,c16,event_card_create,ca1>,<c16,c17,event_card_create,ca1>,<c17,c18,event_card_create,ca1>,<c18,c19,event_card_create,ca1>,<c19,c20,event_card_create,ca1>,<c1,c2,event_card_create,ca2>,<c2,c3,event_card_create,ca2>,<c3,c4,event_card_create,ca2>,<c4,c5,event_card_create,ca2>,<c5,c6,event_card_create,ca2>,<c6,c7,event_card_create,ca2>,<c7,c8,event_card_create,ca2>,<c8,c9,event_card_create,ca2>,<c9,c10,event_card_create,ca2>,<c10,c11,event_card_create,ca2>,<c11,c12,event_card_create,ca2>,<c12,c13,event_card_create,ca2>,<c13,c14,event_card_create,ca2>,<c14,c15,event_card_create,ca2>,<c15,c16,event_card_create,ca2>,<c16,c17,event_card_create,ca2>,<c17,c18,event_card_create,ca2>,<c18,c19,event_card_create,ca2>,<c19,c20,event_card_create,ca2>,<c1,c2,event_card_create,ca3>,<c2,c3,event_card_create,ca3>,<c3,c4,event_card_create,ca3>,<c4,c5,event_card_create,ca3>,<c5,c6,event_card_create,ca3>,<c6,c7,event_card_create,ca3>,<c7,c8,event_card_create,ca3>,<c8,c9,event_card_create,ca3>,<c9,c10,event_card_create,ca3>,<c10,c11,event_card_create,ca3>,<c11,c12,event_card_create,ca3>,<c12,c13,event_card_create,ca3>,<c13,c14,event_card_create,ca3>,<c14,c15,event_card_create,ca3>,<c15,c16,event_card_create,ca3>,<c16,c17,event_card_create,ca3>,<c17,c18,event_card_create,ca3>,<c18,c19,event_card_create,ca3>,<c19,c20,event_card_create,ca3>}
+changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c1,c2,g1>,<c1,c2,g2>,<c1,c2,ca2>,<c1,c2,ca3>,<c1,c2,r1>,<c1,c2,fd1>,<c1,c2,ca1>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c2,c3,g1>,<c2,c3,g2>,<c2,c3,ca2>,<c2,c3,ca3>,<c2,c3,r1>,<c2,c3,fd1>,<c2,c3,ca1>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c3,c4,g1>,<c3,c4,g2>,<c3,c4,ca2>,<c3,c4,ca3>,<c3,c4,r1>,<c3,c4,fd1>,<c3,c4,ca1>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c4,c5,g1>,<c4,c5,g2>,<c4,c5,ca2>,<c4,c5,ca3>,<c4,c5,r1>,<c4,c5,fd1>,<c4,c5,ca1>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c5,c6,g1>,<c5,c6,g2>,<c5,c6,ca2>,<c5,c6,ca3>,<c5,c6,r1>,<c5,c6,fd1>,<c5,c6,ca1>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c6,c7,g1>,<c6,c7,g2>,<c6,c7,ca2>,<c6,c7,ca3>,<c6,c7,r1>,<c6,c7,fd1>,<c6,c7,ca1>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c7,c8,g1>,<c7,c8,g2>,<c7,c8,ca2>,<c7,c8,ca3>,<c7,c8,r1>,<c7,c8,fd1>,<c7,c8,ca1>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c8,c9,g1>,<c8,c9,g2>,<c8,c9,ca2>,<c8,c9,ca3>,<c8,c9,r1>,<c8,c9,fd1>,<c8,c9,ca1>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c9,c10,g1>,<c9,c10,g2>,<c9,c10,ca2>,<c9,c10,ca3>,<c9,c10,r1>,<c9,c10,fd1>,<c9,c10,ca1>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c10,c11,g1>,<c10,c11,g2>,<c10,c11,ca2>,<c10,c11,ca3>,<c10,c11,r1>,<c10,c11,fd1>,<c10,c11,ca1>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>,<c11,c12,g1>,<c11,c12,g2>,<c11,c12,ca2>,<c11,c12,ca3>,<c11,c12,r1>,<c11,c12,fd1>,<c11,c12,ca1>,<c12,c13,k1>,<c12,c13,k2>,<c12,c13,k3>,<c12,c13,g1>,<c12,c13,g2>,<c12,c13,ca2>,<c12,c13,ca3>,<c12,c13,r1>,<c12,c13,fd1>,<c12,c13,ca1>,<c13,c14,k1>,<c13,c14,k2>,<c13,c14,k3>,<c13,c14,g1>,<c13,c14,g2>,<c13,c14,ca2>,<c13,c14,ca3>,<c13,c14,r1>,<c13,c14,fd1>,<c13,c14,ca1>,<c14,c15,k1>,<c14,c15,k2>,<c14,c15,k3>,<c14,c15,g1>,<c14,c15,g2>,<c14,c15,ca2>,<c14,c15,ca3>,<c14,c15,r1>,<c14,c15,fd1>,<c14,c15,ca1>,<c15,c16,k1>,<c15,c16,k2>,<c15,c16,k3>,<c15,c16,g1>,<c15,c16,g2>,<c15,c16,ca2>,<c15,c16,ca3>,<c15,c16,r1>,<c15,c16,fd1>,<c15,c16,ca1>,<c16,c17,k1>,<c16,c17,k2>,<c16,c17,k3>,<c16,c17,g1>,<c16,c17,g2>,<c16,c17,ca2>,<c16,c17,ca3>,<c16,c17,r1>,<c16,c17,fd1>,<c16,c17,ca1>,<c17,c18,k1>,<c17,c18,k2>,<c17,c18,k3>,<c17,c18,g1>,<c17,c18,g2>,<c17,c18,ca2>,<c17,c18,ca3>,<c17,c18,r1>,<c17,c18,fd1>,<c17,c18,ca1>,<c18,c19,k1>,<c18,c19,k2>,<c18,c19,k3>,<c18,c19,g1>,<c18,c19,g2>,<c18,c19,ca2>,<c18,c19,ca3>,<c18,c19,r1>,<c18,c19,fd1>,<c18,c19,ca1>,<c19,c20,k1>,<c19,c20,k2>,<c19,c20,k3>,<c19,c20,g1>,<c19,c20,g2>,<c19,c20,ca2>,<c19,c20,ca3>,<c19,c20,r1>,<c19,c20,fd1>,<c19,c20,ca1>}
 
-RoomKey (config:id, instance:id, key:id) <= {<c1,r1,k1>,<c1,r1,k2>,<c1,r1,k3>,<c2,r1,k1>,<c2,r1,k2>,<c2,r1,k3>,<c3,r1,k1>,<c3,r1,k2>,<c3,r1,k3>,<c4,r1,k1>,<c4,r1,k2>,<c4,r1,k3>,<c5,r1,k1>,<c5,r1,k2>,<c5,r1,k3>,<c6,r1,k1>,<c6,r1,k2>,<c6,r1,k3>,<c7,r1,k1>,<c7,r1,k2>,<c7,r1,k3>,<c8,r1,k1>,<c8,r1,k2>,<c8,r1,k3>,<c9,r1,k1>,<c9,r1,k2>,<c9,r1,k3>,<c10,r1,k1>,<c10,r1,k2>,<c10,r1,k3>}
-CardFirst (config:id, instance:id, first:id) <= {<c1,ca1,k1>,<c1,ca1,k2>,<c1,ca1,k3>,<c2,ca1,k1>,<c2,ca1,k2>,<c2,ca1,k3>,<c3,ca1,k1>,<c3,ca1,k2>,<c3,ca1,k3>,<c4,ca1,k1>,<c4,ca1,k2>,<c4,ca1,k3>,<c5,ca1,k1>,<c5,ca1,k2>,<c5,ca1,k3>,<c6,ca1,k1>,<c6,ca1,k2>,<c6,ca1,k3>,<c7,ca1,k1>,<c7,ca1,k2>,<c7,ca1,k3>,<c8,ca1,k1>,<c8,ca1,k2>,<c8,ca1,k3>,<c9,ca1,k1>,<c9,ca1,k2>,<c9,ca1,k3>,<c10,ca1,k1>,<c10,ca1,k2>,<c10,ca1,k3>,<c1,ca2,k1>,<c1,ca2,k2>,<c1,ca2,k3>,<c2,ca2,k1>,<c2,ca2,k2>,<c2,ca2,k3>,<c3,ca2,k1>,<c3,ca2,k2>,<c3,ca2,k3>,<c4,ca2,k1>,<c4,ca2,k2>,<c4,ca2,k3>,<c5,ca2,k1>,<c5,ca2,k2>,<c5,ca2,k3>,<c6,ca2,k1>,<c6,ca2,k2>,<c6,ca2,k3>,<c7,ca2,k1>,<c7,ca2,k2>,<c7,ca2,k3>,<c8,ca2,k1>,<c8,ca2,k2>,<c8,ca2,k3>,<c9,ca2,k1>,<c9,ca2,k2>,<c9,ca2,k3>,<c10,ca2,k1>,<c10,ca2,k2>,<c10,ca2,k3>,<c1,ca3,k1>,<c1,ca3,k2>,<c1,ca3,k3>,<c2,ca3,k1>,<c2,ca3,k2>,<c2,ca3,k3>,<c3,ca3,k1>,<c3,ca3,k2>,<c3,ca3,k3>,<c4,ca3,k1>,<c4,ca3,k2>,<c4,ca3,k3>,<c5,ca3,k1>,<c5,ca3,k2>,<c5,ca3,k3>,<c6,ca3,k1>,<c6,ca3,k2>,<c6,ca3,k3>,<c7,ca3,k1>,<c7,ca3,k2>,<c7,ca3,k3>,<c8,ca3,k1>,<c8,ca3,k2>,<c8,ca3,k3>,<c9,ca3,k1>,<c9,ca3,k2>,<c9,ca3,k3>,<c10,ca3,k1>,<c10,ca3,k2>,<c10,ca3,k3>}
-CardSecond (config:id, instance:id, second:id) <= {<c1,ca1,k1>,<c1,ca1,k2>,<c1,ca1,k3>,<c2,ca1,k1>,<c2,ca1,k2>,<c2,ca1,k3>,<c3,ca1,k1>,<c3,ca1,k2>,<c3,ca1,k3>,<c4,ca1,k1>,<c4,ca1,k2>,<c4,ca1,k3>,<c5,ca1,k1>,<c5,ca1,k2>,<c5,ca1,k3>,<c6,ca1,k1>,<c6,ca1,k2>,<c6,ca1,k3>,<c7,ca1,k1>,<c7,ca1,k2>,<c7,ca1,k3>,<c8,ca1,k1>,<c8,ca1,k2>,<c8,ca1,k3>,<c9,ca1,k1>,<c9,ca1,k2>,<c9,ca1,k3>,<c10,ca1,k1>,<c10,ca1,k2>,<c10,ca1,k3>,<c1,ca2,k1>,<c1,ca2,k2>,<c1,ca2,k3>,<c2,ca2,k1>,<c2,ca2,k2>,<c2,ca2,k3>,<c3,ca2,k1>,<c3,ca2,k2>,<c3,ca2,k3>,<c4,ca2,k1>,<c4,ca2,k2>,<c4,ca2,k3>,<c5,ca2,k1>,<c5,ca2,k2>,<c5,ca2,k3>,<c6,ca2,k1>,<c6,ca2,k2>,<c6,ca2,k3>,<c7,ca2,k1>,<c7,ca2,k2>,<c7,ca2,k3>,<c8,ca2,k1>,<c8,ca2,k2>,<c8,ca2,k3>,<c9,ca2,k1>,<c9,ca2,k2>,<c9,ca2,k3>,<c10,ca2,k1>,<c10,ca2,k2>,<c10,ca2,k3>,<c1,ca3,k1>,<c1,ca3,k2>,<c1,ca3,k3>,<c2,ca3,k1>,<c2,ca3,k2>,<c2,ca3,k3>,<c3,ca3,k1>,<c3,ca3,k2>,<c3,ca3,k3>,<c4,ca3,k1>,<c4,ca3,k2>,<c4,ca3,k3>,<c5,ca3,k1>,<c5,ca3,k2>,<c5,ca3,k3>,<c6,ca3,k1>,<c6,ca3,k2>,<c6,ca3,k3>,<c7,ca3,k1>,<c7,ca3,k2>,<c7,ca3,k3>,<c8,ca3,k1>,<c8,ca3,k2>,<c8,ca3,k3>,<c9,ca3,k1>,<c9,ca3,k2>,<c9,ca3,k3>,<c10,ca3,k1>,<c10,ca3,k2>,<c10,ca3,k3>}
-FrontDeskIssued (config:id, instance:id, issued:id) <= {<c1,fd1,k1>,<c1,fd1,k2>,<c1,fd1,k3>,<c2,fd1,k1>,<c2,fd1,k2>,<c2,fd1,k3>,<c3,fd1,k1>,<c3,fd1,k2>,<c3,fd1,k3>,<c4,fd1,k1>,<c4,fd1,k2>,<c4,fd1,k3>,<c5,fd1,k1>,<c5,fd1,k2>,<c5,fd1,k3>,<c6,fd1,k1>,<c6,fd1,k2>,<c6,fd1,k3>,<c7,fd1,k1>,<c7,fd1,k2>,<c7,fd1,k3>,<c8,fd1,k1>,<c8,fd1,k2>,<c8,fd1,k3>,<c9,fd1,k1>,<c9,fd1,k2>,<c9,fd1,k3>,<c10,fd1,k1>,<c10,fd1,k2>,<c10,fd1,k3>}
-FrontDeskGuests (config:id, instance:id, guests:id) <= {<c1,fd1,g1>,<c1,fd1,g2>,<c2,fd1,g1>,<c2,fd1,g2>,<c3,fd1,g1>,<c3,fd1,g2>,<c4,fd1,g1>,<c4,fd1,g2>,<c5,fd1,g1>,<c5,fd1,g2>,<c6,fd1,g1>,<c6,fd1,g2>,<c7,fd1,g1>,<c7,fd1,g2>,<c8,fd1,g1>,<c8,fd1,g2>,<c9,fd1,g1>,<c9,fd1,g2>,<c10,fd1,g1>,<c10,fd1,g2>}
-GuestCard (config:id, instance:id, card:id) <= {<c1,g1,ca1>,<c1,g1,ca2>,<c1,g1,ca3>,<c2,g1,ca1>,<c2,g1,ca2>,<c2,g1,ca3>,<c3,g1,ca1>,<c3,g1,ca2>,<c3,g1,ca3>,<c4,g1,ca1>,<c4,g1,ca2>,<c4,g1,ca3>,<c5,g1,ca1>,<c5,g1,ca2>,<c5,g1,ca3>,<c6,g1,ca1>,<c6,g1,ca2>,<c6,g1,ca3>,<c7,g1,ca1>,<c7,g1,ca2>,<c7,g1,ca3>,<c8,g1,ca1>,<c8,g1,ca2>,<c8,g1,ca3>,<c9,g1,ca1>,<c9,g1,ca2>,<c9,g1,ca3>,<c10,g1,ca1>,<c10,g1,ca2>,<c10,g1,ca3>,<c1,g2,ca1>,<c1,g2,ca2>,<c1,g2,ca3>,<c2,g2,ca1>,<c2,g2,ca2>,<c2,g2,ca3>,<c3,g2,ca1>,<c3,g2,ca2>,<c3,g2,ca3>,<c4,g2,ca1>,<c4,g2,ca2>,<c4,g2,ca3>,<c5,g2,ca1>,<c5,g2,ca2>,<c5,g2,ca3>,<c6,g2,ca1>,<c6,g2,ca2>,<c6,g2,ca3>,<c7,g2,ca1>,<c7,g2,ca2>,<c7,g2,ca3>,<c8,g2,ca1>,<c8,g2,ca2>,<c8,g2,ca3>,<c9,g2,ca1>,<c9,g2,ca2>,<c9,g2,ca3>,<c10,g2,ca1>,<c10,g2,ca2>,<c10,g2,ca3>}
+GuestCard (config:id, instance:id, card:id) <= {<c1,g1,ca1>,<c1,g1,ca2>,<c1,g1,ca3>,<c2,g1,ca1>,<c2,g1,ca2>,<c2,g1,ca3>,<c3,g1,ca1>,<c3,g1,ca2>,<c3,g1,ca3>,<c4,g1,ca1>,<c4,g1,ca2>,<c4,g1,ca3>,<c5,g1,ca1>,<c5,g1,ca2>,<c5,g1,ca3>,<c6,g1,ca1>,<c6,g1,ca2>,<c6,g1,ca3>,<c7,g1,ca1>,<c7,g1,ca2>,<c7,g1,ca3>,<c8,g1,ca1>,<c8,g1,ca2>,<c8,g1,ca3>,<c9,g1,ca1>,<c9,g1,ca2>,<c9,g1,ca3>,<c10,g1,ca1>,<c10,g1,ca2>,<c10,g1,ca3>,<c11,g1,ca1>,<c11,g1,ca2>,<c11,g1,ca3>,<c12,g1,ca1>,<c12,g1,ca2>,<c12,g1,ca3>,<c13,g1,ca1>,<c13,g1,ca2>,<c13,g1,ca3>,<c14,g1,ca1>,<c14,g1,ca2>,<c14,g1,ca3>,<c15,g1,ca1>,<c15,g1,ca2>,<c15,g1,ca3>,<c16,g1,ca1>,<c16,g1,ca2>,<c16,g1,ca3>,<c17,g1,ca1>,<c17,g1,ca2>,<c17,g1,ca3>,<c18,g1,ca1>,<c18,g1,ca2>,<c18,g1,ca3>,<c19,g1,ca1>,<c19,g1,ca2>,<c19,g1,ca3>,<c20,g1,ca1>,<c20,g1,ca2>,<c20,g1,ca3>,<c1,g2,ca1>,<c1,g2,ca2>,<c1,g2,ca3>,<c2,g2,ca1>,<c2,g2,ca2>,<c2,g2,ca3>,<c3,g2,ca1>,<c3,g2,ca2>,<c3,g2,ca3>,<c4,g2,ca1>,<c4,g2,ca2>,<c4,g2,ca3>,<c5,g2,ca1>,<c5,g2,ca2>,<c5,g2,ca3>,<c6,g2,ca1>,<c6,g2,ca2>,<c6,g2,ca3>,<c7,g2,ca1>,<c7,g2,ca2>,<c7,g2,ca3>,<c8,g2,ca1>,<c8,g2,ca2>,<c8,g2,ca3>,<c9,g2,ca1>,<c9,g2,ca2>,<c9,g2,ca3>,<c10,g2,ca1>,<c10,g2,ca2>,<c10,g2,ca3>,<c11,g2,ca1>,<c11,g2,ca2>,<c11,g2,ca3>,<c12,g2,ca1>,<c12,g2,ca2>,<c12,g2,ca3>,<c13,g2,ca1>,<c13,g2,ca2>,<c13,g2,ca3>,<c14,g2,ca1>,<c14,g2,ca2>,<c14,g2,ca3>,<c15,g2,ca1>,<c15,g2,ca2>,<c15,g2,ca3>,<c16,g2,ca1>,<c16,g2,ca2>,<c16,g2,ca3>,<c17,g2,ca1>,<c17,g2,ca2>,<c17,g2,ca3>,<c18,g2,ca1>,<c18,g2,ca2>,<c18,g2,ca3>,<c19,g2,ca1>,<c19,g2,ca2>,<c19,g2,ca3>,<c20,g2,ca1>,<c20,g2,ca2>,<c20,g2,ca3>}
+RoomKey (config:id, instance:id, key:id) <= {<c1,r1,k1>,<c1,r1,k2>,<c1,r1,k3>,<c2,r1,k1>,<c2,r1,k2>,<c2,r1,k3>,<c3,r1,k1>,<c3,r1,k2>,<c3,r1,k3>,<c4,r1,k1>,<c4,r1,k2>,<c4,r1,k3>,<c5,r1,k1>,<c5,r1,k2>,<c5,r1,k3>,<c6,r1,k1>,<c6,r1,k2>,<c6,r1,k3>,<c7,r1,k1>,<c7,r1,k2>,<c7,r1,k3>,<c8,r1,k1>,<c8,r1,k2>,<c8,r1,k3>,<c9,r1,k1>,<c9,r1,k2>,<c9,r1,k3>,<c10,r1,k1>,<c10,r1,k2>,<c10,r1,k3>,<c11,r1,k1>,<c11,r1,k2>,<c11,r1,k3>,<c12,r1,k1>,<c12,r1,k2>,<c12,r1,k3>,<c13,r1,k1>,<c13,r1,k2>,<c13,r1,k3>,<c14,r1,k1>,<c14,r1,k2>,<c14,r1,k3>,<c15,r1,k1>,<c15,r1,k2>,<c15,r1,k3>,<c16,r1,k1>,<c16,r1,k2>,<c16,r1,k3>,<c17,r1,k1>,<c17,r1,k2>,<c17,r1,k3>,<c18,r1,k1>,<c18,r1,k2>,<c18,r1,k3>,<c19,r1,k1>,<c19,r1,k2>,<c19,r1,k3>,<c20,r1,k1>,<c20,r1,k2>,<c20,r1,k3>}
+CardFirst (config:id, instance:id, first:id) <= {<c1,ca1,k1>,<c1,ca1,k2>,<c1,ca1,k3>,<c2,ca1,k1>,<c2,ca1,k2>,<c2,ca1,k3>,<c3,ca1,k1>,<c3,ca1,k2>,<c3,ca1,k3>,<c4,ca1,k1>,<c4,ca1,k2>,<c4,ca1,k3>,<c5,ca1,k1>,<c5,ca1,k2>,<c5,ca1,k3>,<c6,ca1,k1>,<c6,ca1,k2>,<c6,ca1,k3>,<c7,ca1,k1>,<c7,ca1,k2>,<c7,ca1,k3>,<c8,ca1,k1>,<c8,ca1,k2>,<c8,ca1,k3>,<c9,ca1,k1>,<c9,ca1,k2>,<c9,ca1,k3>,<c10,ca1,k1>,<c10,ca1,k2>,<c10,ca1,k3>,<c11,ca1,k1>,<c11,ca1,k2>,<c11,ca1,k3>,<c12,ca1,k1>,<c12,ca1,k2>,<c12,ca1,k3>,<c13,ca1,k1>,<c13,ca1,k2>,<c13,ca1,k3>,<c14,ca1,k1>,<c14,ca1,k2>,<c14,ca1,k3>,<c15,ca1,k1>,<c15,ca1,k2>,<c15,ca1,k3>,<c16,ca1,k1>,<c16,ca1,k2>,<c16,ca1,k3>,<c17,ca1,k1>,<c17,ca1,k2>,<c17,ca1,k3>,<c18,ca1,k1>,<c18,ca1,k2>,<c18,ca1,k3>,<c19,ca1,k1>,<c19,ca1,k2>,<c19,ca1,k3>,<c20,ca1,k1>,<c20,ca1,k2>,<c20,ca1,k3>,<c1,ca2,k1>,<c1,ca2,k2>,<c1,ca2,k3>,<c2,ca2,k1>,<c2,ca2,k2>,<c2,ca2,k3>,<c3,ca2,k1>,<c3,ca2,k2>,<c3,ca2,k3>,<c4,ca2,k1>,<c4,ca2,k2>,<c4,ca2,k3>,<c5,ca2,k1>,<c5,ca2,k2>,<c5,ca2,k3>,<c6,ca2,k1>,<c6,ca2,k2>,<c6,ca2,k3>,<c7,ca2,k1>,<c7,ca2,k2>,<c7,ca2,k3>,<c8,ca2,k1>,<c8,ca2,k2>,<c8,ca2,k3>,<c9,ca2,k1>,<c9,ca2,k2>,<c9,ca2,k3>,<c10,ca2,k1>,<c10,ca2,k2>,<c10,ca2,k3>,<c11,ca2,k1>,<c11,ca2,k2>,<c11,ca2,k3>,<c12,ca2,k1>,<c12,ca2,k2>,<c12,ca2,k3>,<c13,ca2,k1>,<c13,ca2,k2>,<c13,ca2,k3>,<c14,ca2,k1>,<c14,ca2,k2>,<c14,ca2,k3>,<c15,ca2,k1>,<c15,ca2,k2>,<c15,ca2,k3>,<c16,ca2,k1>,<c16,ca2,k2>,<c16,ca2,k3>,<c17,ca2,k1>,<c17,ca2,k2>,<c17,ca2,k3>,<c18,ca2,k1>,<c18,ca2,k2>,<c18,ca2,k3>,<c19,ca2,k1>,<c19,ca2,k2>,<c19,ca2,k3>,<c20,ca2,k1>,<c20,ca2,k2>,<c20,ca2,k3>,<c1,ca3,k1>,<c1,ca3,k2>,<c1,ca3,k3>,<c2,ca3,k1>,<c2,ca3,k2>,<c2,ca3,k3>,<c3,ca3,k1>,<c3,ca3,k2>,<c3,ca3,k3>,<c4,ca3,k1>,<c4,ca3,k2>,<c4,ca3,k3>,<c5,ca3,k1>,<c5,ca3,k2>,<c5,ca3,k3>,<c6,ca3,k1>,<c6,ca3,k2>,<c6,ca3,k3>,<c7,ca3,k1>,<c7,ca3,k2>,<c7,ca3,k3>,<c8,ca3,k1>,<c8,ca3,k2>,<c8,ca3,k3>,<c9,ca3,k1>,<c9,ca3,k2>,<c9,ca3,k3>,<c10,ca3,k1>,<c10,ca3,k2>,<c10,ca3,k3>,<c11,ca3,k1>,<c11,ca3,k2>,<c11,ca3,k3>,<c12,ca3,k1>,<c12,ca3,k2>,<c12,ca3,k3>,<c13,ca3,k1>,<c13,ca3,k2>,<c13,ca3,k3>,<c14,ca3,k1>,<c14,ca3,k2>,<c14,ca3,k3>,<c15,ca3,k1>,<c15,ca3,k2>,<c15,ca3,k3>,<c16,ca3,k1>,<c16,ca3,k2>,<c16,ca3,k3>,<c17,ca3,k1>,<c17,ca3,k2>,<c17,ca3,k3>,<c18,ca3,k1>,<c18,ca3,k2>,<c18,ca3,k3>,<c19,ca3,k1>,<c19,ca3,k2>,<c19,ca3,k3>,<c20,ca3,k1>,<c20,ca3,k2>,<c20,ca3,k3>}
+CardSecond (config:id, instance:id, second:id) <= {<c1,ca1,k1>,<c1,ca1,k2>,<c1,ca1,k3>,<c2,ca1,k1>,<c2,ca1,k2>,<c2,ca1,k3>,<c3,ca1,k1>,<c3,ca1,k2>,<c3,ca1,k3>,<c4,ca1,k1>,<c4,ca1,k2>,<c4,ca1,k3>,<c5,ca1,k1>,<c5,ca1,k2>,<c5,ca1,k3>,<c6,ca1,k1>,<c6,ca1,k2>,<c6,ca1,k3>,<c7,ca1,k1>,<c7,ca1,k2>,<c7,ca1,k3>,<c8,ca1,k1>,<c8,ca1,k2>,<c8,ca1,k3>,<c9,ca1,k1>,<c9,ca1,k2>,<c9,ca1,k3>,<c10,ca1,k1>,<c10,ca1,k2>,<c10,ca1,k3>,<c11,ca1,k1>,<c11,ca1,k2>,<c11,ca1,k3>,<c12,ca1,k1>,<c12,ca1,k2>,<c12,ca1,k3>,<c13,ca1,k1>,<c13,ca1,k2>,<c13,ca1,k3>,<c14,ca1,k1>,<c14,ca1,k2>,<c14,ca1,k3>,<c15,ca1,k1>,<c15,ca1,k2>,<c15,ca1,k3>,<c16,ca1,k1>,<c16,ca1,k2>,<c16,ca1,k3>,<c17,ca1,k1>,<c17,ca1,k2>,<c17,ca1,k3>,<c18,ca1,k1>,<c18,ca1,k2>,<c18,ca1,k3>,<c19,ca1,k1>,<c19,ca1,k2>,<c19,ca1,k3>,<c20,ca1,k1>,<c20,ca1,k2>,<c20,ca1,k3>,<c1,ca2,k1>,<c1,ca2,k2>,<c1,ca2,k3>,<c2,ca2,k1>,<c2,ca2,k2>,<c2,ca2,k3>,<c3,ca2,k1>,<c3,ca2,k2>,<c3,ca2,k3>,<c4,ca2,k1>,<c4,ca2,k2>,<c4,ca2,k3>,<c5,ca2,k1>,<c5,ca2,k2>,<c5,ca2,k3>,<c6,ca2,k1>,<c6,ca2,k2>,<c6,ca2,k3>,<c7,ca2,k1>,<c7,ca2,k2>,<c7,ca2,k3>,<c8,ca2,k1>,<c8,ca2,k2>,<c8,ca2,k3>,<c9,ca2,k1>,<c9,ca2,k2>,<c9,ca2,k3>,<c10,ca2,k1>,<c10,ca2,k2>,<c10,ca2,k3>,<c11,ca2,k1>,<c11,ca2,k2>,<c11,ca2,k3>,<c12,ca2,k1>,<c12,ca2,k2>,<c12,ca2,k3>,<c13,ca2,k1>,<c13,ca2,k2>,<c13,ca2,k3>,<c14,ca2,k1>,<c14,ca2,k2>,<c14,ca2,k3>,<c15,ca2,k1>,<c15,ca2,k2>,<c15,ca2,k3>,<c16,ca2,k1>,<c16,ca2,k2>,<c16,ca2,k3>,<c17,ca2,k1>,<c17,ca2,k2>,<c17,ca2,k3>,<c18,ca2,k1>,<c18,ca2,k2>,<c18,ca2,k3>,<c19,ca2,k1>,<c19,ca2,k2>,<c19,ca2,k3>,<c20,ca2,k1>,<c20,ca2,k2>,<c20,ca2,k3>,<c1,ca3,k1>,<c1,ca3,k2>,<c1,ca3,k3>,<c2,ca3,k1>,<c2,ca3,k2>,<c2,ca3,k3>,<c3,ca3,k1>,<c3,ca3,k2>,<c3,ca3,k3>,<c4,ca3,k1>,<c4,ca3,k2>,<c4,ca3,k3>,<c5,ca3,k1>,<c5,ca3,k2>,<c5,ca3,k3>,<c6,ca3,k1>,<c6,ca3,k2>,<c6,ca3,k3>,<c7,ca3,k1>,<c7,ca3,k2>,<c7,ca3,k3>,<c8,ca3,k1>,<c8,ca3,k2>,<c8,ca3,k3>,<c9,ca3,k1>,<c9,ca3,k2>,<c9,ca3,k3>,<c10,ca3,k1>,<c10,ca3,k2>,<c10,ca3,k3>,<c11,ca3,k1>,<c11,ca3,k2>,<c11,ca3,k3>,<c12,ca3,k1>,<c12,ca3,k2>,<c12,ca3,k3>,<c13,ca3,k1>,<c13,ca3,k2>,<c13,ca3,k3>,<c14,ca3,k1>,<c14,ca3,k2>,<c14,ca3,k3>,<c15,ca3,k1>,<c15,ca3,k2>,<c15,ca3,k3>,<c16,ca3,k1>,<c16,ca3,k2>,<c16,ca3,k3>,<c17,ca3,k1>,<c17,ca3,k2>,<c17,ca3,k3>,<c18,ca3,k1>,<c18,ca3,k2>,<c18,ca3,k3>,<c19,ca3,k1>,<c19,ca3,k2>,<c19,ca3,k3>,<c20,ca3,k1>,<c20,ca3,k2>,<c20,ca3,k3>}
+FrontDeskIssued (config:id, instance:id, issued:id) <= {<c1,fd1,k1>,<c1,fd1,k2>,<c1,fd1,k3>,<c2,fd1,k1>,<c2,fd1,k2>,<c2,fd1,k3>,<c3,fd1,k1>,<c3,fd1,k2>,<c3,fd1,k3>,<c4,fd1,k1>,<c4,fd1,k2>,<c4,fd1,k3>,<c5,fd1,k1>,<c5,fd1,k2>,<c5,fd1,k3>,<c6,fd1,k1>,<c6,fd1,k2>,<c6,fd1,k3>,<c7,fd1,k1>,<c7,fd1,k2>,<c7,fd1,k3>,<c8,fd1,k1>,<c8,fd1,k2>,<c8,fd1,k3>,<c9,fd1,k1>,<c9,fd1,k2>,<c9,fd1,k3>,<c10,fd1,k1>,<c10,fd1,k2>,<c10,fd1,k3>,<c11,fd1,k1>,<c11,fd1,k2>,<c11,fd1,k3>,<c12,fd1,k1>,<c12,fd1,k2>,<c12,fd1,k3>,<c13,fd1,k1>,<c13,fd1,k2>,<c13,fd1,k3>,<c14,fd1,k1>,<c14,fd1,k2>,<c14,fd1,k3>,<c15,fd1,k1>,<c15,fd1,k2>,<c15,fd1,k3>,<c16,fd1,k1>,<c16,fd1,k2>,<c16,fd1,k3>,<c17,fd1,k1>,<c17,fd1,k2>,<c17,fd1,k3>,<c18,fd1,k1>,<c18,fd1,k2>,<c18,fd1,k3>,<c19,fd1,k1>,<c19,fd1,k2>,<c19,fd1,k3>,<c20,fd1,k1>,<c20,fd1,k2>,<c20,fd1,k3>}
 
-ParamEventRoomUpdateNewKey (cur:id, nxt:id, newKey:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>}
-ParamEventRoomCreateInitialKey (cur:id, nxt:id, initialKey:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>}
-ParamEventRoomCheckKey (cur:id, nxt:id, key:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>}
-ParamEventCardCheckR (cur:id, nxt:id, r:id) <= {<c1,c2,r1>,<c2,c3,r1>,<c3,c4,r1>,<c4,c5,r1>,<c5,c6,r1>,<c6,c7,r1>,<c7,c8,r1>,<c8,c9,r1>,<c9,c10,r1>}
-ParamEventCardEqualFst (cur:id, nxt:id, fst:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>}
-ParamEventCardEqualSnd (cur:id, nxt:id, snd:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>}
-ParamEventCardCreateFst (cur:id, nxt:id, fst:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>}
-ParamEventCardCreateSnd (cur:id, nxt:id, snd:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>}
-ParamEventFrontDeskCheckinFst (cur:id, nxt:id, fst:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>}
-ParamEventFrontDeskCheckinSnd (cur:id, nxt:id, snd:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>}
-ParamEventFrontDeskCheckinC (cur:id, nxt:id, c:id) <= {<c1,c2,ca1>,<c1,c2,ca2>,<c1,c2,ca3>,<c2,c3,ca1>,<c2,c3,ca2>,<c2,c3,ca3>,<c3,c4,ca1>,<c3,c4,ca2>,<c3,c4,ca3>,<c4,c5,ca1>,<c4,c5,ca2>,<c4,c5,ca3>,<c5,c6,ca1>,<c5,c6,ca2>,<c5,c6,ca3>,<c6,c7,ca1>,<c6,c7,ca2>,<c6,c7,ca3>,<c7,c8,ca1>,<c7,c8,ca2>,<c7,c8,ca3>,<c8,c9,ca1>,<c8,c9,ca2>,<c8,c9,ca3>,<c9,c10,ca1>,<c9,c10,ca2>,<c9,c10,ca3>}
-ParamEventFrontDeskCheckinR (cur:id, nxt:id, r:id) <= {<c1,c2,r1>,<c2,c3,r1>,<c3,c4,r1>,<c4,c5,r1>,<c5,c6,r1>,<c6,c7,r1>,<c7,c8,r1>,<c8,c9,r1>,<c9,c10,r1>}
-ParamEventFrontDeskCheckinG (cur:id, nxt:id, g:id) <= {<c1,c2,g1>,<c1,c2,g2>,<c2,c3,g1>,<c2,c3,g2>,<c3,c4,g1>,<c3,c4,g2>,<c4,c5,g1>,<c4,c5,g2>,<c5,c6,g1>,<c5,c6,g2>,<c6,c7,g1>,<c6,c7,g2>,<c7,c8,g1>,<c7,c8,g2>,<c8,c9,g1>,<c8,c9,g2>,<c9,c10,g1>,<c9,c10,g2>}
-ParamEventGuestCheckinCard (cur:id, nxt:id, card:id) <= {<c1,c2,ca1>,<c1,c2,ca2>,<c1,c2,ca3>,<c2,c3,ca1>,<c2,c3,ca2>,<c2,c3,ca3>,<c3,c4,ca1>,<c3,c4,ca2>,<c3,c4,ca3>,<c4,c5,ca1>,<c4,c5,ca2>,<c4,c5,ca3>,<c5,c6,ca1>,<c5,c6,ca2>,<c5,c6,ca3>,<c6,c7,ca1>,<c6,c7,ca2>,<c6,c7,ca3>,<c7,c8,ca1>,<c7,c8,ca2>,<c7,c8,ca3>,<c8,c9,ca1>,<c8,c9,ca2>,<c8,c9,ca3>,<c9,c10,ca1>,<c9,c10,ca2>,<c9,c10,ca3>}
-ParamEventGuestEnterRoomR (cur:id, nxt:id, r:id) <= {<c1,c2,r1>,<c2,c3,r1>,<c3,c4,r1>,<c4,c5,r1>,<c5,c6,r1>,<c6,c7,r1>,<c7,c8,r1>,<c8,c9,r1>,<c9,c10,r1>}
+ParamEventGuestCheckinCard (cur:id, nxt:id, card:id) <= {<c1,c2,ca1>,<c1,c2,ca2>,<c1,c2,ca3>,<c2,c3,ca1>,<c2,c3,ca2>,<c2,c3,ca3>,<c3,c4,ca1>,<c3,c4,ca2>,<c3,c4,ca3>,<c4,c5,ca1>,<c4,c5,ca2>,<c4,c5,ca3>,<c5,c6,ca1>,<c5,c6,ca2>,<c5,c6,ca3>,<c6,c7,ca1>,<c6,c7,ca2>,<c6,c7,ca3>,<c7,c8,ca1>,<c7,c8,ca2>,<c7,c8,ca3>,<c8,c9,ca1>,<c8,c9,ca2>,<c8,c9,ca3>,<c9,c10,ca1>,<c9,c10,ca2>,<c9,c10,ca3>,<c10,c11,ca1>,<c10,c11,ca2>,<c10,c11,ca3>,<c11,c12,ca1>,<c11,c12,ca2>,<c11,c12,ca3>,<c12,c13,ca1>,<c12,c13,ca2>,<c12,c13,ca3>,<c13,c14,ca1>,<c13,c14,ca2>,<c13,c14,ca3>,<c14,c15,ca1>,<c14,c15,ca2>,<c14,c15,ca3>,<c15,c16,ca1>,<c15,c16,ca2>,<c15,c16,ca3>,<c16,c17,ca1>,<c16,c17,ca2>,<c16,c17,ca3>,<c17,c18,ca1>,<c17,c18,ca2>,<c17,c18,ca3>,<c18,c19,ca1>,<c18,c19,ca2>,<c18,c19,ca3>,<c19,c20,ca1>,<c19,c20,ca2>,<c19,c20,ca3>}
+ParamEventGuestEnterRoomR (cur:id, nxt:id, r:id) <= {<c1,c2,r1>,<c2,c3,r1>,<c3,c4,r1>,<c4,c5,r1>,<c5,c6,r1>,<c6,c7,r1>,<c7,c8,r1>,<c8,c9,r1>,<c9,c10,r1>,<c10,c11,r1>,<c11,c12,r1>,<c12,c13,r1>,<c13,c14,r1>,<c14,c15,r1>,<c15,c16,r1>,<c16,c17,r1>,<c17,c18,r1>,<c18,c19,r1>,<c19,c20,r1>}
+ParamEventRoomCheckKey (cur:id, nxt:id, key:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>,<c12,c13,k1>,<c12,c13,k2>,<c12,c13,k3>,<c13,c14,k1>,<c13,c14,k2>,<c13,c14,k3>,<c14,c15,k1>,<c14,c15,k2>,<c14,c15,k3>,<c15,c16,k1>,<c15,c16,k2>,<c15,c16,k3>,<c16,c17,k1>,<c16,c17,k2>,<c16,c17,k3>,<c17,c18,k1>,<c17,c18,k2>,<c17,c18,k3>,<c18,c19,k1>,<c18,c19,k2>,<c18,c19,k3>,<c19,c20,k1>,<c19,c20,k2>,<c19,c20,k3>}
+ParamEventRoomUpdateOldKey (cur:id, nxt:id, oldKey:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>,<c12,c13,k1>,<c12,c13,k2>,<c12,c13,k3>,<c13,c14,k1>,<c13,c14,k2>,<c13,c14,k3>,<c14,c15,k1>,<c14,c15,k2>,<c14,c15,k3>,<c15,c16,k1>,<c15,c16,k2>,<c15,c16,k3>,<c16,c17,k1>,<c16,c17,k2>,<c16,c17,k3>,<c17,c18,k1>,<c17,c18,k2>,<c17,c18,k3>,<c18,c19,k1>,<c18,c19,k2>,<c18,c19,k3>,<c19,c20,k1>,<c19,c20,k2>,<c19,c20,k3>}
+ParamEventRoomUpdateNewKey (cur:id, nxt:id, newKey:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>,<c12,c13,k1>,<c12,c13,k2>,<c12,c13,k3>,<c13,c14,k1>,<c13,c14,k2>,<c13,c14,k3>,<c14,c15,k1>,<c14,c15,k2>,<c14,c15,k3>,<c15,c16,k1>,<c15,c16,k2>,<c15,c16,k3>,<c16,c17,k1>,<c16,c17,k2>,<c16,c17,k3>,<c17,c18,k1>,<c17,c18,k2>,<c17,c18,k3>,<c18,c19,k1>,<c18,c19,k2>,<c18,c19,k3>,<c19,c20,k1>,<c19,c20,k2>,<c19,c20,k3>}
+ParamEventRoomCreateInitialKey (cur:id, nxt:id, initialKey:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>,<c12,c13,k1>,<c12,c13,k2>,<c12,c13,k3>,<c13,c14,k1>,<c13,c14,k2>,<c13,c14,k3>,<c14,c15,k1>,<c14,c15,k2>,<c14,c15,k3>,<c15,c16,k1>,<c15,c16,k2>,<c15,c16,k3>,<c16,c17,k1>,<c16,c17,k2>,<c16,c17,k3>,<c17,c18,k1>,<c17,c18,k2>,<c17,c18,k3>,<c18,c19,k1>,<c18,c19,k2>,<c18,c19,k3>,<c19,c20,k1>,<c19,c20,k2>,<c19,c20,k3>}
+ParamEventCardEqualFst (cur:id, nxt:id, fst:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>,<c12,c13,k1>,<c12,c13,k2>,<c12,c13,k3>,<c13,c14,k1>,<c13,c14,k2>,<c13,c14,k3>,<c14,c15,k1>,<c14,c15,k2>,<c14,c15,k3>,<c15,c16,k1>,<c15,c16,k2>,<c15,c16,k3>,<c16,c17,k1>,<c16,c17,k2>,<c16,c17,k3>,<c17,c18,k1>,<c17,c18,k2>,<c17,c18,k3>,<c18,c19,k1>,<c18,c19,k2>,<c18,c19,k3>,<c19,c20,k1>,<c19,c20,k2>,<c19,c20,k3>}
+ParamEventCardEqualSnd (cur:id, nxt:id, snd:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>,<c12,c13,k1>,<c12,c13,k2>,<c12,c13,k3>,<c13,c14,k1>,<c13,c14,k2>,<c13,c14,k3>,<c14,c15,k1>,<c14,c15,k2>,<c14,c15,k3>,<c15,c16,k1>,<c15,c16,k2>,<c15,c16,k3>,<c16,c17,k1>,<c16,c17,k2>,<c16,c17,k3>,<c17,c18,k1>,<c17,c18,k2>,<c17,c18,k3>,<c18,c19,k1>,<c18,c19,k2>,<c18,c19,k3>,<c19,c20,k1>,<c19,c20,k2>,<c19,c20,k3>}
+ParamEventCardCreateFst (cur:id, nxt:id, fst:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>,<c12,c13,k1>,<c12,c13,k2>,<c12,c13,k3>,<c13,c14,k1>,<c13,c14,k2>,<c13,c14,k3>,<c14,c15,k1>,<c14,c15,k2>,<c14,c15,k3>,<c15,c16,k1>,<c15,c16,k2>,<c15,c16,k3>,<c16,c17,k1>,<c16,c17,k2>,<c16,c17,k3>,<c17,c18,k1>,<c17,c18,k2>,<c17,c18,k3>,<c18,c19,k1>,<c18,c19,k2>,<c18,c19,k3>,<c19,c20,k1>,<c19,c20,k2>,<c19,c20,k3>}
+ParamEventCardCreateSnd (cur:id, nxt:id, snd:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>,<c12,c13,k1>,<c12,c13,k2>,<c12,c13,k3>,<c13,c14,k1>,<c13,c14,k2>,<c13,c14,k3>,<c14,c15,k1>,<c14,c15,k2>,<c14,c15,k3>,<c15,c16,k1>,<c15,c16,k2>,<c15,c16,k3>,<c16,c17,k1>,<c16,c17,k2>,<c16,c17,k3>,<c17,c18,k1>,<c17,c18,k2>,<c17,c18,k3>,<c18,c19,k1>,<c18,c19,k2>,<c18,c19,k3>,<c19,c20,k1>,<c19,c20,k2>,<c19,c20,k3>}
+ParamEventCardCheckR (cur:id, nxt:id, r:id) <= {<c1,c2,r1>,<c2,c3,r1>,<c3,c4,r1>,<c4,c5,r1>,<c5,c6,r1>,<c6,c7,r1>,<c7,c8,r1>,<c8,c9,r1>,<c9,c10,r1>,<c10,c11,r1>,<c11,c12,r1>,<c12,c13,r1>,<c13,c14,r1>,<c14,c15,r1>,<c15,c16,r1>,<c16,c17,r1>,<c17,c18,r1>,<c18,c19,r1>,<c19,c20,r1>}
+ParamEventFrontDeskCheckinFst (cur:id, nxt:id, fst:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>,<c12,c13,k1>,<c12,c13,k2>,<c12,c13,k3>,<c13,c14,k1>,<c13,c14,k2>,<c13,c14,k3>,<c14,c15,k1>,<c14,c15,k2>,<c14,c15,k3>,<c15,c16,k1>,<c15,c16,k2>,<c15,c16,k3>,<c16,c17,k1>,<c16,c17,k2>,<c16,c17,k3>,<c17,c18,k1>,<c17,c18,k2>,<c17,c18,k3>,<c18,c19,k1>,<c18,c19,k2>,<c18,c19,k3>,<c19,c20,k1>,<c19,c20,k2>,<c19,c20,k3>}
+ParamEventFrontDeskCheckinSnd (cur:id, nxt:id, snd:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>,<c12,c13,k1>,<c12,c13,k2>,<c12,c13,k3>,<c13,c14,k1>,<c13,c14,k2>,<c13,c14,k3>,<c14,c15,k1>,<c14,c15,k2>,<c14,c15,k3>,<c15,c16,k1>,<c15,c16,k2>,<c15,c16,k3>,<c16,c17,k1>,<c16,c17,k2>,<c16,c17,k3>,<c17,c18,k1>,<c17,c18,k2>,<c17,c18,k3>,<c18,c19,k1>,<c18,c19,k2>,<c18,c19,k3>,<c19,c20,k1>,<c19,c20,k2>,<c19,c20,k3>}
+ParamEventFrontDeskCheckinC (cur:id, nxt:id, c:id) <= {<c1,c2,ca1>,<c1,c2,ca2>,<c1,c2,ca3>,<c2,c3,ca1>,<c2,c3,ca2>,<c2,c3,ca3>,<c3,c4,ca1>,<c3,c4,ca2>,<c3,c4,ca3>,<c4,c5,ca1>,<c4,c5,ca2>,<c4,c5,ca3>,<c5,c6,ca1>,<c5,c6,ca2>,<c5,c6,ca3>,<c6,c7,ca1>,<c6,c7,ca2>,<c6,c7,ca3>,<c7,c8,ca1>,<c7,c8,ca2>,<c7,c8,ca3>,<c8,c9,ca1>,<c8,c9,ca2>,<c8,c9,ca3>,<c9,c10,ca1>,<c9,c10,ca2>,<c9,c10,ca3>,<c10,c11,ca1>,<c10,c11,ca2>,<c10,c11,ca3>,<c11,c12,ca1>,<c11,c12,ca2>,<c11,c12,ca3>,<c12,c13,ca1>,<c12,c13,ca2>,<c12,c13,ca3>,<c13,c14,ca1>,<c13,c14,ca2>,<c13,c14,ca3>,<c14,c15,ca1>,<c14,c15,ca2>,<c14,c15,ca3>,<c15,c16,ca1>,<c15,c16,ca2>,<c15,c16,ca3>,<c16,c17,ca1>,<c16,c17,ca2>,<c16,c17,ca3>,<c17,c18,ca1>,<c17,c18,ca2>,<c17,c18,ca3>,<c18,c19,ca1>,<c18,c19,ca2>,<c18,c19,ca3>,<c19,c20,ca1>,<c19,c20,ca2>,<c19,c20,ca3>}
+ParamEventFrontDeskCheckinR (cur:id, nxt:id, r:id) <= {<c1,c2,r1>,<c2,c3,r1>,<c3,c4,r1>,<c4,c5,r1>,<c5,c6,r1>,<c6,c7,r1>,<c7,c8,r1>,<c8,c9,r1>,<c9,c10,r1>,<c10,c11,r1>,<c11,c12,r1>,<c12,c13,r1>,<c13,c14,r1>,<c14,c15,r1>,<c15,c16,r1>,<c16,c17,r1>,<c17,c18,r1>,<c18,c19,r1>,<c19,c20,r1>}
+ParamEventFrontDeskCheckinG (cur:id, nxt:id, g:id) <= {<c1,c2,g1>,<c1,c2,g2>,<c2,c3,g1>,<c2,c3,g2>,<c3,c4,g1>,<c3,c4,g2>,<c4,c5,g1>,<c4,c5,g2>,<c5,c6,g1>,<c5,c6,g2>,<c6,c7,g1>,<c6,c7,g2>,<c7,c8,g1>,<c7,c8,g2>,<c8,c9,g1>,<c8,c9,g2>,<c9,c10,g1>,<c9,c10,g2>,<c10,c11,g1>,<c10,c11,g2>,<c11,c12,g1>,<c11,c12,g2>,<c12,c13,g1>,<c12,c13,g2>,<c13,c14,g1>,<c13,c14,g2>,<c14,c15,g1>,<c14,c15,g2>,<c15,c16,g1>,<c15,c16,g2>,<c16,c17,g1>,<c16,c17,g2>,<c17,c18,g1>,<c17,c18,g2>,<c18,c19,g1>,<c18,c19,g2>,<c19,c20,g1>,<c19,c20,g2>}
 
 // Generic 'Type' constraints
 order ⊆ Config[config as cur] ⨯ Config[config as nxt]
@@ -76,14 +76,16 @@ instanceInState ⊆ Instance[instance] ⨯ Config ⨯ State
 changedInstance ⊆ order ⨯ Instance[instance]
     
 // Machine specific `type` constraints
+GuestCard  ⊆ Config ⨯ (Instance ⨝ Guest)[instance] ⨯ (Instance ⨝ Card)[instance->card]
 RoomKey  ⊆ Config ⨯ (Instance ⨝ Room)[instance] ⨯ (Instance ⨝ Key)[instance->key]
 CardFirst  ⊆ Config ⨯ (Instance ⨝ Card)[instance] ⨯ (Instance ⨝ Key)[instance->first]
 CardSecond  ⊆ Config ⨯ (Instance ⨝ Card)[instance] ⨯ (Instance ⨝ Key)[instance->second]
 FrontDeskIssued  ⊆ Config ⨯ (Instance ⨝ FrontDesk)[instance] ⨯ (Instance ⨝ Key)[instance->issued]
-FrontDeskGuests  ⊆ Config ⨯ (Instance ⨝ FrontDesk)[instance] ⨯ (Instance ⨝ Guest)[instance->guests]
-GuestCard  ⊆ Config ⨯ (Instance ⨝ Guest)[instance] ⨯ (Instance ⨝ Card)[instance->card]
 
+ParamEventGuestCheckinCard ⊆ order ⨯ (Instance ⨝ Card)[instance->card]
+ParamEventGuestEnterRoomR ⊆ order ⨯ (Instance ⨝ Room)[instance->r]
 ParamEventRoomCreateInitialKey ⊆ order ⨯ (Instance ⨝ Key)[instance->initialKey]
+ParamEventRoomUpdateOldKey ⊆ order ⨯ (Instance ⨝ Key)[instance->oldKey]
 ParamEventRoomUpdateNewKey ⊆ order ⨯ (Instance ⨝ Key)[instance->newKey]
 ParamEventRoomCheckKey ⊆ order ⨯ (Instance ⨝ Key)[instance->key]
 ParamEventCardCreateFst ⊆ order ⨯ (Instance ⨝ Key)[instance->fst]
@@ -96,12 +98,13 @@ ParamEventFrontDeskCheckinSnd ⊆ order ⨯ (Instance ⨝ Key)[instance->snd]
 ParamEventFrontDeskCheckinC ⊆ order ⨯ (Instance ⨝ Card)[instance->c]
 ParamEventFrontDeskCheckinR ⊆ order ⨯ (Instance ⨝ Room)[instance->r]
 ParamEventFrontDeskCheckinG ⊆ order ⨯ (Instance ⨝ Guest)[instance->g]
-ParamEventGuestCheckinCard ⊆ order ⨯ (Instance ⨝ Card)[instance->card]
-ParamEventGuestEnterRoomR ⊆ order ⨯ (Instance ⨝ Room)[instance->r]
 
 // Specific per event
 ∀ step ∈ order ⨝ raisedEvent | (
+  (some (step ⨝ EventGuestCheckin) ⇔ one (step ⨝ ParamEventGuestCheckinCard)) ∧
+  (some (step ⨝ EventGuestEnterRoom) ⇔ one (step ⨝ ParamEventGuestEnterRoomR)) ∧
   (some (step ⨝ EventRoomCreate) ⇔ one (step ⨝ ParamEventRoomCreateInitialKey)) ∧
+  (some (step ⨝ EventRoomUpdate) ⇔ one (step ⨝ ParamEventRoomUpdateOldKey)) ∧
   (some (step ⨝ EventRoomUpdate) ⇔ one (step ⨝ ParamEventRoomUpdateNewKey)) ∧
   (some (step ⨝ EventRoomCheck) ⇔ one (step ⨝ ParamEventRoomCheckKey)) ∧
   (some (step ⨝ EventCardCreate) ⇔ one (step ⨝ ParamEventCardCreateFst)) ∧
@@ -113,9 +116,7 @@ ParamEventGuestEnterRoomR ⊆ order ⨯ (Instance ⨝ Room)[instance->r]
   (some (step ⨝ EventFrontDeskCheckin) ⇔ one (step ⨝ ParamEventFrontDeskCheckinSnd)) ∧
   (some (step ⨝ EventFrontDeskCheckin) ⇔ one (step ⨝ ParamEventFrontDeskCheckinC)) ∧
   (some (step ⨝ EventFrontDeskCheckin) ⇔ one (step ⨝ ParamEventFrontDeskCheckinR)) ∧
-  (some (step ⨝ EventFrontDeskCheckin) ⇔ one (step ⨝ ParamEventFrontDeskCheckinG)) ∧
-  (some (step ⨝ EventGuestCheckin) ⇔ one (step ⨝ ParamEventGuestCheckinCard)) ∧
-  (some (step ⨝ EventGuestEnterRoom) ⇔ one (step ⨝ ParamEventGuestEnterRoomR))
+  (some (step ⨝ EventFrontDeskCheckin) ⇔ one (step ⨝ ParamEventFrontDeskCheckinG))
 )
 
 // Generic: All configurations are reachable
@@ -128,6 +129,8 @@ ParamEventGuestEnterRoomR ⊆ order ⨯ (Instance ⨝ Room)[instance->r]
 ∀ c ∈ Config, inst ∈ Instance | one instanceInState ⨝ c ⨝ inst
 
 // Specific per machine: In every configuration iff a machine is in an initialized state then it must have values
+∀ c ∈ Config, inst ∈ (Instance ⨝ Guest)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no GuestCard ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Guest)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one GuestCard ⨝ c ⨝ inst)
 ∀ c ∈ Config, inst ∈ (Instance ⨝ Room)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no RoomKey ⨝ c ⨝ inst)
 ∀ c ∈ Config, inst ∈ (Instance ⨝ Room)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one RoomKey ⨝ c ⨝ inst)
 ∀ c ∈ Config, inst ∈ (Instance ⨝ Card)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no CardFirst ⨝ c ⨝ inst)
@@ -135,9 +138,6 @@ ParamEventGuestEnterRoomR ⊆ order ⨯ (Instance ⨝ Room)[instance->r]
 ∀ c ∈ Config, inst ∈ (Instance ⨝ Card)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no CardSecond ⨝ c ⨝ inst)
 ∀ c ∈ Config, inst ∈ (Instance ⨝ Card)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one CardSecond ⨝ c ⨝ inst)
 ∀ c ∈ Config, inst ∈ (Instance ⨝ FrontDesk)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no FrontDeskIssued ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ FrontDesk)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no FrontDeskGuests ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Guest)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no GuestCard ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Guest)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one GuestCard ⨝ c ⨝ inst)
 
 
 // Generic: Transitions are only allowed between if an event is specified between two states
@@ -150,7 +150,68 @@ pred forceState[curState: (state:id), nxtState: (state:id), raisedEvent: (event:
 pred inState[config: (config:id), instance: (instance:id), state: (state:id)]
   = ((instance ⨯ config) ⨝ instanceInState)[state] ⊆ state
 
-pred eventRoomUpdate[step:(cur:id, nxt:id), room: (instance:id), newKey: (newKey:id)]
+pred eventGuestCheckin[step:(cur:id, nxt:id), guest: (instance:id), card: (card:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ guest)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ guest)[state],
+        curCard = (cur ⨝ GuestCard ⨝ guest)[card],
+        nxtCard = (nxt ⨝ GuestCard ⨝ guest)[card] |
+    ( 
+       
+      // Postconditions
+      nxtCard = card  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventGuestCheckin] ∧
+      // Make sure this instance is in the change set
+      guest ⊆ (changedInstance ⨝ step)[instance]
+    )
+
+pred eventGuestEnterRoom[step:(cur:id, nxt:id), guest: (instance:id), r: (r:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ guest)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ guest)[state],
+        curCard = (cur ⨝ GuestCard ⨝ guest)[card],
+        nxtCard = (nxt ⨝ GuestCard ⨝ guest)[card] |
+    ( 
+      // Preconditions 
+      eventCardCheck[step, curCard[card as instance], r]  ∧ 
+      // Postconditions
+      nxtCard = curCard  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventGuestEnterRoom] ∧
+      // Make sure this instance is in the change set
+      guest ⊆ (changedInstance ⨝ step)[instance]
+    )
+
+pred frameGuest[step: (cur:id, nxt:id), guest: (instance:id)] 
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ guest)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ guest)[state],
+        curCard = (cur ⨝ GuestCard ⨝ guest)[card],
+        nxtCard = (nxt ⨝ GuestCard ⨝ guest)[card] | (
+    nxtState = curState ∧
+    (
+      curState ⊆ uninitialized ∨ 
+      (// Postconditions
+       nxtCard = curCard)
+    )
+  )
+
+
+pred possibleTransitionsGuest[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ Guest)[instance] |
+    (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
+      (eventGuestEnterRoom[step,inst,(step ⨝ ParamEventGuestEnterRoomR)[r]] ∧
+      (step ⨝ raisedEvent)[event] = EventGuestEnterRoom ∧
+      let cur = step[cur->config], card = (GuestCard ⨝ cur ⨝ inst)[card -> instance], r = (ParamEventGuestEnterRoomR ⨝ step)[r -> instance] | (changedInstance ⨝ step)[instance] ⊆ inst ∪ card ∪ r)
+    ))
+    ∧
+    (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameGuest[step, inst])
+
+pred eventRoomCheck[step:(cur:id, nxt:id), room: (instance:id), key: (key:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
         curState = (instanceInState ⨝ cur ⨝ room)[state],
@@ -158,7 +219,26 @@ pred eventRoomUpdate[step:(cur:id, nxt:id), room: (instance:id), newKey: (newKey
         curKey = (cur ⨝ RoomKey ⨝ room)[key],
         nxtKey = (nxt ⨝ RoomKey ⨝ room)[key] |
     ( 
-       
+      // Preconditions 
+      curKey = key  ∧ 
+      // Postconditions
+      nxtKey = curKey  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventRoomCheck] ∧
+      // Make sure this instance is in the change set
+      room ⊆ (changedInstance ⨝ step)[instance]
+    )
+
+pred eventRoomUpdate[step:(cur:id, nxt:id), room: (instance:id), oldKey: (oldKey:id), newKey: (newKey:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ room)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ room)[state],
+        curKey = (cur ⨝ RoomKey ⨝ room)[key],
+        nxtKey = (nxt ⨝ RoomKey ⨝ room)[key] |
+    ( 
+      // Preconditions 
+      curKey = oldKey[oldKey as key]  ∧ 
       // Postconditions
       nxtKey = newKey[newKey as key]  ∧ 
       // Generic event conditions
@@ -199,24 +279,6 @@ pred frameRoom[step: (cur:id, nxt:id), room: (instance:id)]
     )
   )
 
-pred eventRoomCheck[step:(cur:id, nxt:id), room: (instance:id), key: (key:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ room)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ room)[state],
-        curKey = (cur ⨝ RoomKey ⨝ room)[key],
-        nxtKey = (nxt ⨝ RoomKey ⨝ room)[key] |
-    ( 
-      // Preconditions 
-      curKey = key  ∧ 
-      // Postconditions
-      nxtKey = curKey  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventRoomCheck] ∧
-      // Make sure this instance is in the change set
-      room ⊆ (changedInstance ⨝ step)[instance]
-    )
-
 
 pred possibleTransitionsRoom[step: (cur:id, nxt:id)] 
   = ∀ inst ∈ (Instance ⨝ Room)[instance] |
@@ -227,27 +289,6 @@ pred possibleTransitionsRoom[step: (cur:id, nxt:id)]
     ))
     ∧
     (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameRoom[step, inst])
-
-pred eventCardCheck[step:(cur:id, nxt:id), card: (instance:id), r: (r:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ card)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ card)[state],
-        curFirst = (cur ⨝ CardFirst ⨝ card)[first],
-        nxtFirst = (nxt ⨝ CardFirst ⨝ card)[first],
-        curSecond = (cur ⨝ CardSecond ⨝ card)[second],
-        nxtSecond = (nxt ⨝ CardSecond ⨝ card)[second] |
-    ( 
-      // Preconditions 
-      (eventRoomCheck[step, r[r as instance], curSecond[second as key]] ∨ ((eventRoomCheck[step, r[r as instance], curFirst[first as key]] ∧ eventRoomUpdate[step, r[r as instance], curSecond[second as newKey]])))  ∧ 
-      // Postconditions
-      nxtSecond = curSecond ∧
-      nxtFirst = curFirst  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventCardCheck] ∧
-      // Make sure this instance is in the change set
-      card ⊆ (changedInstance ⨝ step)[instance]
-    )
 
 pred frameCard[step: (cur:id, nxt:id), card: (instance:id)] 
   = let cur = step[cur->config],
@@ -309,6 +350,27 @@ pred eventCardCreate[step:(cur:id, nxt:id), card: (instance:id), fst: (fst:id), 
       card ⊆ (changedInstance ⨝ step)[instance]
     )
 
+pred eventCardCheck[step:(cur:id, nxt:id), card: (instance:id), r: (r:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ card)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ card)[state],
+        curFirst = (cur ⨝ CardFirst ⨝ card)[first],
+        nxtFirst = (nxt ⨝ CardFirst ⨝ card)[first],
+        curSecond = (cur ⨝ CardSecond ⨝ card)[second],
+        nxtSecond = (nxt ⨝ CardSecond ⨝ card)[second] |
+    ( 
+      // Preconditions 
+      (eventRoomCheck[step, r[r as instance], curSecond[second as key]] ∨ eventRoomUpdate[step, r[r as instance], curFirst[first as oldKey], curSecond[second as newKey]])  ∧ 
+      // Postconditions
+      nxtSecond = curSecond ∧
+      nxtFirst = curFirst  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventCardCheck] ∧
+      // Make sure this instance is in the change set
+      card ⊆ (changedInstance ⨝ step)[instance]
+    )
+
 
 pred possibleTransitionsCard[step: (cur:id, nxt:id)] 
   = ∀ inst ∈ (Instance ⨝ Card)[instance] |
@@ -320,23 +382,22 @@ pred possibleTransitionsCard[step: (cur:id, nxt:id)]
     ∧
     (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameCard[step, inst])
 
-pred frameFrontDesk[step: (cur:id, nxt:id), frontdesk: (instance:id)] 
+pred eventFrontDeskInitialize[step:(cur:id, nxt:id), frontdesk: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
         curState = (instanceInState ⨝ cur ⨝ frontdesk)[state],
         nxtState = (instanceInState ⨝ nxt ⨝ frontdesk)[state],
         curIssued = (cur ⨝ FrontDeskIssued ⨝ frontdesk)[issued],
-        nxtIssued = (nxt ⨝ FrontDeskIssued ⨝ frontdesk)[issued],
-        curGuests = (cur ⨝ FrontDeskGuests ⨝ frontdesk)[guests],
-        nxtGuests = (nxt ⨝ FrontDeskGuests ⨝ frontdesk)[guests] | (
-    nxtState = curState ∧
-    (
-      curState ⊆ uninitialized ∨ 
-      (// Postconditions
-       nxtIssued = curIssued ∧
-       nxtGuests = curGuests)
+        nxtIssued = (nxt ⨝ FrontDeskIssued ⨝ frontdesk)[issued] |
+    ( 
+       
+      // Postconditions
+      no nxtIssued  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventFrontDeskInitialize] ∧
+      // Make sure this instance is in the change set
+      frontdesk ⊆ (changedInstance ⨝ step)[instance]
     )
-  )
 
 pred eventFrontDeskCheckin[step:(cur:id, nxt:id), frontdesk: (instance:id), fst: (fst:id), snd: (snd:id), c: (c:id), r: (r:id), g: (g:id)]
   = let cur = step[cur->config],
@@ -344,128 +405,60 @@ pred eventFrontDeskCheckin[step:(cur:id, nxt:id), frontdesk: (instance:id), fst:
         curState = (instanceInState ⨝ cur ⨝ frontdesk)[state],
         nxtState = (instanceInState ⨝ nxt ⨝ frontdesk)[state],
         curIssued = (cur ⨝ FrontDeskIssued ⨝ frontdesk)[issued],
-        nxtIssued = (nxt ⨝ FrontDeskIssued ⨝ frontdesk)[issued],
-        curGuests = (cur ⨝ FrontDeskGuests ⨝ frontdesk)[guests],
-        nxtGuests = (nxt ⨝ FrontDeskGuests ⨝ frontdesk)[guests] |
+        nxtIssued = (nxt ⨝ FrontDeskIssued ⨝ frontdesk)[issued] |
     ( 
       // Preconditions 
       eventGuestCheckin[step, g[g as instance], c[c as card]] ∧
       eventRoomCheck[step, r[r as instance], fst[fst as key]] ∧
       eventCardEqual[step, c[c as instance], fst, snd] ∧
-      no (curIssued ∩ snd[snd -> issued]) ∧
-      no (curGuests ∩ g[g -> guests])  ∧ 
+      no (curIssued ∩ snd[snd -> issued])  ∧ 
       // Postconditions
-      nxtIssued = curIssued + (snd[snd as issued]) ∧
-      nxtGuests = curGuests + (g[g as guests])  ∧ 
+      nxtIssued = (curIssued + (snd[snd as issued])) + (fst[fst as issued])  ∧ 
       // Generic event conditions
       forceState[curState, nxtState, EventFrontDeskCheckin] ∧
       // Make sure this instance is in the change set
       frontdesk ⊆ (changedInstance ⨝ step)[instance]
     )
 
-pred eventFrontDeskInitialize[step:(cur:id, nxt:id), frontdesk: (instance:id)]
+pred frameFrontDesk[step: (cur:id, nxt:id), frontdesk: (instance:id)] 
   = let cur = step[cur->config],
         nxt = step[nxt->config],
         curState = (instanceInState ⨝ cur ⨝ frontdesk)[state],
         nxtState = (instanceInState ⨝ nxt ⨝ frontdesk)[state],
         curIssued = (cur ⨝ FrontDeskIssued ⨝ frontdesk)[issued],
-        nxtIssued = (nxt ⨝ FrontDeskIssued ⨝ frontdesk)[issued],
-        curGuests = (cur ⨝ FrontDeskGuests ⨝ frontdesk)[guests],
-        nxtGuests = (nxt ⨝ FrontDeskGuests ⨝ frontdesk)[guests] |
-    ( 
-       
-      // Postconditions
-      no nxtIssued ∧
-      no nxtGuests  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventFrontDeskInitialize] ∧
-      // Make sure this instance is in the change set
-      frontdesk ⊆ (changedInstance ⨝ step)[instance]
+        nxtIssued = (nxt ⨝ FrontDeskIssued ⨝ frontdesk)[issued] | (
+    nxtState = curState ∧
+    (
+      curState ⊆ uninitialized ∨ 
+      (// Postconditions
+       nxtIssued = curIssued)
     )
+  )
 
 
 pred possibleTransitionsFrontDesk[step: (cur:id, nxt:id)] 
   = ∀ inst ∈ (Instance ⨝ FrontDesk)[instance] |
     (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
-      (eventFrontDeskCheckin[step,inst,(step ⨝ ParamEventFrontDeskCheckinFst)[fst],(step ⨝ ParamEventFrontDeskCheckinSnd)[snd],(step ⨝ ParamEventFrontDeskCheckinC)[c],(step ⨝ ParamEventFrontDeskCheckinR)[r],(step ⨝ ParamEventFrontDeskCheckinG)[g]] ∧
-      (step ⨝ raisedEvent)[event] = EventFrontDeskCheckin ∧
-      let cur = step[cur->config], r = (ParamEventFrontDeskCheckinR ⨝ step)[r -> instance], c = (ParamEventFrontDeskCheckinC ⨝ step)[c -> instance], g = (ParamEventFrontDeskCheckinG ⨝ step)[g -> instance] | (changedInstance ⨝ step)[instance] ⊆ c ∪ inst ∪ g ∪ r)
-      ∨
       (eventFrontDeskInitialize[step,inst] ∧
       (step ⨝ raisedEvent)[event] = EventFrontDeskInitialize ∧
       (changedInstance ⨝ step)[instance] ⊆ inst)
+      ∨
+      (eventFrontDeskCheckin[step,inst,(step ⨝ ParamEventFrontDeskCheckinFst)[fst],(step ⨝ ParamEventFrontDeskCheckinSnd)[snd],(step ⨝ ParamEventFrontDeskCheckinC)[c],(step ⨝ ParamEventFrontDeskCheckinR)[r],(step ⨝ ParamEventFrontDeskCheckinG)[g]] ∧
+      (step ⨝ raisedEvent)[event] = EventFrontDeskCheckin ∧
+      let cur = step[cur->config], c = (ParamEventFrontDeskCheckinC ⨝ step)[c -> instance], g = (ParamEventFrontDeskCheckinG ⨝ step)[g -> instance], r = (ParamEventFrontDeskCheckinR ⨝ step)[r -> instance] | (changedInstance ⨝ step)[instance] ⊆ c ∪ inst ∪ g ∪ r)
     ))
     ∧
     (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameFrontDesk[step, inst])
 
-pred eventGuestCheckin[step:(cur:id, nxt:id), guest: (instance:id), card: (card:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ guest)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ guest)[state],
-        curCard = (cur ⨝ GuestCard ⨝ guest)[card],
-        nxtCard = (nxt ⨝ GuestCard ⨝ guest)[card] |
-    ( 
-       
-      // Postconditions
-      nxtCard = card  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventGuestCheckin] ∧
-      // Make sure this instance is in the change set
-      guest ⊆ (changedInstance ⨝ step)[instance]
-    )
-
-pred eventGuestEnterRoom[step:(cur:id, nxt:id), guest: (instance:id), r: (r:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ guest)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ guest)[state],
-        curCard = (cur ⨝ GuestCard ⨝ guest)[card],
-        nxtCard = (nxt ⨝ GuestCard ⨝ guest)[card] |
-    ( 
-      // Preconditions 
-      eventCardCheck[step, curCard[card as instance], r]  ∧ 
-      // Postconditions
-      nxtCard = curCard  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventGuestEnterRoom] ∧
-      // Make sure this instance is in the change set
-      guest ⊆ (changedInstance ⨝ step)[instance]
-    )
-
-pred frameGuest[step: (cur:id, nxt:id), guest: (instance:id)] 
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ guest)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ guest)[state],
-        curCard = (cur ⨝ GuestCard ⨝ guest)[card],
-        nxtCard = (nxt ⨝ GuestCard ⨝ guest)[card] | (
-    nxtState = curState ∧
-    (
-      curState ⊆ uninitialized ∨ 
-      (// Postconditions
-       nxtCard = curCard)
-    )
-  )
-
-
-pred possibleTransitionsGuest[step: (cur:id, nxt:id)] 
-  = ∀ inst ∈ (Instance ⨝ Guest)[instance] |
-    (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
-      (eventGuestEnterRoom[step,inst,(step ⨝ ParamEventGuestEnterRoomR)[r]] ∧
-      (step ⨝ raisedEvent)[event] = EventGuestEnterRoom ∧
-      let cur = step[cur->config], card = (GuestCard ⨝ cur ⨝ inst)[card -> instance], r = (ParamEventCardCheckR ⨝ step)[r -> instance], r = (ParamEventCardCheckR ⨝ step)[r -> instance] | (changedInstance ⨝ step)[instance] ⊆ inst ∪ card ∪ r)
-    ))
-    ∧
-    (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameGuest[step, inst])
-
 
 // Transition function
-∀ step ∈ order | possibleTransitionsRoom[step] ∧ possibleTransitionsCard[step] ∧ possibleTransitionsFrontDesk[step] ∧ possibleTransitionsGuest[step]
+∀ step ∈ order | possibleTransitionsGuest[step] ∧ possibleTransitionsRoom[step] ∧ possibleTransitionsCard[step] ∧ possibleTransitionsFrontDesk[step]
 
 // Asserts: this is where the checks get added
 ∃ step1 ∈ order, g1 ∈ (Guest ⨝ Instance)[instance], g2 ∈ ((Guest ⨝ Instance)[instance] ∖ g1) | let step2 = (order ⨝ step1[nxt->cur]), step3 = (order ⨝ step2[nxt->cur]) | 
-  (raisedEvent ⨝ step1)[instance,event] = (g1 ⨯ EventGuestEnterRoom)
+  ((raisedEvent ⨝ step1)[instance,event] = (g1 ⨯ EventGuestEnterRoom) ∧ 
+   (raisedEvent ⨝ step2)[instance,event] = (g2 ⨯ EventGuestEnterRoom) ∧ 
+   (raisedEvent ⨝ step3)[instance,event] = (g1 ⨯ EventGuestEnterRoom))
 
 // Minimize the number of steps by minimizing the number of Configurations
 objectives: minimize Config[count()]
