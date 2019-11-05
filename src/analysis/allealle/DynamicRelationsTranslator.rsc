@@ -104,7 +104,7 @@ private str buildRaisedEventsRel(rel[Spec spc, str instance] instances, int numb
   = "raisedEvent (cur:id, nxt:id, event:id, instance:id) \<= {<intercalate(",", [tups | <spc, i> <- instances, str tups := buildRaisedEventsTuples(spc, i, numberOfTransitions), tups != ""])>}";
 
 private str buildRaisedEventsTuples(Spec spc, str instance, int numberOfTransitions)
-  = intercalate(",", ["\<c<c>,c<c+1>,<event>,<instance>\>" | int c <- [1..numberOfTransitions], str event <- lookupEventNames(spc)]);
+  = intercalate(",", ["\<c<c>,c<c+1>,<event>,<instance>\>" | int c <- [1..numberOfTransitions], str event <- lookupRaisableEventName(spc)]);
 
 private str buildConfigRels(int numberOfTransitions)
   = "Config (config:id) \>= {\<c1\>} \<= {<intercalate(",", ["\<c<i>\>" | int i <- [1..numberOfTransitions+1]])>}

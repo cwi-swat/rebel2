@@ -93,7 +93,7 @@ void collect(current: (State)`<Id name>`, Collector c) {
 
 void collect(current: (State)`(*)`, Collector c) {}
 
-void collect(current: (Event)`<Initial? init> event <Id name>(<{FormalParam ","}* formals>) <EventBody body>`, Collector c) {
+void collect(current: (Event)`<Modifier? modi> event <Id name>(<{FormalParam ","}* formals>) <EventBody body>`, Collector c) {
   list[Id] fp = [f.name | f <- formals];
   
   c.define("<name>", eventId(), current, defType(fp, 
@@ -104,7 +104,7 @@ void collect(current: (Event)`<Initial? init> event <Id name>(<{FormalParam ","}
   c.enterScope(current);
     c.push("eventName", "<name>");
     
-    if (/(Initial)`init` := init) {
+    if (/(Modifier)`init` := modi) {
       c.setScopeInfo(c.getScope(), eventScope(), initialEvent());
     }
       

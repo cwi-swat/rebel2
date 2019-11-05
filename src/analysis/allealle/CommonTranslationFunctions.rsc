@@ -142,6 +142,10 @@ set[str] lookupInstances(Spec spc, rel[Spec spc, str instance] instances)
 set[str] lookupEventNames(Spec spc)
   = {"event_<specName>_<ev>" | Event event <- lookupEvents(spc), str ev := toLowerCase(replaceAll("<event.name>", "::", "_"))}
   when str specName := toLowerCase("<spc.name>");
+  
+set[str] lookupRaisableEventName(Spec spc)  
+  = {"event_<specName>_<ev>" | Event event <- lookupEvents(spc), !isInternalEvent(event), str ev := toLowerCase(replaceAll("<event.name>", "::", "_"))}
+  when str specName := toLowerCase("<spc.name>");
 
 //@memo
 set[Event] lookupEvents(Spec spc) = {e | /Event e := spc.events};
@@ -168,3 +172,8 @@ bool isPrim(Type tipe, TModel tm) { throw "No type information found for `<tipe>
 
 bool isPrim(intType()) = true;
 bool isPrim(AType _) = false; 
+
+bool isInternalEvent(TransEvent te, Spec s) = isInternalEvent(lookupEventByName("<te>", s), s);
+default bool isInternalEvent(TransEvent te, Spec s) { throw "Unable to find event with name `<te>` in `<s.name>`"; }  
+
+bool isInternalEvent(Event e) = /(Modifier)`internal` := e.modi;

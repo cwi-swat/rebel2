@@ -37,14 +37,14 @@ str constructTransitionFunction(Spec spc, Graph[SyncedWith] syncDep, Config cfg)
            '<if (lets.syncs != []) {>let <intercalate(", ", lets.syncs)> | <}>(changedInstance ⨝ step)[instance] ⊆ <intercalate(" ∪ ", [*lets.names])>)";
   }
   
-  list[str] eventTrans = [buildTransCond(e) | Event e <- lookupEvents(spc), !isFrameEvent(e)];
+  list[str] eventTrans = [buildTransCond(e) | Event e <- lookupEvents(spc), !isFrameEvent(e), !isInternalEvent(e)];
   
   return "pred possibleTransitions<getCapitalizedSpecName(spc)>[step: (cur:id, nxt:id)] 
          '  = ∀ inst ∈ (Instance ⨝ <getCapitalizedSpecName(spc)>)[instance] |
-         '    (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
+         '    <if (eventTrans != []) {>(some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
          '      <intercalate("\n∨\n", eventTrans)>
          '    ))
-         '    ∧
+         '    ∧<}>
          '    (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frame<getCapitalizedSpecName(spc)>[step, inst])
          '"; 
 }

@@ -95,3 +95,4 @@ private str convertToState((State)`(*)`, str _) = "state_finalized";
 private default str convertToState(rebel::lang::SpecSyntax::State st, str spec) = convertState(st, spec);
 
 private str convertState(rebel::lang::SpecSyntax::State st, str spec) = "state_<spec>_<toLowerCase("<st>")>";   
+  

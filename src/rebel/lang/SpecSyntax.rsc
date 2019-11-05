@@ -26,11 +26,13 @@ syntax Constraint
   ;
   
 syntax Event
-  = Initial? "event" Id name "(" {FormalParam ","}* params ")" EventBody body 
+  = Modifier? modi "event" Id name "(" {FormalParam ","}* params ")" EventBody body 
   ;
 
-syntax Initial
-  = "init";
+syntax Modifier
+  = "init"
+  | "internal"
+  ;
   
 syntax FormalParam
   = Id name ":" Type tipe

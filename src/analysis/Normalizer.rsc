@@ -46,7 +46,7 @@ Spec normalize(Spec spc) {
 Event createFrameEvent(Spec spc) {
   str frameCond = "<intercalate(",\n", ["this.<f.name>\' = this.<f.name>" | /Field f <- spc.fields])>";
                   
-  return [Event]"event __frame() 
+  return [Event]"internal event __frame() 
                 '<if (frameCond != "") {>  post: <frameCond>;<}>
                 '";                  
 }

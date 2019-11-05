@@ -9,27 +9,28 @@ spec Card
   init event create(fst: Key, snd: Key) 
     post: this.first' = fst, this.second' = snd;
   
-  event equal(fst: Key, snd: Key)
+  internal event equal(fst: Key, snd: Key)
     pre: this.first = fst, this.second = snd;
-  
-  event checkFirst(key: Key) 
-    pre: this.first = key; 
     
-  event checkSecond(key: Key)
-    pre: this.second = key;
+  internal event check(r: Room) 
+    pre: r.check(this.second) || (r.check(this.first) && r.update(this.second));  
     
   states:
     (*) -> created: create;
-    created -> created: checkFirst, checkSecond, equal;
+    created -> created: equal, check;
   
 spec Guest
   card: Card;
  
-  event checkin(card: Card)
+  internal event checkin(card: Card)
     post: this.card' = card; 
-    
+  
+  event enterRoom(r: Room)
+    pre: this.card.check(r);
+      
   states:
     (*) -> checkedin: checkin;
+    checkedin -> checkedin: enterRoom;
 
 spec Room
   key: Key;
@@ -37,15 +38,15 @@ spec Room
   init event create(initialKey: Key) 
     post: this.key' = initialKey; 
     
-  event update(newKey: Key) 
+  internal event update(newKey: Key) 
     post: this.key' = newKey;  
   
-  event checkKey(key: Key)
+  internal event check(key: Key) 
     pre: this.key = key; 
   
   states:
     (*) -> created: create;
-    created -> created: update, checkKey;
+    created -> created: update, check;
   
 spec FrontDesk
   issued: set Key,
@@ -54,12 +55,12 @@ spec FrontDesk
   init event initialize()
     post: this.issued' = {}, this.guests' = {};
     
-  event checkin(fst: Key, snd: Key, c: Card, room: Room, g: Guest)
+  event checkin(fst: Key, snd: Key, c: Card, r: Room, g: Guest)
     pre: 
       g.checkin(c),
-      room.checkKey(fst),
-      c.checkFirst(fst), 
-      snd notin this.issued, 
+      r.check(fst),
+      c.equal(fst,snd), 
+      snd notin this.issued,   
       g notin this.guests;
     post: 
       this.issued' = this.issued + snd,
