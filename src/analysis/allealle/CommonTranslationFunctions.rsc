@@ -36,12 +36,6 @@ str getCapitalizedParamName(FormalParam p) = capitalize("<p.name>");
 str getCapitalizedFieldName(Field f) = capitalize("<f.name>");
 
 //@memo
-str getOnePrimStateVectorName(Spec spc) = "SV<getCapitalizedSpecName(spc)>OnePrims";
-
-//@memo
-str getMultStateVectorName(Spec spc, Field fld) = "SV<getCapitalizedSpecName(spc)><capitalize("<fld.name>")>";
-
-//@memo
 list[str] getInstancesOfType(Type tipe, rel[Spec spc, str instance] instances, TModel tm) 
   = ["<i.instance>" | i <- instances, "<i.spc.name>" == getSpecOfType(tipe, tm)];
 

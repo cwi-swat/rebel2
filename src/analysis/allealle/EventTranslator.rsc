@@ -365,7 +365,7 @@ private str translateSetRelExpr(loc current, Expr lhs, Expr rhs, str op, Context
   str rhsFieldName = getFieldName(rhs, ctx);
   ctx.addHeader(current, (lhsFieldName : type2Str(getType(lhs, ctx.cfg.tm))));
   
-  return "<lhsRes> <op> (<rhsRes><maybeRename(rhsFieldName, lhsFieldName)>)";
+  return "(<lhsRes> <op> (<rhsRes><maybeRename(rhsFieldName, lhsFieldName)>))";
 }
 
 str translateAttrExpr((Expr)`(<Expr e>)`, Context ctx) = "(<translateAttrExpr(e,ctx,prefix)>)"; 

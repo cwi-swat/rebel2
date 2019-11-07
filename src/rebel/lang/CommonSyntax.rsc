@@ -49,10 +49,10 @@ syntax Expr
   | "now" "." Id
   > nextVal: Expr "\'"
   > "-" Expr
-  > right Expr lhs "*" Expr rhs
-  | right Expr lhs "/" Expr rhs
-  > right Expr lhs "+" Expr rhs
-  | right Expr lhs "-" Expr rhs 
+  > assoc Expr lhs "*" Expr rhs
+  | non-assoc Expr lhs "/" Expr rhs
+  > assoc Expr lhs "+" Expr rhs
+  | non-assoc Expr lhs "-" Expr rhs
   ; 
   
 syntax Lit

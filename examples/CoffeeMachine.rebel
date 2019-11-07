@@ -1,10 +1,12 @@
 module CoffeeMachine
 
 spec CoffeeMachine
+  //accepts: set Integer,
   amountNeeded: Integer;
    
   init event powerOn() 
     post: 
+      //this.accepts' = {} + 5 + 10 + 20 + 50,
       this.amountNeeded' = 0;
     
   event powerOff()

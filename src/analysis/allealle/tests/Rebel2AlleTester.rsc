@@ -171,5 +171,5 @@ void translateHotel() {
   
   str twoCheckedInGuests = "∃ c ∈ Config, g1 ∈ (Guest ⨝ Instance)[instance], g2 ∈ (Guest ⨝ Instance)[instance] ∖ g1 | ((g1 ⨝ instanceInState ⨝ c)[state] ⊆ initialized ∧ (g2 ⨝ instanceInState ⨝ c)[state] ⊆ initialized)";
    
-  translateSpecs(config(instances, initialValues, tm, 20), noIntruder);
+  translateSpecs(config(instances, initialValues, tm, 12), noIntruder);
 }

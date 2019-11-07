@@ -10,15 +10,17 @@ import analysis::allealle::ConstraintsTranslator;
 import analysis::allealle::CommonTranslationFunctions;
 import util::PathUtil;
 
-import ide::CombinedModelFinder; // From AlleAlle
-import ide::CombinedSyntax;      // From AlleAlle
+import ModelFinder;              // From AlleAlle
+import translation::Syntax;      // From AlleAlle
+import translation::AST;         // From AlleAlle
+import translation::SMTInterface;// From AlleAlle
 import ide::Parser;              // From AlleAlle
-import ide::CombinedAST;         // From AlleAlle
-import ide::CombinedImploder;    // From AlleAlle
+import ide::Imploder;            // From AlleAlle
 import util::ModelPrinter;       // From AlleAlle
-import smtlogic::Core;              // From AlleAlle
-import smtlogic::Ints;              // From AlleAlle
-  
+import smtlogic::Core;           // From AlleAlle
+import smtlogic::Ints;           // From AlleAlle
+import smtlogic::Strings;        // From AlleAlle
+
 import IO;  
 import Set;
 import String;

@@ -22,7 +22,7 @@ spec Card
 spec Guest
   card: Card;
  
-  internal event checkin(card: Card)
+  event checkin(card: Card)
     post: this.card' = card; 
   
   event enterRoom(r: Room)
@@ -56,7 +56,7 @@ spec FrontDesk
     post: this.issued' = {};
     
   event checkin(fst: Key, snd: Key, c: Card, r: Room, g: Guest)
-    pre: 
+    pre:  
       g.checkin(c),
       r.check(fst),
       c.equal(fst,snd), 
