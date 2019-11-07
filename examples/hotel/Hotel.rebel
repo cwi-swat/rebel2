@@ -22,7 +22,8 @@ spec Card
 spec Guest
   card: Card;
  
-  event checkin(card: Card)
+  internal event checkin(card: Card)
+    pre: card is initialized;
     post: this.card' = card; 
   
   event enterRoom(r: Room)
@@ -50,10 +51,11 @@ spec Room
     created -> created: update, check;
   
 spec FrontDesk
+  name: String,
   issued: set Key;
     
-  init event initialize()
-    post: this.issued' = {};
+  event initialize()
+    post: this.issued' = {}, this.name' = "Hilton";
     
   event checkin(fst: Key, snd: Key, c: Card, r: Room, g: Guest)
     pre:  

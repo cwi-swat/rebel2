@@ -6,7 +6,7 @@ spec PingPong
   
   init event start(name: String)
     post: 
-      this.name' = name,
+      this.name' = "MyPingPongMachine",
       this.times' = 0;
   
   event hit()
