@@ -49,24 +49,19 @@ str getSpecOfType(Type tipe, TModel tm) {
   }
 }
 
-bool isAttributeType(Expr expr, TModel tm) {
-  switch (getType(expr, tm)) {
-    case intType() : return true;
-    default: return false;
-  }
-}
+bool isAttributeType(intType()) = true;
+bool isAttributeType(stringType()) = true;
+default bool isAttributeType(AType tipe) = false;
 
-bool isAttributeType(FormalParam p, TModel tm) {
-  switch (getType(p, tm)) {
-    case intType() : return true;
-    default: return false;
-  }
-}
+bool isAttributeType(Expr expr, TModel tm) = isAttributeType(getType(expr, tm));
+bool isAttributeType(FormalParam p, TModel tm) = isAttributeType(getType(p, tm));
 
 str type2Str(intType()) = "int";
+str type2Str(stringType()) = "str";
 default str type2Str(AType t) = "id"; 
 
 str convertType((Type)`Integer`) = "int";
+str convertType((Type)`String`) = "str";
 default str convertType(Type t) = "id";
 
 AType getType(Field f, TModel tm) = tm.facts[f.name@\loc] when f.name@\loc in tm.facts;
@@ -165,6 +160,7 @@ bool isPrim(Type tipe, TModel tm) = isPrim(t) when tipe@\loc in tm.facts, AType 
 bool isPrim(Type tipe, TModel tm) { throw "No type information found for `<tipe>`"; }
 
 bool isPrim(intType()) = true;
+bool isPrim(stringType()) = true;
 bool isPrim(AType _) = false; 
 
 bool isInternalEvent(TransEvent te, Spec s) = isInternalEvent(lookupEventByName("<te>", s), s);

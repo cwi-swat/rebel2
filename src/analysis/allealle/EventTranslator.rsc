@@ -385,4 +385,4 @@ str translateAttrExpr((Expr)`<Expr lhs> - <Expr rhs>`, Context ctx) = "<translat
 default str translateAttrExpr(Expr e, Context ctx) { throw "Can not translate expression `<e>` at location <e@\loc>"; }
 
 str translateLit((Lit)`<Int i>`) = "<i>";
-str translateLit((Lit)`<StringConstant s>`) { throw "Not yet supported"; }
+str translateLit((Lit)`<StringConstant s>`) = "<s>";

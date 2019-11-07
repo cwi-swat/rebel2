@@ -1,10 +1,12 @@
 module PingPong
 
 spec PingPong 
+  name: String,
   times: Integer;
   
-  init event start() 
+  init event start(name: String)
     post: 
+      this.name' = name,
       this.times' = 0;
   
   event hit()
