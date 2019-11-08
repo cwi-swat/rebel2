@@ -20,7 +20,7 @@ spec Leader
   event complete()
   
   event hitAll() 
-    pre: forall f:this.followers | f.hit();
+    pre: exists f:this.followers | f.hit();
     post: this.nrOfHits' = this.nrOfHits + 1;
   
   states:

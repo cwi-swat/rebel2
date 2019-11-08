@@ -149,11 +149,11 @@ str translateFrameEvent(Spec spc, Event frameEvent, str instRel, Config cfg) {
 
   return "pred frame<getCapitalizedSpecName(spc)>[step: (cur:id, nxt:id), <getLowerCaseSpecName(spc)>: (instance:id)] 
          '  = let <intercalate(",\n", letRels)> | (
-         '    nxtState = curState ∧
+         '    nxtState = curState <if (/Field f := spc.fields) {>∧
          '    (
          '      curState ⊆ uninitialized ∨ 
          '      (<translatePost(frameEvent, ctx(lookupHeader, addHeader, cfg))>)
-         '    )
+         '    )<}>
          '  )
          '";
 }
@@ -211,6 +211,8 @@ private str translatePost(Event event, Context ctx)
 private default str translatePost(Event event, Context ctx) = "";     
 
 str translate((Formula)`(<Formula f>)`, Context ctx) = "(<translate(f,ctx)>)";
+
+str translate((Formula)`!<Formula f>`, Context ctx) = "not (<translate(f,ctx)>)";
 
 str getFieldName(Expr expr, Context ctx) {
   RelHeader header = ctx.lookupHeader(expr@\loc);
@@ -294,6 +296,9 @@ str translate((Formula)`<Expr lhs> \< <Expr rhs>`,  Context ctx) = translateRest
 str translate((Formula)`<Expr lhs> \<= <Expr rhs>`, Context ctx) = translateRestrictionEq(lhs, rhs, "\<=", ctx);
 str translate((Formula)`<Expr lhs> \>= <Expr rhs>`, Context ctx) = translateRestrictionEq(lhs, rhs, "\>=", ctx);
 str translate((Formula)`<Expr lhs> \> <Expr rhs>`,  Context ctx) = translateRestrictionEq(lhs, rhs, "\>",  ctx);
+
+str translate((Formula)`if <Formula cond> then <Formula then> else <Formula \else>`,  Context ctx) 
+  = translate((Formula)`(<Formula cond> =\> <Formula then>) && (!(<Formula cond>) =\> <Formula \else>)`, ctx);
 
 default str translate(Formula f, Context ctx) { throw "No translation function implemented yet for `<f>`"; }
 

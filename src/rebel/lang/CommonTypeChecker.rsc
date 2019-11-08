@@ -133,6 +133,11 @@ void collect(current: (Formula)`( <Formula f> )`, Collector c) {
   collect(f, c);
 }
 
+void collect(current: (Formula)`!<Formula f>`, Collector c) {
+  c.fact(current, f);
+  collect(f, c);
+}
+
 void collect(current: (Formula)`<Formula lhs> && <Formula rhs>`, Collector c) {
   c.fact(current, boolType());
   collect(lhs, rhs, c);
@@ -151,6 +156,11 @@ void collect(current: (Formula)`<Formula lhs> =\> <Formula rhs>`, Collector c) {
 void collect(current: (Formula)`<Formula lhs> \<=\> <Formula rhs>`, Collector c) {
   c.fact(current, boolType());
   collect(lhs, rhs, c);
+}
+
+void collect(current: (Formula)`if <Formula cond> then <Formula then> else <Formula els>`, Collector c) {
+  c.fact(current, boolType());
+  collect(cond, then, els, c);
 }
 
 private void collectQuant([], Formula f, Collector c) { 

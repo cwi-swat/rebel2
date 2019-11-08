@@ -143,9 +143,9 @@ void translateMultiFollowers() {
 }
 
 void translateHotel() {
-  normalize(parseModule(|project://rebel2/examples/hotel/Hotel.rebel|));
+  normalize(parseModule(|project://rebel2/examples/Hotel.rebel|));
   
-  Module normalizedHotel = parseModule(|project://rebel2/bin/normalized/hotel/Hotel.rebel|);
+  Module normalizedHotel = parseModule(|project://rebel2/bin/normalized/Hotel.rebel|);
   
   TModel tm = rebelTModelFromTree(normalizedHotel, debug = false, pathConf = normPathConfig());
   
@@ -172,4 +172,28 @@ void translateHotel() {
   str twoCheckedInGuests = "∃ c ∈ Config, g1 ∈ (Guest ⨝ Instance)[instance], g2 ∈ (Guest ⨝ Instance)[instance] ∖ g1 | ((g1 ⨝ instanceInState ⨝ c)[state] ⊆ initialized ∧ (g2 ⨝ instanceInState ⨝ c)[state] ⊆ initialized)";
    
   translateSpecs(config(instances, initialValues, tm, 12), noIntruder);
+}
+
+void translateRopeBridge() {
+  normalize(parseModule(|project://rebel2/examples/RopeBridge.rebel|));
+  
+  Module normalizedRB = parseModule(|project://rebel2/bin/normalized/RopeBridge.rebel|);
+  
+  TModel tm = rebelTModelFromTree(normalizedRB, debug = false, pathConf = normPathConfig());
+  
+  instances = {<getSpec(normalizedRB, "Traveller"), "t1", state("near")>,
+               <getSpec(normalizedRB, "Traveller"), "t2", state("near")>,
+                <getSpec(normalizedRB, "Traveller"), "t3", state("near")>,
+                <getSpec(normalizedRB, "Traveller"), "t4", state("near")>,
+               <getSpec(normalizedRB, "FlashLight"), "fl1", state("near")>};
+
+  initialValues = {<getSpec(normalizedRB, "Traveller"), "t1", "timeToCross", "1">,
+                   <getSpec(normalizedRB, "Traveller"), "t2", "timeToCross", "2">,
+                   <getSpec(normalizedRB, "Traveller"), "t3", "timeToCross", "5">,
+                   <getSpec(normalizedRB, "Traveller"), "t4", "timeToCross", "10">,
+                   <getSpec(normalizedRB, "FlashLight"), "fl1", "totalTimeSpend", "0">};
+
+  str everyBodyCrossed = "exists c: Config | ((forall t ∈ (Instance ⨝ Traveller)[instance] | (instanceInState ⨝ t ⨝ c)[state] ⊆ StateTravellerFar) && (some (FlashLightTotalTimeSpend |x| c) where totalTimeSpend = 17))"; 
+   
+  translateSpecs(config(instances, initialValues, tm, 7), everyBodyCrossed);
 }

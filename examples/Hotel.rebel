@@ -1,4 +1,4 @@
-module hotel::Hotel
+module Hotel
 
 spec Key
 
@@ -51,11 +51,10 @@ spec Room
     created -> created: update, check;
   
 spec FrontDesk
-  name: String,
   issued: set Key;
     
   event initialize()
-    post: this.issued' = {}, this.name' = "Hilton";
+    post: this.issued' = {};
     
   event checkin(fst: Key, snd: Key, c: Card, r: Room, g: Guest)
     pre:  

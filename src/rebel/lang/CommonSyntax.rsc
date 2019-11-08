@@ -16,6 +16,7 @@ syntax QualifiedName = {Id "::"}+ names !>> "::";
 
 syntax Formula
   = brackets: "(" Formula ")"
+  > "!" Formula form
   > sync: Expr spc "." Id event  "(" {Expr ","}* params ")" 
   | inState: Expr "is" Id
   | membership: Expr "in" Expr
@@ -32,6 +33,7 @@ syntax Formula
   | right Formula "||" Formula
   > right Formula "=\>" Formula
   | right Formula "\<=\>" Formula
+  | non-assoc "if" Formula cond "then" Formula then "else" Formula else
   ;
 
 syntax Formula
@@ -93,5 +95,8 @@ keyword Keywords = "module"
                  | "forall"
                  | "exists"
                  | "__noop"
+                 | "if"
+                 | "then"
+                 | "else"
                  ;
  

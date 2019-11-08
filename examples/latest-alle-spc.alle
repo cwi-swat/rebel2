@@ -1,74 +1,49 @@
 // Static configuration of state machines
 // Define the specs that can take place in the transition system
-Card (spec:id) = {<card>}
-Key (spec:id) = {<key>}
-Guest (spec:id) = {<guest>}
-Room (spec:id) = {<room>}
-FrontDesk (spec:id) = {<frontdesk>}
+FlashLight (spec:id) = {<flashlight>}
+Traveller (spec:id) = {<traveller>}
 
 // Define all possible states for all machines
-State (state:id) = {<state_uninitialized>,<state_finalized>,<state_card_created>,<state_guest_checkedin>,<state_room_created>,<state_frontdesk_open>}
-initialized (state:id) = {<state_card_created>,<state_guest_checkedin>,<state_room_created>,<state_frontdesk_open>}
+State (state:id) = {<state_uninitialized>,<state_finalized>,<state_flashlight_near>,<state_flashlight_far>,<state_traveller_near>,<state_traveller_far>}
+initialized (state:id) = {<state_flashlight_near>,<state_flashlight_far>,<state_traveller_near>,<state_traveller_far>}
 finalized (state:id) = {<state_finalized>}
 uninitialized (state:id) = {<state_uninitialized>}
-StateCardCreated (state:id) = {<state_card_created>}
-
-StateGuestCheckedin (state:id) = {<state_guest_checkedin>}
-StateRoomCreated (state:id) = {<state_room_created>}
-StateFrontDeskOpen (state:id) = {<state_frontdesk_open>}
+StateFlashLightNear (state:id) = {<state_flashlight_near>}StateFlashLightFar (state:id) = {<state_flashlight_far>}
+StateTravellerNear (state:id) = {<state_traveller_near>}StateTravellerFar (state:id) = {<state_traveller_far>}
 
 // Define which transitions are allowed (in the form of `from a state` -> ` via an event` -> `to a state`
-allowedTransitions (from:id, to:id, event:id) = {<state_card_created,state_card_created,event_card_equal>,<state_uninitialized,state_card_created,event_card_create>,<state_card_created,state_card_created,event_card_check>,<state_uninitialized,state_guest_checkedin,event_guest_checkin>,<state_guest_checkedin,state_guest_checkedin,event_guest_enterroom>,<state_uninitialized,state_room_created,event_room_create>,<state_room_created,state_room_created,event_room_update>,<state_room_created,state_room_created,event_room_check>,<state_uninitialized,state_frontdesk_open,event_frontdesk_initialize>,<state_frontdesk_open,state_frontdesk_open,event_frontdesk_checkin>}
+allowedTransitions (from:id, to:id, event:id) = {<state_flashlight_far,state_flashlight_near,event_flashlight_crossfartonear>,<state_uninitialized,state_flashlight_near,event_flashlight_initialize>,<state_flashlight_near,state_flashlight_far,event_flashlight_crossneartofar>,<state_uninitialized,state_traveller_near,event_traveller_initialize>,<state_traveller_near,state_traveller_far,event_traveller_cross>,<state_traveller_far,state_traveller_near,event_traveller_cross>}
 // Define each event as single relation so that the events can be used as variables in the constraints 
-EventCardCreate (event:id) = {<event_card_create>}
-EventCardEqual (event:id) = {<event_card_equal>}
-EventCard__frame (event:id) = {<event_card___frame>}
-EventRoom__frame (event:id) = {<event_room___frame>}
-EventFrontDesk__frame (event:id) = {<event_frontdesk___frame>}
-EventFrontDeskCheckin (event:id) = {<event_frontdesk_checkin>}
-EventFrontDeskInitialize (event:id) = {<event_frontdesk_initialize>}
-EventRoomUpdate (event:id) = {<event_room_update>}
-EventRoomCreate (event:id) = {<event_room_create>}
-EventGuestEnterRoom (event:id) = {<event_guest_enterroom>}
-EventGuest__frame (event:id) = {<event_guest___frame>}
-EventGuestCheckin (event:id) = {<event_guest_checkin>}
-EventCardCheck (event:id) = {<event_card_check>}
-EventRoomCheck (event:id) = {<event_room_check>}
+EventFlashLight__frame (event:id) = {<event_flashlight___frame>}
+EventTravellerInitialize (event:id) = {<event_traveller_initialize>}
+EventTravellerCross (event:id) = {<event_traveller_cross>}
+EventTraveller__frame (event:id) = {<event_traveller___frame>}
+EventFlashLightInitialize (event:id) = {<event_flashlight_initialize>}
+EventFlashLightCrossNearToFar (event:id) = {<event_flashlight_crossneartofar>}
+EventFlashLightCrossFarToNear (event:id) = {<event_flashlight_crossfartonear>}
 
 
 // Dynamic configuration of state machines
-Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>,<c9>,<c10>,<c11>,<c12>}
-order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>,<c6,c7>,<c7,c8>,<c8,c9>,<c9,c10>,<c10,c11>,<c11,c12>}
+Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>}
+order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>,<c6,c7>}
 InitialConfig (config:id) = {<c1>}
 
-Instance (spec:id, instance:id) = {<room,r1>,<card,ca1>,<card,ca2>,<guest,g2>,<key,k3>,<key,k2>,<key,k1>,<frontdesk,fd1>,<card,ca3>,<guest,g1>}
-instanceInState (config:id, instance:id, state:id) >= {<c1,r1,state_uninitialized>,<c1,ca1,state_uninitialized>,<c1,ca2,state_uninitialized>,<c1,g2,state_uninitialized>,<c1,k3,state_uninitialized>,<c1,k2,state_uninitialized>,<c1,k1,state_uninitialized>,<c1,fd1,state_uninitialized>,<c1,ca3,state_uninitialized>,<c1,g1,state_uninitialized>}<= {<c1,ca1,state_card_created>,<c1,ca1,state_uninitialized>,<c1,ca1,state_finalized>,<c1,ca2,state_card_created>,<c1,ca2,state_uninitialized>,<c1,ca2,state_finalized>,<c1,ca3,state_card_created>,<c1,ca3,state_uninitialized>,<c1,ca3,state_finalized>,<c1,k1,state_uninitialized>,<c1,k2,state_uninitialized>,<c1,k3,state_uninitialized>,<c1,g1,state_uninitialized>,<c1,g1,state_guest_checkedin>,<c1,g1,state_finalized>,<c1,g2,state_uninitialized>,<c1,g2,state_guest_checkedin>,<c1,g2,state_finalized>,<c1,r1,state_uninitialized>,<c1,r1,state_room_created>,<c1,r1,state_finalized>,<c1,fd1,state_uninitialized>,<c1,fd1,state_frontdesk_open>,<c1,fd1,state_finalized>,<c2,ca1,state_card_created>,<c2,ca1,state_uninitialized>,<c2,ca1,state_finalized>,<c2,ca2,state_card_created>,<c2,ca2,state_uninitialized>,<c2,ca2,state_finalized>,<c2,ca3,state_card_created>,<c2,ca3,state_uninitialized>,<c2,ca3,state_finalized>,<c2,k1,state_uninitialized>,<c2,k2,state_uninitialized>,<c2,k3,state_uninitialized>,<c2,g1,state_uninitialized>,<c2,g1,state_guest_checkedin>,<c2,g1,state_finalized>,<c2,g2,state_uninitialized>,<c2,g2,state_guest_checkedin>,<c2,g2,state_finalized>,<c2,r1,state_uninitialized>,<c2,r1,state_room_created>,<c2,r1,state_finalized>,<c2,fd1,state_uninitialized>,<c2,fd1,state_frontdesk_open>,<c2,fd1,state_finalized>,<c3,ca1,state_card_created>,<c3,ca1,state_uninitialized>,<c3,ca1,state_finalized>,<c3,ca2,state_card_created>,<c3,ca2,state_uninitialized>,<c3,ca2,state_finalized>,<c3,ca3,state_card_created>,<c3,ca3,state_uninitialized>,<c3,ca3,state_finalized>,<c3,k1,state_uninitialized>,<c3,k2,state_uninitialized>,<c3,k3,state_uninitialized>,<c3,g1,state_uninitialized>,<c3,g1,state_guest_checkedin>,<c3,g1,state_finalized>,<c3,g2,state_uninitialized>,<c3,g2,state_guest_checkedin>,<c3,g2,state_finalized>,<c3,r1,state_uninitialized>,<c3,r1,state_room_created>,<c3,r1,state_finalized>,<c3,fd1,state_uninitialized>,<c3,fd1,state_frontdesk_open>,<c3,fd1,state_finalized>,<c4,ca1,state_card_created>,<c4,ca1,state_uninitialized>,<c4,ca1,state_finalized>,<c4,ca2,state_card_created>,<c4,ca2,state_uninitialized>,<c4,ca2,state_finalized>,<c4,ca3,state_card_created>,<c4,ca3,state_uninitialized>,<c4,ca3,state_finalized>,<c4,k1,state_uninitialized>,<c4,k2,state_uninitialized>,<c4,k3,state_uninitialized>,<c4,g1,state_uninitialized>,<c4,g1,state_guest_checkedin>,<c4,g1,state_finalized>,<c4,g2,state_uninitialized>,<c4,g2,state_guest_checkedin>,<c4,g2,state_finalized>,<c4,r1,state_uninitialized>,<c4,r1,state_room_created>,<c4,r1,state_finalized>,<c4,fd1,state_uninitialized>,<c4,fd1,state_frontdesk_open>,<c4,fd1,state_finalized>,<c5,ca1,state_card_created>,<c5,ca1,state_uninitialized>,<c5,ca1,state_finalized>,<c5,ca2,state_card_created>,<c5,ca2,state_uninitialized>,<c5,ca2,state_finalized>,<c5,ca3,state_card_created>,<c5,ca3,state_uninitialized>,<c5,ca3,state_finalized>,<c5,k1,state_uninitialized>,<c5,k2,state_uninitialized>,<c5,k3,state_uninitialized>,<c5,g1,state_uninitialized>,<c5,g1,state_guest_checkedin>,<c5,g1,state_finalized>,<c5,g2,state_uninitialized>,<c5,g2,state_guest_checkedin>,<c5,g2,state_finalized>,<c5,r1,state_uninitialized>,<c5,r1,state_room_created>,<c5,r1,state_finalized>,<c5,fd1,state_uninitialized>,<c5,fd1,state_frontdesk_open>,<c5,fd1,state_finalized>,<c6,ca1,state_card_created>,<c6,ca1,state_uninitialized>,<c6,ca1,state_finalized>,<c6,ca2,state_card_created>,<c6,ca2,state_uninitialized>,<c6,ca2,state_finalized>,<c6,ca3,state_card_created>,<c6,ca3,state_uninitialized>,<c6,ca3,state_finalized>,<c6,k1,state_uninitialized>,<c6,k2,state_uninitialized>,<c6,k3,state_uninitialized>,<c6,g1,state_uninitialized>,<c6,g1,state_guest_checkedin>,<c6,g1,state_finalized>,<c6,g2,state_uninitialized>,<c6,g2,state_guest_checkedin>,<c6,g2,state_finalized>,<c6,r1,state_uninitialized>,<c6,r1,state_room_created>,<c6,r1,state_finalized>,<c6,fd1,state_uninitialized>,<c6,fd1,state_frontdesk_open>,<c6,fd1,state_finalized>,<c7,ca1,state_card_created>,<c7,ca1,state_uninitialized>,<c7,ca1,state_finalized>,<c7,ca2,state_card_created>,<c7,ca2,state_uninitialized>,<c7,ca2,state_finalized>,<c7,ca3,state_card_created>,<c7,ca3,state_uninitialized>,<c7,ca3,state_finalized>,<c7,k1,state_uninitialized>,<c7,k2,state_uninitialized>,<c7,k3,state_uninitialized>,<c7,g1,state_uninitialized>,<c7,g1,state_guest_checkedin>,<c7,g1,state_finalized>,<c7,g2,state_uninitialized>,<c7,g2,state_guest_checkedin>,<c7,g2,state_finalized>,<c7,r1,state_uninitialized>,<c7,r1,state_room_created>,<c7,r1,state_finalized>,<c7,fd1,state_uninitialized>,<c7,fd1,state_frontdesk_open>,<c7,fd1,state_finalized>,<c8,ca1,state_card_created>,<c8,ca1,state_uninitialized>,<c8,ca1,state_finalized>,<c8,ca2,state_card_created>,<c8,ca2,state_uninitialized>,<c8,ca2,state_finalized>,<c8,ca3,state_card_created>,<c8,ca3,state_uninitialized>,<c8,ca3,state_finalized>,<c8,k1,state_uninitialized>,<c8,k2,state_uninitialized>,<c8,k3,state_uninitialized>,<c8,g1,state_uninitialized>,<c8,g1,state_guest_checkedin>,<c8,g1,state_finalized>,<c8,g2,state_uninitialized>,<c8,g2,state_guest_checkedin>,<c8,g2,state_finalized>,<c8,r1,state_uninitialized>,<c8,r1,state_room_created>,<c8,r1,state_finalized>,<c8,fd1,state_uninitialized>,<c8,fd1,state_frontdesk_open>,<c8,fd1,state_finalized>,<c9,ca1,state_card_created>,<c9,ca1,state_uninitialized>,<c9,ca1,state_finalized>,<c9,ca2,state_card_created>,<c9,ca2,state_uninitialized>,<c9,ca2,state_finalized>,<c9,ca3,state_card_created>,<c9,ca3,state_uninitialized>,<c9,ca3,state_finalized>,<c9,k1,state_uninitialized>,<c9,k2,state_uninitialized>,<c9,k3,state_uninitialized>,<c9,g1,state_uninitialized>,<c9,g1,state_guest_checkedin>,<c9,g1,state_finalized>,<c9,g2,state_uninitialized>,<c9,g2,state_guest_checkedin>,<c9,g2,state_finalized>,<c9,r1,state_uninitialized>,<c9,r1,state_room_created>,<c9,r1,state_finalized>,<c9,fd1,state_uninitialized>,<c9,fd1,state_frontdesk_open>,<c9,fd1,state_finalized>,<c10,ca1,state_card_created>,<c10,ca1,state_uninitialized>,<c10,ca1,state_finalized>,<c10,ca2,state_card_created>,<c10,ca2,state_uninitialized>,<c10,ca2,state_finalized>,<c10,ca3,state_card_created>,<c10,ca3,state_uninitialized>,<c10,ca3,state_finalized>,<c10,k1,state_uninitialized>,<c10,k2,state_uninitialized>,<c10,k3,state_uninitialized>,<c10,g1,state_uninitialized>,<c10,g1,state_guest_checkedin>,<c10,g1,state_finalized>,<c10,g2,state_uninitialized>,<c10,g2,state_guest_checkedin>,<c10,g2,state_finalized>,<c10,r1,state_uninitialized>,<c10,r1,state_room_created>,<c10,r1,state_finalized>,<c10,fd1,state_uninitialized>,<c10,fd1,state_frontdesk_open>,<c10,fd1,state_finalized>,<c11,ca1,state_card_created>,<c11,ca1,state_uninitialized>,<c11,ca1,state_finalized>,<c11,ca2,state_card_created>,<c11,ca2,state_uninitialized>,<c11,ca2,state_finalized>,<c11,ca3,state_card_created>,<c11,ca3,state_uninitialized>,<c11,ca3,state_finalized>,<c11,k1,state_uninitialized>,<c11,k2,state_uninitialized>,<c11,k3,state_uninitialized>,<c11,g1,state_uninitialized>,<c11,g1,state_guest_checkedin>,<c11,g1,state_finalized>,<c11,g2,state_uninitialized>,<c11,g2,state_guest_checkedin>,<c11,g2,state_finalized>,<c11,r1,state_uninitialized>,<c11,r1,state_room_created>,<c11,r1,state_finalized>,<c11,fd1,state_uninitialized>,<c11,fd1,state_frontdesk_open>,<c11,fd1,state_finalized>,<c12,ca1,state_card_created>,<c12,ca1,state_uninitialized>,<c12,ca1,state_finalized>,<c12,ca2,state_card_created>,<c12,ca2,state_uninitialized>,<c12,ca2,state_finalized>,<c12,ca3,state_card_created>,<c12,ca3,state_uninitialized>,<c12,ca3,state_finalized>,<c12,k1,state_uninitialized>,<c12,k2,state_uninitialized>,<c12,k3,state_uninitialized>,<c12,g1,state_uninitialized>,<c12,g1,state_guest_checkedin>,<c12,g1,state_finalized>,<c12,g2,state_uninitialized>,<c12,g2,state_guest_checkedin>,<c12,g2,state_finalized>,<c12,r1,state_uninitialized>,<c12,r1,state_room_created>,<c12,r1,state_finalized>,<c12,fd1,state_uninitialized>,<c12,fd1,state_frontdesk_open>,<c12,fd1,state_finalized>}
-raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_card_create,ca1>,<c2,c3,event_card_create,ca1>,<c3,c4,event_card_create,ca1>,<c4,c5,event_card_create,ca1>,<c5,c6,event_card_create,ca1>,<c6,c7,event_card_create,ca1>,<c7,c8,event_card_create,ca1>,<c8,c9,event_card_create,ca1>,<c9,c10,event_card_create,ca1>,<c10,c11,event_card_create,ca1>,<c11,c12,event_card_create,ca1>,<c1,c2,event_card_create,ca2>,<c2,c3,event_card_create,ca2>,<c3,c4,event_card_create,ca2>,<c4,c5,event_card_create,ca2>,<c5,c6,event_card_create,ca2>,<c6,c7,event_card_create,ca2>,<c7,c8,event_card_create,ca2>,<c8,c9,event_card_create,ca2>,<c9,c10,event_card_create,ca2>,<c10,c11,event_card_create,ca2>,<c11,c12,event_card_create,ca2>,<c1,c2,event_card_create,ca3>,<c2,c3,event_card_create,ca3>,<c3,c4,event_card_create,ca3>,<c4,c5,event_card_create,ca3>,<c5,c6,event_card_create,ca3>,<c6,c7,event_card_create,ca3>,<c7,c8,event_card_create,ca3>,<c8,c9,event_card_create,ca3>,<c9,c10,event_card_create,ca3>,<c10,c11,event_card_create,ca3>,<c11,c12,event_card_create,ca3>,<c1,c2,event_guest_enterroom,g1>,<c2,c3,event_guest_enterroom,g1>,<c3,c4,event_guest_enterroom,g1>,<c4,c5,event_guest_enterroom,g1>,<c5,c6,event_guest_enterroom,g1>,<c6,c7,event_guest_enterroom,g1>,<c7,c8,event_guest_enterroom,g1>,<c8,c9,event_guest_enterroom,g1>,<c9,c10,event_guest_enterroom,g1>,<c10,c11,event_guest_enterroom,g1>,<c11,c12,event_guest_enterroom,g1>,<c1,c2,event_guest_enterroom,g2>,<c2,c3,event_guest_enterroom,g2>,<c3,c4,event_guest_enterroom,g2>,<c4,c5,event_guest_enterroom,g2>,<c5,c6,event_guest_enterroom,g2>,<c6,c7,event_guest_enterroom,g2>,<c7,c8,event_guest_enterroom,g2>,<c8,c9,event_guest_enterroom,g2>,<c9,c10,event_guest_enterroom,g2>,<c10,c11,event_guest_enterroom,g2>,<c11,c12,event_guest_enterroom,g2>,<c1,c2,event_room_create,r1>,<c2,c3,event_room_create,r1>,<c3,c4,event_room_create,r1>,<c4,c5,event_room_create,r1>,<c5,c6,event_room_create,r1>,<c6,c7,event_room_create,r1>,<c7,c8,event_room_create,r1>,<c8,c9,event_room_create,r1>,<c9,c10,event_room_create,r1>,<c10,c11,event_room_create,r1>,<c11,c12,event_room_create,r1>,<c1,c2,event_frontdesk_checkin,fd1>,<c1,c2,event_frontdesk_initialize,fd1>,<c2,c3,event_frontdesk_checkin,fd1>,<c2,c3,event_frontdesk_initialize,fd1>,<c3,c4,event_frontdesk_checkin,fd1>,<c3,c4,event_frontdesk_initialize,fd1>,<c4,c5,event_frontdesk_checkin,fd1>,<c4,c5,event_frontdesk_initialize,fd1>,<c5,c6,event_frontdesk_checkin,fd1>,<c5,c6,event_frontdesk_initialize,fd1>,<c6,c7,event_frontdesk_checkin,fd1>,<c6,c7,event_frontdesk_initialize,fd1>,<c7,c8,event_frontdesk_checkin,fd1>,<c7,c8,event_frontdesk_initialize,fd1>,<c8,c9,event_frontdesk_checkin,fd1>,<c8,c9,event_frontdesk_initialize,fd1>,<c9,c10,event_frontdesk_checkin,fd1>,<c9,c10,event_frontdesk_initialize,fd1>,<c10,c11,event_frontdesk_checkin,fd1>,<c10,c11,event_frontdesk_initialize,fd1>,<c11,c12,event_frontdesk_checkin,fd1>,<c11,c12,event_frontdesk_initialize,fd1>}
-changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c1,c2,g1>,<c1,c2,g2>,<c1,c2,ca2>,<c1,c2,ca3>,<c1,c2,r1>,<c1,c2,fd1>,<c1,c2,ca1>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c2,c3,g1>,<c2,c3,g2>,<c2,c3,ca2>,<c2,c3,ca3>,<c2,c3,r1>,<c2,c3,fd1>,<c2,c3,ca1>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c3,c4,g1>,<c3,c4,g2>,<c3,c4,ca2>,<c3,c4,ca3>,<c3,c4,r1>,<c3,c4,fd1>,<c3,c4,ca1>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c4,c5,g1>,<c4,c5,g2>,<c4,c5,ca2>,<c4,c5,ca3>,<c4,c5,r1>,<c4,c5,fd1>,<c4,c5,ca1>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c5,c6,g1>,<c5,c6,g2>,<c5,c6,ca2>,<c5,c6,ca3>,<c5,c6,r1>,<c5,c6,fd1>,<c5,c6,ca1>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c6,c7,g1>,<c6,c7,g2>,<c6,c7,ca2>,<c6,c7,ca3>,<c6,c7,r1>,<c6,c7,fd1>,<c6,c7,ca1>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c7,c8,g1>,<c7,c8,g2>,<c7,c8,ca2>,<c7,c8,ca3>,<c7,c8,r1>,<c7,c8,fd1>,<c7,c8,ca1>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c8,c9,g1>,<c8,c9,g2>,<c8,c9,ca2>,<c8,c9,ca3>,<c8,c9,r1>,<c8,c9,fd1>,<c8,c9,ca1>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c9,c10,g1>,<c9,c10,g2>,<c9,c10,ca2>,<c9,c10,ca3>,<c9,c10,r1>,<c9,c10,fd1>,<c9,c10,ca1>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c10,c11,g1>,<c10,c11,g2>,<c10,c11,ca2>,<c10,c11,ca3>,<c10,c11,r1>,<c10,c11,fd1>,<c10,c11,ca1>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>,<c11,c12,g1>,<c11,c12,g2>,<c11,c12,ca2>,<c11,c12,ca3>,<c11,c12,r1>,<c11,c12,fd1>,<c11,c12,ca1>}
+Instance (spec:id, instance:id) = {<flashlight,fl1>,<traveller,t2>,<traveller,t3>,<traveller,t1>,<traveller,t4>}
+instanceInState (config:id, instance:id, state:id) >= {<c1,fl1,state_flashlight_near>,<c1,t2,state_traveller_near>,<c1,t3,state_traveller_near>,<c1,t1,state_traveller_near>,<c1,t4,state_traveller_near>}<= {<c1,fl1,state_flashlight_far>,<c1,fl1,state_uninitialized>,<c1,fl1,state_flashlight_near>,<c1,fl1,state_finalized>,<c1,t4,state_traveller_far>,<c1,t4,state_uninitialized>,<c1,t4,state_traveller_near>,<c1,t4,state_finalized>,<c1,t1,state_traveller_far>,<c1,t1,state_uninitialized>,<c1,t1,state_traveller_near>,<c1,t1,state_finalized>,<c1,t2,state_traveller_far>,<c1,t2,state_uninitialized>,<c1,t2,state_traveller_near>,<c1,t2,state_finalized>,<c1,t3,state_traveller_far>,<c1,t3,state_uninitialized>,<c1,t3,state_traveller_near>,<c1,t3,state_finalized>,<c2,fl1,state_flashlight_far>,<c2,fl1,state_uninitialized>,<c2,fl1,state_flashlight_near>,<c2,fl1,state_finalized>,<c2,t4,state_traveller_far>,<c2,t4,state_uninitialized>,<c2,t4,state_traveller_near>,<c2,t4,state_finalized>,<c2,t1,state_traveller_far>,<c2,t1,state_uninitialized>,<c2,t1,state_traveller_near>,<c2,t1,state_finalized>,<c2,t2,state_traveller_far>,<c2,t2,state_uninitialized>,<c2,t2,state_traveller_near>,<c2,t2,state_finalized>,<c2,t3,state_traveller_far>,<c2,t3,state_uninitialized>,<c2,t3,state_traveller_near>,<c2,t3,state_finalized>,<c3,fl1,state_flashlight_far>,<c3,fl1,state_uninitialized>,<c3,fl1,state_flashlight_near>,<c3,fl1,state_finalized>,<c3,t4,state_traveller_far>,<c3,t4,state_uninitialized>,<c3,t4,state_traveller_near>,<c3,t4,state_finalized>,<c3,t1,state_traveller_far>,<c3,t1,state_uninitialized>,<c3,t1,state_traveller_near>,<c3,t1,state_finalized>,<c3,t2,state_traveller_far>,<c3,t2,state_uninitialized>,<c3,t2,state_traveller_near>,<c3,t2,state_finalized>,<c3,t3,state_traveller_far>,<c3,t3,state_uninitialized>,<c3,t3,state_traveller_near>,<c3,t3,state_finalized>,<c4,fl1,state_flashlight_far>,<c4,fl1,state_uninitialized>,<c4,fl1,state_flashlight_near>,<c4,fl1,state_finalized>,<c4,t4,state_traveller_far>,<c4,t4,state_uninitialized>,<c4,t4,state_traveller_near>,<c4,t4,state_finalized>,<c4,t1,state_traveller_far>,<c4,t1,state_uninitialized>,<c4,t1,state_traveller_near>,<c4,t1,state_finalized>,<c4,t2,state_traveller_far>,<c4,t2,state_uninitialized>,<c4,t2,state_traveller_near>,<c4,t2,state_finalized>,<c4,t3,state_traveller_far>,<c4,t3,state_uninitialized>,<c4,t3,state_traveller_near>,<c4,t3,state_finalized>,<c5,fl1,state_flashlight_far>,<c5,fl1,state_uninitialized>,<c5,fl1,state_flashlight_near>,<c5,fl1,state_finalized>,<c5,t4,state_traveller_far>,<c5,t4,state_uninitialized>,<c5,t4,state_traveller_near>,<c5,t4,state_finalized>,<c5,t1,state_traveller_far>,<c5,t1,state_uninitialized>,<c5,t1,state_traveller_near>,<c5,t1,state_finalized>,<c5,t2,state_traveller_far>,<c5,t2,state_uninitialized>,<c5,t2,state_traveller_near>,<c5,t2,state_finalized>,<c5,t3,state_traveller_far>,<c5,t3,state_uninitialized>,<c5,t3,state_traveller_near>,<c5,t3,state_finalized>,<c6,fl1,state_flashlight_far>,<c6,fl1,state_uninitialized>,<c6,fl1,state_flashlight_near>,<c6,fl1,state_finalized>,<c6,t4,state_traveller_far>,<c6,t4,state_uninitialized>,<c6,t4,state_traveller_near>,<c6,t4,state_finalized>,<c6,t1,state_traveller_far>,<c6,t1,state_uninitialized>,<c6,t1,state_traveller_near>,<c6,t1,state_finalized>,<c6,t2,state_traveller_far>,<c6,t2,state_uninitialized>,<c6,t2,state_traveller_near>,<c6,t2,state_finalized>,<c6,t3,state_traveller_far>,<c6,t3,state_uninitialized>,<c6,t3,state_traveller_near>,<c6,t3,state_finalized>,<c7,fl1,state_flashlight_far>,<c7,fl1,state_uninitialized>,<c7,fl1,state_flashlight_near>,<c7,fl1,state_finalized>,<c7,t4,state_traveller_far>,<c7,t4,state_uninitialized>,<c7,t4,state_traveller_near>,<c7,t4,state_finalized>,<c7,t1,state_traveller_far>,<c7,t1,state_uninitialized>,<c7,t1,state_traveller_near>,<c7,t1,state_finalized>,<c7,t2,state_traveller_far>,<c7,t2,state_uninitialized>,<c7,t2,state_traveller_near>,<c7,t2,state_finalized>,<c7,t3,state_traveller_far>,<c7,t3,state_uninitialized>,<c7,t3,state_traveller_near>,<c7,t3,state_finalized>}
+raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_flashlight_initialize,fl1>,<c1,c2,event_flashlight_crossneartofar,fl1>,<c1,c2,event_flashlight_crossfartonear,fl1>,<c2,c3,event_flashlight_initialize,fl1>,<c2,c3,event_flashlight_crossneartofar,fl1>,<c2,c3,event_flashlight_crossfartonear,fl1>,<c3,c4,event_flashlight_initialize,fl1>,<c3,c4,event_flashlight_crossneartofar,fl1>,<c3,c4,event_flashlight_crossfartonear,fl1>,<c4,c5,event_flashlight_initialize,fl1>,<c4,c5,event_flashlight_crossneartofar,fl1>,<c4,c5,event_flashlight_crossfartonear,fl1>,<c5,c6,event_flashlight_initialize,fl1>,<c5,c6,event_flashlight_crossneartofar,fl1>,<c5,c6,event_flashlight_crossfartonear,fl1>,<c6,c7,event_flashlight_initialize,fl1>,<c6,c7,event_flashlight_crossneartofar,fl1>,<c6,c7,event_flashlight_crossfartonear,fl1>,<c1,c2,event_traveller_initialize,t4>,<c2,c3,event_traveller_initialize,t4>,<c3,c4,event_traveller_initialize,t4>,<c4,c5,event_traveller_initialize,t4>,<c5,c6,event_traveller_initialize,t4>,<c6,c7,event_traveller_initialize,t4>,<c1,c2,event_traveller_initialize,t1>,<c2,c3,event_traveller_initialize,t1>,<c3,c4,event_traveller_initialize,t1>,<c4,c5,event_traveller_initialize,t1>,<c5,c6,event_traveller_initialize,t1>,<c6,c7,event_traveller_initialize,t1>,<c1,c2,event_traveller_initialize,t2>,<c2,c3,event_traveller_initialize,t2>,<c3,c4,event_traveller_initialize,t2>,<c4,c5,event_traveller_initialize,t2>,<c5,c6,event_traveller_initialize,t2>,<c6,c7,event_traveller_initialize,t2>,<c1,c2,event_traveller_initialize,t3>,<c2,c3,event_traveller_initialize,t3>,<c3,c4,event_traveller_initialize,t3>,<c4,c5,event_traveller_initialize,t3>,<c5,c6,event_traveller_initialize,t3>,<c6,c7,event_traveller_initialize,t3>}
+changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,t4>,<c1,c2,fl1>,<c1,c2,t1>,<c1,c2,t2>,<c1,c2,t3>,<c2,c3,t4>,<c2,c3,fl1>,<c2,c3,t1>,<c2,c3,t2>,<c2,c3,t3>,<c3,c4,t4>,<c3,c4,fl1>,<c3,c4,t1>,<c3,c4,t2>,<c3,c4,t3>,<c4,c5,t4>,<c4,c5,fl1>,<c4,c5,t1>,<c4,c5,t2>,<c4,c5,t3>,<c5,c6,t4>,<c5,c6,fl1>,<c5,c6,t1>,<c5,c6,t2>,<c5,c6,t3>,<c6,c7,t4>,<c6,c7,fl1>,<c6,c7,t1>,<c6,c7,t2>,<c6,c7,t3>}
 
-CardFirst (config:id, instance:id, first:id) <= {<c1,ca1,k1>,<c1,ca1,k2>,<c1,ca1,k3>,<c2,ca1,k1>,<c2,ca1,k2>,<c2,ca1,k3>,<c3,ca1,k1>,<c3,ca1,k2>,<c3,ca1,k3>,<c4,ca1,k1>,<c4,ca1,k2>,<c4,ca1,k3>,<c5,ca1,k1>,<c5,ca1,k2>,<c5,ca1,k3>,<c6,ca1,k1>,<c6,ca1,k2>,<c6,ca1,k3>,<c7,ca1,k1>,<c7,ca1,k2>,<c7,ca1,k3>,<c8,ca1,k1>,<c8,ca1,k2>,<c8,ca1,k3>,<c9,ca1,k1>,<c9,ca1,k2>,<c9,ca1,k3>,<c10,ca1,k1>,<c10,ca1,k2>,<c10,ca1,k3>,<c11,ca1,k1>,<c11,ca1,k2>,<c11,ca1,k3>,<c12,ca1,k1>,<c12,ca1,k2>,<c12,ca1,k3>,<c1,ca2,k1>,<c1,ca2,k2>,<c1,ca2,k3>,<c2,ca2,k1>,<c2,ca2,k2>,<c2,ca2,k3>,<c3,ca2,k1>,<c3,ca2,k2>,<c3,ca2,k3>,<c4,ca2,k1>,<c4,ca2,k2>,<c4,ca2,k3>,<c5,ca2,k1>,<c5,ca2,k2>,<c5,ca2,k3>,<c6,ca2,k1>,<c6,ca2,k2>,<c6,ca2,k3>,<c7,ca2,k1>,<c7,ca2,k2>,<c7,ca2,k3>,<c8,ca2,k1>,<c8,ca2,k2>,<c8,ca2,k3>,<c9,ca2,k1>,<c9,ca2,k2>,<c9,ca2,k3>,<c10,ca2,k1>,<c10,ca2,k2>,<c10,ca2,k3>,<c11,ca2,k1>,<c11,ca2,k2>,<c11,ca2,k3>,<c12,ca2,k1>,<c12,ca2,k2>,<c12,ca2,k3>,<c1,ca3,k1>,<c1,ca3,k2>,<c1,ca3,k3>,<c2,ca3,k1>,<c2,ca3,k2>,<c2,ca3,k3>,<c3,ca3,k1>,<c3,ca3,k2>,<c3,ca3,k3>,<c4,ca3,k1>,<c4,ca3,k2>,<c4,ca3,k3>,<c5,ca3,k1>,<c5,ca3,k2>,<c5,ca3,k3>,<c6,ca3,k1>,<c6,ca3,k2>,<c6,ca3,k3>,<c7,ca3,k1>,<c7,ca3,k2>,<c7,ca3,k3>,<c8,ca3,k1>,<c8,ca3,k2>,<c8,ca3,k3>,<c9,ca3,k1>,<c9,ca3,k2>,<c9,ca3,k3>,<c10,ca3,k1>,<c10,ca3,k2>,<c10,ca3,k3>,<c11,ca3,k1>,<c11,ca3,k2>,<c11,ca3,k3>,<c12,ca3,k1>,<c12,ca3,k2>,<c12,ca3,k3>}
-CardSecond (config:id, instance:id, second:id) <= {<c1,ca1,k1>,<c1,ca1,k2>,<c1,ca1,k3>,<c2,ca1,k1>,<c2,ca1,k2>,<c2,ca1,k3>,<c3,ca1,k1>,<c3,ca1,k2>,<c3,ca1,k3>,<c4,ca1,k1>,<c4,ca1,k2>,<c4,ca1,k3>,<c5,ca1,k1>,<c5,ca1,k2>,<c5,ca1,k3>,<c6,ca1,k1>,<c6,ca1,k2>,<c6,ca1,k3>,<c7,ca1,k1>,<c7,ca1,k2>,<c7,ca1,k3>,<c8,ca1,k1>,<c8,ca1,k2>,<c8,ca1,k3>,<c9,ca1,k1>,<c9,ca1,k2>,<c9,ca1,k3>,<c10,ca1,k1>,<c10,ca1,k2>,<c10,ca1,k3>,<c11,ca1,k1>,<c11,ca1,k2>,<c11,ca1,k3>,<c12,ca1,k1>,<c12,ca1,k2>,<c12,ca1,k3>,<c1,ca2,k1>,<c1,ca2,k2>,<c1,ca2,k3>,<c2,ca2,k1>,<c2,ca2,k2>,<c2,ca2,k3>,<c3,ca2,k1>,<c3,ca2,k2>,<c3,ca2,k3>,<c4,ca2,k1>,<c4,ca2,k2>,<c4,ca2,k3>,<c5,ca2,k1>,<c5,ca2,k2>,<c5,ca2,k3>,<c6,ca2,k1>,<c6,ca2,k2>,<c6,ca2,k3>,<c7,ca2,k1>,<c7,ca2,k2>,<c7,ca2,k3>,<c8,ca2,k1>,<c8,ca2,k2>,<c8,ca2,k3>,<c9,ca2,k1>,<c9,ca2,k2>,<c9,ca2,k3>,<c10,ca2,k1>,<c10,ca2,k2>,<c10,ca2,k3>,<c11,ca2,k1>,<c11,ca2,k2>,<c11,ca2,k3>,<c12,ca2,k1>,<c12,ca2,k2>,<c12,ca2,k3>,<c1,ca3,k1>,<c1,ca3,k2>,<c1,ca3,k3>,<c2,ca3,k1>,<c2,ca3,k2>,<c2,ca3,k3>,<c3,ca3,k1>,<c3,ca3,k2>,<c3,ca3,k3>,<c4,ca3,k1>,<c4,ca3,k2>,<c4,ca3,k3>,<c5,ca3,k1>,<c5,ca3,k2>,<c5,ca3,k3>,<c6,ca3,k1>,<c6,ca3,k2>,<c6,ca3,k3>,<c7,ca3,k1>,<c7,ca3,k2>,<c7,ca3,k3>,<c8,ca3,k1>,<c8,ca3,k2>,<c8,ca3,k3>,<c9,ca3,k1>,<c9,ca3,k2>,<c9,ca3,k3>,<c10,ca3,k1>,<c10,ca3,k2>,<c10,ca3,k3>,<c11,ca3,k1>,<c11,ca3,k2>,<c11,ca3,k3>,<c12,ca3,k1>,<c12,ca3,k2>,<c12,ca3,k3>}
-GuestCard (config:id, instance:id, card:id) <= {<c1,g1,ca1>,<c1,g1,ca2>,<c1,g1,ca3>,<c2,g1,ca1>,<c2,g1,ca2>,<c2,g1,ca3>,<c3,g1,ca1>,<c3,g1,ca2>,<c3,g1,ca3>,<c4,g1,ca1>,<c4,g1,ca2>,<c4,g1,ca3>,<c5,g1,ca1>,<c5,g1,ca2>,<c5,g1,ca3>,<c6,g1,ca1>,<c6,g1,ca2>,<c6,g1,ca3>,<c7,g1,ca1>,<c7,g1,ca2>,<c7,g1,ca3>,<c8,g1,ca1>,<c8,g1,ca2>,<c8,g1,ca3>,<c9,g1,ca1>,<c9,g1,ca2>,<c9,g1,ca3>,<c10,g1,ca1>,<c10,g1,ca2>,<c10,g1,ca3>,<c11,g1,ca1>,<c11,g1,ca2>,<c11,g1,ca3>,<c12,g1,ca1>,<c12,g1,ca2>,<c12,g1,ca3>,<c1,g2,ca1>,<c1,g2,ca2>,<c1,g2,ca3>,<c2,g2,ca1>,<c2,g2,ca2>,<c2,g2,ca3>,<c3,g2,ca1>,<c3,g2,ca2>,<c3,g2,ca3>,<c4,g2,ca1>,<c4,g2,ca2>,<c4,g2,ca3>,<c5,g2,ca1>,<c5,g2,ca2>,<c5,g2,ca3>,<c6,g2,ca1>,<c6,g2,ca2>,<c6,g2,ca3>,<c7,g2,ca1>,<c7,g2,ca2>,<c7,g2,ca3>,<c8,g2,ca1>,<c8,g2,ca2>,<c8,g2,ca3>,<c9,g2,ca1>,<c9,g2,ca2>,<c9,g2,ca3>,<c10,g2,ca1>,<c10,g2,ca2>,<c10,g2,ca3>,<c11,g2,ca1>,<c11,g2,ca2>,<c11,g2,ca3>,<c12,g2,ca1>,<c12,g2,ca2>,<c12,g2,ca3>}
-RoomKey (config:id, instance:id, key:id) <= {<c1,r1,k1>,<c1,r1,k2>,<c1,r1,k3>,<c2,r1,k1>,<c2,r1,k2>,<c2,r1,k3>,<c3,r1,k1>,<c3,r1,k2>,<c3,r1,k3>,<c4,r1,k1>,<c4,r1,k2>,<c4,r1,k3>,<c5,r1,k1>,<c5,r1,k2>,<c5,r1,k3>,<c6,r1,k1>,<c6,r1,k2>,<c6,r1,k3>,<c7,r1,k1>,<c7,r1,k2>,<c7,r1,k3>,<c8,r1,k1>,<c8,r1,k2>,<c8,r1,k3>,<c9,r1,k1>,<c9,r1,k2>,<c9,r1,k3>,<c10,r1,k1>,<c10,r1,k2>,<c10,r1,k3>,<c11,r1,k1>,<c11,r1,k2>,<c11,r1,k3>,<c12,r1,k1>,<c12,r1,k2>,<c12,r1,k3>}
-FrontDeskName (config:id, instance:id, name:str) <= {<c1,fd1,?>,<c2,fd1,?>,<c3,fd1,?>,<c4,fd1,?>,<c5,fd1,?>,<c6,fd1,?>,<c7,fd1,?>,<c8,fd1,?>,<c9,fd1,?>,<c10,fd1,?>,<c11,fd1,?>,<c12,fd1,?>}
-FrontDeskIssued (config:id, instance:id, issued:id) <= {<c1,fd1,k1>,<c1,fd1,k2>,<c1,fd1,k3>,<c2,fd1,k1>,<c2,fd1,k2>,<c2,fd1,k3>,<c3,fd1,k1>,<c3,fd1,k2>,<c3,fd1,k3>,<c4,fd1,k1>,<c4,fd1,k2>,<c4,fd1,k3>,<c5,fd1,k1>,<c5,fd1,k2>,<c5,fd1,k3>,<c6,fd1,k1>,<c6,fd1,k2>,<c6,fd1,k3>,<c7,fd1,k1>,<c7,fd1,k2>,<c7,fd1,k3>,<c8,fd1,k1>,<c8,fd1,k2>,<c8,fd1,k3>,<c9,fd1,k1>,<c9,fd1,k2>,<c9,fd1,k3>,<c10,fd1,k1>,<c10,fd1,k2>,<c10,fd1,k3>,<c11,fd1,k1>,<c11,fd1,k2>,<c11,fd1,k3>,<c12,fd1,k1>,<c12,fd1,k2>,<c12,fd1,k3>}
+FlashLightTotalTimeSpend (config:id, instance:id, totalTimeSpend:int) >= {<c1,fl1,0>} <= {<c2,fl1,?>,<c3,fl1,?>,<c4,fl1,?>,<c5,fl1,?>,<c6,fl1,?>,<c7,fl1,?>}
+TravellerTimeToCross (config:id, instance:id, timeToCross:int) >= {<c1,t2,2>,<c1,t3,5>,<c1,t4,10>,<c1,t1,1>} <= {<c2,t4,?>,<c3,t4,?>,<c4,t4,?>,<c5,t4,?>,<c6,t4,?>,<c7,t4,?>,<c2,t1,?>,<c3,t1,?>,<c4,t1,?>,<c5,t1,?>,<c6,t1,?>,<c7,t1,?>,<c2,t2,?>,<c3,t2,?>,<c4,t2,?>,<c5,t2,?>,<c6,t2,?>,<c7,t2,?>,<c2,t3,?>,<c3,t3,?>,<c4,t3,?>,<c5,t3,?>,<c6,t3,?>,<c7,t3,?>}
 
-ParamEventCardEqualFst (cur:id, nxt:id, fst:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>}
-ParamEventCardEqualSnd (cur:id, nxt:id, snd:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>}
-ParamEventCardCreateFst (cur:id, nxt:id, fst:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>}
-ParamEventCardCreateSnd (cur:id, nxt:id, snd:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>}
-ParamEventCardCheckR (cur:id, nxt:id, r:id) <= {<c1,c2,r1>,<c2,c3,r1>,<c3,c4,r1>,<c4,c5,r1>,<c5,c6,r1>,<c6,c7,r1>,<c7,c8,r1>,<c8,c9,r1>,<c9,c10,r1>,<c10,c11,r1>,<c11,c12,r1>}
-ParamEventGuestEnterRoomR (cur:id, nxt:id, r:id) <= {<c1,c2,r1>,<c2,c3,r1>,<c3,c4,r1>,<c4,c5,r1>,<c5,c6,r1>,<c6,c7,r1>,<c7,c8,r1>,<c8,c9,r1>,<c9,c10,r1>,<c10,c11,r1>,<c11,c12,r1>}
-ParamEventGuestCheckinCard (cur:id, nxt:id, card:id) <= {<c1,c2,ca1>,<c1,c2,ca2>,<c1,c2,ca3>,<c2,c3,ca1>,<c2,c3,ca2>,<c2,c3,ca3>,<c3,c4,ca1>,<c3,c4,ca2>,<c3,c4,ca3>,<c4,c5,ca1>,<c4,c5,ca2>,<c4,c5,ca3>,<c5,c6,ca1>,<c5,c6,ca2>,<c5,c6,ca3>,<c6,c7,ca1>,<c6,c7,ca2>,<c6,c7,ca3>,<c7,c8,ca1>,<c7,c8,ca2>,<c7,c8,ca3>,<c8,c9,ca1>,<c8,c9,ca2>,<c8,c9,ca3>,<c9,c10,ca1>,<c9,c10,ca2>,<c9,c10,ca3>,<c10,c11,ca1>,<c10,c11,ca2>,<c10,c11,ca3>,<c11,c12,ca1>,<c11,c12,ca2>,<c11,c12,ca3>}
-ParamEventRoomCheckKey (cur:id, nxt:id, key:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>}
-ParamEventRoomUpdateOldKey (cur:id, nxt:id, oldKey:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>}
-ParamEventRoomUpdateNewKey (cur:id, nxt:id, newKey:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>}
-ParamEventRoomCreateInitialKey (cur:id, nxt:id, initialKey:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>}
-ParamEventFrontDeskCheckinFst (cur:id, nxt:id, fst:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>}
-ParamEventFrontDeskCheckinSnd (cur:id, nxt:id, snd:id) <= {<c1,c2,k1>,<c1,c2,k2>,<c1,c2,k3>,<c2,c3,k1>,<c2,c3,k2>,<c2,c3,k3>,<c3,c4,k1>,<c3,c4,k2>,<c3,c4,k3>,<c4,c5,k1>,<c4,c5,k2>,<c4,c5,k3>,<c5,c6,k1>,<c5,c6,k2>,<c5,c6,k3>,<c6,c7,k1>,<c6,c7,k2>,<c6,c7,k3>,<c7,c8,k1>,<c7,c8,k2>,<c7,c8,k3>,<c8,c9,k1>,<c8,c9,k2>,<c8,c9,k3>,<c9,c10,k1>,<c9,c10,k2>,<c9,c10,k3>,<c10,c11,k1>,<c10,c11,k2>,<c10,c11,k3>,<c11,c12,k1>,<c11,c12,k2>,<c11,c12,k3>}
-ParamEventFrontDeskCheckinC (cur:id, nxt:id, c:id) <= {<c1,c2,ca1>,<c1,c2,ca2>,<c1,c2,ca3>,<c2,c3,ca1>,<c2,c3,ca2>,<c2,c3,ca3>,<c3,c4,ca1>,<c3,c4,ca2>,<c3,c4,ca3>,<c4,c5,ca1>,<c4,c5,ca2>,<c4,c5,ca3>,<c5,c6,ca1>,<c5,c6,ca2>,<c5,c6,ca3>,<c6,c7,ca1>,<c6,c7,ca2>,<c6,c7,ca3>,<c7,c8,ca1>,<c7,c8,ca2>,<c7,c8,ca3>,<c8,c9,ca1>,<c8,c9,ca2>,<c8,c9,ca3>,<c9,c10,ca1>,<c9,c10,ca2>,<c9,c10,ca3>,<c10,c11,ca1>,<c10,c11,ca2>,<c10,c11,ca3>,<c11,c12,ca1>,<c11,c12,ca2>,<c11,c12,ca3>}
-ParamEventFrontDeskCheckinR (cur:id, nxt:id, r:id) <= {<c1,c2,r1>,<c2,c3,r1>,<c3,c4,r1>,<c4,c5,r1>,<c5,c6,r1>,<c6,c7,r1>,<c7,c8,r1>,<c8,c9,r1>,<c9,c10,r1>,<c10,c11,r1>,<c11,c12,r1>}
-ParamEventFrontDeskCheckinG (cur:id, nxt:id, g:id) <= {<c1,c2,g1>,<c1,c2,g2>,<c2,c3,g1>,<c2,c3,g2>,<c3,c4,g1>,<c3,c4,g2>,<c4,c5,g1>,<c4,c5,g2>,<c5,c6,g1>,<c5,c6,g2>,<c6,c7,g1>,<c6,c7,g2>,<c7,c8,g1>,<c7,c8,g2>,<c8,c9,g1>,<c8,c9,g2>,<c9,c10,g1>,<c9,c10,g2>,<c10,c11,g1>,<c10,c11,g2>,<c11,c12,g1>,<c11,c12,g2>}
+ParamEventFlashLightCrossFarToNearCarrier (cur:id, nxt:id, carrier:id) <= {<c1,c2,t4>,<c1,c2,t1>,<c1,c2,t2>,<c1,c2,t3>,<c2,c3,t4>,<c2,c3,t1>,<c2,c3,t2>,<c2,c3,t3>,<c3,c4,t4>,<c3,c4,t1>,<c3,c4,t2>,<c3,c4,t3>,<c4,c5,t4>,<c4,c5,t1>,<c4,c5,t2>,<c4,c5,t3>,<c5,c6,t4>,<c5,c6,t1>,<c5,c6,t2>,<c5,c6,t3>,<c6,c7,t4>,<c6,c7,t1>,<c6,c7,t2>,<c6,c7,t3>}
+ParamEventFlashLightCrossFarToNearCrossingTimeCarrier (cur:id, nxt:id, crossingTimeCarrier:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>}
+ParamEventFlashLightCrossNearToFarCarrier (cur:id, nxt:id, carrier:id) <= {<c1,c2,t4>,<c1,c2,t1>,<c1,c2,t2>,<c1,c2,t3>,<c2,c3,t4>,<c2,c3,t1>,<c2,c3,t2>,<c2,c3,t3>,<c3,c4,t4>,<c3,c4,t1>,<c3,c4,t2>,<c3,c4,t3>,<c4,c5,t4>,<c4,c5,t1>,<c4,c5,t2>,<c4,c5,t3>,<c5,c6,t4>,<c5,c6,t1>,<c5,c6,t2>,<c5,c6,t3>,<c6,c7,t4>,<c6,c7,t1>,<c6,c7,t2>,<c6,c7,t3>}
+ParamEventFlashLightCrossNearToFarPassenger (cur:id, nxt:id, passenger:id) <= {<c1,c2,t4>,<c1,c2,t1>,<c1,c2,t2>,<c1,c2,t3>,<c2,c3,t4>,<c2,c3,t1>,<c2,c3,t2>,<c2,c3,t3>,<c3,c4,t4>,<c3,c4,t1>,<c3,c4,t2>,<c3,c4,t3>,<c4,c5,t4>,<c4,c5,t1>,<c4,c5,t2>,<c4,c5,t3>,<c5,c6,t4>,<c5,c6,t1>,<c5,c6,t2>,<c5,c6,t3>,<c6,c7,t4>,<c6,c7,t1>,<c6,c7,t2>,<c6,c7,t3>}
+ParamEventFlashLightCrossNearToFarCrossingTimeCarrier (cur:id, nxt:id, crossingTimeCarrier:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>}
+ParamEventFlashLightCrossNearToFarCrossingTimePassenger (cur:id, nxt:id, crossingTimePassenger:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>}
+ParamEventTravellerCrossCrossingTime (cur:id, nxt:id, crossingTime:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>}
+ParamEventTravellerInitializeTimeToCross (cur:id, nxt:id, timeToCross:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>}
 
 // Generic 'Type' constraints
 order ⊆ Config[config as cur] ⨯ Config[config as nxt]
@@ -77,48 +52,28 @@ instanceInState ⊆ Instance[instance] ⨯ Config ⨯ State
 changedInstance ⊆ order ⨯ Instance[instance]
     
 // Machine specific `type` constraints
-CardFirst  ⊆ Config ⨯ (Instance ⨝ Card)[instance] ⨯ (Instance ⨝ Key)[instance->first]
-CardSecond  ⊆ Config ⨯ (Instance ⨝ Card)[instance] ⨯ (Instance ⨝ Key)[instance->second]
-GuestCard  ⊆ Config ⨯ (Instance ⨝ Guest)[instance] ⨯ (Instance ⨝ Card)[instance->card]
-RoomKey  ⊆ Config ⨯ (Instance ⨝ Room)[instance] ⨯ (Instance ⨝ Key)[instance->key]
-FrontDeskName[config,instance]  ⊆ Config ⨯ (Instance ⨝ FrontDesk)[instance]
-FrontDeskIssued  ⊆ Config ⨯ (Instance ⨝ FrontDesk)[instance] ⨯ (Instance ⨝ Key)[instance->issued]
+FlashLightTotalTimeSpend[config,instance]  ⊆ Config ⨯ (Instance ⨝ FlashLight)[instance]
+TravellerTimeToCross[config,instance]  ⊆ Config ⨯ (Instance ⨝ Traveller)[instance]
 
-ParamEventCardCreateFst ⊆ order ⨯ (Instance ⨝ Key)[instance->fst]
-ParamEventCardCreateSnd ⊆ order ⨯ (Instance ⨝ Key)[instance->snd]
-ParamEventCardEqualFst ⊆ order ⨯ (Instance ⨝ Key)[instance->fst]
-ParamEventCardEqualSnd ⊆ order ⨯ (Instance ⨝ Key)[instance->snd]
-ParamEventCardCheckR ⊆ order ⨯ (Instance ⨝ Room)[instance->r]
-ParamEventGuestCheckinCard ⊆ order ⨯ (Instance ⨝ Card)[instance->card]
-ParamEventGuestEnterRoomR ⊆ order ⨯ (Instance ⨝ Room)[instance->r]
-ParamEventRoomCreateInitialKey ⊆ order ⨯ (Instance ⨝ Key)[instance->initialKey]
-ParamEventRoomUpdateOldKey ⊆ order ⨯ (Instance ⨝ Key)[instance->oldKey]
-ParamEventRoomUpdateNewKey ⊆ order ⨯ (Instance ⨝ Key)[instance->newKey]
-ParamEventRoomCheckKey ⊆ order ⨯ (Instance ⨝ Key)[instance->key]
-ParamEventFrontDeskCheckinFst ⊆ order ⨯ (Instance ⨝ Key)[instance->fst]
-ParamEventFrontDeskCheckinSnd ⊆ order ⨯ (Instance ⨝ Key)[instance->snd]
-ParamEventFrontDeskCheckinC ⊆ order ⨯ (Instance ⨝ Card)[instance->c]
-ParamEventFrontDeskCheckinR ⊆ order ⨯ (Instance ⨝ Room)[instance->r]
-ParamEventFrontDeskCheckinG ⊆ order ⨯ (Instance ⨝ Guest)[instance->g]
+ParamEventFlashLightCrossNearToFarCarrier ⊆ order ⨯ (Instance ⨝ Traveller)[instance->carrier]
+ParamEventFlashLightCrossNearToFarPassenger ⊆ order ⨯ (Instance ⨝ Traveller)[instance->passenger]
+ParamEventFlashLightCrossNearToFarCrossingTimeCarrier[cur,nxt] ⊆ order
+ParamEventFlashLightCrossNearToFarCrossingTimePassenger[cur,nxt] ⊆ order
+ParamEventFlashLightCrossFarToNearCarrier ⊆ order ⨯ (Instance ⨝ Traveller)[instance->carrier]
+ParamEventFlashLightCrossFarToNearCrossingTimeCarrier[cur,nxt] ⊆ order
+ParamEventTravellerInitializeTimeToCross[cur,nxt] ⊆ order
+ParamEventTravellerCrossCrossingTime[cur,nxt] ⊆ order
 
 // Specific per event
 ∀ step ∈ order ⨝ raisedEvent | (
-  (some (step ⨝ EventCardCreate) ⇔ one (step ⨝ ParamEventCardCreateFst)) ∧
-  (some (step ⨝ EventCardCreate) ⇔ one (step ⨝ ParamEventCardCreateSnd)) ∧
-  (some (step ⨝ EventCardEqual) ⇔ one (step ⨝ ParamEventCardEqualFst)) ∧
-  (some (step ⨝ EventCardEqual) ⇔ one (step ⨝ ParamEventCardEqualSnd)) ∧
-  (some (step ⨝ EventCardCheck) ⇔ one (step ⨝ ParamEventCardCheckR)) ∧
-  (some (step ⨝ EventGuestCheckin) ⇔ one (step ⨝ ParamEventGuestCheckinCard)) ∧
-  (some (step ⨝ EventGuestEnterRoom) ⇔ one (step ⨝ ParamEventGuestEnterRoomR)) ∧
-  (some (step ⨝ EventRoomCreate) ⇔ one (step ⨝ ParamEventRoomCreateInitialKey)) ∧
-  (some (step ⨝ EventRoomUpdate) ⇔ one (step ⨝ ParamEventRoomUpdateOldKey)) ∧
-  (some (step ⨝ EventRoomUpdate) ⇔ one (step ⨝ ParamEventRoomUpdateNewKey)) ∧
-  (some (step ⨝ EventRoomCheck) ⇔ one (step ⨝ ParamEventRoomCheckKey)) ∧
-  (some (step ⨝ EventFrontDeskCheckin) ⇔ one (step ⨝ ParamEventFrontDeskCheckinFst)) ∧
-  (some (step ⨝ EventFrontDeskCheckin) ⇔ one (step ⨝ ParamEventFrontDeskCheckinSnd)) ∧
-  (some (step ⨝ EventFrontDeskCheckin) ⇔ one (step ⨝ ParamEventFrontDeskCheckinC)) ∧
-  (some (step ⨝ EventFrontDeskCheckin) ⇔ one (step ⨝ ParamEventFrontDeskCheckinR)) ∧
-  (some (step ⨝ EventFrontDeskCheckin) ⇔ one (step ⨝ ParamEventFrontDeskCheckinG))
+  (some (step ⨝ EventFlashLightCrossNearToFar) ⇔ one (step ⨝ ParamEventFlashLightCrossNearToFarCarrier)) ∧
+  (some (step ⨝ EventFlashLightCrossNearToFar) ⇔ one (step ⨝ ParamEventFlashLightCrossNearToFarPassenger)) ∧
+  (some (step ⨝ EventFlashLightCrossNearToFar) ⇔ one (step ⨝ ParamEventFlashLightCrossNearToFarCrossingTimeCarrier)) ∧
+  (some (step ⨝ EventFlashLightCrossNearToFar) ⇔ one (step ⨝ ParamEventFlashLightCrossNearToFarCrossingTimePassenger)) ∧
+  (some (step ⨝ EventFlashLightCrossFarToNear) ⇔ one (step ⨝ ParamEventFlashLightCrossFarToNearCarrier)) ∧
+  (some (step ⨝ EventFlashLightCrossFarToNear) ⇔ one (step ⨝ ParamEventFlashLightCrossFarToNearCrossingTimeCarrier)) ∧
+  (some (step ⨝ EventTravellerInitialize) ⇔ one (step ⨝ ParamEventTravellerInitializeTimeToCross)) ∧
+  (some (step ⨝ EventTravellerCross) ⇔ one (step ⨝ ParamEventTravellerCrossCrossingTime))
 )
 
 // Generic: All configurations are reachable
@@ -131,16 +86,8 @@ ParamEventFrontDeskCheckinG ⊆ order ⨯ (Instance ⨝ Guest)[instance->g]
 ∀ c ∈ Config, inst ∈ Instance | one instanceInState ⨝ c ⨝ inst
 
 // Specific per machine: In every configuration iff a machine is in an initialized state then it must have values
-∀ c ∈ Config, inst ∈ (Instance ⨝ Card)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no CardFirst ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Card)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one CardFirst ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Card)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no CardSecond ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Card)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one CardSecond ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Guest)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no GuestCard ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Guest)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one GuestCard ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Room)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no RoomKey ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Room)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one RoomKey ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ FrontDesk)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one FrontDeskName ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ FrontDesk)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no FrontDeskIssued ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ FlashLight)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one FlashLightTotalTimeSpend ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Traveller)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one TravellerTimeToCross ⨝ c ⨝ inst)
 
 
 // Generic: Transitions are only allowed between if an event is specified between two states
@@ -153,325 +100,165 @@ pred forceState[curState: (state:id), nxtState: (state:id), raisedEvent: (event:
 pred inState[config: (config:id), instance: (instance:id), state: (state:id)]
   = ((instance ⨯ config) ⨝ instanceInState)[state] ⊆ state
 
-pred frameCard[step: (cur:id, nxt:id), card: (instance:id)] 
+pred eventFlashLightCrossFarToNear[step:(cur:id, nxt:id), flashlight: (instance:id), carrier: (carrier:id), crossingTimeCarrier: (crossingTimeCarrier:int)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ card)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ card)[state],
-        curFirst = (cur ⨝ CardFirst ⨝ card)[first],
-        nxtFirst = (nxt ⨝ CardFirst ⨝ card)[first],
-        curSecond = (cur ⨝ CardSecond ⨝ card)[second],
-        nxtSecond = (nxt ⨝ CardSecond ⨝ card)[second] | (
+        curState = (instanceInState ⨝ cur ⨝ flashlight)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ flashlight)[state],
+        curTotalTimeSpend = (cur ⨝ FlashLightTotalTimeSpend ⨝ flashlight)[totalTimeSpend->curTotalTimeSpend],
+        nxtTotalTimeSpend = (nxt ⨝ FlashLightTotalTimeSpend ⨝ flashlight)[totalTimeSpend->nxtTotalTimeSpend] |
+    ( 
+      // Preconditions 
+      inState[cur, carrier[carrier->instance], StateTravellerFar] ∧
+      eventTravellerCross[step, carrier[carrier as instance], crossingTimeCarrier[crossingTimeCarrier as crossingTime]]  ∧ 
+      // Postconditions
+      (some (crossingTimeCarrier ⨯ curTotalTimeSpend ⨯ nxtTotalTimeSpend) where (nxtTotalTimeSpend = curTotalTimeSpend + crossingTimeCarrier))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventFlashLightCrossFarToNear] ∧
+      // Make sure this instance is in the change set
+      flashlight ⊆ (changedInstance ⨝ step)[instance]
+    )
+
+pred frameFlashLight[step: (cur:id, nxt:id), flashlight: (instance:id)] 
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ flashlight)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ flashlight)[state],
+        curTotalTimeSpend = (cur ⨝ FlashLightTotalTimeSpend ⨝ flashlight)[totalTimeSpend->curTotalTimeSpend],
+        nxtTotalTimeSpend = (nxt ⨝ FlashLightTotalTimeSpend ⨝ flashlight)[totalTimeSpend->nxtTotalTimeSpend] | (
     nxtState = curState ∧
     (
       curState ⊆ uninitialized ∨ 
       (// Postconditions
-       nxtFirst = curFirst ∧
-       nxtSecond = curSecond)
+       (some (curTotalTimeSpend ⨯ nxtTotalTimeSpend) where (nxtTotalTimeSpend = curTotalTimeSpend)))
     )
   )
 
-pred eventCardEqual[step:(cur:id, nxt:id), card: (instance:id), fst: (fst:id), snd: (snd:id)]
+pred eventFlashLightCrossNearToFar[step:(cur:id, nxt:id), flashlight: (instance:id), carrier: (carrier:id), passenger: (passenger:id), crossingTimeCarrier: (crossingTimeCarrier:int), crossingTimePassenger: (crossingTimePassenger:int)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ card)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ card)[state],
-        curFirst = (cur ⨝ CardFirst ⨝ card)[first],
-        nxtFirst = (nxt ⨝ CardFirst ⨝ card)[first],
-        curSecond = (cur ⨝ CardSecond ⨝ card)[second],
-        nxtSecond = (nxt ⨝ CardSecond ⨝ card)[second] |
+        curState = (instanceInState ⨝ cur ⨝ flashlight)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ flashlight)[state],
+        curTotalTimeSpend = (cur ⨝ FlashLightTotalTimeSpend ⨝ flashlight)[totalTimeSpend->curTotalTimeSpend],
+        nxtTotalTimeSpend = (nxt ⨝ FlashLightTotalTimeSpend ⨝ flashlight)[totalTimeSpend->nxtTotalTimeSpend] |
     ( 
       // Preconditions 
-      curFirst = fst[fst as first] ∧
-      curSecond = snd[snd as second]  ∧ 
+      inState[cur, carrier[carrier->instance], StateTravellerNear] ∧
+      inState[cur, passenger[passenger->instance], StateTravellerNear] ∧
+      eventTravellerCross[step, carrier[carrier as instance], crossingTimeCarrier[crossingTimeCarrier as crossingTime]] ∧
+      eventTravellerCross[step, passenger[passenger as instance], crossingTimePassenger[crossingTimePassenger as crossingTime]]  ∧ 
       // Postconditions
-      nxtSecond = curSecond ∧
-      nxtFirst = curFirst  ∧ 
+      (((((some (crossingTimeCarrier ⨯ crossingTimePassenger) where (crossingTimeCarrier > crossingTimePassenger))) ⇒ (some (crossingTimeCarrier ⨯ curTotalTimeSpend ⨯ nxtTotalTimeSpend) where (nxtTotalTimeSpend = curTotalTimeSpend + crossingTimeCarrier)))) ∧ ((not ((((some (crossingTimeCarrier ⨯ crossingTimePassenger) where (crossingTimeCarrier > crossingTimePassenger))))) ⇒ (some (crossingTimePassenger ⨯ curTotalTimeSpend ⨯ nxtTotalTimeSpend) where (nxtTotalTimeSpend = curTotalTimeSpend + crossingTimePassenger)))))  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventCardEqual] ∧
+      forceState[curState, nxtState, EventFlashLightCrossNearToFar] ∧
       // Make sure this instance is in the change set
-      card ⊆ (changedInstance ⨝ step)[instance]
+      flashlight ⊆ (changedInstance ⨝ step)[instance]
     )
 
-pred eventCardCreate[step:(cur:id, nxt:id), card: (instance:id), fst: (fst:id), snd: (snd:id)]
+pred eventFlashLightInitialize[step:(cur:id, nxt:id), flashlight: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ card)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ card)[state],
-        curFirst = (cur ⨝ CardFirst ⨝ card)[first],
-        nxtFirst = (nxt ⨝ CardFirst ⨝ card)[first],
-        curSecond = (cur ⨝ CardSecond ⨝ card)[second],
-        nxtSecond = (nxt ⨝ CardSecond ⨝ card)[second] |
+        curState = (instanceInState ⨝ cur ⨝ flashlight)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ flashlight)[state],
+        curTotalTimeSpend = (cur ⨝ FlashLightTotalTimeSpend ⨝ flashlight)[totalTimeSpend->curTotalTimeSpend],
+        nxtTotalTimeSpend = (nxt ⨝ FlashLightTotalTimeSpend ⨝ flashlight)[totalTimeSpend->nxtTotalTimeSpend] |
     ( 
        
       // Postconditions
-      nxtFirst = fst[fst as first] ∧
-      nxtSecond = snd[snd as second]  ∧ 
+      (some (nxtTotalTimeSpend) where (nxtTotalTimeSpend = 0))  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventCardCreate] ∧
+      forceState[curState, nxtState, EventFlashLightInitialize] ∧
       // Make sure this instance is in the change set
-      card ⊆ (changedInstance ⨝ step)[instance]
-    )
-
-pred eventCardCheck[step:(cur:id, nxt:id), card: (instance:id), r: (r:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ card)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ card)[state],
-        curFirst = (cur ⨝ CardFirst ⨝ card)[first],
-        nxtFirst = (nxt ⨝ CardFirst ⨝ card)[first],
-        curSecond = (cur ⨝ CardSecond ⨝ card)[second],
-        nxtSecond = (nxt ⨝ CardSecond ⨝ card)[second] |
-    ( 
-      // Preconditions 
-      (eventRoomCheck[step, r[r as instance], curSecond[second as key]] ∨ eventRoomUpdate[step, r[r as instance], curFirst[first as oldKey], curSecond[second as newKey]])  ∧ 
-      // Postconditions
-      nxtSecond = curSecond ∧
-      nxtFirst = curFirst  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventCardCheck] ∧
-      // Make sure this instance is in the change set
-      card ⊆ (changedInstance ⨝ step)[instance]
+      flashlight ⊆ (changedInstance ⨝ step)[instance]
     )
 
 
-pred possibleTransitionsCard[step: (cur:id, nxt:id)] 
-  = ∀ inst ∈ (Instance ⨝ Card)[instance] |
+pred possibleTransitionsFlashLight[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ FlashLight)[instance] |
     (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
-      (eventCardCreate[step,inst,(step ⨝ ParamEventCardCreateFst)[fst],(step ⨝ ParamEventCardCreateSnd)[snd]] ∧
-      (step ⨝ raisedEvent)[event] = EventCardCreate ∧
-      (changedInstance ⨝ step)[instance] ⊆ inst)
-    ))
-    ∧
-    (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameCard[step, inst])
-
-pred eventGuestEnterRoom[step:(cur:id, nxt:id), guest: (instance:id), r: (r:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ guest)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ guest)[state],
-        curCard = (cur ⨝ GuestCard ⨝ guest)[card],
-        nxtCard = (nxt ⨝ GuestCard ⨝ guest)[card] |
-    ( 
-      // Preconditions 
-      eventCardCheck[step, curCard[card as instance], r]  ∧ 
-      // Postconditions
-      nxtCard = curCard  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventGuestEnterRoom] ∧
-      // Make sure this instance is in the change set
-      guest ⊆ (changedInstance ⨝ step)[instance]
-    )
-
-pred frameGuest[step: (cur:id, nxt:id), guest: (instance:id)] 
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ guest)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ guest)[state],
-        curCard = (cur ⨝ GuestCard ⨝ guest)[card],
-        nxtCard = (nxt ⨝ GuestCard ⨝ guest)[card] | (
-    nxtState = curState ∧
-    (
-      curState ⊆ uninitialized ∨ 
-      (// Postconditions
-       nxtCard = curCard)
-    )
-  )
-
-pred eventGuestCheckin[step:(cur:id, nxt:id), guest: (instance:id), card: (card:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ guest)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ guest)[state],
-        curCard = (cur ⨝ GuestCard ⨝ guest)[card],
-        nxtCard = (nxt ⨝ GuestCard ⨝ guest)[card] |
-    ( 
-      // Preconditions 
-      inState[cur, card[card->instance], initialized]  ∧ 
-      // Postconditions
-      nxtCard = card  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventGuestCheckin] ∧
-      // Make sure this instance is in the change set
-      guest ⊆ (changedInstance ⨝ step)[instance]
-    )
-
-
-pred possibleTransitionsGuest[step: (cur:id, nxt:id)] 
-  = ∀ inst ∈ (Instance ⨝ Guest)[instance] |
-    (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
-      (eventGuestEnterRoom[step,inst,(step ⨝ ParamEventGuestEnterRoomR)[r]] ∧
-      (step ⨝ raisedEvent)[event] = EventGuestEnterRoom ∧
-      let cur = step[cur->config], card = (GuestCard ⨝ cur ⨝ inst)[card -> instance], r = (ParamEventGuestEnterRoomR ⨝ step)[r -> instance] | (changedInstance ⨝ step)[instance] ⊆ inst ∪ card ∪ r)
-    ))
-    ∧
-    (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameGuest[step, inst])
-
-pred eventRoomCheck[step:(cur:id, nxt:id), room: (instance:id), key: (key:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ room)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ room)[state],
-        curKey = (cur ⨝ RoomKey ⨝ room)[key],
-        nxtKey = (nxt ⨝ RoomKey ⨝ room)[key] |
-    ( 
-      // Preconditions 
-      curKey = key  ∧ 
-      // Postconditions
-      nxtKey = curKey  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventRoomCheck] ∧
-      // Make sure this instance is in the change set
-      room ⊆ (changedInstance ⨝ step)[instance]
-    )
-
-pred eventRoomUpdate[step:(cur:id, nxt:id), room: (instance:id), oldKey: (oldKey:id), newKey: (newKey:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ room)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ room)[state],
-        curKey = (cur ⨝ RoomKey ⨝ room)[key],
-        nxtKey = (nxt ⨝ RoomKey ⨝ room)[key] |
-    ( 
-      // Preconditions 
-      curKey = oldKey[oldKey as key]  ∧ 
-      // Postconditions
-      nxtKey = newKey[newKey as key]  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventRoomUpdate] ∧
-      // Make sure this instance is in the change set
-      room ⊆ (changedInstance ⨝ step)[instance]
-    )
-
-pred eventRoomCreate[step:(cur:id, nxt:id), room: (instance:id), initialKey: (initialKey:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ room)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ room)[state],
-        curKey = (cur ⨝ RoomKey ⨝ room)[key],
-        nxtKey = (nxt ⨝ RoomKey ⨝ room)[key] |
-    ( 
-       
-      // Postconditions
-      nxtKey = initialKey[initialKey as key]  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventRoomCreate] ∧
-      // Make sure this instance is in the change set
-      room ⊆ (changedInstance ⨝ step)[instance]
-    )
-
-pred frameRoom[step: (cur:id, nxt:id), room: (instance:id)] 
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ room)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ room)[state],
-        curKey = (cur ⨝ RoomKey ⨝ room)[key],
-        nxtKey = (nxt ⨝ RoomKey ⨝ room)[key] | (
-    nxtState = curState ∧
-    (
-      curState ⊆ uninitialized ∨ 
-      (// Postconditions
-       nxtKey = curKey)
-    )
-  )
-
-
-pred possibleTransitionsRoom[step: (cur:id, nxt:id)] 
-  = ∀ inst ∈ (Instance ⨝ Room)[instance] |
-    (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
-      (eventRoomCreate[step,inst,(step ⨝ ParamEventRoomCreateInitialKey)[initialKey]] ∧
-      (step ⨝ raisedEvent)[event] = EventRoomCreate ∧
-      (changedInstance ⨝ step)[instance] ⊆ inst)
-    ))
-    ∧
-    (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameRoom[step, inst])
-
-pred eventFrontDeskCheckin[step:(cur:id, nxt:id), frontdesk: (instance:id), fst: (fst:id), snd: (snd:id), c: (c:id), r: (r:id), g: (g:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ frontdesk)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ frontdesk)[state],
-        curName = (cur ⨝ FrontDeskName ⨝ frontdesk)[name->curName],
-        nxtName = (nxt ⨝ FrontDeskName ⨝ frontdesk)[name->nxtName],
-        curIssued = (cur ⨝ FrontDeskIssued ⨝ frontdesk)[issued],
-        nxtIssued = (nxt ⨝ FrontDeskIssued ⨝ frontdesk)[issued] |
-    ( 
-      // Preconditions 
-      eventGuestCheckin[step, g[g as instance], c[c as card]] ∧
-      eventRoomCheck[step, r[r as instance], fst[fst as key]] ∧
-      eventCardEqual[step, c[c as instance], fst, snd] ∧
-      no (curIssued ∩ snd[snd -> issued])  ∧ 
-      // Postconditions
-      (some (curName ⨯ nxtName) where (nxtName = curName)) ∧
-      nxtIssued = (curIssued + (snd[snd as issued]))  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventFrontDeskCheckin] ∧
-      // Make sure this instance is in the change set
-      frontdesk ⊆ (changedInstance ⨝ step)[instance]
-    )
-
-pred frameFrontDesk[step: (cur:id, nxt:id), frontdesk: (instance:id)] 
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ frontdesk)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ frontdesk)[state],
-        curName = (cur ⨝ FrontDeskName ⨝ frontdesk)[name->curName],
-        nxtName = (nxt ⨝ FrontDeskName ⨝ frontdesk)[name->nxtName],
-        curIssued = (cur ⨝ FrontDeskIssued ⨝ frontdesk)[issued],
-        nxtIssued = (nxt ⨝ FrontDeskIssued ⨝ frontdesk)[issued] | (
-    nxtState = curState ∧
-    (
-      curState ⊆ uninitialized ∨ 
-      (// Postconditions
-       (some (curName ⨯ nxtName) where (nxtName = curName)) ∧
-       nxtIssued = curIssued)
-    )
-  )
-
-pred eventFrontDeskInitialize[step:(cur:id, nxt:id), frontdesk: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ frontdesk)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ frontdesk)[state],
-        curName = (cur ⨝ FrontDeskName ⨝ frontdesk)[name->curName],
-        nxtName = (nxt ⨝ FrontDeskName ⨝ frontdesk)[name->nxtName],
-        curIssued = (cur ⨝ FrontDeskIssued ⨝ frontdesk)[issued],
-        nxtIssued = (nxt ⨝ FrontDeskIssued ⨝ frontdesk)[issued] |
-    ( 
-       
-      // Postconditions
-      no nxtIssued ∧
-      (some (nxtName) where (nxtName = "Hilton"))  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventFrontDeskInitialize] ∧
-      // Make sure this instance is in the change set
-      frontdesk ⊆ (changedInstance ⨝ step)[instance]
-    )
-
-
-pred possibleTransitionsFrontDesk[step: (cur:id, nxt:id)] 
-  = ∀ inst ∈ (Instance ⨝ FrontDesk)[instance] |
-    (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
-      (eventFrontDeskCheckin[step,inst,(step ⨝ ParamEventFrontDeskCheckinFst)[fst],(step ⨝ ParamEventFrontDeskCheckinSnd)[snd],(step ⨝ ParamEventFrontDeskCheckinC)[c],(step ⨝ ParamEventFrontDeskCheckinR)[r],(step ⨝ ParamEventFrontDeskCheckinG)[g]] ∧
-      (step ⨝ raisedEvent)[event] = EventFrontDeskCheckin ∧
-      let cur = step[cur->config], c = (ParamEventFrontDeskCheckinC ⨝ step)[c -> instance], g = (ParamEventFrontDeskCheckinG ⨝ step)[g -> instance], r = (ParamEventFrontDeskCheckinR ⨝ step)[r -> instance] | (changedInstance ⨝ step)[instance] ⊆ c ∪ inst ∪ g ∪ r)
+      (eventFlashLightCrossFarToNear[step,inst,(step ⨝ ParamEventFlashLightCrossFarToNearCarrier)[carrier],(step ⨝ ParamEventFlashLightCrossFarToNearCrossingTimeCarrier)[crossingTimeCarrier]] ∧
+      (step ⨝ raisedEvent)[event] = EventFlashLightCrossFarToNear ∧
+      let cur = step[cur->config], carrier = (ParamEventFlashLightCrossFarToNearCarrier ⨝ step)[carrier -> instance] | (changedInstance ⨝ step)[instance] ⊆ inst ∪ carrier)
       ∨
-      (eventFrontDeskInitialize[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventFrontDeskInitialize ∧
+      (eventFlashLightCrossNearToFar[step,inst,(step ⨝ ParamEventFlashLightCrossNearToFarCarrier)[carrier],(step ⨝ ParamEventFlashLightCrossNearToFarPassenger)[passenger],(step ⨝ ParamEventFlashLightCrossNearToFarCrossingTimeCarrier)[crossingTimeCarrier],(step ⨝ ParamEventFlashLightCrossNearToFarCrossingTimePassenger)[crossingTimePassenger]] ∧
+      (step ⨝ raisedEvent)[event] = EventFlashLightCrossNearToFar ∧
+      let cur = step[cur->config], carrier = (ParamEventFlashLightCrossNearToFarCarrier ⨝ step)[carrier -> instance], passenger = (ParamEventFlashLightCrossNearToFarPassenger ⨝ step)[passenger -> instance] | (changedInstance ⨝ step)[instance] ⊆ inst ∪ carrier ∪ passenger)
+      ∨
+      (eventFlashLightInitialize[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventFlashLightInitialize ∧
       (changedInstance ⨝ step)[instance] ⊆ inst)
     ))
     ∧
-    (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameFrontDesk[step, inst])
+    (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameFlashLight[step, inst])
+
+pred frameTraveller[step: (cur:id, nxt:id), traveller: (instance:id)] 
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ traveller)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ traveller)[state],
+        curTimeToCross = (cur ⨝ TravellerTimeToCross ⨝ traveller)[timeToCross->curTimeToCross],
+        nxtTimeToCross = (nxt ⨝ TravellerTimeToCross ⨝ traveller)[timeToCross->nxtTimeToCross] | (
+    nxtState = curState ∧
+    (
+      curState ⊆ uninitialized ∨ 
+      (// Postconditions
+       (some (nxtTimeToCross ⨯ curTimeToCross) where (nxtTimeToCross = curTimeToCross)))
+    )
+  )
+
+pred eventTravellerCross[step:(cur:id, nxt:id), traveller: (instance:id), crossingTime: (crossingTime:int)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ traveller)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ traveller)[state],
+        curTimeToCross = (cur ⨝ TravellerTimeToCross ⨝ traveller)[timeToCross->curTimeToCross],
+        nxtTimeToCross = (nxt ⨝ TravellerTimeToCross ⨝ traveller)[timeToCross->nxtTimeToCross] |
+    ( 
+      // Preconditions 
+      (some (crossingTime ⨯ curTimeToCross) where (crossingTime = curTimeToCross))  ∧ 
+      // Postconditions
+      (some (nxtTimeToCross ⨯ curTimeToCross) where (nxtTimeToCross = curTimeToCross))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventTravellerCross] ∧
+      // Make sure this instance is in the change set
+      traveller ⊆ (changedInstance ⨝ step)[instance]
+    )
+
+pred eventTravellerInitialize[step:(cur:id, nxt:id), traveller: (instance:id), timeToCross: (timeToCross:int)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ traveller)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ traveller)[state],
+        curTimeToCross = (cur ⨝ TravellerTimeToCross ⨝ traveller)[timeToCross->curTimeToCross],
+        nxtTimeToCross = (nxt ⨝ TravellerTimeToCross ⨝ traveller)[timeToCross->nxtTimeToCross] |
+    ( 
+      // Preconditions 
+      (some (timeToCross) where (timeToCross > 0))  ∧ 
+      // Postconditions
+      (some (nxtTimeToCross ⨯ timeToCross) where (nxtTimeToCross = timeToCross))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventTravellerInitialize] ∧
+      // Make sure this instance is in the change set
+      traveller ⊆ (changedInstance ⨝ step)[instance]
+    )
+
+
+pred possibleTransitionsTraveller[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ Traveller)[instance] |
+    (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
+      (eventTravellerInitialize[step,inst,(step ⨝ ParamEventTravellerInitializeTimeToCross)[timeToCross]] ∧
+      (step ⨝ raisedEvent)[event] = EventTravellerInitialize ∧
+      (changedInstance ⨝ step)[instance] ⊆ inst)
+    ))
+    ∧
+    (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameTraveller[step, inst])
 
 
 // Transition function
-∀ step ∈ order | possibleTransitionsCard[step] ∧ possibleTransitionsGuest[step] ∧ possibleTransitionsRoom[step] ∧ possibleTransitionsFrontDesk[step]
+∀ step ∈ order | possibleTransitionsFlashLight[step] ∧ possibleTransitionsTraveller[step]
 
 // Asserts: this is where the checks get added
-∃ step1 ∈ order, g1 ∈ (Guest ⨝ Instance)[instance], g2 ∈ ((Guest ⨝ Instance)[instance] ∖ g1) | let step2 = (order ⨝ step1[nxt->cur]), step3 = (order ⨝ step2[nxt->cur]) | 
-  ((raisedEvent ⨝ step1)[instance,event] = (g1 ⨯ EventGuestEnterRoom) ∧ 
-   (raisedEvent ⨝ step2)[instance,event] = (g2 ⨯ EventGuestEnterRoom) ∧ 
-   (raisedEvent ⨝ step3)[instance,event] = (g1 ⨯ EventGuestEnterRoom))
+exists c: Config | ((forall t ∈ (Instance ⨝ Traveller)[instance] | (instanceInState ⨝ t ⨝ c)[state] ⊆ StateTravellerFar) && (some (FlashLightTotalTimeSpend |x| c) where totalTimeSpend = 17))
 
 // Minimize the number of steps by minimizing the number of Configurations
 objectives: minimize Config[count()]

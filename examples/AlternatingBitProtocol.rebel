@@ -1,0 +1,30 @@
+module AlternatingBitProtocol
+
+spec Channel
+  val: Integer;
+  
+  event open() 
+    post: this.val' = -1;
+    
+  internal event accept(val: Integer) 
+    pre: val = 0 || val = 1;
+    post: this.val' = val;
+  
+  event lose()
+    post: this.val' = -1;
+
+  states:
+    (*) -> empty: open;
+    empty -> nonempty: accept;
+    nonempty -> nonempty: accept;
+    nonempty -> empty: lose;
+
+spec Sender
+  send: Channel,
+  receive: Channel,
+  lastSendValue: Integer;
+
+spec Receiver
+  receive: Channel,
+  send: Channel,
+  lastReceivedValue: Integer;

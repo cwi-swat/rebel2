@@ -1,0 +1,41 @@
+module RopeBridge
+
+spec Traveller
+  timeToCross: Integer;
+  
+  event initialize(timeToCross: Integer)
+    pre: timeToCross > 0;
+    post: this.timeToCross' = timeToCross;
+  
+  internal event cross(crossingTime: Integer)
+    pre: crossingTime = this.timeToCross;
+    
+  states:
+    (*) -> near: initialize;
+    near -> far: cross;
+    far -> near: cross;
+    
+spec FlashLight
+  totalTimeSpend: Integer;
+  
+  event initialize()
+    post: this.totalTimeSpend' = 0;
+    
+  event crossNearToFar(carrier: Traveller, passenger: Traveller, crossingTimeCarrier: Integer, crossingTimePassenger: Integer)
+    pre: 
+      carrier is near, passenger is near,
+      carrier.cross(crossingTimeCarrier), passenger.cross(crossingTimePassenger);
+    post:
+      if crossingTimeCarrier > crossingTimePassenger 
+        then this.totalTimeSpend' = this.totalTimeSpend + crossingTimeCarrier
+        else this.totalTimeSpend' = this.totalTimeSpend + crossingTimePassenger;
+      
+
+  event crossFarToNear(carrier: Traveller, crossingTimeCarrier: Integer)
+    pre: carrier is far, carrier.cross(crossingTimeCarrier);
+    post: this.totalTimeSpend' = this.totalTimeSpend + crossingTimeCarrier; 
+    
+  states:
+    (*) -> near: initialize;
+    near -> far: crossNearToFar;
+    far -> near: crossFarToNear;  
