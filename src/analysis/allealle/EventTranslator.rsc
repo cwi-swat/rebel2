@@ -101,7 +101,7 @@ private tuple[set[str],list[str]] syncedInstanceRels(Spec s, Event e, str instRe
   set[str] relNames = {};
   
   for (SyncedWith synced <- syncDep[<s,e>]) {
-    if (/f:(Formula)`<Expr exp>.<Id ev>(<{Expr ","}* args>)` := e.body, "<ev>" == "<synced.e.name>", getSpecTypeName(exp,cfg.tm) == "<synced.s.name>") {
+    for (/f:(Formula)`<Expr exp>.<Id ev>(<{Expr ","}* args>)` := e.body, "<ev>" == "<synced.e.name>", getSpecTypeName(exp,cfg.tm) == "<synced.s.name>") {
       tuple[str fieldName, str relName] root = findRootRel(exp, instRel, s, e, scp, c); 
 
       syncLets += "<root.fieldName> = <root.relName>";
@@ -111,9 +111,7 @@ private tuple[set[str],list[str]] syncedInstanceRels(Spec s, Event e, str instRe
         syncLets += sl;
         relNames += n;
       } 
-    } else {
-      throw "Unable to find syncing event expression in event body";
-    }   
+    }    
   }
   
   return <relNames, syncLets>;
@@ -260,7 +258,7 @@ str translate((Formula)`<Expr lhs> is <Id state>`, Context ctx) {
    
   str specRel = isParam(lhs, ctx.cfg.tm) ?
     "<fieldName>[<fieldName>-\>instance]" : 
-    "cur<capitalize(fieldName)>[<fieldName>-\>instance])";  
+    "cur<capitalize(fieldName)>[<fieldName>-\>instance]";  
   
   str stateRel = "<state>" == "initialized" ?
     "initialized" :
