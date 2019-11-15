@@ -1,11 +1,13 @@
 module analysis::allealle::tests::Rebel2AlleTester
 
 import analysis::allealle::Rebel2Alle;
+import analysis::allealle::ConfigTranslator;
+import analysis::allealle::LTLTranslator;
 import analysis::allealle::SyncedEventGraphBuilder;
 
-import rebel::lang::SpecSyntax;
-import rebel::lang::SpecParser;
-import rebel::lang::SpecTypeChecker;
+import rebel::lang::Syntax;
+import rebel::lang::Parser;
+import rebel::lang::TypeChecker;
 
 import analysis::allealle::CommonTranslationFunctions;
 
@@ -18,21 +20,7 @@ import analysis::Normalizer;
 import util::PathUtil;
 import analysis::graphs::Graph;
 
-void translatePingPong() {
-  Module pp = parseModule(|project://rebel2/examples/PingPong.rebel|);
-  normalize(pp);
-  
-  Module normalizedPp = parseModule(|project://rebel2/bin/normalized/PingPong.rebel|);
-  
-  TModel tm = rebelTModelFromTree(normalizedPp, pathConf = normPathConfig());
-    
-  instances = {<getSpec(normalizedPp, "PingPong"), "p1", uninitialized()>, 
-               <getSpec(normalizedPp, "PingPong"), "p2", uninitialized()>};
-               
-  initialValues = {};  
-  
-  translateSpecs(config(instances, initialValues, tm, 8), "exists c: Config, p: PingPongTimes | some (c |x| p) where times = 5");
-}
+void translatePingPong() = performCheck("HitFiveTimes", parseModule(|project://rebel2/examples/PingPong.rebel|));
 
 private PathConfig normPathConfig() = pathConfig(srcs=[|project://rebel2/bin/normalized|]);
 
@@ -174,26 +162,6 @@ void translateHotel() {
   translateSpecs(config(instances, initialValues, tm, 12), noIntruder);
 }
 
-void translateRopeBridge() {
-  normalize(parseModule(|project://rebel2/examples/RopeBridge.rebel|));
-  
-  Module normalizedRB = parseModule(|project://rebel2/bin/normalized/RopeBridge.rebel|);
-  
-  TModel tm = rebelTModelFromTree(normalizedRB, debug = false, pathConf = normPathConfig());
-  
-  instances = {<getSpec(normalizedRB, "Traveller"), "t1", state("near")>,
-               <getSpec(normalizedRB, "Traveller"), "t2", state("near")>,
-                <getSpec(normalizedRB, "Traveller"), "t3", state("near")>,
-                <getSpec(normalizedRB, "Traveller"), "t4", state("near")>,
-               <getSpec(normalizedRB, "FlashLight"), "fl1", state("near")>};
-
-  initialValues = {<getSpec(normalizedRB, "Traveller"), "t1", "timeToCross", "1">,
-                   <getSpec(normalizedRB, "Traveller"), "t2", "timeToCross", "2">,
-                   <getSpec(normalizedRB, "Traveller"), "t3", "timeToCross", "5">,
-                   <getSpec(normalizedRB, "Traveller"), "t4", "timeToCross", "10">,
-                   <getSpec(normalizedRB, "FlashLight"), "fl1", "totalTimeSpend", "0">};
-
-  str everyBodyCrossed = "exists c: Config | ((forall t ∈ (Instance ⨝ Traveller)[instance] | (instanceInState ⨝ t ⨝ c)[state] ⊆ StateTravellerFar) && (some (FlashLightTotalTimeSpend |x| c) where totalTimeSpend = 17))"; 
-   
-  translateSpecs(config(instances, initialValues, tm, 7), everyBodyCrossed);
-}
+void translateRopeBridge() = performCheck("EverybodyCrossedInTheLeastTime", parseModule(|project://rebel2/examples/RopeBridge.rebel|));
+void translateLeaderElection() = performCheck("EventuallyOneIsElected", parseModule(|project://rebel2/examples/LeaderElection.rebel|));  
+void translateId() = performCheck("ConsecutiveValues", parseModule(|project://rebel2/examples/lib/checks/IdChecks.rebel|));  

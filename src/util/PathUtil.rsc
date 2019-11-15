@@ -3,7 +3,7 @@ module util::PathUtil
 import String;
 import IO;
 
-import rebel::lang::SpecSyntax;
+import rebel::lang::Syntax;
 
 data PathConfig = pathConfig(list[loc] srcs = [], list[loc] libs = []);
 

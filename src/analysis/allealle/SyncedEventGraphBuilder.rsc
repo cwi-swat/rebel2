@@ -1,7 +1,7 @@
 module analysis::allealle::SyncedEventGraphBuilder
 
-import rebel::lang::SpecSyntax;
-import rebel::lang::SpecTypeChecker;
+import rebel::lang::Syntax;
+import rebel::lang::TypeChecker;
 import analysis::allealle::CommonTranslationFunctions;
 
 extend analysis::graphs::Graph;

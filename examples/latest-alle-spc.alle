@@ -1,83 +1,99 @@
 // Static configuration of state machines
 // Define the specs that can take place in the transition system
-FlashLight (spec:id) = {<flashlight>}
-Traveller (spec:id) = {<traveller>}
+Id (spec:id) = {<id>}
+Process (spec:id) = {<process>}
 
 // Define all possible states for all machines
-State (state:id) = {<state_uninitialized>,<state_finalized>,<state_flashlight_near>,<state_flashlight_far>,<state_traveller_near>,<state_traveller_far>}
-initialized (state:id) = {<state_flashlight_near>,<state_flashlight_far>,<state_traveller_near>,<state_traveller_far>}
+State (state:id) = {<state_uninitialized>,<state_finalized>,<state_id_created>,<state_process_notelected>,<state_process_elected>}
+initialized (state:id) = {<state_id_created>,<state_process_notelected>,<state_process_elected>}
 finalized (state:id) = {<state_finalized>}
 uninitialized (state:id) = {<state_uninitialized>}
-StateFlashLightNear (state:id) = {<state_flashlight_near>}StateFlashLightFar (state:id) = {<state_flashlight_far>}
-StateTravellerNear (state:id) = {<state_traveller_near>}StateTravellerFar (state:id) = {<state_traveller_far>}
+StateIdCreated (state:id) = {<state_id_created>}
+StateProcessNotElected (state:id) = {<state_process_notelected>}StateProcessElected (state:id) = {<state_process_elected>}
 
 // Define which transitions are allowed (in the form of `from a state` -> ` via an event` -> `to a state`
-allowedTransitions (from:id, to:id, event:id) = {<state_flashlight_far,state_flashlight_near,event_flashlight_crossfartonear>,<state_uninitialized,state_flashlight_near,event_flashlight_initialize>,<state_flashlight_near,state_flashlight_far,event_flashlight_crossneartofar>,<state_uninitialized,state_traveller_near,event_traveller_initialize>,<state_traveller_near,state_traveller_far,event_traveller_cross>,<state_traveller_far,state_traveller_near,event_traveller_cross>}
+allowedTransitions (from:id, to:id, event:id) = {<state_id_created,state_id_created,event_id_lesserthan>,<state_id_created,state_id_created,event_id_equalval>,<state_uninitialized,state_id_created,event_id_create>,<state_id_created,state_id_created,event_id_greaterthaneqval>,<state_id_created,state_id_created,event_id_equal>,<state_process_notelected,state_process_notelected,event_process_receive>,<state_process_notelected,state_process_notelected,event_process_send>,<state_process_notelected,state_process_elected,event_process_receiveelected>}
 // Define each event as single relation so that the events can be used as variables in the constraints 
-EventFlashLight__frame (event:id) = {<event_flashlight___frame>}
-EventTravellerInitialize (event:id) = {<event_traveller_initialize>}
-EventTravellerCross (event:id) = {<event_traveller_cross>}
-EventTraveller__frame (event:id) = {<event_traveller___frame>}
-EventFlashLightInitialize (event:id) = {<event_flashlight_initialize>}
-EventFlashLightCrossNearToFar (event:id) = {<event_flashlight_crossneartofar>}
-EventFlashLightCrossFarToNear (event:id) = {<event_flashlight_crossfartonear>}
+EventId__frame (event:id) = {<event_id___frame>}
+EventIdEqual (event:id) = {<event_id_equal>}
+EventProcessSend (event:id) = {<event_process_send>}
+EventProcessReceiveElected (event:id) = {<event_process_receiveelected>}
+EventProcess__frame (event:id) = {<event_process___frame>}
+EventProcessReceive (event:id) = {<event_process_receive>}
+EventIdLesserThan (event:id) = {<event_id_lesserthan>}
+EventIdEqualVal (event:id) = {<event_id_equalval>}
+EventIdCreate (event:id) = {<event_id_create>}
+EventIdGreaterThanEqVal (event:id) = {<event_id_greaterthaneqval>}
 
 
 // Dynamic configuration of state machines
-Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>}
-order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>,<c6,c7>}
-InitialConfig (config:id) = {<c1>}
+Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>}
+order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>}
+first (config:id) = {<c1>}
+last (config:id) <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>}
+back (config:id) <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>}
+loop (cur:id, nxt:id) <= {<c2,c1>,<c2,c2>,<c3,c1>,<c3,c2>,<c3,c3>,<c4,c1>,<c4,c2>,<c4,c3>,<c4,c4>,<c5,c1>,<c5,c2>,<c5,c3>,<c5,c4>,<c5,c5>,<c6,c1>,<c6,c2>,<c6,c3>,<c6,c4>,<c6,c5>,<c6,c6>}
 
-Instance (spec:id, instance:id) = {<flashlight,fl1>,<traveller,t2>,<traveller,t3>,<traveller,t1>,<traveller,t4>}
-instanceInState (config:id, instance:id, state:id) >= {<c1,fl1,state_flashlight_near>,<c1,t2,state_traveller_near>,<c1,t3,state_traveller_near>,<c1,t1,state_traveller_near>,<c1,t4,state_traveller_near>}<= {<c1,fl1,state_flashlight_far>,<c1,fl1,state_uninitialized>,<c1,fl1,state_flashlight_near>,<c1,fl1,state_finalized>,<c1,t4,state_traveller_far>,<c1,t4,state_uninitialized>,<c1,t4,state_traveller_near>,<c1,t4,state_finalized>,<c1,t1,state_traveller_far>,<c1,t1,state_uninitialized>,<c1,t1,state_traveller_near>,<c1,t1,state_finalized>,<c1,t2,state_traveller_far>,<c1,t2,state_uninitialized>,<c1,t2,state_traveller_near>,<c1,t2,state_finalized>,<c1,t3,state_traveller_far>,<c1,t3,state_uninitialized>,<c1,t3,state_traveller_near>,<c1,t3,state_finalized>,<c2,fl1,state_flashlight_far>,<c2,fl1,state_uninitialized>,<c2,fl1,state_flashlight_near>,<c2,fl1,state_finalized>,<c2,t4,state_traveller_far>,<c2,t4,state_uninitialized>,<c2,t4,state_traveller_near>,<c2,t4,state_finalized>,<c2,t1,state_traveller_far>,<c2,t1,state_uninitialized>,<c2,t1,state_traveller_near>,<c2,t1,state_finalized>,<c2,t2,state_traveller_far>,<c2,t2,state_uninitialized>,<c2,t2,state_traveller_near>,<c2,t2,state_finalized>,<c2,t3,state_traveller_far>,<c2,t3,state_uninitialized>,<c2,t3,state_traveller_near>,<c2,t3,state_finalized>,<c3,fl1,state_flashlight_far>,<c3,fl1,state_uninitialized>,<c3,fl1,state_flashlight_near>,<c3,fl1,state_finalized>,<c3,t4,state_traveller_far>,<c3,t4,state_uninitialized>,<c3,t4,state_traveller_near>,<c3,t4,state_finalized>,<c3,t1,state_traveller_far>,<c3,t1,state_uninitialized>,<c3,t1,state_traveller_near>,<c3,t1,state_finalized>,<c3,t2,state_traveller_far>,<c3,t2,state_uninitialized>,<c3,t2,state_traveller_near>,<c3,t2,state_finalized>,<c3,t3,state_traveller_far>,<c3,t3,state_uninitialized>,<c3,t3,state_traveller_near>,<c3,t3,state_finalized>,<c4,fl1,state_flashlight_far>,<c4,fl1,state_uninitialized>,<c4,fl1,state_flashlight_near>,<c4,fl1,state_finalized>,<c4,t4,state_traveller_far>,<c4,t4,state_uninitialized>,<c4,t4,state_traveller_near>,<c4,t4,state_finalized>,<c4,t1,state_traveller_far>,<c4,t1,state_uninitialized>,<c4,t1,state_traveller_near>,<c4,t1,state_finalized>,<c4,t2,state_traveller_far>,<c4,t2,state_uninitialized>,<c4,t2,state_traveller_near>,<c4,t2,state_finalized>,<c4,t3,state_traveller_far>,<c4,t3,state_uninitialized>,<c4,t3,state_traveller_near>,<c4,t3,state_finalized>,<c5,fl1,state_flashlight_far>,<c5,fl1,state_uninitialized>,<c5,fl1,state_flashlight_near>,<c5,fl1,state_finalized>,<c5,t4,state_traveller_far>,<c5,t4,state_uninitialized>,<c5,t4,state_traveller_near>,<c5,t4,state_finalized>,<c5,t1,state_traveller_far>,<c5,t1,state_uninitialized>,<c5,t1,state_traveller_near>,<c5,t1,state_finalized>,<c5,t2,state_traveller_far>,<c5,t2,state_uninitialized>,<c5,t2,state_traveller_near>,<c5,t2,state_finalized>,<c5,t3,state_traveller_far>,<c5,t3,state_uninitialized>,<c5,t3,state_traveller_near>,<c5,t3,state_finalized>,<c6,fl1,state_flashlight_far>,<c6,fl1,state_uninitialized>,<c6,fl1,state_flashlight_near>,<c6,fl1,state_finalized>,<c6,t4,state_traveller_far>,<c6,t4,state_uninitialized>,<c6,t4,state_traveller_near>,<c6,t4,state_finalized>,<c6,t1,state_traveller_far>,<c6,t1,state_uninitialized>,<c6,t1,state_traveller_near>,<c6,t1,state_finalized>,<c6,t2,state_traveller_far>,<c6,t2,state_uninitialized>,<c6,t2,state_traveller_near>,<c6,t2,state_finalized>,<c6,t3,state_traveller_far>,<c6,t3,state_uninitialized>,<c6,t3,state_traveller_near>,<c6,t3,state_finalized>,<c7,fl1,state_flashlight_far>,<c7,fl1,state_uninitialized>,<c7,fl1,state_flashlight_near>,<c7,fl1,state_finalized>,<c7,t4,state_traveller_far>,<c7,t4,state_uninitialized>,<c7,t4,state_traveller_near>,<c7,t4,state_finalized>,<c7,t1,state_traveller_far>,<c7,t1,state_uninitialized>,<c7,t1,state_traveller_near>,<c7,t1,state_finalized>,<c7,t2,state_traveller_far>,<c7,t2,state_uninitialized>,<c7,t2,state_traveller_near>,<c7,t2,state_finalized>,<c7,t3,state_traveller_far>,<c7,t3,state_uninitialized>,<c7,t3,state_traveller_near>,<c7,t3,state_finalized>}
-raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_flashlight_initialize,fl1>,<c1,c2,event_flashlight_crossneartofar,fl1>,<c1,c2,event_flashlight_crossfartonear,fl1>,<c2,c3,event_flashlight_initialize,fl1>,<c2,c3,event_flashlight_crossneartofar,fl1>,<c2,c3,event_flashlight_crossfartonear,fl1>,<c3,c4,event_flashlight_initialize,fl1>,<c3,c4,event_flashlight_crossneartofar,fl1>,<c3,c4,event_flashlight_crossfartonear,fl1>,<c4,c5,event_flashlight_initialize,fl1>,<c4,c5,event_flashlight_crossneartofar,fl1>,<c4,c5,event_flashlight_crossfartonear,fl1>,<c5,c6,event_flashlight_initialize,fl1>,<c5,c6,event_flashlight_crossneartofar,fl1>,<c5,c6,event_flashlight_crossfartonear,fl1>,<c6,c7,event_flashlight_initialize,fl1>,<c6,c7,event_flashlight_crossneartofar,fl1>,<c6,c7,event_flashlight_crossfartonear,fl1>,<c1,c2,event_traveller_initialize,t4>,<c2,c3,event_traveller_initialize,t4>,<c3,c4,event_traveller_initialize,t4>,<c4,c5,event_traveller_initialize,t4>,<c5,c6,event_traveller_initialize,t4>,<c6,c7,event_traveller_initialize,t4>,<c1,c2,event_traveller_initialize,t1>,<c2,c3,event_traveller_initialize,t1>,<c3,c4,event_traveller_initialize,t1>,<c4,c5,event_traveller_initialize,t1>,<c5,c6,event_traveller_initialize,t1>,<c6,c7,event_traveller_initialize,t1>,<c1,c2,event_traveller_initialize,t2>,<c2,c3,event_traveller_initialize,t2>,<c3,c4,event_traveller_initialize,t2>,<c4,c5,event_traveller_initialize,t2>,<c5,c6,event_traveller_initialize,t2>,<c6,c7,event_traveller_initialize,t2>,<c1,c2,event_traveller_initialize,t3>,<c2,c3,event_traveller_initialize,t3>,<c3,c4,event_traveller_initialize,t3>,<c4,c5,event_traveller_initialize,t3>,<c5,c6,event_traveller_initialize,t3>,<c6,c7,event_traveller_initialize,t3>}
-changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,t4>,<c1,c2,fl1>,<c1,c2,t1>,<c1,c2,t2>,<c1,c2,t3>,<c2,c3,t4>,<c2,c3,fl1>,<c2,c3,t1>,<c2,c3,t2>,<c2,c3,t3>,<c3,c4,t4>,<c3,c4,fl1>,<c3,c4,t1>,<c3,c4,t2>,<c3,c4,t3>,<c4,c5,t4>,<c4,c5,fl1>,<c4,c5,t1>,<c4,c5,t2>,<c4,c5,t3>,<c5,c6,t4>,<c5,c6,fl1>,<c5,c6,t1>,<c5,c6,t2>,<c5,c6,t3>,<c6,c7,t4>,<c6,c7,fl1>,<c6,c7,t1>,<c6,c7,t2>,<c6,c7,t3>}
+Instance (spec:id, instance:id) = {<process,p2>,<process,p3>,<id,id2>,<id,id1>,<process,p1>,<id,id3>}
+instanceInState (config:id, instance:id, state:id) >= {<c1,p2,state_process_notelected>,<c1,p3,state_process_notelected>,<c1,id2,state_id_created>,<c1,id1,state_id_created>,<c1,p1,state_process_notelected>,<c1,id3,state_id_created>}<= {<c1,id1,state_uninitialized>,<c1,id1,state_id_created>,<c1,id1,state_finalized>,<c1,id2,state_uninitialized>,<c1,id2,state_id_created>,<c1,id2,state_finalized>,<c1,id3,state_uninitialized>,<c1,id3,state_id_created>,<c1,id3,state_finalized>,<c1,p1,state_uninitialized>,<c1,p1,state_process_elected>,<c1,p1,state_finalized>,<c1,p1,state_process_notelected>,<c1,p2,state_uninitialized>,<c1,p2,state_process_elected>,<c1,p2,state_finalized>,<c1,p2,state_process_notelected>,<c1,p3,state_uninitialized>,<c1,p3,state_process_elected>,<c1,p3,state_finalized>,<c1,p3,state_process_notelected>,<c2,id1,state_uninitialized>,<c2,id1,state_id_created>,<c2,id1,state_finalized>,<c2,id2,state_uninitialized>,<c2,id2,state_id_created>,<c2,id2,state_finalized>,<c2,id3,state_uninitialized>,<c2,id3,state_id_created>,<c2,id3,state_finalized>,<c2,p1,state_uninitialized>,<c2,p1,state_process_elected>,<c2,p1,state_finalized>,<c2,p1,state_process_notelected>,<c2,p2,state_uninitialized>,<c2,p2,state_process_elected>,<c2,p2,state_finalized>,<c2,p2,state_process_notelected>,<c2,p3,state_uninitialized>,<c2,p3,state_process_elected>,<c2,p3,state_finalized>,<c2,p3,state_process_notelected>,<c3,id1,state_uninitialized>,<c3,id1,state_id_created>,<c3,id1,state_finalized>,<c3,id2,state_uninitialized>,<c3,id2,state_id_created>,<c3,id2,state_finalized>,<c3,id3,state_uninitialized>,<c3,id3,state_id_created>,<c3,id3,state_finalized>,<c3,p1,state_uninitialized>,<c3,p1,state_process_elected>,<c3,p1,state_finalized>,<c3,p1,state_process_notelected>,<c3,p2,state_uninitialized>,<c3,p2,state_process_elected>,<c3,p2,state_finalized>,<c3,p2,state_process_notelected>,<c3,p3,state_uninitialized>,<c3,p3,state_process_elected>,<c3,p3,state_finalized>,<c3,p3,state_process_notelected>,<c4,id1,state_uninitialized>,<c4,id1,state_id_created>,<c4,id1,state_finalized>,<c4,id2,state_uninitialized>,<c4,id2,state_id_created>,<c4,id2,state_finalized>,<c4,id3,state_uninitialized>,<c4,id3,state_id_created>,<c4,id3,state_finalized>,<c4,p1,state_uninitialized>,<c4,p1,state_process_elected>,<c4,p1,state_finalized>,<c4,p1,state_process_notelected>,<c4,p2,state_uninitialized>,<c4,p2,state_process_elected>,<c4,p2,state_finalized>,<c4,p2,state_process_notelected>,<c4,p3,state_uninitialized>,<c4,p3,state_process_elected>,<c4,p3,state_finalized>,<c4,p3,state_process_notelected>,<c5,id1,state_uninitialized>,<c5,id1,state_id_created>,<c5,id1,state_finalized>,<c5,id2,state_uninitialized>,<c5,id2,state_id_created>,<c5,id2,state_finalized>,<c5,id3,state_uninitialized>,<c5,id3,state_id_created>,<c5,id3,state_finalized>,<c5,p1,state_uninitialized>,<c5,p1,state_process_elected>,<c5,p1,state_finalized>,<c5,p1,state_process_notelected>,<c5,p2,state_uninitialized>,<c5,p2,state_process_elected>,<c5,p2,state_finalized>,<c5,p2,state_process_notelected>,<c5,p3,state_uninitialized>,<c5,p3,state_process_elected>,<c5,p3,state_finalized>,<c5,p3,state_process_notelected>,<c6,id1,state_uninitialized>,<c6,id1,state_id_created>,<c6,id1,state_finalized>,<c6,id2,state_uninitialized>,<c6,id2,state_id_created>,<c6,id2,state_finalized>,<c6,id3,state_uninitialized>,<c6,id3,state_id_created>,<c6,id3,state_finalized>,<c6,p1,state_uninitialized>,<c6,p1,state_process_elected>,<c6,p1,state_finalized>,<c6,p1,state_process_notelected>,<c6,p2,state_uninitialized>,<c6,p2,state_process_elected>,<c6,p2,state_finalized>,<c6,p2,state_process_notelected>,<c6,p3,state_uninitialized>,<c6,p3,state_process_elected>,<c6,p3,state_finalized>,<c6,p3,state_process_notelected>}
+raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_id_create,id1>,<c2,c3,event_id_create,id1>,<c3,c4,event_id_create,id1>,<c4,c5,event_id_create,id1>,<c5,c6,event_id_create,id1>,<c1,c2,event_id_create,id2>,<c2,c3,event_id_create,id2>,<c3,c4,event_id_create,id2>,<c4,c5,event_id_create,id2>,<c5,c6,event_id_create,id2>,<c1,c2,event_id_create,id3>,<c2,c3,event_id_create,id3>,<c3,c4,event_id_create,id3>,<c4,c5,event_id_create,id3>,<c5,c6,event_id_create,id3>,<c1,c2,event_process_send,p1>,<c2,c3,event_process_send,p1>,<c3,c4,event_process_send,p1>,<c4,c5,event_process_send,p1>,<c5,c6,event_process_send,p1>,<c1,c2,event_process_send,p2>,<c2,c3,event_process_send,p2>,<c3,c4,event_process_send,p2>,<c4,c5,event_process_send,p2>,<c5,c6,event_process_send,p2>,<c1,c2,event_process_send,p3>,<c2,c3,event_process_send,p3>,<c3,c4,event_process_send,p3>,<c4,c5,event_process_send,p3>,<c5,c6,event_process_send,p3>}
+changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,p1>,<c1,c2,p2>,<c1,c2,p3>,<c1,c2,id1>,<c1,c2,id2>,<c1,c2,id3>,<c2,c3,p1>,<c2,c3,p2>,<c2,c3,p3>,<c2,c3,id1>,<c2,c3,id2>,<c2,c3,id3>,<c3,c4,p1>,<c3,c4,p2>,<c3,c4,p3>,<c3,c4,id1>,<c3,c4,id2>,<c3,c4,id3>,<c4,c5,p1>,<c4,c5,p2>,<c4,c5,p3>,<c4,c5,id1>,<c4,c5,id2>,<c4,c5,id3>,<c5,c6,p1>,<c5,c6,p2>,<c5,c6,p3>,<c5,c6,id1>,<c5,c6,id2>,<c5,c6,id3>}
 
-FlashLightTotalTimeSpend (config:id, instance:id, totalTimeSpend:int) >= {<c1,fl1,0>} <= {<c2,fl1,?>,<c3,fl1,?>,<c4,fl1,?>,<c5,fl1,?>,<c6,fl1,?>,<c7,fl1,?>}
-TravellerTimeToCross (config:id, instance:id, timeToCross:int) >= {<c1,t2,2>,<c1,t3,5>,<c1,t4,10>,<c1,t1,1>} <= {<c2,t4,?>,<c3,t4,?>,<c4,t4,?>,<c5,t4,?>,<c6,t4,?>,<c7,t4,?>,<c2,t1,?>,<c3,t1,?>,<c4,t1,?>,<c5,t1,?>,<c6,t1,?>,<c7,t1,?>,<c2,t2,?>,<c3,t2,?>,<c4,t2,?>,<c5,t2,?>,<c6,t2,?>,<c7,t2,?>,<c2,t3,?>,<c3,t3,?>,<c4,t3,?>,<c5,t3,?>,<c6,t3,?>,<c7,t3,?>}
+IdVal (config:id, instance:id, val:int) <= {<c1,id1,?>,<c2,id1,?>,<c3,id1,?>,<c4,id1,?>,<c5,id1,?>,<c6,id1,?>,<c1,id2,?>,<c2,id2,?>,<c3,id2,?>,<c4,id2,?>,<c5,id2,?>,<c6,id2,?>,<c1,id3,?>,<c2,id3,?>,<c3,id3,?>,<c4,id3,?>,<c5,id3,?>,<c6,id3,?>}
+ProcessId (config:id, instance:id, id:id) >= {<c1,p3,id3>,<c1,p2,id2>,<c1,p1,id1>} <= {<c2,p1,id1>,<c2,p1,id2>,<c2,p1,id3>,<c3,p1,id1>,<c3,p1,id2>,<c3,p1,id3>,<c4,p1,id1>,<c4,p1,id2>,<c4,p1,id3>,<c5,p1,id1>,<c5,p1,id2>,<c5,p1,id3>,<c6,p1,id1>,<c6,p1,id2>,<c6,p1,id3>,<c2,p2,id1>,<c2,p2,id2>,<c2,p2,id3>,<c3,p2,id1>,<c3,p2,id2>,<c3,p2,id3>,<c4,p2,id1>,<c4,p2,id2>,<c4,p2,id3>,<c5,p2,id1>,<c5,p2,id2>,<c5,p2,id3>,<c6,p2,id1>,<c6,p2,id2>,<c6,p2,id3>,<c2,p3,id1>,<c2,p3,id2>,<c2,p3,id3>,<c3,p3,id1>,<c3,p3,id2>,<c3,p3,id3>,<c4,p3,id1>,<c4,p3,id2>,<c4,p3,id3>,<c5,p3,id1>,<c5,p3,id2>,<c5,p3,id3>,<c6,p3,id1>,<c6,p3,id2>,<c6,p3,id3>}
+ProcessSucc (config:id, instance:id, succ:id) >= {<c1,p3,p1>,<c1,p1,p2>,<c1,p2,p3>} <= {<c2,p1,p1>,<c2,p1,p2>,<c2,p1,p3>,<c3,p1,p1>,<c3,p1,p2>,<c3,p1,p3>,<c4,p1,p1>,<c4,p1,p2>,<c4,p1,p3>,<c5,p1,p1>,<c5,p1,p2>,<c5,p1,p3>,<c6,p1,p1>,<c6,p1,p2>,<c6,p1,p3>,<c2,p2,p1>,<c2,p2,p2>,<c2,p2,p3>,<c3,p2,p1>,<c3,p2,p2>,<c3,p2,p3>,<c4,p2,p1>,<c4,p2,p2>,<c4,p2,p3>,<c5,p2,p1>,<c5,p2,p2>,<c5,p2,p3>,<c6,p2,p1>,<c6,p2,p2>,<c6,p2,p3>,<c2,p3,p1>,<c2,p3,p2>,<c2,p3,p3>,<c3,p3,p1>,<c3,p3,p2>,<c3,p3,p3>,<c4,p3,p1>,<c4,p3,p2>,<c4,p3,p3>,<c5,p3,p1>,<c5,p3,p2>,<c5,p3,p3>,<c6,p3,p1>,<c6,p3,p2>,<c6,p3,p3>}
+ProcessToSend (config:id, instance:id, toSend:id) >= {<c1,p3,id3>,<c1,p1,id1>,<c1,p2,id2>} <= {<c2,p1,id1>,<c2,p1,id2>,<c2,p1,id3>,<c3,p1,id1>,<c3,p1,id2>,<c3,p1,id3>,<c4,p1,id1>,<c4,p1,id2>,<c4,p1,id3>,<c5,p1,id1>,<c5,p1,id2>,<c5,p1,id3>,<c6,p1,id1>,<c6,p1,id2>,<c6,p1,id3>,<c2,p2,id1>,<c2,p2,id2>,<c2,p2,id3>,<c3,p2,id1>,<c3,p2,id2>,<c3,p2,id3>,<c4,p2,id1>,<c4,p2,id2>,<c4,p2,id3>,<c5,p2,id1>,<c5,p2,id2>,<c5,p2,id3>,<c6,p2,id1>,<c6,p2,id2>,<c6,p2,id3>,<c2,p3,id1>,<c2,p3,id2>,<c2,p3,id3>,<c3,p3,id1>,<c3,p3,id2>,<c3,p3,id3>,<c4,p3,id1>,<c4,p3,id2>,<c4,p3,id3>,<c5,p3,id1>,<c5,p3,id2>,<c5,p3,id3>,<c6,p3,id1>,<c6,p3,id2>,<c6,p3,id3>}
 
-ParamEventFlashLightCrossFarToNearCarrier (cur:id, nxt:id, carrier:id) <= {<c1,c2,t4>,<c1,c2,t1>,<c1,c2,t2>,<c1,c2,t3>,<c2,c3,t4>,<c2,c3,t1>,<c2,c3,t2>,<c2,c3,t3>,<c3,c4,t4>,<c3,c4,t1>,<c3,c4,t2>,<c3,c4,t3>,<c4,c5,t4>,<c4,c5,t1>,<c4,c5,t2>,<c4,c5,t3>,<c5,c6,t4>,<c5,c6,t1>,<c5,c6,t2>,<c5,c6,t3>,<c6,c7,t4>,<c6,c7,t1>,<c6,c7,t2>,<c6,c7,t3>}
-ParamEventFlashLightCrossFarToNearCrossingTimeCarrier (cur:id, nxt:id, crossingTimeCarrier:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>}
-ParamEventFlashLightCrossNearToFarCarrier (cur:id, nxt:id, carrier:id) <= {<c1,c2,t4>,<c1,c2,t1>,<c1,c2,t2>,<c1,c2,t3>,<c2,c3,t4>,<c2,c3,t1>,<c2,c3,t2>,<c2,c3,t3>,<c3,c4,t4>,<c3,c4,t1>,<c3,c4,t2>,<c3,c4,t3>,<c4,c5,t4>,<c4,c5,t1>,<c4,c5,t2>,<c4,c5,t3>,<c5,c6,t4>,<c5,c6,t1>,<c5,c6,t2>,<c5,c6,t3>,<c6,c7,t4>,<c6,c7,t1>,<c6,c7,t2>,<c6,c7,t3>}
-ParamEventFlashLightCrossNearToFarPassenger (cur:id, nxt:id, passenger:id) <= {<c1,c2,t4>,<c1,c2,t1>,<c1,c2,t2>,<c1,c2,t3>,<c2,c3,t4>,<c2,c3,t1>,<c2,c3,t2>,<c2,c3,t3>,<c3,c4,t4>,<c3,c4,t1>,<c3,c4,t2>,<c3,c4,t3>,<c4,c5,t4>,<c4,c5,t1>,<c4,c5,t2>,<c4,c5,t3>,<c5,c6,t4>,<c5,c6,t1>,<c5,c6,t2>,<c5,c6,t3>,<c6,c7,t4>,<c6,c7,t1>,<c6,c7,t2>,<c6,c7,t3>}
-ParamEventFlashLightCrossNearToFarCrossingTimeCarrier (cur:id, nxt:id, crossingTimeCarrier:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>}
-ParamEventFlashLightCrossNearToFarCrossingTimePassenger (cur:id, nxt:id, crossingTimePassenger:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>}
-ParamEventTravellerCrossCrossingTime (cur:id, nxt:id, crossingTime:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>}
-ParamEventTravellerInitializeTimeToCross (cur:id, nxt:id, timeToCross:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>}
+ParamEventIdEqualOther (cur:id, nxt:id, other:id) <= {<c1,c2,id1>,<c1,c2,id2>,<c1,c2,id3>,<c2,c3,id1>,<c2,c3,id2>,<c2,c3,id3>,<c3,c4,id1>,<c3,c4,id2>,<c3,c4,id3>,<c4,c5,id1>,<c4,c5,id2>,<c4,c5,id3>,<c5,c6,id1>,<c5,c6,id2>,<c5,c6,id3>}
+ParamEventIdEqualValVal (cur:id, nxt:id, val:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>}
+ParamEventIdGreaterThanEqValVal (cur:id, nxt:id, val:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>}
+ParamEventIdLesserThanOther (cur:id, nxt:id, other:id) <= {<c1,c2,id1>,<c1,c2,id2>,<c1,c2,id3>,<c2,c3,id1>,<c2,c3,id2>,<c2,c3,id3>,<c3,c4,id1>,<c3,c4,id2>,<c3,c4,id3>,<c4,c5,id1>,<c4,c5,id2>,<c4,c5,id3>,<c5,c6,id1>,<c5,c6,id2>,<c5,c6,id3>}
+ParamEventIdCreateVal (cur:id, nxt:id, val:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>}
+ParamEventProcessSendSomeId (cur:id, nxt:id, someId:id) <= {<c1,c2,id1>,<c1,c2,id2>,<c1,c2,id3>,<c2,c3,id1>,<c2,c3,id2>,<c2,c3,id3>,<c3,c4,id1>,<c3,c4,id2>,<c3,c4,id3>,<c4,c5,id1>,<c4,c5,id2>,<c4,c5,id3>,<c5,c6,id1>,<c5,c6,id2>,<c5,c6,id3>}
+ParamEventProcessReceiveElectedSomeId (cur:id, nxt:id, someId:id) <= {<c1,c2,id1>,<c1,c2,id2>,<c1,c2,id3>,<c2,c3,id1>,<c2,c3,id2>,<c2,c3,id3>,<c3,c4,id1>,<c3,c4,id2>,<c3,c4,id3>,<c4,c5,id1>,<c4,c5,id2>,<c4,c5,id3>,<c5,c6,id1>,<c5,c6,id2>,<c5,c6,id3>}
+ParamEventProcessReceiveSomeId (cur:id, nxt:id, someId:id) <= {<c1,c2,id1>,<c1,c2,id2>,<c1,c2,id3>,<c2,c3,id1>,<c2,c3,id2>,<c2,c3,id3>,<c3,c4,id1>,<c3,c4,id2>,<c3,c4,id3>,<c4,c5,id1>,<c4,c5,id2>,<c4,c5,id3>,<c5,c6,id1>,<c5,c6,id2>,<c5,c6,id3>}
 
-// Generic 'Type' constraints
+// Constraints for the configuration and ordering relations
 order ⊆ Config[config as cur] ⨯ Config[config as nxt]
+last = Config ∖ order[cur->config]  // There is only one last configuration
+back ⊆ Config 
+lone back   
+loop ⊆ last[config as cur] ⨯ back[config as nxt] // Loop contains at most one tuple going back from the last configuration to the 
+
+// Generic 'Type' constraints    
 raisedEvent ⊆ order ⨯ allowedTransitions[event] ⨯ Instance[instance]
 instanceInState ⊆ Instance[instance] ⨯ Config ⨯ State
 changedInstance ⊆ order ⨯ Instance[instance]
     
 // Machine specific `type` constraints
-FlashLightTotalTimeSpend[config,instance]  ⊆ Config ⨯ (Instance ⨝ FlashLight)[instance]
-TravellerTimeToCross[config,instance]  ⊆ Config ⨯ (Instance ⨝ Traveller)[instance]
+IdVal[config,instance]  ⊆ Config ⨯ (Instance ⨝ Id)[instance]
+ProcessId  ⊆ Config ⨯ (Instance ⨝ Process)[instance] ⨯ (Instance ⨝ Id)[instance->id]
+ProcessSucc  ⊆ Config ⨯ (Instance ⨝ Process)[instance] ⨯ (Instance ⨝ Process)[instance->succ]
+ProcessToSend  ⊆ Config ⨯ (Instance ⨝ Process)[instance] ⨯ (Instance ⨝ Id)[instance->toSend]
 
-ParamEventFlashLightCrossNearToFarCarrier ⊆ order ⨯ (Instance ⨝ Traveller)[instance->carrier]
-ParamEventFlashLightCrossNearToFarPassenger ⊆ order ⨯ (Instance ⨝ Traveller)[instance->passenger]
-ParamEventFlashLightCrossNearToFarCrossingTimeCarrier[cur,nxt] ⊆ order
-ParamEventFlashLightCrossNearToFarCrossingTimePassenger[cur,nxt] ⊆ order
-ParamEventFlashLightCrossFarToNearCarrier ⊆ order ⨯ (Instance ⨝ Traveller)[instance->carrier]
-ParamEventFlashLightCrossFarToNearCrossingTimeCarrier[cur,nxt] ⊆ order
-ParamEventTravellerInitializeTimeToCross[cur,nxt] ⊆ order
-ParamEventTravellerCrossCrossingTime[cur,nxt] ⊆ order
+ParamEventIdCreateVal[cur,nxt] ⊆ order
+ParamEventIdEqualValVal[cur,nxt] ⊆ order
+ParamEventIdEqualOther ⊆ order ⨯ (Instance ⨝ Id)[instance->other]
+ParamEventIdLesserThanOther ⊆ order ⨯ (Instance ⨝ Id)[instance->other]
+ParamEventIdGreaterThanEqValVal[cur,nxt] ⊆ order
+ParamEventProcessReceiveSomeId ⊆ order ⨯ (Instance ⨝ Id)[instance->someId]
+ParamEventProcessReceiveElectedSomeId ⊆ order ⨯ (Instance ⨝ Id)[instance->someId]
+ParamEventProcessSendSomeId ⊆ order ⨯ (Instance ⨝ Id)[instance->someId]
 
 // Specific per event
 ∀ step ∈ order ⨝ raisedEvent | (
-  (some (step ⨝ EventFlashLightCrossNearToFar) ⇔ one (step ⨝ ParamEventFlashLightCrossNearToFarCarrier)) ∧
-  (some (step ⨝ EventFlashLightCrossNearToFar) ⇔ one (step ⨝ ParamEventFlashLightCrossNearToFarPassenger)) ∧
-  (some (step ⨝ EventFlashLightCrossNearToFar) ⇔ one (step ⨝ ParamEventFlashLightCrossNearToFarCrossingTimeCarrier)) ∧
-  (some (step ⨝ EventFlashLightCrossNearToFar) ⇔ one (step ⨝ ParamEventFlashLightCrossNearToFarCrossingTimePassenger)) ∧
-  (some (step ⨝ EventFlashLightCrossFarToNear) ⇔ one (step ⨝ ParamEventFlashLightCrossFarToNearCarrier)) ∧
-  (some (step ⨝ EventFlashLightCrossFarToNear) ⇔ one (step ⨝ ParamEventFlashLightCrossFarToNearCrossingTimeCarrier)) ∧
-  (some (step ⨝ EventTravellerInitialize) ⇔ one (step ⨝ ParamEventTravellerInitializeTimeToCross)) ∧
-  (some (step ⨝ EventTravellerCross) ⇔ one (step ⨝ ParamEventTravellerCrossCrossingTime))
+  (some (step ⨝ EventIdCreate) ⇔ one (step ⨝ ParamEventIdCreateVal)) ∧
+  (some (step ⨝ EventIdEqualVal) ⇔ one (step ⨝ ParamEventIdEqualValVal)) ∧
+  (some (step ⨝ EventIdEqual) ⇔ one (step ⨝ ParamEventIdEqualOther)) ∧
+  (some (step ⨝ EventIdLesserThan) ⇔ one (step ⨝ ParamEventIdLesserThanOther)) ∧
+  (some (step ⨝ EventIdGreaterThanEqVal) ⇔ one (step ⨝ ParamEventIdGreaterThanEqValVal)) ∧
+  (some (step ⨝ EventProcessReceive) ⇔ one (step ⨝ ParamEventProcessReceiveSomeId)) ∧
+  (some (step ⨝ EventProcessReceiveElected) ⇔ one (step ⨝ ParamEventProcessReceiveElectedSomeId)) ∧
+  (some (step ⨝ EventProcessSend) ⇔ one (step ⨝ ParamEventProcessSendSomeId))
 )
 
 // Generic: All configurations are reachable
-∀ c ∈ Config ∖ InitialConfig | c ⊆ (InitialConfig[config as cur] ⨝ ^<cur,nxt>order)[nxt -> config]
+∀ c ∈ Config ∖ first | c ⊆ (first[config as cur] ⨝ ^<cur,nxt>order)[nxt -> config]
 
 // Generic: Every transition can only happen by exactly one event
 ∀ o ∈ order | one o ⨝ raisedEvent
@@ -86,8 +102,12 @@ ParamEventTravellerCrossCrossingTime[cur,nxt] ⊆ order
 ∀ c ∈ Config, inst ∈ Instance | one instanceInState ⨝ c ⨝ inst
 
 // Specific per machine: In every configuration iff a machine is in an initialized state then it must have values
-∀ c ∈ Config, inst ∈ (Instance ⨝ FlashLight)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one FlashLightTotalTimeSpend ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Traveller)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one TravellerTimeToCross ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Id)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one IdVal ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Process)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no ProcessId ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Process)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one ProcessId ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Process)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no ProcessSucc ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Process)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one ProcessSucc ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Process)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no ProcessToSend ⨝ c ⨝ inst)
 
 
 // Generic: Transitions are only allowed between if an event is specified between two states
@@ -100,165 +120,237 @@ pred forceState[curState: (state:id), nxtState: (state:id), raisedEvent: (event:
 pred inState[config: (config:id), instance: (instance:id), state: (state:id)]
   = ((instance ⨯ config) ⨝ instanceInState)[state] ⊆ state
 
-pred eventFlashLightCrossFarToNear[step:(cur:id, nxt:id), flashlight: (instance:id), carrier: (carrier:id), crossingTimeCarrier: (crossingTimeCarrier:int)]
+pred eventIdEqual[step:(cur:id, nxt:id), id: (instance:id), other: (other:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ flashlight)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ flashlight)[state],
-        curTotalTimeSpend = (cur ⨝ FlashLightTotalTimeSpend ⨝ flashlight)[totalTimeSpend->curTotalTimeSpend],
-        nxtTotalTimeSpend = (nxt ⨝ FlashLightTotalTimeSpend ⨝ flashlight)[totalTimeSpend->nxtTotalTimeSpend] |
+        curState = (instanceInState ⨝ cur ⨝ id)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ id)[state],
+        curVal = (cur ⨝ IdVal ⨝ id)[val->curVal],
+        nxtVal = (nxt ⨝ IdVal ⨝ id)[val->nxtVal] |
     ( 
       // Preconditions 
-      inState[cur, carrier[carrier->instance], StateTravellerFar] ∧
-      eventTravellerCross[step, carrier[carrier as instance], crossingTimeCarrier[crossingTimeCarrier as crossingTime]]  ∧ 
+      eventIdEqualVal[step, other[other as instance], curVal[curVal as val]]  ∧ 
       // Postconditions
-      (some (crossingTimeCarrier ⨯ curTotalTimeSpend ⨯ nxtTotalTimeSpend) where (nxtTotalTimeSpend = curTotalTimeSpend + crossingTimeCarrier))  ∧ 
+      (some (curVal ⨯ nxtVal) where (nxtVal = curVal))  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventFlashLightCrossFarToNear] ∧
+      forceState[curState, nxtState, EventIdEqual] ∧
       // Make sure this instance is in the change set
-      flashlight ⊆ (changedInstance ⨝ step)[instance]
+      id ⊆ (changedInstance ⨝ step)[instance]
     )
 
-pred frameFlashLight[step: (cur:id, nxt:id), flashlight: (instance:id)] 
+pred frameId[step: (cur:id, nxt:id), id: (instance:id)] 
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ flashlight)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ flashlight)[state],
-        curTotalTimeSpend = (cur ⨝ FlashLightTotalTimeSpend ⨝ flashlight)[totalTimeSpend->curTotalTimeSpend],
-        nxtTotalTimeSpend = (nxt ⨝ FlashLightTotalTimeSpend ⨝ flashlight)[totalTimeSpend->nxtTotalTimeSpend] | (
+        curState = (instanceInState ⨝ cur ⨝ id)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ id)[state],
+        curVal = (cur ⨝ IdVal ⨝ id)[val->curVal],
+        nxtVal = (nxt ⨝ IdVal ⨝ id)[val->nxtVal] | (
     nxtState = curState ∧
     (
       curState ⊆ uninitialized ∨ 
       (// Postconditions
-       (some (curTotalTimeSpend ⨯ nxtTotalTimeSpend) where (nxtTotalTimeSpend = curTotalTimeSpend)))
+       (some (curVal ⨯ nxtVal) where (nxtVal = curVal)))
     )
   )
 
-pred eventFlashLightCrossNearToFar[step:(cur:id, nxt:id), flashlight: (instance:id), carrier: (carrier:id), passenger: (passenger:id), crossingTimeCarrier: (crossingTimeCarrier:int), crossingTimePassenger: (crossingTimePassenger:int)]
+pred eventIdEqualVal[step:(cur:id, nxt:id), id: (instance:id), val: (val:int)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ flashlight)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ flashlight)[state],
-        curTotalTimeSpend = (cur ⨝ FlashLightTotalTimeSpend ⨝ flashlight)[totalTimeSpend->curTotalTimeSpend],
-        nxtTotalTimeSpend = (nxt ⨝ FlashLightTotalTimeSpend ⨝ flashlight)[totalTimeSpend->nxtTotalTimeSpend] |
+        curState = (instanceInState ⨝ cur ⨝ id)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ id)[state],
+        curVal = (cur ⨝ IdVal ⨝ id)[val->curVal],
+        nxtVal = (nxt ⨝ IdVal ⨝ id)[val->nxtVal] |
     ( 
       // Preconditions 
-      inState[cur, carrier[carrier->instance], StateTravellerNear] ∧
-      inState[cur, passenger[passenger->instance], StateTravellerNear] ∧
-      eventTravellerCross[step, carrier[carrier as instance], crossingTimeCarrier[crossingTimeCarrier as crossingTime]] ∧
-      eventTravellerCross[step, passenger[passenger as instance], crossingTimePassenger[crossingTimePassenger as crossingTime]]  ∧ 
+      (some (curVal ⨯ val) where (curVal = val))  ∧ 
       // Postconditions
-      (((((some (crossingTimeCarrier ⨯ crossingTimePassenger) where (crossingTimeCarrier > crossingTimePassenger))) ⇒ (some (crossingTimeCarrier ⨯ curTotalTimeSpend ⨯ nxtTotalTimeSpend) where (nxtTotalTimeSpend = curTotalTimeSpend + crossingTimeCarrier)))) ∧ ((not ((((some (crossingTimeCarrier ⨯ crossingTimePassenger) where (crossingTimeCarrier > crossingTimePassenger))))) ⇒ (some (crossingTimePassenger ⨯ curTotalTimeSpend ⨯ nxtTotalTimeSpend) where (nxtTotalTimeSpend = curTotalTimeSpend + crossingTimePassenger)))))  ∧ 
+      (some (curVal ⨯ nxtVal) where (nxtVal = curVal))  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventFlashLightCrossNearToFar] ∧
+      forceState[curState, nxtState, EventIdEqualVal] ∧
       // Make sure this instance is in the change set
-      flashlight ⊆ (changedInstance ⨝ step)[instance]
+      id ⊆ (changedInstance ⨝ step)[instance]
     )
 
-pred eventFlashLightInitialize[step:(cur:id, nxt:id), flashlight: (instance:id)]
+pred eventIdGreaterThanEqVal[step:(cur:id, nxt:id), id: (instance:id), val: (val:int)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ flashlight)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ flashlight)[state],
-        curTotalTimeSpend = (cur ⨝ FlashLightTotalTimeSpend ⨝ flashlight)[totalTimeSpend->curTotalTimeSpend],
-        nxtTotalTimeSpend = (nxt ⨝ FlashLightTotalTimeSpend ⨝ flashlight)[totalTimeSpend->nxtTotalTimeSpend] |
+        curState = (instanceInState ⨝ cur ⨝ id)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ id)[state],
+        curVal = (cur ⨝ IdVal ⨝ id)[val->curVal],
+        nxtVal = (nxt ⨝ IdVal ⨝ id)[val->nxtVal] |
     ( 
-       
+      // Preconditions 
+      (some (curVal ⨯ val) where (curVal >= val))  ∧ 
       // Postconditions
-      (some (nxtTotalTimeSpend) where (nxtTotalTimeSpend = 0))  ∧ 
+      (some (curVal ⨯ nxtVal) where (nxtVal = curVal))  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventFlashLightInitialize] ∧
+      forceState[curState, nxtState, EventIdGreaterThanEqVal] ∧
       // Make sure this instance is in the change set
-      flashlight ⊆ (changedInstance ⨝ step)[instance]
+      id ⊆ (changedInstance ⨝ step)[instance]
+    )
+
+pred eventIdLesserThan[step:(cur:id, nxt:id), id: (instance:id), other: (other:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ id)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ id)[state],
+        curVal = (cur ⨝ IdVal ⨝ id)[val->curVal],
+        nxtVal = (nxt ⨝ IdVal ⨝ id)[val->nxtVal] |
+    ( 
+      // Preconditions 
+      eventIdGreaterThanEqVal[step, other[other as instance], curVal[curVal as val]]  ∧ 
+      // Postconditions
+      (some (curVal ⨯ nxtVal) where (nxtVal = curVal))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventIdLesserThan] ∧
+      // Make sure this instance is in the change set
+      id ⊆ (changedInstance ⨝ step)[instance]
+    )
+
+pred eventIdCreate[step:(cur:id, nxt:id), id: (instance:id), val: (val:int)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ id)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ id)[state],
+        curVal = (cur ⨝ IdVal ⨝ id)[val->curVal],
+        nxtVal = (nxt ⨝ IdVal ⨝ id)[val->nxtVal] |
+    ( 
+      // Preconditions 
+      (some (val) where (val > 0))  ∧ 
+      // Postconditions
+      (some (val ⨯ nxtVal) where (nxtVal = val))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventIdCreate] ∧
+      // Make sure this instance is in the change set
+      id ⊆ (changedInstance ⨝ step)[instance]
     )
 
 
-pred possibleTransitionsFlashLight[step: (cur:id, nxt:id)] 
-  = ∀ inst ∈ (Instance ⨝ FlashLight)[instance] |
+pred possibleTransitionsId[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ Id)[instance] |
     (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
-      (eventFlashLightCrossFarToNear[step,inst,(step ⨝ ParamEventFlashLightCrossFarToNearCarrier)[carrier],(step ⨝ ParamEventFlashLightCrossFarToNearCrossingTimeCarrier)[crossingTimeCarrier]] ∧
-      (step ⨝ raisedEvent)[event] = EventFlashLightCrossFarToNear ∧
-      let cur = step[cur->config], carrier = (ParamEventFlashLightCrossFarToNearCarrier ⨝ step)[carrier -> instance] | (changedInstance ⨝ step)[instance] ⊆ inst ∪ carrier)
-      ∨
-      (eventFlashLightCrossNearToFar[step,inst,(step ⨝ ParamEventFlashLightCrossNearToFarCarrier)[carrier],(step ⨝ ParamEventFlashLightCrossNearToFarPassenger)[passenger],(step ⨝ ParamEventFlashLightCrossNearToFarCrossingTimeCarrier)[crossingTimeCarrier],(step ⨝ ParamEventFlashLightCrossNearToFarCrossingTimePassenger)[crossingTimePassenger]] ∧
-      (step ⨝ raisedEvent)[event] = EventFlashLightCrossNearToFar ∧
-      let cur = step[cur->config], carrier = (ParamEventFlashLightCrossNearToFarCarrier ⨝ step)[carrier -> instance], passenger = (ParamEventFlashLightCrossNearToFarPassenger ⨝ step)[passenger -> instance] | (changedInstance ⨝ step)[instance] ⊆ inst ∪ carrier ∪ passenger)
-      ∨
-      (eventFlashLightInitialize[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventFlashLightInitialize ∧
+      (eventIdCreate[step,inst,(step ⨝ ParamEventIdCreateVal)[val]] ∧
+      (step ⨝ raisedEvent)[event] = EventIdCreate ∧
       (changedInstance ⨝ step)[instance] ⊆ inst)
     ))
     ∧
-    (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameFlashLight[step, inst])
+    (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameId[step, inst])
 
-pred frameTraveller[step: (cur:id, nxt:id), traveller: (instance:id)] 
+pred eventProcessSend[step:(cur:id, nxt:id), process: (instance:id), someId: (someId:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ traveller)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ traveller)[state],
-        curTimeToCross = (cur ⨝ TravellerTimeToCross ⨝ traveller)[timeToCross->curTimeToCross],
-        nxtTimeToCross = (nxt ⨝ TravellerTimeToCross ⨝ traveller)[timeToCross->nxtTimeToCross] | (
+        curState = (instanceInState ⨝ cur ⨝ process)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ process)[state],
+        curId = (cur ⨝ ProcessId ⨝ process)[id],
+        nxtId = (nxt ⨝ ProcessId ⨝ process)[id],
+        curSucc = (cur ⨝ ProcessSucc ⨝ process)[succ],
+        nxtSucc = (nxt ⨝ ProcessSucc ⨝ process)[succ],
+        curToSend = (cur ⨝ ProcessToSend ⨝ process)[toSend],
+        nxtToSend = (nxt ⨝ ProcessToSend ⨝ process)[toSend] |
+    ( 
+      // Preconditions 
+      some (curToSend ∩ someId[someId -> toSend]) ∧
+      ((eventProcessReceive[step, curSucc[succ as instance], someId] ∨ eventProcessReceiveElected[step, curSucc[succ as instance], someId]))  ∧ 
+      // Postconditions
+      nxtId = curId ∧
+      nxtSucc = curSucc ∧
+      nxtToSend = (curToSend - (someId[someId as toSend]))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventProcessSend] ∧
+      // Make sure this instance is in the change set
+      process ⊆ (changedInstance ⨝ step)[instance]
+    )
+
+pred frameProcess[step: (cur:id, nxt:id), process: (instance:id)] 
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ process)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ process)[state],
+        curId = (cur ⨝ ProcessId ⨝ process)[id],
+        nxtId = (nxt ⨝ ProcessId ⨝ process)[id],
+        curSucc = (cur ⨝ ProcessSucc ⨝ process)[succ],
+        nxtSucc = (nxt ⨝ ProcessSucc ⨝ process)[succ],
+        curToSend = (cur ⨝ ProcessToSend ⨝ process)[toSend],
+        nxtToSend = (nxt ⨝ ProcessToSend ⨝ process)[toSend] | (
     nxtState = curState ∧
     (
       curState ⊆ uninitialized ∨ 
       (// Postconditions
-       (some (nxtTimeToCross ⨯ curTimeToCross) where (nxtTimeToCross = curTimeToCross)))
+       nxtId = curId ∧
+       nxtSucc = curSucc ∧
+       nxtToSend = curToSend)
     )
   )
 
-pred eventTravellerCross[step:(cur:id, nxt:id), traveller: (instance:id), crossingTime: (crossingTime:int)]
+pred eventProcessReceiveElected[step:(cur:id, nxt:id), process: (instance:id), someId: (someId:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ traveller)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ traveller)[state],
-        curTimeToCross = (cur ⨝ TravellerTimeToCross ⨝ traveller)[timeToCross->curTimeToCross],
-        nxtTimeToCross = (nxt ⨝ TravellerTimeToCross ⨝ traveller)[timeToCross->nxtTimeToCross] |
+        curState = (instanceInState ⨝ cur ⨝ process)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ process)[state],
+        curId = (cur ⨝ ProcessId ⨝ process)[id],
+        nxtId = (nxt ⨝ ProcessId ⨝ process)[id],
+        curSucc = (cur ⨝ ProcessSucc ⨝ process)[succ],
+        nxtSucc = (nxt ⨝ ProcessSucc ⨝ process)[succ],
+        curToSend = (cur ⨝ ProcessToSend ⨝ process)[toSend],
+        nxtToSend = (nxt ⨝ ProcessToSend ⨝ process)[toSend] |
     ( 
       // Preconditions 
-      (some (crossingTime ⨯ curTimeToCross) where (crossingTime = curTimeToCross))  ∧ 
+      someId = curId[id as someId]  ∧ 
       // Postconditions
-      (some (nxtTimeToCross ⨯ curTimeToCross) where (nxtTimeToCross = curTimeToCross))  ∧ 
+      nxtId = curId ∧
+      nxtSucc = curSucc ∧
+      (forall id:curToSend[toSend as id] | ((eventIdLesserThan[step, curId[id as instance], someId[someId as other]] ⇒ no (nxtToSend ∩ id[id -> toSend])))) ∧
+      some (nxtToSend ∩ someId[someId -> toSend])  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventTravellerCross] ∧
+      forceState[curState, nxtState, EventProcessReceiveElected] ∧
       // Make sure this instance is in the change set
-      traveller ⊆ (changedInstance ⨝ step)[instance]
+      process ⊆ (changedInstance ⨝ step)[instance]
     )
 
-pred eventTravellerInitialize[step:(cur:id, nxt:id), traveller: (instance:id), timeToCross: (timeToCross:int)]
+pred eventProcessReceive[step:(cur:id, nxt:id), process: (instance:id), someId: (someId:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ traveller)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ traveller)[state],
-        curTimeToCross = (cur ⨝ TravellerTimeToCross ⨝ traveller)[timeToCross->curTimeToCross],
-        nxtTimeToCross = (nxt ⨝ TravellerTimeToCross ⨝ traveller)[timeToCross->nxtTimeToCross] |
+        curState = (instanceInState ⨝ cur ⨝ process)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ process)[state],
+        curId = (cur ⨝ ProcessId ⨝ process)[id],
+        nxtId = (nxt ⨝ ProcessId ⨝ process)[id],
+        curSucc = (cur ⨝ ProcessSucc ⨝ process)[succ],
+        nxtSucc = (nxt ⨝ ProcessSucc ⨝ process)[succ],
+        curToSend = (cur ⨝ ProcessToSend ⨝ process)[toSend],
+        nxtToSend = (nxt ⨝ ProcessToSend ⨝ process)[toSend] |
     ( 
       // Preconditions 
-      (some (timeToCross) where (timeToCross > 0))  ∧ 
+      curId != someId[someId as id]  ∧ 
       // Postconditions
-      (some (nxtTimeToCross ⨯ timeToCross) where (nxtTimeToCross = timeToCross))  ∧ 
+      nxtId = curId ∧
+      nxtSucc = curSucc ∧
+      (forall id:curToSend[toSend as id] | ((eventIdLesserThan[step, curId[id as instance], someId[someId as other]] ⇒ no (nxtToSend ∩ id[id -> toSend])))) ∧
+      some (nxtToSend ∩ someId[someId -> toSend])  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventTravellerInitialize] ∧
+      forceState[curState, nxtState, EventProcessReceive] ∧
       // Make sure this instance is in the change set
-      traveller ⊆ (changedInstance ⨝ step)[instance]
+      process ⊆ (changedInstance ⨝ step)[instance]
     )
 
 
-pred possibleTransitionsTraveller[step: (cur:id, nxt:id)] 
-  = ∀ inst ∈ (Instance ⨝ Traveller)[instance] |
+pred possibleTransitionsProcess[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ Process)[instance] |
     (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
-      (eventTravellerInitialize[step,inst,(step ⨝ ParamEventTravellerInitializeTimeToCross)[timeToCross]] ∧
-      (step ⨝ raisedEvent)[event] = EventTravellerInitialize ∧
-      (changedInstance ⨝ step)[instance] ⊆ inst)
+      (eventProcessSend[step,inst,(step ⨝ ParamEventProcessSendSomeId)[someId]] ∧
+      (step ⨝ raisedEvent)[event] = EventProcessSend ∧
+      let cur = step[cur->config], succ = (ProcessSucc ⨝ cur ⨝ inst)[succ -> instance], id = (ProcessId ⨝ cur ⨝ succ)[id -> instance], someId = (ParamEventProcessSendSomeId ⨝ step)[someId -> instance] | (changedInstance ⨝ step)[instance] ⊆ succ ∪ inst ∪ someId ∪ id)
     ))
     ∧
-    (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameTraveller[step, inst])
+    (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameProcess[step, inst])
 
 
 // Transition function
-∀ step ∈ order | possibleTransitionsFlashLight[step] ∧ possibleTransitionsTraveller[step]
+∀ step ∈ order | possibleTransitionsId[step] ∧ possibleTransitionsProcess[step]
 
+// Fact: UniqueIds
+∀ cur ∈ Config | (∀ id1 ∈ (Id ⨝ Instance)[instance],id2 ∈ (Id ⨝ Instance)[instance] | ((inState[cur, id1, initialized] ∧ inState[cur, id2, initialized] ∧ (some ((id2 ⨝ IdVal ⨝ cur)[val->id2Val] ⨯ (id1 ⨝ IdVal ⨝ cur)[val->id1Val]) where (id1Val = id2Val))) ⇒ id1 = id2))
 // Asserts: this is where the checks get added
-exists c: Config | ((forall t ∈ (Instance ⨝ Traveller)[instance] | (instanceInState ⨝ t ⨝ c)[state] ⊆ StateTravellerFar) && (some (FlashLightTotalTimeSpend |x| c) where totalTimeSpend = 17))
+∃ cur ∈ Config | (∃ p ∈ (Process ⨝ Instance)[instance] | inState[cur, p, StateProcessElected])
 
 // Minimize the number of steps by minimizing the number of Configurations
 objectives: minimize Config[count()]

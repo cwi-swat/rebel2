@@ -6,14 +6,29 @@ spec PingPong
   
   init event start(name: String)
     post: 
-      this.name' = "MyPingPongMachine",
+      this.name' = name,
       this.times' = 0;
   
-  event hit()
+  event changeName(name: String) 
+    post:
+      this.name' = name;
+  
+  event hit()  
     post: 
       this.times' = this.times + 1; 
     
   states:
     (*) -> ping: start;
-    ping -> pong: hit;
+    ping -> pong: hit, changeName;
     pong -> ping: hit;
+    
+fact UniqueNames
+  = always forall p1,p2: PingPong | ((p1 is initialized && p2 is initialized && p1 != p2) => p1.name != p2.name);     
+    
+config TwoMachines
+  = p1,p2: PingPong;
+     
+assert HitFiveTimes
+  = eventually exists p1,p2: PingPong | p1 != p2 && p1.times = 5 && p2.times = 3;
+   
+check HitFiveTimes starting at TwoMachines in max 15 steps;   

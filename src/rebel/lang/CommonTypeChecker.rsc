@@ -41,6 +41,7 @@ data IdRole
   | fieldId()
   | paramId()
   | quantVarId()
+  | instanceId()
   ; 
     
 data EventInfo
@@ -54,6 +55,7 @@ data PathRole
 str prettyAType(intType()) = "Integer";
 str prettyAType(dateType()) = "Date";  
 str prettyAType(boolType()) = "Boolean";
+str prettyAType(stringType()) = "String";
 str prettyAType(specType(str name)) = "<name>";
 str prettyAType(eventType(AType argTypes)) = "event <prettyAType(argTypes)>";
 str prettyAType(voidType()) = "*";
@@ -87,7 +89,7 @@ str getFileName((QualifiedName)`<{Id "::"}+ moduleName>`) = replaceAll("<moduleN
 tuple[bool, loc] lookupModule(QualifiedName name, PathConfig pcfg) {
     for (s <- pcfg.srcs) {
         result = (s + replaceAll("<name>", "::", "/"))[extension = "rebel"];
-        println(result);
+
         if (exists(result)) {
           return <true, result>;
         }
@@ -195,8 +197,10 @@ void collect(current: (Decl)`<{Id ","}+ vars> : <Expr expr>`, Collector c) {
       AType (Solver s) {
         if (setType(AType elemType) := s.getType(expr)) {
           return elemType;
-        } else {
-          s.report(error(current, "Should be a set type but is %t", expr));
+        } else if (specType(str name) := s.getType(expr)) {
+          return specType(name);
+        }else {
+          s.report(error(current, "Should be a set type or a type of specication but is %t", expr));
         }
       }));
   }
@@ -262,7 +266,6 @@ private void collectEq(Collector c, Formula f, Expr lhs, Expr rhs, str explain) 
     });
 }
 
-
 void collect(current: (Formula)`<Expr lhs> = <Expr rhs>`, Collector c) {
   collectEq(c, current, lhs, rhs, "equality");
   collect(lhs, rhs, c);
@@ -308,12 +311,8 @@ void collect(current: (Expr)`- <Expr expr>`, Collector c) {
   collect(expr, c);
 }
 
-void collect(current: (Expr)`now`, Collector c) {
+void collect(current: (Lit)`now`, Collector c) {
   c.fact(current, dateType());
-}
-
-void collect(current: (Expr)`now.<Id field>`, Collector c) {
-  c.fact(current, intType());
 }
 
 void collect(current: (Expr)`<Expr expr>'`, Collector c) {
@@ -381,12 +380,14 @@ void collect(current: (Expr)`<Expr lhs> / <Expr rhs>`, Collector c) {
 }
 
 void collect(current: (Expr)`<Id var>`, Collector c) {
-  c.use(var, {paramId(), quantVarId()});
+  c.use(var, {paramId(), quantVarId(), specId(), instanceId()});
 }
 
-void collect(current: (Expr)`this.<Id fld>`, Collector c) {
-  c.use(fld, {fieldId()});
+void collect(current: (Expr)`<Expr expr>.<Id fld>`, Collector c) {
+  c.useViaType(expr, fld, {fieldId()});
   c.fact(current, fld);
+  
+  collect(expr,c);
 }
 
 void collect(current: (Expr)`<Lit l>`, Collector c) {
@@ -401,8 +402,24 @@ void collect(current: (Lit)`<StringConstant s>`, Collector c) {
   c.fact(current, stringType());
 }
 
-void collect(current: (Lit)`{}`, Collector c) {
-  c.fact(current, setType(voidType()));
+void collect(current: (Lit)`{<{Expr ","}* elems>}`, Collector c) {
+  list[Expr] elements = [e | e <- elems];
+  
+  if (elements == []) { 
+    c.fact(current,  setType(voidType()));
+  } else {
+    c.calculate("set literal", current, elements, 
+      AType (Solver s) {
+        AType elemType = s.getType(elements[0]);
+        for (e <- elements, s.getType(e) != elemType) {
+          s.report(error(current, "Elements in set have different types")); 
+        }
+        
+        return setType(elemType);
+      });
+  }
+  
+  collect(elems, c);
 }
 
 void collect(current: (Type)`<TypeName tp>`, Collector c) {

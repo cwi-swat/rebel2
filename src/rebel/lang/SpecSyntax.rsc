@@ -1,6 +1,6 @@
 module rebel::lang::SpecSyntax
 
-extend rebel::lang::CommonSyntax;
+import rebel::lang::CommonSyntax;
 
 syntax Part 
   = Spec spc
@@ -86,6 +86,10 @@ syntax TransEvent
   | Id event "::" Id variant
   | "empty"
   ;  
+ 
+syntax Lit
+  = "this"
+  ; 
  
 syntax Enum = "enum" Id {Id ","}+ values ";";
  

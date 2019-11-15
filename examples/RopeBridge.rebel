@@ -1,41 +1,45 @@
 module RopeBridge
 
-spec Traveller
+spec Adventurer
   timeToCross: Integer;
-  
-  event initialize(timeToCross: Integer)
-    pre: timeToCross > 0;
-    post: this.timeToCross' = timeToCross;
-  
+    
   internal event cross(crossingTime: Integer)
     pre: crossingTime = this.timeToCross;
     
   states:
-    (*) -> near: initialize;
     near -> far: cross;
     far -> near: cross;
     
 spec FlashLight
   totalTimeSpend: Integer;
   
-  event initialize()
-    post: this.totalTimeSpend' = 0;
-    
-  event crossNearToFar(carrier: Traveller, passenger: Traveller, crossingTimeCarrier: Integer, crossingTimePassenger: Integer)
+  event crossNearToFar(p1: Adventurer, p2: Adventurer, p1CrossingTime: Integer, p2CrossingTime: Integer)
     pre: 
-      carrier is near, passenger is near,
-      carrier.cross(crossingTimeCarrier), passenger.cross(crossingTimePassenger);
+      p1 is near, p2 is near,
+      p1.cross(p1CrossingTime), p2.cross(p2CrossingTime);
     post:
-      if crossingTimeCarrier > crossingTimePassenger 
-        then this.totalTimeSpend' = this.totalTimeSpend + crossingTimeCarrier
-        else this.totalTimeSpend' = this.totalTimeSpend + crossingTimePassenger;
+      if p1CrossingTime > p2CrossingTime 
+        then this.totalTimeSpend' = this.totalTimeSpend + p1CrossingTime
+        else this.totalTimeSpend' = this.totalTimeSpend + p2CrossingTime;
       
-
-  event crossFarToNear(carrier: Traveller, crossingTimeCarrier: Integer)
-    pre: carrier is far, carrier.cross(crossingTimeCarrier);
-    post: this.totalTimeSpend' = this.totalTimeSpend + crossingTimeCarrier; 
+  event crossFarToNear(p: Adventurer, crossingTime: Integer)
+    pre: p is far, p.cross(crossingTime);
+    post: this.totalTimeSpend' >= this.totalTimeSpend + crossingTime; 
     
   states:
-    (*) -> near: initialize;
     near -> far: crossNearToFar;
-    far -> near: crossFarToNear;  
+    far -> near: crossFarToNear;   
+      
+assert EverybodyCrossedInTheLeastTime
+  = eventually ((forall a: Adventurer | a is far) && (exists fl: FlashLight | fl.totalTimeSpend = 17));
+
+config EverybodyNear
+  = a1,a2,a3,a4: Adventurer is near, 
+    fl: FlashLight is near with totalTimeSpend = 0,
+    a1 with timeToCross = 1,
+    a2 with timeToCross = 2,  
+    a3 with timeToCross = 5,
+    a4 with timeToCross = 10;
+  
+check EverybodyCrossedInTheLeastTime starting at EverybodyNear in max 6 steps;  
+

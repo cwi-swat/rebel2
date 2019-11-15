@@ -2,8 +2,9 @@ module analysis::allealle::EventTranslator
 
 import analysis::allealle::CommonTranslationFunctions;
 import analysis::allealle::SyncedEventGraphBuilder;
-import rebel::lang::SpecSyntax;
-import rebel::lang::SpecTypeChecker;
+
+import rebel::lang::Syntax;
+import rebel::lang::TypeChecker;
 
 import String;
 import IO;
@@ -56,7 +57,7 @@ private data SyncScope
 
 tuple[str fieldName, str relName] findRootRel(Expr exp, str instRel, Spec spc, Event evnt, SyncScope scp, Context ctx) {
   Decl findDecl(loc locOfVar) {
-    visit(e.body) {
+    visit(evnt.body) {
       case cur:(Decl)`<{Id ","}+ vars> : <Expr expr>`: { 
         if (Id var <- vars, var@\loc == locOfVar) {
           return cur; 
@@ -82,9 +83,9 @@ tuple[str fieldName, str relName] findRootRel(Expr exp, str instRel, Spec spc, E
       }
     }
     case quantVarId(): {
-      if ({loc def} := cfg.tm.useDef[exp@\loc]) {
+      if ({loc def} := ctx.cfg.tm.useDef[exp@\loc]) {
         Decl d = findDecl(def);
-        return findRootRel(d.expr);
+        return findRootRel(d.expr, instRel, spc, evnt, scp, ctx);
       }
     }
   } 
@@ -212,7 +213,7 @@ private default str translatePost(Event event, Context ctx) = "";
 
 str translate((Formula)`(<Formula f>)`, Context ctx) = "(<translate(f,ctx)>)";
 
-str translate((Formula)`!<Formula f>`, Context ctx) = "not (<translate(f,ctx)>)";
+str translate((Formula)`!<Formula f>`, Context ctx) = "¬ (<translate(f,ctx)>)";
 
 str getFieldName(Expr expr, Context ctx) {
   RelHeader header = ctx.lookupHeader(expr@\loc);
@@ -347,17 +348,19 @@ str translateRelExpr(current:(Expr)`<Id id>`, Context ctx) {
 }
 
 str translateRelExpr(current:(Expr)`this.<Id id>`, Context ctx) { 
-  ctx.addHeader(current@\loc, ("<id>": type2Str(getType(current,ctx.cfg.tm))));
+  str fieldName = isPrim(getType(current, ctx.cfg.tm)) ? "cur<capitalize("<id>")>" : "<id>";
+  ctx.addHeader(current@\loc, (fieldName: type2Str(getType(current,ctx.cfg.tm))));
   return "cur<capitalize("<id>")>";
 }
 
 str translateRelExpr(current:(Expr)`this.<Id id>'`, Context ctx) {
-  ctx.addHeader(current@\loc, ("<id>": type2Str(getType(current,ctx.cfg.tm))));
+  str fieldName = isPrim(getType(current, ctx.cfg.tm)) ? "nxt<capitalize("<id>")>" : "<id>";
+  ctx.addHeader(current@\loc, (fieldName: type2Str(getType(current,ctx.cfg.tm))));
   return "nxt<capitalize("<id>")>";
 }
 
 str translateRelExpr(current:(Expr)`<Expr lhs> + <Expr rhs>`, Context ctx) = translateSetRelExpr(current@\loc, lhs, rhs, "+", ctx); 
-str translateRelExpr((Expr)`<Expr lhs> - <Expr rhs>`, Context ctx) = translateSetRelExpr(current@\loc, lhs, rhs, "-", ctx);
+str translateRelExpr(current:(Expr)`<Expr lhs> - <Expr rhs>`, Context ctx) = translateSetRelExpr(current@\loc, lhs, rhs, "-", ctx);
 default str translateRelExpr(Expr e, Context ctx) { throw "Can not translate expression `<e>` at location <e@\loc>"; }
 
 private str translateSetRelExpr(loc current, Expr lhs, Expr rhs, str op, Context ctx) {
@@ -381,7 +384,7 @@ str translateAttrExpr((Expr)`<Lit l>`, Context ctx) = translateLit(l);
 
 str translateAttrExpr((Expr)`- <Expr e>`, Context ctx) = "-<translateAttrExpr(e,ctx)>";
 str translateAttrExpr((Expr)`<Expr lhs> * <Expr rhs>`, Context ctx) = "<translateAttrExpr(lhs,ctx)> * <translateAttrExpr(rhs,ctx)>";
-str translateAttrExpr((Expr)`<Expr lhs> \\ <Expr rhs>`, Context ctx) = "<translateAttrExpr(lhs,ctx)> \\ <translateAttrExpr(rhs,ctx)>";
+str translateAttrExpr((Expr)`<Expr lhs> / <Expr rhs>`, Context ctx) = "<translateAttrExpr(lhs,ctx)> \\ <translateAttrExpr(rhs,ctx)>";
 str translateAttrExpr((Expr)`<Expr lhs> + <Expr rhs>`, Context ctx) = "<translateAttrExpr(lhs,ctx)> + <translateAttrExpr(rhs,ctx)>";
 str translateAttrExpr((Expr)`<Expr lhs> - <Expr rhs>`, Context ctx) = "<translateAttrExpr(lhs,ctx)> - <translateAttrExpr(rhs,ctx)>";
 

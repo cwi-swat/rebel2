@@ -27,17 +27,17 @@ syntax Formula
   | Expr "!=" Expr
   | Expr "\>=" Expr
   | Expr "\>" Expr
-  > "forall" {Decl ","}+ "|" Formula
-  | "exists" {Decl ","}+ "|" Formula
   > right Formula "&&" Formula
   | right Formula "||" Formula
   > right Formula "=\>" Formula
   | right Formula "\<=\>" Formula
   | non-assoc "if" Formula cond "then" Formula then "else" Formula else
+  > "forall" {Decl ","}+ "|" Formula
+  | "exists" {Decl ","}+ "|" Formula
   ;
 
 syntax Formula
-  = noOp: "__noop" "(" Expr spc ")" 
+  = noOp: "noop" "(" Expr spc ")" 
   ;
 
 syntax Decl = {Id ","}+ vars ":" Expr expr;
@@ -45,10 +45,9 @@ syntax Decl = {Id ","}+ vars ":" Expr expr;
 syntax Expr
   = brackets: "(" Expr ")"
   > var: Id
-  | fieldAccess: "this" "." Id 
+  //| fieldAccess: "this" "." Id
+  | fieldAccess: Expr "." Id 
   | Lit
-  | "now"
-  | "now" "." Id
   > nextVal: Expr "\'"
   > "-" Expr
   > assoc Expr lhs "*" Expr rhs
@@ -60,7 +59,8 @@ syntax Expr
 syntax Lit
   = Int
   | StringConstant
-  | emptySet: "{}" 
+  | setLit: "{" {Expr ","}* elems "}" 
+  | "now"
   ;
 
 syntax Type

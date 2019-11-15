@@ -1,6 +1,6 @@
-module rebel::lang::SpecParser
+module rebel::lang::Parser
 
-import rebel::lang::SpecSyntax;
+import rebel::lang::Syntax;
 
 import ParseTree;
 import IO;

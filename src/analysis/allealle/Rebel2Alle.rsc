@@ -1,8 +1,8 @@
 module analysis::allealle::Rebel2Alle
 
-import rebel::lang::SpecSyntax;
-import rebel::lang::SpecParser;
-import rebel::lang::SpecTypeChecker;
+import rebel::lang::Syntax;
+import rebel::lang::Parser;
+import rebel::lang::TypeChecker;
 
 import analysis::allealle::StaticRelationsTranslator;
 import analysis::allealle::DynamicRelationsTranslator;
@@ -26,8 +26,84 @@ import Set;
 import String;
 import util::Maybe;
 import util::Benchmark;
+
+import analysis::allealle::Rebel2Alle;
+import analysis::allealle::ConfigTranslator;
+import analysis::allealle::LTLTranslator;
+import analysis::allealle::SyncedEventGraphBuilder;
+
+import rebel::lang::Syntax;
+import rebel::lang::Parser;
+import rebel::lang::TypeChecker;
+
+import analysis::allealle::CommonTranslationFunctions;
+
+import analysis::Normalizer;
+import util::PathUtil;
+import analysis::graphs::Graph;
+
+void performCheck(Check chk, Module m, PathConfig pathConf = pathConfig(srcs=[|project://rebel2/examples|]))
+  = performCheck("<chk.name>", m, pathConf = pathConf);
+
+void performCheck(str check, Module m, PathConfig pathConf = pathConfig(srcs=[|project://rebel2/examples|])) {
+  PathConfig normPathConfig = pathConfig(srcs=[|project://rebel2/bin/normalized|]);
+
+  tuple[Module initModule, set[Module] allMods] normalized = normalizeAllInScope(m, pathConf, normPathConfig);
+  TModel tm = rebelTModelFromTree(normalized.initModule, pathConf = normPathConfig);  
   
-void translateSpecs(Config config, str check, bool debug = true) {
+  Config cfg = buildConfig(check, normalized.allMods, tm);
+  str alleSpec = translateSpecs(cfg, buildAssert(check, normalized.allMods, tm));
+   
+  ModelFinderResult mfr = checkInitialSolution(implodeProblem(alleSpec));
+
+  if (sat(Model currentModel, Model (Domain) nextModel, void () stop) := mfr) {
+    stop();
+    Trace trace = buildTrace(currentModel, normalized.allMods, cfg.instances<0,1>, tm);
+    println(trace2Str(trace));
+  }  
+}
+
+private tuple[Module, set[Module]] normalizeAllInScope(Module startingPoint, PathConfig pcfg, PathConfig normalizedPcfg) {
+  set[QualifiedName] gatherImports(Module m) = {imp.\module | Import imp <- m.imports};
+   
+  set[Module] normalizedMods = {}; 
+  set[QualifiedName] imported = {};
+  set[QualifiedName] modulesToImport = gatherImports(startingPoint);
+    
+  while (set[QualifiedName] todo := modulesToImport, modulesToImport != {}) {
+    modulesToImport = {};
+    for (m <- todo, m notin imported) {
+      
+      if (just(loc l) := lookupModule(m, pcfg)) {
+        Module n = parse(#start[Module], l).top;
+        modulesToImport += gatherImports(n);
+        normalizedMods += parse(#start[Module], normalize(n)).top;
+      }
+      else {
+        throw "Cannot find module <m>";
+      }
+          
+      imported += m; 
+    }
+  }
+  
+  Module normStartPoint = parse(#start[Module], normalize(startingPoint)).top;
+  return <normStartPoint, normalizedMods + normStartPoint>;
+}
+
+private Maybe[loc] lookupModule(QualifiedName name, PathConfig pcfg) {
+    for (s <- pcfg.srcs) {
+        result = (s + replaceAll("<name>", "::", "/"))[extension = "rebel"];
+
+        if (exists(result)) {
+          return just(result);
+        }
+    }
+    
+    return nothing();
+}
+  
+str translateSpecs(Config config, str check, bool debug = true) {
   set[Spec] normalizedSpecs = {inst.spc | inst <- config.instances};
 
   print("Translating Rebel to AlleAlle ...");
@@ -38,13 +114,7 @@ void translateSpecs(Config config, str check, bool debug = true) {
     writeFile(project(getOneFrom(normalizedSpecs)@\loc.top) + "examples/latest-alle-spc.alle", res.alleSpec);
   }
   
-  ModelFinderResult mfr = checkInitialSolution(implodeProblem(res.alleSpec));
-
-  if (sat(Model currentModel, Model (Domain) nextModel, void () stop) := mfr) {
-    stop();
-    Trace trace = buildTrace(currentModel, normalizedSpecs, config.instances<0,1>, config.tm);
-    println(trace2Str(trace));
-  }
+  return res.alleSpec;  
 }  
 
 private tuple[str, int] bmTranslate(set[Spec] normalizedSpecs, Config cfg, str check) {
@@ -72,7 +142,9 @@ data RaisedEvent
   | raisedEventVariant(Spec spc, Event event, str eventName, str variant, str instance, rel[str param, str val] arguments, set[str] affectedInstances)
   ;
 
-Trace buildTrace(Model alleModel, set[Spec] specs, rel[Spec spc, str instance] instances, TModel tm) {
+Trace buildTrace(Model alleModel, set[Module] mods, rel[Spec spc, str instance] instances, TModel tm) {
+  set[Spec] specs = {s | Module m <- mods, /Spec s <- m.parts};
+  
   int nrOfConfigs = getNrOfConfigs(alleModel); 
 
   Trace buildTrace(int stepNr) = step(getConfiguration(stepNr, specs, instances, alleModel, tm), getRaisedEvent(stepNr, specs, instances, alleModel, tm), buildTrace(stepNr + 1)) when stepNr < nrOfConfigs;

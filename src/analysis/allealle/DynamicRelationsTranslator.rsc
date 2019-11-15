@@ -1,7 +1,7 @@
 module analysis::allealle::DynamicRelationsTranslator
 
-import rebel::lang::SpecSyntax;
-import rebel::lang::SpecTypeChecker;
+import rebel::lang::Syntax;
+import rebel::lang::TypeChecker;
 
 import analysis::allealle::CommonTranslationFunctions;
 
@@ -12,7 +12,7 @@ import IO;
 
 str translateConfigState(Spec spc, uninitialized()) = "state_uninitialized";
 str translateConfigState(Spec spc, finalized())     = "state_finalized";
-str translateConfigState(Spec spc, state(str name)) = "state_<toLowerCase("<spc.name>")>_<name>";
+str translateConfigState(Spec spc, state(str name)) = "state_<toLowerCase("<spc.name>")>_<toLowerCase("<name>")>";
 
 str translateDynamicPart(Config cfg) {
   str def = "// Dynamic configuration of state machines
@@ -81,7 +81,15 @@ private str buildFieldTuples(Spec spc, Field f, Config cfg) {
   for (str inst <- lookupInstances(spc, cfg.instances<0,1>), int i <- [(lowerBound == [] ? 1 : 2)..cfg.numberOfTransitions+1]) {
     if (isPrim(f.tipe, cfg.tm)) {
       upperBound += "\<c<i>,<inst>,?\>";
-    } else {
+    } else if (isSetOfInt(f.tipe, cfg.tm)) {
+      for (int j <- [1..cfg.maxSizeIntegerSets+1]) {
+        upperBound += "\<c<i>,<inst>,<inst>_elem<j>\>";
+      }
+    } else if (isSetOfString(f.tipe, cfg.tm)) {
+      for (int j <- [1..cfg.maxSizeStringSets+1]) {
+        upperBound += "\<c<i>,<inst>,<inst>_elem<j>\>";
+      }
+    }else { // Set of other specification
       for (str otherInst <- getInstancesOfType(f.tipe, cfg.instances<0,1>, cfg.tm)) {
         upperBound += "\<c<i>,<inst>,<otherInst>\>";
       }
@@ -104,12 +112,15 @@ private str buildRaisedEventsRel(rel[Spec spc, str instance] instances, int numb
   = "raisedEvent (cur:id, nxt:id, event:id, instance:id) \<= {<intercalate(",", [tups | <spc, i> <- instances, str tups := buildRaisedEventsTuples(spc, i, numberOfTransitions), tups != ""])>}";
 
 private str buildRaisedEventsTuples(Spec spc, str instance, int numberOfTransitions)
-  = intercalate(",", ["\<c<c>,c<c+1>,<event>,<instance>\>" | int c <- [1..numberOfTransitions], str event <- lookupRaisableEventName(spc)]);
+  = intercalate(",", ["\<c<c>,c<c+1>,<toLowerCase(event)>,<instance>\>" | int c <- [1..numberOfTransitions], str event <- lookupRaisableEventName(spc)]);
 
 private str buildConfigRels(int numberOfTransitions)
   = "Config (config:id) \>= {\<c1\>} \<= {<intercalate(",", ["\<c<i>\>" | int i <- [1..numberOfTransitions+1]])>}
     'order (cur:id, nxt:id) \<= {<intercalate(",", ["\<c<i>,c<i+1>\>" | int i <- [1..numberOfTransitions]])>}
-    'InitialConfig (config:id) = {\<c1\>}
+    'first (config:id) = {\<c1\>}
+    'last (config:id) \<= {<intercalate(",", ["\<c<i>\>" | int i <- [1..numberOfTransitions+1]])>}
+    'back (config:id) \<= {<intercalate(",", ["\<c<i>\>" | int i <- [1..numberOfTransitions+1]])>}
+    'loop (cur:id, nxt:id) \<= {<intercalate(",", ["\<c<i>,c<j>\>" | int i <- [2..numberOfTransitions+1], int j <- [1..i+1]])>}
     '";
 
 private str buildInstanceRel(rel[Spec spc, str instance, State initialState] instances)
@@ -122,5 +133,5 @@ private str buildInitialInstanceInStateTuples(rel[Spec spc, str instance, State 
   = intercalate(",", ["\<c1,<i>,<translateConfigState(s, st)>\>" | <s,i,st> <- instances]);
 
 private str buildInstanceInStateTuples(rel[Spec spc, str instance] instances, int numberOfTransitions)
-  = intercalate(",", ["\<c<c>,<i>,<st>\>" | int c <- [1..numberOfTransitions+1], <s,i> <- instances, str st <- lookupStateLabelsWithDefaultState(s)]);
+  = intercalate(",", ["\<c<c>,<i>,<toLowerCase(st)>\>" | int c <- [1..numberOfTransitions+1], <s,i> <- instances, str st <- lookupStateLabelsWithDefaultState(s)]);
   

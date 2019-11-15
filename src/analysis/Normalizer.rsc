@@ -1,6 +1,6 @@
 module analysis::Normalizer
 
-import rebel::lang::SpecSyntax;
+import rebel::lang::Syntax;
 
 import ParseTree;
 import List;
@@ -8,12 +8,12 @@ import String;
 import IO;
 
 // Test imports
-import rebel::lang::SpecParser;
+import rebel::lang::Parser;
 import util::PathUtil;
 
 Module normalizeCoffeeMachine() = normalize(parseModule(|project://rebel2/examples/CoffeeMachine.rebel|)); 
 
-Module normalize(Module m) {
+loc normalize(Module m) {
   m = visit(m) {
     case (Part)`<Spec spc>` => (Part)`<Spec nSpc>` when Spec nSpc := normalize(spc)
   }
@@ -24,7 +24,7 @@ Module normalize(Module m) {
 
   writeFile(normPath[extension = "rebel"], m);
 
-  return m;
+  return normPath[extension = "rebel"];
 }
 
 Spec normalize(Spec spc) {
@@ -47,7 +47,7 @@ Event createFrameEvent(Spec spc) {
   str frameCond = "<intercalate(",\n", ["this.<f.name>\' = this.<f.name>" | /Field f <- spc.fields])>";
                   
   return [Event]"internal event __frame() 
-                '<if (frameCond != "") {>  post: <frameCond>;<}>
+                '  <if (frameCond != "") {>  post: <frameCond>;<}>
                 '";                  
 }
 
@@ -90,7 +90,7 @@ list[Event] normalizeEvents(list[Event] events) {
 
 private list[Event] addEmptyTransitionIfNecessary(Spec spc, list[Event] events) {
   if (/(TransEvent)`empty` := spc.states) {
-    events += (Event)`event empty()
+    events += (Event)`  event empty()
                      '`;
   }
   
@@ -132,15 +132,15 @@ private Post? addFrameConditions(set[str] fields, Post? post, str eventName) {
 private Post? addFrameCondition(Post? p, Formula frameCond) {
   Event tmp;
   if (/(Post)`post: <{Formula ","}* formulas>;` := p) {
-     tmp = (Event)`event foo() 
-                  'post:
-                  '  <Formula frameCond>,  // Frame condition
-                  '  <{Formula ","}* formulas>;
+     tmp = (Event)`  event foo() 
+                  '    post:
+                  '      <Formula frameCond>,  // Frame condition
+                  '      <{Formula ","}* formulas>;
                   '`;
   } else {
-     tmp = (Event)`event foo() 
-                  'post:
-                  '  <Formula frameCond>; // Frame condition
+     tmp = (Event)`  event foo() 
+                  '    post:
+                  '      <Formula frameCond>; // Frame condition
                   '`;
   }
   
@@ -166,8 +166,8 @@ private Event* buildNormEvents(list[Event] es) {
   
   for (Event e <- es, (Spec)`spec foo <Event* es2>` := s) {
     s = (Spec)`spec foo 
-              '<Event* es2> 
-              '<Event e>
+              '  <Event* es2> 
+              '  <Event e>
               '`;
   }
   
@@ -197,10 +197,10 @@ private States? normalizeStates(States? states) {
     }
   }
   
-  Spec foo = [Spec]trim("spec foo 
-                        'states : 
-                        '<for (n <- normalized) {>  <n.from> -\> <n.to> : <n.events>;
-                        '<}>");
+  Spec foo = parse(#Spec, trim("spec foo 
+                          'states: 
+                          '<for (n <- normalized) {>  <n.from> -\> <n.to> : <n.events>;
+                          <}>"));
                  
   return foo.states;
 }

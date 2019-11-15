@@ -1,0 +1,19 @@
+module lib::checks::IdChecks
+
+import lib::Id
+
+config ThreeIds
+  = id1,id2,id3: Id;
+  
+assert NonUniqueVals
+  = eventually exists id1,id2: Id | 
+      id1 is initialized && id2 is initialized && 
+      id1.val = id2.val && id1 != id2;
+
+assert ConsecutiveValues
+  = eventually exists id1,id2,id3: Id | id1 != id2 && id2 != id3 && id3 != id1 && 
+      id1.val = id2.val + 1 && id2.val = id3.val + 1;
+
+check NonUniqueVals starting at ThreeIds in max 3 steps;
+
+check ConsecutiveValues starting at ThreeIds in max 3 steps;

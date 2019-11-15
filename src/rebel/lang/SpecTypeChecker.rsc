@@ -1,19 +1,37 @@
 module rebel::lang::SpecTypeChecker
 
+import rebel::lang::CommonSyntax;
 import rebel::lang::SpecSyntax;
-import util::PathUtil;
 
-extend rebel::lang::CommonTypeChecker;
+import util::PathUtil;
+import util::Maybe;
+
+extend analysis::typepal::TypePal;
+
+data ScopeInfo
+  = specInfo(str name)
+  ;
 
 void collect(current: (Part)`<Spec spc>`, Collector c) {
   collect(spc, c);
+}  
+ 
+Maybe[AType] getCurrentSpecType(Collector c) {
+  inf = c.getScopeInfo(specScope());
+  
+  for (<scope,scopeInfo> <- inf, specInfo(str name) := scopeInfo) {
+    return just(specType(name));
+  }
+  
+  return nothing();
 } 
-
+ 
 void collect(current: (Spec)`spec <Id name> <Fields? fields> <Constraints? constraints> <Event* events> <States? states>`, Collector c) {
   c.define("<name>", specId(), current, defType(specType("<name>")));
   
   c.enterScope(current); 
-       
+    c.setScopeInfo(c.getScope(), specScope(), specInfo("<name>"));
+           
     if (/Fields flds <- fields) {
       collect(flds.fields, c);
     }  
@@ -58,8 +76,9 @@ void collectStates(States sts, Collector c) {
     }
   }
   
-  // add an 'initialized' state
+  // add an 'initialized' and 'uninitialized' state
   c.define("initialized", stateId(), sts, defType(stateType()));
+  c.define("uninitialized", stateId(), sts, defType(stateType()));
 }
 
 void collect(current: (Transition)`<State from>-\><State to> : <{TransEvent ","}+ events>;`, Collector c) {
@@ -198,4 +217,12 @@ void collect(current: (Formula)`<Expr spc>.<Id event>(<{Expr ","}* arguments>)`,
   
   
   collect(spc, arguments, c);
+}
+
+void collect(current: (Lit)`this`, Collector c) {
+  if (just(specType(str name)) := getCurrentSpecType(c)) {
+    c.fact(current, specType(name));
+  } else {
+    c.report(error(current, "`this` can only be reference in the event bodies in a specification"));
+  }
 }

@@ -1,10 +1,11 @@
 module analysis::allealle::ConstraintsTranslator
 
-import rebel::lang::SpecSyntax;
-import rebel::lang::SpecTypeChecker;
+import rebel::lang::Syntax;
+import rebel::lang::TypeChecker;
 
 import analysis::allealle::CommonTranslationFunctions;
 import analysis::allealle::EventTranslator;
+import analysis::allealle::LTLTranslator;
 import analysis::allealle::SyncedEventGraphBuilder;
 
 import String;
@@ -15,7 +16,8 @@ import IO;
 import ParseTree;
 
 str translateConstraints(set[Spec] spcs, Config cfg, str check) {
-  str cons = "<genericTypeConstraints()>
+  str cons = "<configurationConstraints()>
+             '<genericTypeConstraints()>
              '<machineFieldTypeConstraints(spcs, cfg)>
              '<eventParamTypeAndMultiplicityConstraints(spcs, cfg)>
              '<allConfigsAreReachable()>
@@ -26,6 +28,7 @@ str translateConstraints(set[Spec] spcs, Config cfg, str check) {
              '<helperPredicates()>
              '<translateEventPredicates(spcs, cfg)>
              '<transitionFunction(spcs, cfg)>
+             '<translateFacts(cfg)>
              '<encodeAsserts(check)>
              '<findMinimumExample(spcs)>
              '";
@@ -33,10 +36,18 @@ str translateConstraints(set[Spec] spcs, Config cfg, str check) {
   return cons;
 }
 
-private str genericTypeConstraints() 
+private str configurationConstraints() 
   = "
-    '// Generic \'Type\' constraints
+    '// Constraints for the configuration and ordering relations
     'order ⊆ Config[config as cur] ⨯ Config[config as nxt]
+    'last = Config ∖ order[cur-\>config]  // There is only one last configuration
+    'back ⊆ Config 
+    'lone back   
+    'loop ⊆ last[config as cur] ⨯ back[config as nxt] // Loop contains at most one tuple going back from the last configuration to the 
+    '";
+
+private str genericTypeConstraints() 
+  = "// Generic \'Type\' constraints    
     'raisedEvent ⊆ order ⨯ allowedTransitions[event] ⨯ Instance[instance]
     'instanceInState ⊆ Instance[instance] ⨯ Config ⨯ State
     'changedInstance ⊆ order ⨯ Instance[instance]
@@ -60,7 +71,7 @@ private str machineFieldTypeConstraints(set[Spec] spcs, Config cfg) {
    
 private str allConfigsAreReachable()
   = "// Generic: All configurations are reachable
-    '∀ c ∈ Config ∖ InitialConfig | c ⊆ (InitialConfig[config as cur] ⨝ ^\<cur,nxt\>order)[nxt -\> config]
+    '∀ c ∈ Config ∖ first | c ⊆ (first[config as cur] ⨝ ^\<cur,nxt\>order)[nxt -\> config]
     '";
     
 private str onlyOneTriggeringEvent()
@@ -154,6 +165,8 @@ private str transitionFunction(set[Spec] spcs, Config cfg)
     '";  
 
 private bool isFrameEvent(Event e) = "<e.name>" == "__frame";
+
+private str translateFacts(Config cfg) = translateFacts(cfg.facts, cfg.tm);
     
 private str encodeAsserts(str check) 
   = "// Asserts: this is where the checks get added

@@ -1,0 +1,28 @@
+module lib::Id
+
+spec Id
+  val: Integer;
+      
+  event create(val: Integer)
+    pre: val > 0;
+    post: this.val' = val;
+  
+  internal event equalVal(val: Integer)
+    pre: this.val = val;
+    
+  internal event equal(other: Id) 
+    pre: other.equalVal(this.val);
+    
+  internal event lesserThan(other: Id)
+    pre: other.greaterThanEqVal(this.val);  
+
+  internal event greaterThanEqVal(val: Integer)
+    pre: this.val >= val;
+  
+  states:
+    (*) -> created: create;
+    created -> created: equal, equalVal, lesserThan, greaterThanEqVal;
+
+fact UniqueIds
+  = always forall id1,id2: Id | 
+     ((id1 is initialized && id2 is initialized && id1.val = id2.val) => id1 = id2);

@@ -1,7 +1,7 @@
 module analysis::allealle::CommonTranslationFunctions
 
-import rebel::lang::SpecSyntax;
-import rebel::lang::SpecTypeChecker;
+import rebel::lang::Syntax;
+import rebel::lang::TypeChecker;
 
 import String;
 import Node;
@@ -9,9 +9,11 @@ import IO;
 
 data Config = config(rel[Spec spc, str instance, State initialState] instances, 
                      rel[Spec spc, str instance, str field, str val] initialValues, 
+                     set[Fact] facts,
                      TModel tm,
                      int numberOfTransitions,
-                     int maxSizeIntegerSets = 5);
+                     int maxSizeIntegerSets = 5,
+                     int maxSizeStringSets = 5);
 
 data State 
   = uninitialized()
@@ -69,6 +71,9 @@ default AType getType(Field f, TModel tm) { throw "No type info available for `<
 
 AType getType(Expr expr, TModel tm) = tm.facts[expr@\loc] when expr@\loc in tm.facts;
 default AType getType(Expr expr, TModel tm) { throw "No type info available for `<expr>` at `<expr@\loc>`"; }
+
+AType getType(Id id, TModel tm) = tm.facts[id@\loc] when id@\loc in tm.facts;
+default AType getType(Id id, TModel tm) { throw "No type info available for `<id>` at `<id@\loc>`"; }
 
 AType getType(FormalParam p, TModel tm) = tm.facts[p.name@\loc] when p.name@\loc in tm.facts;
 default AType getType(FormalParam p, TModel tm) { throw "No type info available for `<p>`"; }
@@ -155,6 +160,19 @@ default bool isNonOptionalScalar(Type tipe, TModel tm)  { throw "No type informa
 bool isNonOptionalScalar(setType(_)) = false;
 bool isNonOptionalScalar(optionalType(_)) = false;
 default bool isNonOptionalScalar(AType _) = true;
+
+bool isSetOfInt(Type tipe, TModel tm) = isSetOfType(tipe, intType(), tm);
+bool isSetOfString(Type tipe, TModel tm) = isSetOfType(tipe, stringType(), tm);
+
+bool isSetOfPrim(Type tipe, TModel tm) = isSetOfInt(tipe, tm) || isSetOfString(tipe, tm);
+
+private bool isSetOfType(Type tipe, AType elemType, TModel tm) { 
+  if (tipe@\loc notin tm.facts) {
+    throw "No type information found for `<tipe>`";
+  }
+  
+  return setType(elemType) := tm.facts[tipe@\loc];
+}
 
 bool isPrim(Type tipe, TModel tm) = isPrim(t) when tipe@\loc in tm.facts, AType t := tm.facts[tipe@\loc];
 bool isPrim(Type tipe, TModel tm) { throw "No type information found for `<tipe>`"; }
