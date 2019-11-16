@@ -8,25 +8,25 @@ spec Process
   toSend: set Id;
 
   internal event receive(someId: Id) 
-    pre: this.id != someId;
-    post: 
-      forall id: this.toSend | (this.id.lesserThan(someId) => id notin this.toSend'), 
-      someId in this.toSend';
-      
-  internal event receiveElected(someId: Id)
-    pre: someId = this.id;  
-    post: 
-      forall id: this.toSend | (this.id.lesserThan(someId) => id notin this.toSend'), 
-      someId in this.toSend';
+    post:  
+      this.toSend' = {id: this.toSend | id.greaterThan(someId)} + someId; 
+
+    variant notElected
+      pre: this.id != someId; 
+    
+    variant elected  
+      pre: someId = this.id;  
   
   event send(someId: Id)
-    pre: someId in this.toSend, (this.succ.receive(someId) || this.succ.receiveElected(someId));
+    pre: someId in this.toSend, this.succ.receive(someId);
     post: this.toSend' = this.toSend - someId; 
     
   states:
-    notElected -> notElected: send, receive;
-    notElected -> elected: receiveElected;
+    notElected -> notElected: send, receive::notElected; 
+    notElected -> elected: receive::elected;
 
+fact AlwaysInitializedIds
+  = always forall id: Id | id is initialized;
     
 config RingOfThree
   = id1,id2,id3: Id is created,
@@ -39,6 +39,6 @@ assert EventuallyOneIsElected
   = eventually exists p: Process | p is elected;
 
 assert OnlyOneCanGetElected
-  = always (exists p1,p2: Process | (p1 is elected && p2 is elected) => p1 = p2);  
+  = eventually exists p1,p2: Process | p1 is elected && p2 is elected && p1 != p2;  
   
 check EventuallyOneIsElected starting at RingOfThree in max 5 steps;  

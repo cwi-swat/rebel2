@@ -13,15 +13,15 @@ spec Id
   internal event equal(other: Id) 
     pre: other.equalVal(this.val);
     
-  internal event lesserThan(other: Id)
-    pre: other.greaterThanEqVal(this.val);  
+  internal event greaterThan(other: Id)
+    pre: other.lesserThanEqVal(this.val);  
 
-  internal event greaterThanEqVal(val: Integer)
+  internal event lesserThanEqVal(val: Integer)
     pre: this.val >= val;
   
   states:
     (*) -> created: create;
-    created -> created: equal, equalVal, lesserThan, greaterThanEqVal;
+    created -> created: equal, equalVal, greaterThan, lesserThanEqVal;
 
 fact UniqueIds
   = always forall id1,id2: Id | 

@@ -2,6 +2,7 @@ module util::PathUtil
 
 import String;
 import IO;
+import ParseTree;
 
 import rebel::lang::Syntax;
 
@@ -18,6 +19,16 @@ PathConfig pathConfig(loc file, list[str] relRoots) {
    p = project(file);      
  
    return pathConfig(srcs = [ p + r | r <- relRoots]);
+}
+
+loc extractBase(Module m) {
+  loc modLoc = m@\loc.top;
+  
+  for (QualifiedName modDef := m.\module.name, str part <- split("::", "<modDef>")) {
+    modLoc = modLoc.parent;
+  }
+  
+  return modLoc;
 }
 
 loc addModuleToBase(loc base, Module m) = base + modToPath(m.\module.name);

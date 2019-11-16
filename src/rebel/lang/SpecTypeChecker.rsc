@@ -134,7 +134,7 @@ void collect(current: (Event)`<Modifier? modi> event <Id name>(<{FormalParam ","
   c.leaveScope(current);
 }
 
-void collect(current: (EventVariant)`<Outcome outcome> <Id name> <EventVariantBody body>`, Collector c) {
+void collect(current: (EventVariant)`variant <Id name> <EventVariantBody body>`, Collector c) {
   c.fact(current, boolType());
   c.define("<name>", eventVariantId(), name, defType(current));
   

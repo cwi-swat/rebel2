@@ -193,7 +193,7 @@ void collect(current: (Formula)`exists <{Decl ","}+ dcls> | <Formula frm>`, Coll
 
 void collect(current: (Decl)`<{Id ","}+ vars> : <Expr expr>`, Collector c) {
   for (Id var <- vars) {
-    c.define("<var>", quantVarId(), var, defTypeCall([expr@\loc], 
+    c.define("<var>", quantVarId(), current, defTypeCall([expr@\loc], 
       AType (Solver s) {
         if (setType(AType elemType) := s.getType(expr)) {
           return elemType;
@@ -377,6 +377,18 @@ void collect(current: (Expr)`<Expr lhs> / <Expr rhs>`, Collector c) {
     });  
     
   collect(lhs, rhs, c);
+}
+
+void collect(current: (Expr)`{<Decl d> | <Formula frm>}`, Collector c) {
+  c.calculate("comprehension", current, [d], 
+    AType (Solver s) {
+      return setType(s.getType(d));
+    });
+
+  c.enterScope(current);
+    collectQuant([d], frm, c);
+  c.leaveScope(current);
+
 }
 
 void collect(current: (Expr)`<Id var>`, Collector c) {

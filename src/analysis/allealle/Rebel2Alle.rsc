@@ -42,13 +42,13 @@ import analysis::Normalizer;
 import util::PathUtil;
 import analysis::graphs::Graph;
 
-void performCheck(Check chk, Module m, PathConfig pathConf = pathConfig(srcs=[|project://rebel2/examples|]))
+void performCheck(Check chk, Module m, PathConfig pathConf = pathConfig(srcs=[extractBase(m)]))
   = performCheck("<chk.name>", m, pathConf = pathConf);
 
-void performCheck(str check, Module m, PathConfig pathConf = pathConfig(srcs=[|project://rebel2/examples|])) {
+void performCheck(str check, Module m, PathConfig pathConf = pathConfig(srcs=[extractBase(m)])) {
   PathConfig normPathConfig = pathConfig(srcs=[|project://rebel2/bin/normalized|]);
-
-  tuple[Module initModule, set[Module] allMods] normalized = normalizeAllInScope(m, pathConf, normPathConfig);
+  
+  tuple[Module initModule, set[Module] allMods] normalized = normalizeAllInScope(m, pathConf, normPathConfig);  
   TModel tm = rebelTModelFromTree(normalized.initModule, pathConf = normPathConfig);  
   
   Config cfg = buildConfig(check, normalized.allMods, tm);
@@ -64,6 +64,8 @@ void performCheck(str check, Module m, PathConfig pathConf = pathConfig(srcs=[|p
 }
 
 private tuple[Module, set[Module]] normalizeAllInScope(Module startingPoint, PathConfig pcfg, PathConfig normalizedPcfg) {
+  TModel origTm = rebelTModelFromTree(startingPoint, pathConf = pcfg);  
+  
   set[QualifiedName] gatherImports(Module m) = {imp.\module | Import imp <- m.imports};
    
   set[Module] normalizedMods = {}; 
@@ -77,7 +79,7 @@ private tuple[Module, set[Module]] normalizeAllInScope(Module startingPoint, Pat
       if (just(loc l) := lookupModule(m, pcfg)) {
         Module n = parse(#start[Module], l).top;
         modulesToImport += gatherImports(n);
-        normalizedMods += parse(#start[Module], normalize(n)).top;
+        normalizedMods += parse(#start[Module], normalize(n, origTm)).top;
       }
       else {
         throw "Cannot find module <m>";
@@ -87,7 +89,7 @@ private tuple[Module, set[Module]] normalizeAllInScope(Module startingPoint, Pat
     }
   }
   
-  Module normStartPoint = parse(#start[Module], normalize(startingPoint)).top;
+  Module normStartPoint = parse(#start[Module], normalize(startingPoint, origTm)).top;
   return <normStartPoint, normalizedMods + normStartPoint>;
 }
 

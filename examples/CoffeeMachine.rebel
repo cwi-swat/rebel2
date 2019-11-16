@@ -1,12 +1,10 @@
 module CoffeeMachine
 
 spec CoffeeMachine
-  //accepts: set Integer,
   amountNeeded: Integer;
    
   init event powerOn() 
     post: 
-      //this.accepts' = {} + 5 + 10 + 20 + 50,
       this.amountNeeded' = 0;
     
   event powerOff()
@@ -29,17 +27,16 @@ spec CoffeeMachine
        
   event pay(amount: Integer)
     pre: 
-      (amount = 5 || amount = 10 || amount = 20 || amount = 50),
-      this.amountNeeded - amount > 0;
+      (amount = 5 || amount = 10 || amount = 20 || amount = 50);
     post: 
       this.amountNeeded' = this.amountNeeded - amount;
   
-    success amountMet
+    variant amountNotMet
+      pre: this.amountNeeded - amount > 0;
+      
+    variant amountMet
       pre: 
-        (amount = 5 || amount = 10 || amount = 20 || amount = 50),
         this.amountNeeded - amount = 0;
-      post: 
-        this.amountNeeded' = 0;
                  
   event cancel() 
     post: this.amountNeeded' = 0;
@@ -48,7 +45,7 @@ spec CoffeeMachine
     active {
       waiting -> acceptingPayment: selectAmericano, selectEspresso, selectNormal, selectLatte;
       acceptingPayment -> serve: pay::amountMet;
-      acceptingPayment -> acceptingPayment: pay;
+      acceptingPayment -> acceptingPayment: pay::amountNotMet;
       acceptingPayment -> waiting: cancel;
       serve -> waiting: empty;
     }

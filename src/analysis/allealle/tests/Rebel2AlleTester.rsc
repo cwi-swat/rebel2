@@ -32,24 +32,7 @@ Spec getSpec(Module m, str specName) {
   throw "Unable to find spec with name `<specName>` in file `<m@\loc.top>`"; 
 }
 
-void translateCoffeeMachine() {
-  loc specFile = |project://rebel2/bin/normalized/CoffeeMachine.rebel|;
-  
-  Module cm = parseModule(|project://rebel2/examples/CoffeeMachine.rebel|);
-  normalize(cm);
-  
-  Module normalizedCm = parseModule(specFile); 
-  
-  TModel tm = rebelTModelFromTree(normalizedCm, pathConf = normPathConfig());
-    
-  instances = {<getSpec(normalizedCm, "CoffeeMachine"), "cm1", uninitialized()>,
-               <getSpec(normalizedCm, "CoffeeMachine"), "cm2", uninitialized()>,
-               <getSpec(normalizedCm, "CoffeeMachine"), "cm3", uninitialized()>};
-               
-  initialValues = {};  
-  
-  translateSpecs(config(instances, initialValues, tm, 10), "exists c: Config, cm: (Instance ⨝ CoffeeMachine)[instance] | (c ⨝ instanceInState ⨝ cm)[state] in StateCoffeeMachineServe");
-}
+void translateCoffeeMachine() = performCheck("MachineIsServing", parseModule(|project://rebel2/examples/CoffeeMachine.rebel|));
 
 void translateLeaderAndFollower() {
   loc leaderFile = |project://rebel2/bin/normalized/sync/double/Leader.rebel|;

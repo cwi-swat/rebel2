@@ -1,21 +1,19 @@
 module analysis::Normalizer
 
 import rebel::lang::Syntax;
+import rebel::lang::TypeChecker;
+import util::PathUtil;
 
 import ParseTree;
 import List;
+import Set;
 import String;
 import IO;
+import Location;
 
-// Test imports
-import rebel::lang::Parser;
-import util::PathUtil;
-
-Module normalizeCoffeeMachine() = normalize(parseModule(|project://rebel2/examples/CoffeeMachine.rebel|)); 
-
-loc normalize(Module m) {
+loc normalize(Module m, TModel origTm) {
   m = visit(m) {
-    case (Part)`<Spec spc>` => (Part)`<Spec nSpc>` when Spec nSpc := normalize(spc)
+    case (Part)`<Spec spc>` => (Part)`<Spec nSpc>` when Spec nSpc := normalize(spc, origTm)
   }
   
   loc normPath = addModuleToBase(project(m@\loc.top) + "bin/normalized/", m);
@@ -27,10 +25,10 @@ loc normalize(Module m) {
   return normPath[extension = "rebel"];
 }
 
-Spec normalize(Spec spc) {
+Spec normalize(Spec spc, TModel origTm) {
   set[str] fields = {"<f.name>" | /Field f := spc};
   
-  list[Event] normEvents = normalizeEvents([e | Event e <- spc.events]);
+  list[Event] normEvents = normalizeEvents([e | Event e <- spc.events], origTm);
   normEvents = addFrameConditions(fields, normEvents);
   normEvents = addEmptyTransitionIfNecessary(spc, normEvents);
   if (fields != {} || /Transition _ := spc.states){
@@ -62,27 +60,46 @@ list[Event] addFrameConditions(set[str] fields, list[Event] events) {
   return framedEvents;
 }
 
-list[Event] normalizeEvents(list[Event] events) {
-  for (Event e <- events) {
+list[Event] normalizeEvents(list[Event] events, TModel origTm) {
+  set[Define] variants = {d | Define d <- origTm.definitions<1>, d.idRole == eventVariantId()};
+  set[Define] findVariants(loc eventRef) = {v | v <- variants, isContainedIn(v.defined, eventDef)}
+    when {loc eventDef} := origTm.useDef[eventRef]; 
+  
+  Formula buildSyncDisj(orig:(Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, set[Define] variants) 
+    = buildSyncDisj([(Formula)`<Expr spc>.<Id varId>(<{Expr ","}* params>)` | Define var <- variants, Id varId := [Id]"<event>__<var.id>"]); 
+  
+  Formula buildSyncDisj(list[Formula] variants) = [Formula]"(<intercalate(" || ", variants)>)";  
+  
+  void checkForVariantDefs(Event e) {
     bool changed = false;
     
     list[Event] addedEvents = [];
     
+    // Check for variants
     for (EventVariant ev <- e.body.variants) {
       changed = true;
       
       addedEvents += normalizeVariant(ev, e);
     }
-    
+
     if (changed) {
-      // remove variants;
+      // remove the original event, add the variants as seperate events;
       events -= e;
-      
-      e.body = buildEventBody(e.body.pre, e.body.post);
-      
-      events += e;
       events += addedEvents;      
     }
+  }
+  
+  void checkForVariantSyncs(Event e) {
+    events -= e;
+    events += visit(e) {
+      case orig:(Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)` => buildSyncDisj(orig, vars) 
+        when set[Define] vars := findVariants(event@\loc), vars != {} 
+    }  
+  }
+  
+  for (Event e <- events) {
+    checkForVariantSyncs(e);
+    checkForVariantDefs(e);
   }
   
   return events;
@@ -96,6 +113,55 @@ private list[Event] addEmptyTransitionIfNecessary(Spec spc, list[Event] events) 
   
   return events;
 }
+
+private EventBody mergePreConditions(Event orig, EventVariant var) {
+  Event addPreCond(Event tmp, Formula f) {
+    if (/(Pre)`pre: <{Formula ","}* formulas>;` := tmp.body.pre) {
+      return (Event)`  event foo() 
+                    '    pre:
+                    '      <Formula f>,
+                    '      <{Formula ","}* formulas>;
+                    '`;
+    } else {
+      return (Event)`  event foo() 
+                    '    pre:
+                    '      <Formula f>;
+                    '`;
+    }
+  
+  }
+
+  for (/(Pre)`pre: <{Formula ","}* formulas>;` := var.body.pre, Formula f <- formulas) {
+    orig = addPreCond(orig, f);
+  } 
+  
+  return orig.body;
+}
+
+private EventBody mergePostConditions(Event orig, EventVariant var) {
+  Event addPostCond(Event tmp, Formula f) {
+    if (/(Post)`post: <{Formula ","}* formulas>;` := tmp.body.post) {
+      return (Event)`  event foo() 
+                    '    post:
+                    '      <Formula f>,
+                    '      <{Formula ","}* formulas>;
+                    '`;
+    } else {
+      return (Event)`  event foo() 
+                    '    post:
+                    '      <Formula f>;
+                    '`;
+    }
+  
+  }
+
+  for (/(Post)`post: <{Formula ","}* formulas>;` := var.body.post, Formula f <- formulas) {
+    orig = addPostCond(orig, f);
+  } 
+  
+  return orig.body;
+}
+
 
 private EventBody buildEventBody(Pre? origPre, Post? origPost) {
   Pre pre = emptyPre();
@@ -156,7 +222,7 @@ private Event normalizeVariant(EventVariant ev, Event e) {
   Event var = e;
   var.name = [Id]"<e.name>__<ev.name>";
   
-  var.body = buildEventBody(ev.body.pre, ev.body.post);
+  var.body = buildEventBody(mergePreConditions(e,ev).pre, mergePostConditions(e,ev).post);
   
   return var; 
 }

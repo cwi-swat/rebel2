@@ -51,13 +51,8 @@ syntax Post
   ;
 
 syntax EventVariant
-  = Outcome outcome Id name EventVariantBody body
+  = "variant" Id name EventVariantBody body
   ;  
-
-syntax Outcome
-  = "success"
-  | "failure"
-  ;
 
 syntax EventVariantBody
   = Pre? pre Post? post
@@ -102,5 +97,6 @@ keyword Keywords = "spec"
                  | "init"
                  | "states"
                  | "enum"
+                 | "variant"
                  ;
  

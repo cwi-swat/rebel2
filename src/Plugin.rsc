@@ -66,7 +66,6 @@ set[Contribution] getRebelContributions() {
   return {
     annotator(Module (Module m) {
       loc proj = project(m@\loc.top);
-      last = just(m);
       
       TModel tm = rebelTModelFromTree(m, debug=false, pathConf = pathConfig(srcs = [ proj + "src", proj + "examples"]));
 
