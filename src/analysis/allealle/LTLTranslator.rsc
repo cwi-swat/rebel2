@@ -69,6 +69,12 @@ str translate((Formula)`next <Formula f>`, Context ctx) {
   return "let step = (order ⨝ <ctx.curConfigRel>[config as cur]), prev = <ctx.curConfigRel>, cur = step[nxt-\>config] | <translate(f, ctx)>";
 }
 
+str translate((Formula)`<Id event> on <Expr var> <WithAssignments? with>`, Context ctx) {
+  str spec = getSpecTypeName(var, ctx.tm); 
+  str r = translateRelExpr(var, ctx); 
+  return "Event<capitalize(spec)><capitalize("<event>")> ⊆ (raisedEvent ⨝ step ⨝ <r>)[event]";
+}
+
 str translate((Formula)`forall <{Decl ","}+ decls> | <Formula form>`, Context ctx) 
   = "(∀ <intercalate(",", [translate(d,ctx) | Decl d <- decls])> | <translate(form,ctx)>)";
 

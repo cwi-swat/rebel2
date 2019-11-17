@@ -4,7 +4,7 @@ spec PingPong
   name: String,
   times: Integer;
   
-  init event start(name: String)
+  event start(name: String)
     post: 
       this.name' = name,
       this.times' = 0;
@@ -23,7 +23,8 @@ spec PingPong
     pong -> ping: hit;
     
 fact UniqueNames
-  = always forall p1,p2: PingPong | ((p1 is initialized && p2 is initialized && p1 != p2) => p1.name != p2.name);     
+  = always forall p1,p2: PingPong | 
+    ((p1 is initialized && p2 is initialized && p1 != p2) => p1.name != p2.name);     
     
 config OneMachine = p: PingPong;    
 config TwoMachines = p1,p2: PingPong;
@@ -32,6 +33,6 @@ assert HitFiveAndThreeTimes
   = eventually exists p1,p2: PingPong | p1 != p2 && p1.times = 5 && p2.times = 3;
 
 assert CanHitNext
-  = eventually exists p: PingPong | p.times = 2 && next p.times = 3;
+  = eventually exists p: PingPong | p.times = 2 && next changeName on p;
    
-check CanHitNext starting at TwoMachines in max 6 steps;   
+check CanHitNext starting at OneMachine in max 6 steps;   
