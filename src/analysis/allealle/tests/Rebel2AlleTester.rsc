@@ -34,29 +34,7 @@ Spec getSpec(Module m, str specName) {
 
 void translateCoffeeMachine() = performCheck("MachineIsServing", parseModule(|project://rebel2/examples/CoffeeMachine.rebel|));
 
-void translateLeaderAndFollower() {
-  loc leaderFile = |project://rebel2/bin/normalized/sync/double/Leader.rebel|;
-  loc followerFile = |project://rebel2/bin/normalized/sync/double/Follower.rebel|;
-  
-  Module f = parseModule(|project://rebel2/examples/sync/double/Follower.rebel|);
-  Module l = parseModule(|project://rebel2/examples/sync/double/Leader.rebel|);
-  
-  normalize(f);
-  normalize(l);
-
-  Module normalizedF = parseModule(followerFile);
-  Module normalizedL = parseModule(leaderFile);
-
-  TModel tm = rebelTModelFromTree(normalizedL, debug = false, pathConf = normPathConfig());
-
-  instances = {<getSpec(normalizedF, "Follower"), "f1", uninitialized()>, 
-               <getSpec(normalizedF, "Follower"), "f2", uninitialized()>, 
-               <getSpec(normalizedL, "Leader"), "l1", uninitialized()>};
-               
-  initialValues = {};  
-  
-  translateSpecs(config(instances, initialValues, tm, 7), "∃ c ∈ Config, f ∈ FollowerTimes, l ∈ LeaderTimes | (some (c ⨝ f) where times = 2 ∧ some (c ⨝ l) where times = 2)");
-}
+void translateLeaderAndFollower() = performCheck("UniqueFollower", parseModule(|project://rebel2/examples/sync/double/Leader.rebel|));
 
 void translateLeaderFollowerAndTailer() {
   loc leaderFile = |project://rebel2/bin/normalized/sync/triple/Leader.rebel|;

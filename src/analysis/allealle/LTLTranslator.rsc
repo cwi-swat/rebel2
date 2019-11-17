@@ -167,7 +167,10 @@ str translateRelExpr(current:(Expr)`<Expr spcExpr>.<Id field>`, Context ctx) {
     throw "Left hand side is not a spec?";
   }
   
-  str resultRel = "(<translateRelExpr(spcExpr, ctx)> ⨝ <spc><capitalize("<field>")><if (ctx.curConfigRel != "") {> ⨝ <ctx.curConfigRel><}>)[<field>-\><spcExpr><capitalize("<field>")>]";
+  str renameIfPrim() = "[<field>-\><spcExpr><capitalize("<field>")>]" when isPrim(getType(field,ctx.tm));
+  default str renameIfPrim() = "[<field>]";
+  
+  str resultRel = "(<translateRelExpr(spcExpr, ctx)> ⨝ <spc><capitalize("<field>")><if (ctx.curConfigRel != "") {> ⨝ <ctx.curConfigRel><}>)<renameIfPrim()>";
 
   ctx.addHeader(current@\loc, ("<field>": type2Str(getType(field, ctx.tm))));
   return resultRel;  

@@ -9,7 +9,7 @@ spec Process
 
   internal event receive(someId: Id) 
     post:  
-      this.toSend' = {id: this.toSend | id.greaterThan(someId)} + someId; 
+      this.toSend' = {id: this.toSend | id.greaterThan(someId)} + someId;
 
     variant notElected
       pre: this.id != someId; 

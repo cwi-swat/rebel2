@@ -37,6 +37,7 @@ set[Contribution] getRebelContributions() {
  
   void runCheck(Module m, loc selection) {
     if (/Check chk <- m.parts, isContainedIn(selection, chk@\loc)) {
+      println("Running check");
       performCheck(chk, m);  
     } 
   }

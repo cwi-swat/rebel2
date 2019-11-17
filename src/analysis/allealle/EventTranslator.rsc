@@ -59,7 +59,8 @@ tuple[str fieldName, str relName] findRootRel(Expr exp, str instRel, Spec spc, E
   Decl findDecl(loc locOfVar) {
     visit(evnt.body) {
       case cur:(Decl)`<{Id ","}+ vars> : <Expr expr>`: { 
-        if (Id var <- vars, var@\loc == locOfVar) {
+        //if (Id var <- vars, var@\loc == locOfVar) {
+        if (cur@\loc == locOfVar) {
           return cur; 
         }
       }
@@ -84,6 +85,7 @@ tuple[str fieldName, str relName] findRootRel(Expr exp, str instRel, Spec spc, E
     }
     case quantVarId(): {
       if ({loc def} := ctx.cfg.tm.useDef[exp@\loc]) {
+        println(def);
         Decl d = findDecl(def);
         return findRootRel(d.expr, instRel, spc, evnt, scp, ctx);
       }
@@ -276,9 +278,13 @@ str translate((Formula)`forall <{Decl ","}+ decls> | <Formula form>`, Context ct
 str translate((Formula)`exists <{Decl ","}+ decls> | <Formula form>`, Context ctx) 
   = "(exists <intercalate(",", [translate(d,ctx) | Decl d <- decls])> | <translate(form,ctx)>)";
 
-str translate((Decl)`<{Id ","}+ ids>: <Expr expr>`, Context ctx) 
-  = intercalate(",", ["<name>:<te><maybeRename(getFieldName(expr,ctx),"<name>")>" | Id name <- ids])
-  when str te := translateRelExpr(expr, ctx); 
+str translate(current:(Decl)`<{Id ","}+ ids>: <Expr expr>`, Context ctx) {
+  str te = translateRelExpr(expr, ctx);
+  
+  ctx.addHeader(current@\loc, ctx.lookupHeader(expr@\loc));
+
+  return intercalate(",", ["<name>:<te><maybeRename(getFieldName(expr,ctx),"<name>")>" | Id name <- ids]);
+} 
 
 str translate((Formula)`<Expr lhs> in <Expr rhs>`,    Context ctx) = "some (<translateRelExpr(rhs,ctx)> ∩ <translateRelExpr(lhs,ctx)>[<getFieldName(lhs,ctx)> -\> <getFieldName(rhs,ctx)>])";
 str translate((Formula)`<Expr lhs> notin <Expr rhs>`, Context ctx) = "no (<translateRelExpr(rhs,ctx)> ∩ <translateRelExpr(lhs,ctx)>[<getFieldName(lhs,ctx)> -\> <getFieldName(rhs,ctx)>])";
@@ -357,6 +363,13 @@ str translateRelExpr(current:(Expr)`this.<Id id>'`, Context ctx) {
   str fieldName = isPrim(getType(current, ctx.cfg.tm)) ? "nxt<capitalize("<id>")>" : "<id>";
   ctx.addHeader(current@\loc, (fieldName: type2Str(getType(current,ctx.cfg.tm))));
   return "nxt<capitalize("<id>")>";
+}
+
+str translateRelExpr(current:(Expr)`{<Decl d> | <Formula f>}`, Context ctx) {
+  str res = translate(d,ctx);
+  ctx.addHeader(current@\loc, ctx.lookupHeader(d@\loc));
+  
+  return  "{<res> | <translate(f,ctx)>}<maybeRename()>"; 
 }
 
 str translateRelExpr(current:(Expr)`<Expr lhs> + <Expr rhs>`, Context ctx) = translateSetRelExpr(current@\loc, lhs, rhs, "+", ctx); 
