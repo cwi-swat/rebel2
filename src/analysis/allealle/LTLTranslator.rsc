@@ -64,6 +64,11 @@ str translate((Formula)`always <Formula f>`, Context ctx) {
   return "∀ cur ∈ <configRel> | <translate(f, ctx)>";
 }
 
+str translate((Formula)`next <Formula f>`, Context ctx) {
+  ctx = newCtx("cur", ctx);
+  return "let step = (order ⨝ <ctx.curConfigRel>[config as cur]), prev = <ctx.curConfigRel>, cur = step[nxt-\>config] | <translate(f, ctx)>";
+}
+
 str translate((Formula)`forall <{Decl ","}+ decls> | <Formula form>`, Context ctx) 
   = "(∀ <intercalate(",", [translate(d,ctx) | Decl d <- decls])> | <translate(form,ctx)>)";
 

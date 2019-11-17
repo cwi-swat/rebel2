@@ -68,3 +68,15 @@ spec FrontDesk
   states:
     (*) -> open: initialize;
     open -> open: checkin;   
+    
+config EmptyHotel
+  = k1,k2,k3: Key, g1,g2: Guest, ca1,ca2,ca3: Card, r1: Room, fd: FrontDesk;
+  
+assert NoIntruder
+  = eventually exists g1,g2:Guest | 
+      (g1 != g2) &&  
+      next enterRoom on g1 && 
+      next next enterRoom on g2 && 
+      next next next enterRoom on g1; 
+      
+check NoIntruder starting at EmptyHotel in max 10 steps;

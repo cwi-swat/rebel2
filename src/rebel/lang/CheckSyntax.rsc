@@ -34,6 +34,7 @@ syntax Formula
   > "eventually" Formula form
   | "always" Formula form
   | "next" Formula form
+  | Id event "on" Expr var WithAssignments? with
   ;
 
 syntax Check = "check" Id name "starting" "at" Id config "in" SearchDepth depth Objectives? objs ";";
@@ -61,4 +62,5 @@ keyword Keywords
   | "next"
   | "minimal"
   | "maximal"
+  | "on"
   ;

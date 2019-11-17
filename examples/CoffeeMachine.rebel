@@ -54,7 +54,7 @@ spec CoffeeMachine
     (*) -> waiting: powerOn;  
 
 config InitialMachine
-  = cm: CoffeeMachine;
+  = cm1,cm2: CoffeeMachine;
   
 assert MachineIsServing
   = eventually exists m: CoffeeMachine | m is serve;  

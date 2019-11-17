@@ -25,16 +25,3 @@ fact UniqueFollowers
   = always forall l1,l2: Leader | 
     ((l1 is initialized && l2 is initialized && l1.follower = l2.follower) => l1 = l2);
     
-config TwoOfEachUninitialized
-  = l1, l2: Leader is uninitialized,
-    f1, f2: Follower is uninitialized;
-    
-assert AllLeadersActive
-  = eventually forall l: Leader | l is active;
-     
-assert UniqueFollower
-  = eventually exists l1: Leader, l2: Leader | 
-      (l1 is initialized && l2 is initialized && l1 != l2 && l1.follower = l2.follower);
- 
-check UniqueFollower starting at TwoOfEachUninitialized in max 5 steps;
-    

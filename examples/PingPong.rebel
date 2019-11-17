@@ -25,10 +25,13 @@ spec PingPong
 fact UniqueNames
   = always forall p1,p2: PingPong | ((p1 is initialized && p2 is initialized && p1 != p2) => p1.name != p2.name);     
     
-config TwoMachines
-  = p1,p2: PingPong;
+config OneMachine = p: PingPong;    
+config TwoMachines = p1,p2: PingPong;
      
-assert HitFiveTimes
+assert HitFiveAndThreeTimes
   = eventually exists p1,p2: PingPong | p1 != p2 && p1.times = 5 && p2.times = 3;
+
+assert CanHitNext
+  = eventually exists p: PingPong | p.times = 2 && next p.times = 3;
    
-check HitFiveTimes starting at TwoMachines in max 15 steps;   
+check CanHitNext starting at TwoMachines in max 6 steps;   

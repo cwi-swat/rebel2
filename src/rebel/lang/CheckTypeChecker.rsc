@@ -109,6 +109,13 @@ void collect(current:(Formula)`next <Formula form>`, Collector c) {
   collect(form, c);  
 }
 
+void collect(current:(Formula)`<Id event> on <Expr spc> <WithAssignments? with>`, Collector c) {
+  c.fact(current, boolType());
+  
+  c.useViaType(spc, event, {eventId()});
+  collect(spc, c);
+}
+
 void collect(current:(Check)`check <Id assrt> starting at <Id config> in <SearchDepth depth> <Objectives? objs>;`, Collector c) {
   //c.define("check_<assrt>", checkId(), current, defType(checkType()));
   
