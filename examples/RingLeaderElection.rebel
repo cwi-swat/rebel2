@@ -1,0 +1,62 @@
+module RingLeaderElection
+
+spec Process
+  pid: Integer,
+  toSend: Integer,
+  succ: Process;
+
+  internal event received(anId: Integer)
+    variant lower 
+      pre: anId < this.pid;
+      
+    variant higher
+      pre: this.pid < anId;
+      post: this.toSend' = anId; 
+    
+    variant elected  
+      pre: this.pid = anId;
+  
+  event send()
+    pre: if (this.pid > this.toSend) 
+           then this.succ.received(this.pid) 
+           else this.succ.received(this.toSend); 
+    
+  states:
+    notElected -> notElected: send, received::lower, received::higher; 
+    notElected -> elected: received::elected;
+    
+fact UniqueIds
+  = always forall p1,p2: Process | 
+      ((p1 is initialized && p2 is initialized && p1.pid = p2.pid) => p1 = p2);    
+
+fact PositiveIds
+  = always forall p: Process | (p is initialized => p.pid > 0);
+
+fact InitialToSendIsZero
+  = first forall p: Process | p.toSend = 0; 
+
+//fact Ring
+//  = always forall p1: Process | exists p2: Process | p1 != p2 && p1.succ = p2;
+    
+// ---------------------------
+    
+config RingOfThree
+  = p1,p2,p3: Process is notElected, 
+    p1 with succ = p2,
+    p2 with succ = p3,
+    p3 with succ = p1; 
+  
+config RingOfTwo
+  = p1,p2: Process is notElected,
+    p1 with succ = p2,
+    p2 with succ = p1;
+        
+assert EventuallyOneIsElected
+  = eventually exists p: Process | p is elected;
+
+assert OnlyOneCanGetElected
+  = eventually exists p1,p2: Process | p1 is elected && p2 is elected && p1 != p2;  
+
+check EventuallyOneIsElected starting at RingOfThree in max 4 steps;
+  
+check OnlyOneCanGetElected starting at RingOfThree in max 10 steps;  

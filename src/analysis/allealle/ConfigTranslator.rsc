@@ -10,18 +10,6 @@ import IO;
 import Set;
 import List;
 
-//alias RelHeader = map[str attName, str attDomain];
-//
-//data Context = ctx(RelHeader (loc) lookupHeader, void (loc, RelHeader) addHeader, Config cfg);
-
-//data Config = config(rel[Spec spc, str instance, State initialState] instances, 
-//                     rel[Spec spc, str instance, str field, str val] initialValues, 
-//                     TModel tm,
-//                     int numberOfTransitions,
-//                     int maxSizeIntegerSets = 5);
-
-//alias CheckTransResult = tuple[Config cfg, str checks, list[str] objectives];
-
 Config buildConfig(str checkName, set[Module] mods, TModel tm) {
   if (Module m <- mods, 
     /(Check)`check <Id name> starting at <Id cfg> in <SearchDepth depth> <Objectives? _>;` <- m.parts, "<name>" == checkName) {

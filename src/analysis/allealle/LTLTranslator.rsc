@@ -69,9 +69,15 @@ str translate((Formula)`next <Formula f>`, Context ctx) {
   return "let step = (order ⨝ <ctx.curConfigRel>[config as cur]), prev = <ctx.curConfigRel>, cur = step[nxt-\>config] | <translate(f, ctx)>";
 }
 
+str translate((Formula)`first <Formula f>`, Context ctx) {
+  ctx = newCtx("cur", ctx);
+  return "let cur = first | <translate(f, ctx)>";
+}
+
 str translate((Formula)`<Id event> on <Expr var> <WithAssignments? with>`, Context ctx) {
   str spec = getSpecTypeName(var, ctx.tm); 
   str r = translateRelExpr(var, ctx); 
+  // TODO; handle the With assignments expression
   return "Event<capitalize(spec)><capitalize("<event>")> ⊆ (raisedEvent ⨝ step ⨝ <r>)[event]";
 }
 
@@ -121,7 +127,7 @@ str translate((Formula)`<Expr lhs> \>= <Expr rhs>`, Context ctx) = translateRest
 str translate((Formula)`<Expr lhs> \> <Expr rhs>`,  Context ctx) = translateRestrictionEq(lhs, rhs, "\>",  ctx);
 
 str translate((Formula)`if <Formula cond> then <Formula then> else <Formula \else>`,  Context ctx) 
-  = translate((Formula)`(<Formula cond> =\> <Formula then>) ∧ (!(<Formula cond>) =\> <Formula \else>)`, ctx);
+  = translate((Formula)`(<Formula cond> =\> <Formula then>) ∧ (¬ (<Formula cond>) =\> <Formula \else>)`, ctx);
 
 default str translate(Formula f, Context ctx) { throw "No translation function implemented yet for `<f>`"; }
 

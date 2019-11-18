@@ -109,6 +109,11 @@ void collect(current:(Formula)`next <Formula form>`, Collector c) {
   collect(form, c);  
 }
 
+void collect(current:(Formula)`first <Formula form>`, Collector c) {
+  c.fact(current, boolType());
+  collect(form, c);  
+}
+
 void collect(current:(Formula)`<Id event> on <Expr spc> <WithAssignments? with>`, Collector c) {
   c.fact(current, boolType());
   

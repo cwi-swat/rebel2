@@ -164,20 +164,9 @@ private EventBody mergePostConditions(Event orig, EventVariant var) {
 
 
 private EventBody buildEventBody(Pre? origPre, Post? origPost) {
-  Pre pre = emptyPre();
-  Post post = emptyPost();
- 
-  if (/Pre pr := origPre) {
-    pre = pr;
-  }
-  if (/Post ps := origPost) {
-    post = ps;
-  }  
-  
-  return (EventBody)`<Pre pre> 
-                    '<Post post>
-                    '
-                    '`;
+  return [EventBody]"<origPre> 
+                    '<origPost>
+                    '";
 }
 
 private Post? addFrameConditions(set[str] fields, Post? post, str eventName) {

@@ -34,6 +34,7 @@ syntax Formula
   > "eventually" Formula form
   | "always" Formula form
   | "next" Formula form
+  | "first" Formula form
   | Id event "on" Expr var WithAssignments? with
   ;
 
@@ -63,4 +64,5 @@ keyword Keywords
   | "minimal"
   | "maximal"
   | "on"
+  | "first"
   ;

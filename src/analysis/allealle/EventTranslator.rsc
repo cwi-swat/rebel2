@@ -85,7 +85,6 @@ tuple[str fieldName, str relName] findRootRel(Expr exp, str instRel, Spec spc, E
     }
     case quantVarId(): {
       if ({loc def} := ctx.cfg.tm.useDef[exp@\loc]) {
-        println(def);
         Decl d = findDecl(def);
         return findRootRel(d.expr, instRel, spc, evnt, scp, ctx);
       }
@@ -96,7 +95,7 @@ tuple[str fieldName, str relName] findRootRel(Expr exp, str instRel, Spec spc, E
 private tuple[set[str],list[str]] syncedInstanceRels(Spec s, Event e, str instRel, Graph[SyncedWith] syncDep, SyncScope scp, Config cfg) {
   map[loc,RelHeader] rl = ();
   RelHeader lookupHeader(loc expr) = rl[expr] when expr in rl; 
-  default RelHeader lookupHeader(loc expr) { throw "Expression location not in rel header map"; }
+  default RelHeader lookupHeader(loc expr) { throw "Expression location `<expr>` not in rel header map"; }
   void addHeader(loc expr, RelHeader header) { rl += (expr:header); }
   Context c = ctx(lookupHeader, addHeader, cfg);
 
@@ -133,12 +132,14 @@ str translateEventToPred(Spec spc, Event event, str instanceRel, Config cfg) {
   default RelHeader lookupHeader(loc expr) { throw "Expression at `<expr>` not in rel header map"; }
   void addHeader(loc expr, RelHeader header) { rl += (expr:header); }
   
+  Context c = ctx(lookupHeader, addHeader, cfg);
+  
   list[str] letRels = buildLetVars(spc, event, instanceRel, cfg);
-  list[str] paramVars = ["step:(cur:id, nxt:id)", "<getLowerCaseSpecName(spc)>: (instance:id)"] + buildParamVars(event, cfg);
+  list[str] paramVars = ["step:(cur:id, nxt:id)", "<getLowerCaseSpecName(spc)>: (instance:id)"] + buildParamVars(event, c);
   
   return "pred event<getCapitalizedSpecName(spc)><getCapitalizedEventName(event)>[<intercalate(", ", paramVars)>]
          '  = let <intercalate(",\n", letRels)> |
-         '    <translateEventBody(spc, event, ctx(lookupHeader, addHeader, cfg))>
+         '    <translateEventBody(spc, event, c)>
          '";
 }
 
@@ -175,7 +176,7 @@ private list[str] buildLetVars(Spec spc, Event event, str instRel, Config cfg) {
   return letRels;
 }
 
-private list[str] buildParamVars(Event event, Config cfg) {
+private list[str] buildParamVars(Event event, Context ctx) {
   list[str] varDefs = [];
   
   for (/FormalParam p <- event.params) {
@@ -283,7 +284,7 @@ str translate(current:(Decl)`<{Id ","}+ ids>: <Expr expr>`, Context ctx) {
   
   ctx.addHeader(current@\loc, ctx.lookupHeader(expr@\loc));
 
-  return intercalate(",", ["<name>:<te><maybeRename(getFieldName(expr,ctx),"<name>")>" | Id name <- ids]);
+  return intercalate(",", ["<name>:<te><maybeRename(getFieldName(expr,ctx),"<name>")>" | Id name <- ids]); 
 } 
 
 str translate((Formula)`<Expr lhs> in <Expr rhs>`,    Context ctx) = "some (<translateRelExpr(rhs,ctx)> ∩ <translateRelExpr(lhs,ctx)>[<getFieldName(lhs,ctx)> -\> <getFieldName(rhs,ctx)>])";
@@ -348,6 +349,9 @@ str translateRelExpr(current:(Expr)`(<Expr e>)`, Context ctx) {
   return  "(<res>)"; 
 }
 
+loc findDef(loc use, TModel tm) = def when {def} := tm.useDef[use];
+default loc findDef(loc l, TModel _) { throw "Unable to find definition for variable defined at `<l>`"; }
+
 str translateRelExpr(current:(Expr)`<Id id>`, Context ctx) {
   ctx.addHeader(current@\loc, ("<id>": type2Str(getType(current,ctx.cfg.tm))));
   return "<id>";
@@ -365,11 +369,12 @@ str translateRelExpr(current:(Expr)`this.<Id id>'`, Context ctx) {
   return "nxt<capitalize("<id>")>";
 }
 
-str translateRelExpr(current:(Expr)`{<Decl d> | <Formula f>}`, Context ctx) {
-  str res = translate(d,ctx);
-  ctx.addHeader(current@\loc, ctx.lookupHeader(d@\loc));
+str translateRelExpr(current:(Expr)`{<Id var> : <Expr expr> | <Formula f>}`, Context ctx) {
+  str te = translateRelExpr(expr, ctx);
+  ctx.addHeader(current@\loc, ctx.lookupHeader(expr@\loc));
+  str res = "<var>:<te><maybeRename(getFieldName(expr,ctx),"<var>")>";
   
-  return  "{<res> | <translate(f,ctx)>}<maybeRename()>"; 
+  return  "{<res> | <translate(f,ctx)>}<maybeRename("<var>",getFieldName(current,ctx))>"; 
 }
 
 str translateRelExpr(current:(Expr)`<Expr lhs> + <Expr rhs>`, Context ctx) = translateSetRelExpr(current@\loc, lhs, rhs, "+", ctx); 
