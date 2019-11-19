@@ -22,7 +22,7 @@ str translateConstraints(set[Spec] spcs, Config cfg, str check) {
              '<eventParamTypeAndMultiplicityConstraints(spcs, cfg)>
              '<allConfigsAreReachable()>
              '<onlyOneTriggeringEvent()>
-             '<noMachineWithoutState()>
+             '<noMachineWithoutState(spcs)>
              '<machineOnlyHasValuesWhenInitialized(spcs, cfg)>
              '<noTransitionsBetweenUnrelatedStates()>
              '<helperPredicates()>
@@ -79,10 +79,23 @@ private str onlyOneTriggeringEvent()
     '∀ o ∈ order | one o ⨝ raisedEvent
     '";
     
-private str noMachineWithoutState()
-  = "// Generic: In every configuration all machines have a state
-    '∀ c ∈ Config, inst ∈ Instance | one instanceInState ⨝ c ⨝ inst
+private str noMachineWithoutState(set[Spec] spcs)
+  = "// Specif: In every configuration all machines have a state IFF its a machine which is not empty
+    '∀ c ∈ Config, inst ∈ <nonEmptyMachineInstances(spcs)> | one instanceInState ⨝ c ⨝ inst
     '"; 
+
+private str nonEmptyMachineInstances(set[Spec] spcs) {
+  list[str] emptyMachines = [];
+  for (Spec s <- spcs, isEmptySpec(s)) {
+    emptyMachines += "<s.name>";
+  }
+  
+  if (emptyMachines == []) {
+    return "Instance";
+  } else {
+    return "(Instance ∖ ((<intercalate("+", emptyMachines)>) ⨝ Instance))";
+  }
+}   
     
 private str machineOnlyHasValuesWhenInitialized(set[Spec] spcs, Config cfg) {
   list[str] cons = [];

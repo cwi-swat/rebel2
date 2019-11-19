@@ -54,9 +54,14 @@ config RingOfTwo
 assert EventuallyOneIsElected
   = eventually exists p: Process | p is elected;
 
+assert AProcessWillAlwaysBeElected
+  = always (forall p: Process | p is notElected);
+
 assert OnlyOneCanGetElected
   = eventually exists p1,p2: Process | p1 is elected && p2 is elected && p1 != p2;  
 
 check EventuallyOneIsElected starting at RingOfThree in max 4 steps;
   
 check OnlyOneCanGetElected starting at RingOfThree in max 10 steps;  
+
+check AProcessWillAlwaysBeElected starting at RingOfThree in max 7 steps;

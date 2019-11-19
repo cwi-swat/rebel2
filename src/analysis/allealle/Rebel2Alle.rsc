@@ -46,7 +46,7 @@ void performCheck(Check chk, Module m, PathConfig pathConf = pathConfig(srcs=[ex
   = performCheck("<chk.name>", m, pathConf = pathConf);
 
 void performCheck(str check, Module m, PathConfig pathConf = pathConfig(srcs=[extractBase(m)])) {
-  PathConfig normPathConfig = pathConfig(srcs=[|project://rebel2/bin/normalized|]);
+  PathConfig normPathConfig = pathConfig(srcs=[project(m@\loc.top) + "/bin/normalized"]);
   
   tuple[Module initModule, set[Module] allMods] normalized = normalizeAllInScope(m, pathConf, normPathConfig);  
   TModel tm = rebelTModelFromTree(normalized.initModule, pathConf = normPathConfig);  
@@ -172,7 +172,7 @@ Configuration getConfiguration(int step, set[Spec] specs, rel[Spec spc, str inst
   rel[Spec,str,State] states = {};
   rel[Spec,str,str,str] values = {};
   
-  for (s <- specs) {
+  for (s <- specs, !isEmptySpec(s)) {
     states += getStateInConfig(step, s, instances[s], alleModel, tm);
     values += getValuesInConfig(step, s, instances[s], alleModel, tm);
   }
@@ -194,6 +194,10 @@ rel[Spec spc, str instance, State state] getStateInConfig(int step, Spec spc, se
   ModelRelation r = findRelation(alleModel, "instanceInState");
 
   State getState(str inst) {
+    if (isEmptySpec(spc)) {
+      return noState();
+    }
+    
     for (t <- r.tuples) {
       if (/idAttribute("config", "c<step>") := t.attributes && /idAttribute("instance", inst) := t.attributes, /idAttribute("state", str curState) := t.attributes) {
         return parseState(curState);
@@ -328,13 +332,14 @@ private str getVal({str v}) = v;
 private default str getVal(set[str] val) = "{<intercalate(",", [*val])>}";
 
 str config2Str(Configuration cfg) {
-  str getState(uninitialized()) = "uninitialized";
-  str getState(finalized()) = "finalized";
-  str getState(state(str st)) = st;
+  str getState(uninitialized()) = "is `uninitialized`";
+  str getState(finalized()) = "is `finalized`";
+  str getState(state(str st)) = "is `<st>`";
+  str getState(noState()) = "";
 
   str result = "";
   for (Spec s <- cfg.instances<0>, str inst <- cfg.instances[s]<0>, State st <- cfg.instances[s,inst]) {
-    result += "<inst> (<s.name>) in `<getState(st)>` : <intercalate(", ", ["<field> = <getVal(cfg.values[s,inst,field])>" | str field <- cfg.values[s,inst]<0>])>\n";  
+    result += "<inst> (<s.name>) <getState(st)> : <intercalate(", ", ["<field> = <getVal(cfg.values[s,inst,field])>" | str field <- cfg.values[s,inst]<0>])>\n";  
   }
   return result;
 }

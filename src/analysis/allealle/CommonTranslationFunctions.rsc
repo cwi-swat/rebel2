@@ -20,6 +20,7 @@ data State
   | finalized()
   | state(str name)
   | anyState()
+  | noState()
   ;
 
 //@memo
@@ -121,7 +122,7 @@ set[str] lookupStateLabels(Spec spc)
 
 //@memo
 set[str] lookupStateLabelsWithDefaultState(Spec spc)
-  = lookupStateLabels(spc) + {"state_uninitialized"} + (!isEmptySpec(spc) ? {"state_finalized"} : {});   
+  = lookupStateLabels(spc) + (!isEmptySpec(spc) ? {"state_uninitialized", "state_finalized"} : {});   
 
 str getStateLabel(Spec spc, rebel::lang::SpecSyntax::State state)
   = "state_<getLowerCaseSpecName(spc)>_<toLowerCase("<state>")>";

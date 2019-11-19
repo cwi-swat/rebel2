@@ -369,6 +369,15 @@ str translateRelExpr(current:(Expr)`this.<Id id>'`, Context ctx) {
   return "nxt<capitalize("<id>")>";
 }
 
+default str translateRelExpr(current:(Expr)`<Expr expr>.<Id id>`, Context ctx) { 
+  if ({loc def} := ctx.cfg.tm.useDef[id@\loc], specInstanceId() := ctx.cfg.tm.definitions[def].idRole, specType(str name) := getType(expr, ctx.cfg.tm)) {
+    // It is a reference to a 'enum' value
+    ctx.addHeader(current@\loc, ("instance" : "id"));
+    return "<name>_<id>"; 
+  }
+}
+
+
 str translateRelExpr(current:(Expr)`{<Id var> : <Expr expr> | <Formula f>}`, Context ctx) {
   str te = translateRelExpr(expr, ctx);
   ctx.addHeader(current@\loc, ctx.lookupHeader(expr@\loc));

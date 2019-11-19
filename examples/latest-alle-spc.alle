@@ -1,44 +1,44 @@
 // Static configuration of state machines
 // Define the specs that can take place in the transition system
-Process (spec:id) = {<process>}
+Boolean (spec:id) = {<boolean>}
+Light (spec:id) = {<light>}
 
 // Define all possible states for all machines
-State (state:id) = {<state_uninitialized>,<state_finalized>,<state_process_notelected>,<state_process_elected>}
-initialized (state:id) = {<state_process_notelected>,<state_process_elected>}
+State (state:id) = {<state_uninitialized>,<state_finalized>,<state_light_lightoff>,<state_light_lighton>}
+initialized (state:id) = {<state_light_lightoff>,<state_light_lighton>}
 finalized (state:id) = {<state_finalized>}
 uninitialized (state:id) = {<state_uninitialized>}
-StateProcessNotElected (state:id) = {<state_process_notelected>}StateProcessElected (state:id) = {<state_process_elected>}
+
+StateLightLightOn (state:id) = {<state_light_lighton>}StateLightLightOff (state:id) = {<state_light_lightoff>}
 
 // Define which transitions are allowed (in the form of `from a state` -> ` via an event` -> `to a state`
-allowedTransitions (from:id, to:id, event:id) = {<state_process_notelected,state_process_notelected,event_process_received__lower>,<state_process_notelected,state_process_notelected,event_process_send>,<state_process_notelected,state_process_elected,event_process_received__elected>,<state_process_notelected,state_process_notelected,event_process_received__higher>}
+allowedTransitions (from:id, to:id, event:id) = {<state_light_lighton,state_light_lightoff,event_light_switchoff>,<state_uninitialized,state_light_lighton,event_light_switchon>,<state_light_lightoff,state_light_lighton,event_light_switchon>}
 // Define each event as single relation so that the events can be used as variables in the constraints 
-EventProcessReceived__higher (event:id) = {<event_process_received__higher>}
-EventProcessSend (event:id) = {<event_process_send>}
-EventProcessReceived__elected (event:id) = {<event_process_received__elected>}
-EventProcess__frame (event:id) = {<event_process___frame>}
-EventProcessReceived__lower (event:id) = {<event_process_received__lower>}
+EventLightSwitchOn (event:id) = {<event_light_switchon>}
+EventLight__frame (event:id) = {<event_light___frame>}
+EventLightSwitchOff (event:id) = {<event_light_switchoff>}
 
 
 // Dynamic configuration of state machines
-Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>,<c9>,<c10>,<c11>}
-order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>,<c6,c7>,<c7,c8>,<c8,c9>,<c9,c10>,<c10,c11>}
+Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>}
+order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>}
 first (config:id) = {<c1>}
-last (config:id) <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>,<c9>,<c10>,<c11>}
-back (config:id) <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>,<c9>,<c10>,<c11>}
-loop (cur:id, nxt:id) <= {<c2,c1>,<c2,c2>,<c3,c1>,<c3,c2>,<c3,c3>,<c4,c1>,<c4,c2>,<c4,c3>,<c4,c4>,<c5,c1>,<c5,c2>,<c5,c3>,<c5,c4>,<c5,c5>,<c6,c1>,<c6,c2>,<c6,c3>,<c6,c4>,<c6,c5>,<c6,c6>,<c7,c1>,<c7,c2>,<c7,c3>,<c7,c4>,<c7,c5>,<c7,c6>,<c7,c7>,<c8,c1>,<c8,c2>,<c8,c3>,<c8,c4>,<c8,c5>,<c8,c6>,<c8,c7>,<c8,c8>,<c9,c1>,<c9,c2>,<c9,c3>,<c9,c4>,<c9,c5>,<c9,c6>,<c9,c7>,<c9,c8>,<c9,c9>,<c10,c1>,<c10,c2>,<c10,c3>,<c10,c4>,<c10,c5>,<c10,c6>,<c10,c7>,<c10,c8>,<c10,c9>,<c10,c10>,<c11,c1>,<c11,c2>,<c11,c3>,<c11,c4>,<c11,c5>,<c11,c6>,<c11,c7>,<c11,c8>,<c11,c9>,<c11,c10>,<c11,c11>}
+last (config:id) <= {<c1>,<c2>,<c3>,<c4>,<c5>}
+back (config:id) <= {<c1>,<c2>,<c3>,<c4>,<c5>}
+loop (cur:id, nxt:id) <= {<c2,c1>,<c2,c2>,<c3,c1>,<c3,c2>,<c3,c3>,<c4,c1>,<c4,c2>,<c4,c3>,<c4,c4>,<c5,c1>,<c5,c2>,<c5,c3>,<c5,c4>,<c5,c5>}
 
-Instance (spec:id, instance:id) = {<process,p1>,<process,p2>,<process,p3>}
-instanceInState (config:id, instance:id, state:id) >= {<c1,p1,state_process_notelected>,<c1,p2,state_process_notelected>,<c1,p3,state_process_notelected>}<= {<c1,p1,state_uninitialized>,<c1,p1,state_process_elected>,<c1,p1,state_finalized>,<c1,p1,state_process_notelected>,<c1,p2,state_uninitialized>,<c1,p2,state_process_elected>,<c1,p2,state_finalized>,<c1,p2,state_process_notelected>,<c1,p3,state_uninitialized>,<c1,p3,state_process_elected>,<c1,p3,state_finalized>,<c1,p3,state_process_notelected>,<c2,p1,state_uninitialized>,<c2,p1,state_process_elected>,<c2,p1,state_finalized>,<c2,p1,state_process_notelected>,<c2,p2,state_uninitialized>,<c2,p2,state_process_elected>,<c2,p2,state_finalized>,<c2,p2,state_process_notelected>,<c2,p3,state_uninitialized>,<c2,p3,state_process_elected>,<c2,p3,state_finalized>,<c2,p3,state_process_notelected>,<c3,p1,state_uninitialized>,<c3,p1,state_process_elected>,<c3,p1,state_finalized>,<c3,p1,state_process_notelected>,<c3,p2,state_uninitialized>,<c3,p2,state_process_elected>,<c3,p2,state_finalized>,<c3,p2,state_process_notelected>,<c3,p3,state_uninitialized>,<c3,p3,state_process_elected>,<c3,p3,state_finalized>,<c3,p3,state_process_notelected>,<c4,p1,state_uninitialized>,<c4,p1,state_process_elected>,<c4,p1,state_finalized>,<c4,p1,state_process_notelected>,<c4,p2,state_uninitialized>,<c4,p2,state_process_elected>,<c4,p2,state_finalized>,<c4,p2,state_process_notelected>,<c4,p3,state_uninitialized>,<c4,p3,state_process_elected>,<c4,p3,state_finalized>,<c4,p3,state_process_notelected>,<c5,p1,state_uninitialized>,<c5,p1,state_process_elected>,<c5,p1,state_finalized>,<c5,p1,state_process_notelected>,<c5,p2,state_uninitialized>,<c5,p2,state_process_elected>,<c5,p2,state_finalized>,<c5,p2,state_process_notelected>,<c5,p3,state_uninitialized>,<c5,p3,state_process_elected>,<c5,p3,state_finalized>,<c5,p3,state_process_notelected>,<c6,p1,state_uninitialized>,<c6,p1,state_process_elected>,<c6,p1,state_finalized>,<c6,p1,state_process_notelected>,<c6,p2,state_uninitialized>,<c6,p2,state_process_elected>,<c6,p2,state_finalized>,<c6,p2,state_process_notelected>,<c6,p3,state_uninitialized>,<c6,p3,state_process_elected>,<c6,p3,state_finalized>,<c6,p3,state_process_notelected>,<c7,p1,state_uninitialized>,<c7,p1,state_process_elected>,<c7,p1,state_finalized>,<c7,p1,state_process_notelected>,<c7,p2,state_uninitialized>,<c7,p2,state_process_elected>,<c7,p2,state_finalized>,<c7,p2,state_process_notelected>,<c7,p3,state_uninitialized>,<c7,p3,state_process_elected>,<c7,p3,state_finalized>,<c7,p3,state_process_notelected>,<c8,p1,state_uninitialized>,<c8,p1,state_process_elected>,<c8,p1,state_finalized>,<c8,p1,state_process_notelected>,<c8,p2,state_uninitialized>,<c8,p2,state_process_elected>,<c8,p2,state_finalized>,<c8,p2,state_process_notelected>,<c8,p3,state_uninitialized>,<c8,p3,state_process_elected>,<c8,p3,state_finalized>,<c8,p3,state_process_notelected>,<c9,p1,state_uninitialized>,<c9,p1,state_process_elected>,<c9,p1,state_finalized>,<c9,p1,state_process_notelected>,<c9,p2,state_uninitialized>,<c9,p2,state_process_elected>,<c9,p2,state_finalized>,<c9,p2,state_process_notelected>,<c9,p3,state_uninitialized>,<c9,p3,state_process_elected>,<c9,p3,state_finalized>,<c9,p3,state_process_notelected>,<c10,p1,state_uninitialized>,<c10,p1,state_process_elected>,<c10,p1,state_finalized>,<c10,p1,state_process_notelected>,<c10,p2,state_uninitialized>,<c10,p2,state_process_elected>,<c10,p2,state_finalized>,<c10,p2,state_process_notelected>,<c10,p3,state_uninitialized>,<c10,p3,state_process_elected>,<c10,p3,state_finalized>,<c10,p3,state_process_notelected>,<c11,p1,state_uninitialized>,<c11,p1,state_process_elected>,<c11,p1,state_finalized>,<c11,p1,state_process_notelected>,<c11,p2,state_uninitialized>,<c11,p2,state_process_elected>,<c11,p2,state_finalized>,<c11,p2,state_process_notelected>,<c11,p3,state_uninitialized>,<c11,p3,state_process_elected>,<c11,p3,state_finalized>,<c11,p3,state_process_notelected>}
-raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_process_send,p1>,<c2,c3,event_process_send,p1>,<c3,c4,event_process_send,p1>,<c4,c5,event_process_send,p1>,<c5,c6,event_process_send,p1>,<c6,c7,event_process_send,p1>,<c7,c8,event_process_send,p1>,<c8,c9,event_process_send,p1>,<c9,c10,event_process_send,p1>,<c10,c11,event_process_send,p1>,<c1,c2,event_process_send,p2>,<c2,c3,event_process_send,p2>,<c3,c4,event_process_send,p2>,<c4,c5,event_process_send,p2>,<c5,c6,event_process_send,p2>,<c6,c7,event_process_send,p2>,<c7,c8,event_process_send,p2>,<c8,c9,event_process_send,p2>,<c9,c10,event_process_send,p2>,<c10,c11,event_process_send,p2>,<c1,c2,event_process_send,p3>,<c2,c3,event_process_send,p3>,<c3,c4,event_process_send,p3>,<c4,c5,event_process_send,p3>,<c5,c6,event_process_send,p3>,<c6,c7,event_process_send,p3>,<c7,c8,event_process_send,p3>,<c8,c9,event_process_send,p3>,<c9,c10,event_process_send,p3>,<c10,c11,event_process_send,p3>}
-changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,p1>,<c1,c2,p2>,<c1,c2,p3>,<c2,c3,p1>,<c2,c3,p2>,<c2,c3,p3>,<c3,c4,p1>,<c3,c4,p2>,<c3,c4,p3>,<c4,c5,p1>,<c4,c5,p2>,<c4,c5,p3>,<c5,c6,p1>,<c5,c6,p2>,<c5,c6,p3>,<c6,c7,p1>,<c6,c7,p2>,<c6,c7,p3>,<c7,c8,p1>,<c7,c8,p2>,<c7,c8,p3>,<c8,c9,p1>,<c8,c9,p2>,<c8,c9,p3>,<c9,c10,p1>,<c9,c10,p2>,<c9,c10,p3>,<c10,c11,p1>,<c10,c11,p2>,<c10,c11,p3>}
+Instance (spec:id, instance:id) = {<light,l1>,<boolean,TRUE>,<boolean,maybe>,<boolean,FALSE>,<boolean,MAYBE>}
+instanceInState (config:id, instance:id, state:id) >= {<c1,l1,state_uninitialized>}<= {<c1,l1,state_uninitialized>,<c1,l1,state_light_lightoff>,<c1,l1,state_finalized>,<c1,l1,state_light_lighton>,<c2,l1,state_uninitialized>,<c2,l1,state_light_lightoff>,<c2,l1,state_finalized>,<c2,l1,state_light_lighton>,<c3,l1,state_uninitialized>,<c3,l1,state_light_lightoff>,<c3,l1,state_finalized>,<c3,l1,state_light_lighton>,<c4,l1,state_uninitialized>,<c4,l1,state_light_lightoff>,<c4,l1,state_finalized>,<c4,l1,state_light_lighton>,<c5,l1,state_uninitialized>,<c5,l1,state_light_lightoff>,<c5,l1,state_finalized>,<c5,l1,state_light_lighton>}
+raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_light_switchon,l1>,<c1,c2,event_light_switchoff,l1>,<c2,c3,event_light_switchon,l1>,<c2,c3,event_light_switchoff,l1>,<c3,c4,event_light_switchon,l1>,<c3,c4,event_light_switchoff,l1>,<c4,c5,event_light_switchon,l1>,<c4,c5,event_light_switchoff,l1>}
+changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,l1>,<c2,c3,l1>,<c3,c4,l1>,<c4,c5,l1>}
 
-ProcessPid (config:id, instance:id, pid:int) <= {<c1,p1,?>,<c2,p1,?>,<c3,p1,?>,<c4,p1,?>,<c5,p1,?>,<c6,p1,?>,<c7,p1,?>,<c8,p1,?>,<c9,p1,?>,<c10,p1,?>,<c11,p1,?>,<c1,p2,?>,<c2,p2,?>,<c3,p2,?>,<c4,p2,?>,<c5,p2,?>,<c6,p2,?>,<c7,p2,?>,<c8,p2,?>,<c9,p2,?>,<c10,p2,?>,<c11,p2,?>,<c1,p3,?>,<c2,p3,?>,<c3,p3,?>,<c4,p3,?>,<c5,p3,?>,<c6,p3,?>,<c7,p3,?>,<c8,p3,?>,<c9,p3,?>,<c10,p3,?>,<c11,p3,?>}
-ProcessToSend (config:id, instance:id, toSend:int) <= {<c1,p1,?>,<c2,p1,?>,<c3,p1,?>,<c4,p1,?>,<c5,p1,?>,<c6,p1,?>,<c7,p1,?>,<c8,p1,?>,<c9,p1,?>,<c10,p1,?>,<c11,p1,?>,<c1,p2,?>,<c2,p2,?>,<c3,p2,?>,<c4,p2,?>,<c5,p2,?>,<c6,p2,?>,<c7,p2,?>,<c8,p2,?>,<c9,p2,?>,<c10,p2,?>,<c11,p2,?>,<c1,p3,?>,<c2,p3,?>,<c3,p3,?>,<c4,p3,?>,<c5,p3,?>,<c6,p3,?>,<c7,p3,?>,<c8,p3,?>,<c9,p3,?>,<c10,p3,?>,<c11,p3,?>}
-ProcessSucc (config:id, instance:id, succ:id) >= {<c1,p3,p1>,<c1,p1,p2>,<c1,p2,p3>} <= {<c2,p1,p1>,<c2,p1,p2>,<c2,p1,p3>,<c3,p1,p1>,<c3,p1,p2>,<c3,p1,p3>,<c4,p1,p1>,<c4,p1,p2>,<c4,p1,p3>,<c5,p1,p1>,<c5,p1,p2>,<c5,p1,p3>,<c6,p1,p1>,<c6,p1,p2>,<c6,p1,p3>,<c7,p1,p1>,<c7,p1,p2>,<c7,p1,p3>,<c8,p1,p1>,<c8,p1,p2>,<c8,p1,p3>,<c9,p1,p1>,<c9,p1,p2>,<c9,p1,p3>,<c10,p1,p1>,<c10,p1,p2>,<c10,p1,p3>,<c11,p1,p1>,<c11,p1,p2>,<c11,p1,p3>,<c2,p2,p1>,<c2,p2,p2>,<c2,p2,p3>,<c3,p2,p1>,<c3,p2,p2>,<c3,p2,p3>,<c4,p2,p1>,<c4,p2,p2>,<c4,p2,p3>,<c5,p2,p1>,<c5,p2,p2>,<c5,p2,p3>,<c6,p2,p1>,<c6,p2,p2>,<c6,p2,p3>,<c7,p2,p1>,<c7,p2,p2>,<c7,p2,p3>,<c8,p2,p1>,<c8,p2,p2>,<c8,p2,p3>,<c9,p2,p1>,<c9,p2,p2>,<c9,p2,p3>,<c10,p2,p1>,<c10,p2,p2>,<c10,p2,p3>,<c11,p2,p1>,<c11,p2,p2>,<c11,p2,p3>,<c2,p3,p1>,<c2,p3,p2>,<c2,p3,p3>,<c3,p3,p1>,<c3,p3,p2>,<c3,p3,p3>,<c4,p3,p1>,<c4,p3,p2>,<c4,p3,p3>,<c5,p3,p1>,<c5,p3,p2>,<c5,p3,p3>,<c6,p3,p1>,<c6,p3,p2>,<c6,p3,p3>,<c7,p3,p1>,<c7,p3,p2>,<c7,p3,p3>,<c8,p3,p1>,<c8,p3,p2>,<c8,p3,p3>,<c9,p3,p1>,<c9,p3,p2>,<c9,p3,p3>,<c10,p3,p1>,<c10,p3,p2>,<c10,p3,p3>,<c11,p3,p1>,<c11,p3,p2>,<c11,p3,p3>}
+LightSwitch (config:id, instance:id, switch:id) <= {<c1,l1,FALSE>,<c1,l1,TRUE>,<c1,l1,MAYBE>,<c1,l1,maybe>,<c2,l1,FALSE>,<c2,l1,TRUE>,<c2,l1,MAYBE>,<c2,l1,maybe>,<c3,l1,FALSE>,<c3,l1,TRUE>,<c3,l1,MAYBE>,<c3,l1,maybe>,<c4,l1,FALSE>,<c4,l1,TRUE>,<c4,l1,MAYBE>,<c4,l1,maybe>,<c5,l1,FALSE>,<c5,l1,TRUE>,<c5,l1,MAYBE>,<c5,l1,maybe>}
 
-ParamEventProcessReceived__higherAnId (cur:id, nxt:id, anId:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>,<c7,c8,?>,<c8,c9,?>,<c9,c10,?>,<c10,c11,?>}
-ParamEventProcessReceived__lowerAnId (cur:id, nxt:id, anId:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>,<c7,c8,?>,<c8,c9,?>,<c9,c10,?>,<c10,c11,?>}
-ParamEventProcessReceived__electedAnId (cur:id, nxt:id, anId:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>,<c7,c8,?>,<c8,c9,?>,<c9,c10,?>,<c10,c11,?>}
+Boolean_TRUE (instance:id) = {<TRUE>}
+Boolean_FALSE (instance:id) = {<FALSE>}
+Boolean_MAYBE (instance:id) = {<MAYBE>}
+
+
 
 // Constraints for the configuration and ordering relations
 order ⊆ Config[config as cur] ⨯ Config[config as nxt]
@@ -53,20 +53,10 @@ instanceInState ⊆ Instance[instance] ⨯ Config ⨯ State
 changedInstance ⊆ order ⨯ Instance[instance]
     
 // Machine specific `type` constraints
-ProcessPid[config,instance]  ⊆ Config ⨯ (Instance ⨝ Process)[instance]
-ProcessToSend[config,instance]  ⊆ Config ⨯ (Instance ⨝ Process)[instance]
-ProcessSucc  ⊆ Config ⨯ (Instance ⨝ Process)[instance] ⨯ (Instance ⨝ Process)[instance->succ]
+LightSwitch  ⊆ Config ⨯ (Instance ⨝ Light)[instance] ⨯ (Instance ⨝ Boolean)[instance->switch]
 
-ParamEventProcessReceived__lowerAnId[cur,nxt] ⊆ order
-ParamEventProcessReceived__higherAnId[cur,nxt] ⊆ order
-ParamEventProcessReceived__electedAnId[cur,nxt] ⊆ order
 
-// Specific per event
-∀ step ∈ order ⨝ raisedEvent | (
-  (some (step ⨝ EventProcessReceived__lower) ⇔ one (step ⨝ ParamEventProcessReceived__lowerAnId)) ∧
-  (some (step ⨝ EventProcessReceived__higher) ⇔ one (step ⨝ ParamEventProcessReceived__higherAnId)) ∧
-  (some (step ⨝ EventProcessReceived__elected) ⇔ one (step ⨝ ParamEventProcessReceived__electedAnId))
-)
+
 
 // Generic: All configurations are reachable
 ∀ c ∈ Config ∖ first | c ⊆ (first[config as cur] ⨝ ^<cur,nxt>order)[nxt -> config]
@@ -74,14 +64,12 @@ ParamEventProcessReceived__electedAnId[cur,nxt] ⊆ order
 // Generic: Every transition can only happen by exactly one event
 ∀ o ∈ order | one o ⨝ raisedEvent
 
-// Generic: In every configuration all machines have a state
-∀ c ∈ Config, inst ∈ Instance | one instanceInState ⨝ c ⨝ inst
+// Specif: In every configuration all machines have a state IFF its a machine which is not empty
+∀ c ∈ Config, inst ∈ (Instance ∖ ((Boolean) ⨝ Instance)) | one instanceInState ⨝ c ⨝ inst
 
 // Specific per machine: In every configuration iff a machine is in an initialized state then it must have values
-∀ c ∈ Config, inst ∈ (Instance ⨝ Process)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one ProcessPid ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Process)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one ProcessToSend ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Process)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no ProcessSucc ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Process)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one ProcessSucc ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Light)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no LightSwitch ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Light)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one LightSwitch ⨝ c ⨝ inst)
 
 
 // Generic: Transitions are only allowed between if an event is specified between two states
@@ -94,146 +82,78 @@ pred forceState[curState: (state:id), nxtState: (state:id), raisedEvent: (event:
 pred inState[config: (config:id), instance: (instance:id), state: (state:id)]
   = ((instance ⨯ config) ⨝ instanceInState)[state] ⊆ state
 
-pred eventProcessSend[step:(cur:id, nxt:id), process: (instance:id)]
+pred eventLightSwitchOn[step:(cur:id, nxt:id), light: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ process)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ process)[state],
-        curPid = (cur ⨝ ProcessPid ⨝ process)[pid->curPid],
-        nxtPid = (nxt ⨝ ProcessPid ⨝ process)[pid->nxtPid],
-        curToSend = (cur ⨝ ProcessToSend ⨝ process)[toSend->curToSend],
-        nxtToSend = (nxt ⨝ ProcessToSend ⨝ process)[toSend->nxtToSend],
-        curSucc = (cur ⨝ ProcessSucc ⨝ process)[succ],
-        nxtSucc = (nxt ⨝ ProcessSucc ⨝ process)[succ] |
+        curState = (instanceInState ⨝ cur ⨝ light)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ light)[state],
+        curSwitch = (cur ⨝ LightSwitch ⨝ light)[switch],
+        nxtSwitch = (nxt ⨝ LightSwitch ⨝ light)[switch] |
     ( 
-      // Preconditions 
-      (((((some (curToSend ⨯ curPid) where (curPid > curToSend))) ⇒ ((eventProcessReceived__elected[step, curSucc[succ as instance], curPid[curPid as anId]] ∨ (eventProcessReceived__higher[step, curSucc[succ as instance], curPid[curPid as anId]] ∨ eventProcessReceived__lower[step, curSucc[succ as instance], curPid[curPid as anId]]))))) ∧ ((¬ ((((some (curToSend ⨯ curPid) where (curPid > curToSend))))) ⇒ ((eventProcessReceived__elected[step, curSucc[succ as instance], curToSend[curToSend as anId]] ∨ (eventProcessReceived__higher[step, curSucc[succ as instance], curToSend[curToSend as anId]] ∨ eventProcessReceived__lower[step, curSucc[succ as instance], curToSend[curToSend as anId]]))))))  ∧ 
+       
       // Postconditions
-      (some (nxtPid ⨯ curPid) where (nxtPid = curPid)) ∧
-      (some (curToSend ⨯ nxtToSend) where (nxtToSend = curToSend)) ∧
-      nxtSucc = curSucc  ∧ 
+      nxtSwitch = Boolean_TRUE[instance as switch]  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventProcessSend] ∧
+      forceState[curState, nxtState, EventLightSwitchOn] ∧
       // Make sure this instance is in the change set
-      process ⊆ (changedInstance ⨝ step)[instance]
+      light ⊆ (changedInstance ⨝ step)[instance]
     )
 
-pred eventProcessReceived__higher[step:(cur:id, nxt:id), process: (instance:id), anId: (anId:int)]
+pred eventLightSwitchOff[step:(cur:id, nxt:id), light: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ process)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ process)[state],
-        curPid = (cur ⨝ ProcessPid ⨝ process)[pid->curPid],
-        nxtPid = (nxt ⨝ ProcessPid ⨝ process)[pid->nxtPid],
-        curToSend = (cur ⨝ ProcessToSend ⨝ process)[toSend->curToSend],
-        nxtToSend = (nxt ⨝ ProcessToSend ⨝ process)[toSend->nxtToSend],
-        curSucc = (cur ⨝ ProcessSucc ⨝ process)[succ],
-        nxtSucc = (nxt ⨝ ProcessSucc ⨝ process)[succ] |
+        curState = (instanceInState ⨝ cur ⨝ light)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ light)[state],
+        curSwitch = (cur ⨝ LightSwitch ⨝ light)[switch],
+        nxtSwitch = (nxt ⨝ LightSwitch ⨝ light)[switch] |
     ( 
       // Preconditions 
-      (some (anId ⨯ curPid) where (curPid < anId))  ∧ 
+      curSwitch = Boolean_TRUE[instance as switch]  ∧ 
       // Postconditions
-      (some (nxtPid ⨯ curPid) where (nxtPid = curPid)) ∧
-      nxtSucc = curSucc ∧
-      (some (anId ⨯ nxtToSend) where (nxtToSend = anId))  ∧ 
+      nxtSwitch = Boolean_FALSE[instance as switch]  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventProcessReceived__higher] ∧
+      forceState[curState, nxtState, EventLightSwitchOff] ∧
       // Make sure this instance is in the change set
-      process ⊆ (changedInstance ⨝ step)[instance]
+      light ⊆ (changedInstance ⨝ step)[instance]
     )
 
-pred eventProcessReceived__lower[step:(cur:id, nxt:id), process: (instance:id), anId: (anId:int)]
+pred frameLight[step: (cur:id, nxt:id), light: (instance:id)] 
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ process)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ process)[state],
-        curPid = (cur ⨝ ProcessPid ⨝ process)[pid->curPid],
-        nxtPid = (nxt ⨝ ProcessPid ⨝ process)[pid->nxtPid],
-        curToSend = (cur ⨝ ProcessToSend ⨝ process)[toSend->curToSend],
-        nxtToSend = (nxt ⨝ ProcessToSend ⨝ process)[toSend->nxtToSend],
-        curSucc = (cur ⨝ ProcessSucc ⨝ process)[succ],
-        nxtSucc = (nxt ⨝ ProcessSucc ⨝ process)[succ] |
-    ( 
-      // Preconditions 
-      (some (anId ⨯ curPid) where (anId < curPid))  ∧ 
-      // Postconditions
-      (some (nxtPid ⨯ curPid) where (nxtPid = curPid)) ∧
-      (some (curToSend ⨯ nxtToSend) where (nxtToSend = curToSend)) ∧
-      nxtSucc = curSucc  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventProcessReceived__lower] ∧
-      // Make sure this instance is in the change set
-      process ⊆ (changedInstance ⨝ step)[instance]
-    )
-
-pred frameProcess[step: (cur:id, nxt:id), process: (instance:id)] 
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ process)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ process)[state],
-        curPid = (cur ⨝ ProcessPid ⨝ process)[pid->curPid],
-        nxtPid = (nxt ⨝ ProcessPid ⨝ process)[pid->nxtPid],
-        curToSend = (cur ⨝ ProcessToSend ⨝ process)[toSend->curToSend],
-        nxtToSend = (nxt ⨝ ProcessToSend ⨝ process)[toSend->nxtToSend],
-        curSucc = (cur ⨝ ProcessSucc ⨝ process)[succ],
-        nxtSucc = (nxt ⨝ ProcessSucc ⨝ process)[succ] | (
+        curState = (instanceInState ⨝ cur ⨝ light)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ light)[state],
+        curSwitch = (cur ⨝ LightSwitch ⨝ light)[switch],
+        nxtSwitch = (nxt ⨝ LightSwitch ⨝ light)[switch] | (
     nxtState = curState ∧
     (
       curState ⊆ uninitialized ∨ 
       (// Postconditions
-       (some (nxtPid ⨯ curPid) where (nxtPid = curPid)) ∧
-       (some (curToSend ⨯ nxtToSend) where (nxtToSend = curToSend)) ∧
-       nxtSucc = curSucc)
+       nxtSwitch = curSwitch)
     )
   )
 
-pred eventProcessReceived__elected[step:(cur:id, nxt:id), process: (instance:id), anId: (anId:int)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ process)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ process)[state],
-        curPid = (cur ⨝ ProcessPid ⨝ process)[pid->curPid],
-        nxtPid = (nxt ⨝ ProcessPid ⨝ process)[pid->nxtPid],
-        curToSend = (cur ⨝ ProcessToSend ⨝ process)[toSend->curToSend],
-        nxtToSend = (nxt ⨝ ProcessToSend ⨝ process)[toSend->nxtToSend],
-        curSucc = (cur ⨝ ProcessSucc ⨝ process)[succ],
-        nxtSucc = (nxt ⨝ ProcessSucc ⨝ process)[succ] |
-    ( 
-      // Preconditions 
-      (some (anId ⨯ curPid) where (curPid = anId))  ∧ 
-      // Postconditions
-      (some (nxtPid ⨯ curPid) where (nxtPid = curPid)) ∧
-      (some (curToSend ⨯ nxtToSend) where (nxtToSend = curToSend)) ∧
-      nxtSucc = curSucc  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventProcessReceived__elected] ∧
-      // Make sure this instance is in the change set
-      process ⊆ (changedInstance ⨝ step)[instance]
-    )
 
-
-pred possibleTransitionsProcess[step: (cur:id, nxt:id)] 
-  = ∀ inst ∈ (Instance ⨝ Process)[instance] |
+pred possibleTransitionsLight[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ Light)[instance] |
     (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
-      (eventProcessSend[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventProcessSend ∧
-      let cur = step[cur->config], succ = (ProcessSucc ⨝ cur ⨝ inst)[succ -> instance] | (changedInstance ⨝ step)[instance] ⊆ succ ∪ inst)
+      (eventLightSwitchOn[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventLightSwitchOn ∧
+      (changedInstance ⨝ step)[instance] ⊆ inst)
+      ∨
+      (eventLightSwitchOff[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventLightSwitchOff ∧
+      (changedInstance ⨝ step)[instance] ⊆ inst)
     ))
     ∧
-    (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameProcess[step, inst])
+    (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frameLight[step, inst])
 
 
 // Transition function
-∀ step ∈ order | possibleTransitionsProcess[step]
+∀ step ∈ order | possibleTransitionsLight[step]
 
-// Fact: InitialToSendLessThanPid
-let cur = first | (∀ p ∈ (Process ⨝ Instance)[instance] | (some ((p ⨝ ProcessToSend ⨝ cur)[toSend->pToSend]) where (pToSend = 0)))
-// Fact: PositiveIds
-∀ cur ∈ Config | (∀ p ∈ (Process ⨝ Instance)[instance] | (inState[cur, p, initialized] ⇒ (some ((p ⨝ ProcessPid ⨝ cur)[pid->pPid]) where (pPid > 0))))
-// Fact: UniqueIds
-∀ cur ∈ Config | (∀ p1 ∈ (Process ⨝ Instance)[instance],p2 ∈ (Process ⨝ Instance)[instance] | ((inState[cur, p1, initialized] ∧ inState[cur, p2, initialized] ∧ (some ((p2 ⨝ ProcessPid ⨝ cur)[pid->p2Pid] ⨯ (p1 ⨝ ProcessPid ⨝ cur)[pid->p1Pid]) where (p1Pid = p2Pid))) ⇒ p1 = p2))
+
 // Asserts: this is where the checks get added
-∃ cur ∈ Config | (∃ p1 ∈ (Process ⨝ Instance)[instance],p2 ∈ (Process ⨝ Instance)[instance] | inState[cur, p1, StateProcessElected] ∧ inState[cur, p2, StateProcessElected] ∧ p1 != p2)
+∃ cur ∈ Config | (∃ l ∈ (Light ⨝ Instance)[instance] | let step = (order ⨝ cur[config as cur]), prev = cur, cur = step[nxt->config] | EventLightSwitchOff ⊆ (raisedEvent ⨝ step ⨝ l)[event])
 
 // Minimize the number of steps by minimizing the number of Configurations
 objectives: minimize Config[count()]

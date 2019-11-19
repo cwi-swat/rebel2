@@ -26,4 +26,5 @@ void translateLeaderAndFollower()         = performCheck("UniqueFollower", parse
 void translateHotel()                     = performCheck("NoIntruder", parseModule(|project://rebel2/examples/Hotel.rebel|));
 void translateRopeBridge()                = performCheck("EverybodyCrossedInTheLeastTime", parseModule(|project://rebel2/examples/RopeBridge.rebel|));
 void translateLeaderElection(str check)   = performCheck(check, parseModule(|project://rebel2/examples/RingLeaderElection.rebel|));  
-void translateId()                        = performCheck("ConsecutiveValues", parseModule(|project://rebel2/examples/lib/checks/IdChecks.rebel|));  
+void translateId()                        = performCheck("ConsecutiveValues", parseModule(|project://rebel2/examples/lib/checks/IdChecks.rebel|));
+void translateLight(str check)            = performCheck(check, parseModule(|project://rebel2/examples/Light.rebel|)); 

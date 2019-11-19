@@ -26,11 +26,15 @@ Maybe[AType] getCurrentSpecType(Collector c) {
   return nothing();
 } 
  
-void collect(current: (Spec)`spec <Id name> <Fields? fields> <Constraints? constraints> <Event* events> <States? states>`, Collector c) {
+void collect(current: (Spec)`spec <Id name> <Instances? instances> <Fields? fields> <Constraints? constraints> <Event* events> <States? states>`, Collector c) {
   c.define("<name>", specId(), current, defType(specType("<name>")));
   
   c.enterScope(current); 
     c.setScopeInfo(c.getScope(), specScope(), specInfo("<name>"));
+    
+    for (/Id instance <- instances) {
+      c.define("<instance>", specInstanceId(), instance, defType(specInstanceType("<name>")));
+    } 
            
     if (/Fields flds <- fields) {
       collect(flds.fields, c);
@@ -71,7 +75,12 @@ void collectStates(States sts, Collector c) {
     }
     case (Transition)`<State super> <InnerStates? inner> { <Transition* trans> }`: {
       for (/InnerStates is := inner, State s <- is.states) {
-        c.define("<s>", stateId(), s, defType(stateType()));
+        if (s notin done) { 
+          c.define("<s>", stateId(), s, defType(stateType()));
+          done += s;
+        } else {
+          c.use(s, {stateId()});
+        }
       }
     }
   }

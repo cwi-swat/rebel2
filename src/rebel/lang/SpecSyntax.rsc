@@ -4,10 +4,13 @@ import rebel::lang::CommonSyntax;
 
 syntax Part 
   = Spec spc
-  | Enum enum
   ;
 
-syntax Spec = "spec" Id name Fields? fields Constraints? constraints Event* events States? states;
+syntax Spec = "spec" Id name Instances? instances Fields? fields Constraints? constraints Event* events States? states;
+
+syntax Instances
+  = "[" {Id ","}+ instances "]"
+  ; 
 
 syntax Fields
   = {Field ","}+ fields ";"
@@ -85,8 +88,6 @@ syntax TransEvent
 syntax Lit
   = "this"
   ; 
- 
-syntax Enum = "enum" Id {Id ","}+ values ";";
  
 keyword Keywords = "spec"
                  | "failure" 

@@ -16,6 +16,7 @@ data AType
   | setType(AType elemType)
   | optionalType(AType elemType)
   | specType(str name)
+  | specInstanceType(str specName)
   | stateType()
   | eventType(AType argTypes)
   | moduleType()
@@ -34,6 +35,7 @@ data Phase
   
 data IdRole
   = specId()
+  | specInstanceId()
   | moduleId()
   | eventId()
   | eventVariantId()
@@ -57,6 +59,7 @@ str prettyAType(dateType()) = "Date";
 str prettyAType(boolType()) = "Boolean";
 str prettyAType(stringType()) = "String";
 str prettyAType(specType(str name)) = "<name>";
+str prettyAType(specInstanceType(str specName)) = "instance of <specName>";
 str prettyAType(eventType(AType argTypes)) = "event <prettyAType(argTypes)>";
 str prettyAType(voidType()) = "*";
 str prettyAType(setType(AType elem)) = "set of <prettyAType(elem)>";
@@ -80,6 +83,8 @@ TModel rebelTModelFromTree(Tree pt, bool debug = false, PathConfig pathConf = pa
 }
 
 tuple[list[str] typeNames, set[IdRole] idRoles] rebelTypeNamesAndRole(specType(str name)) = <[name], {specId()}>;
+tuple[list[str] typeNames, set[IdRole] idRoles] rebelTypeNamesAndRole(enumType(str name)) = <[name], {enumId()}>;
+
 default tuple[list[str] typeNames, set[IdRole] idRoles] rebelTypeNamesAndRole(AType t) = <[], {}>;
 
 private str __REBEL_IMPORT_QUEUE = "__rebelImportQueue";
@@ -261,6 +266,10 @@ private void collectIntEq(Collector c, Formula f, Expr lhs, Expr rhs, str explai
 private void collectEq(Collector c, Formula f, Expr lhs, Expr rhs, str explain) {
   c.calculate(explain, f, [lhs,rhs], 
     AType (Solver s) {
+      switch({s.getType(lhs), s.getType(rhs)}) {
+        case {specType(str name), specInstanceType(name)}: return boolType();
+      }
+      
       s.requireSubType(lhs, rhs, error(f, "Expressions are not type compatible, found %t and %t", lhs, rhs));
       return boolType();
     });
@@ -396,7 +405,7 @@ void collect(current: (Expr)`<Id var>`, Collector c) {
 }
 
 void collect(current: (Expr)`<Expr expr>.<Id fld>`, Collector c) {
-  c.useViaType(expr, fld, {fieldId()});
+  c.useViaType(expr, fld, {fieldId(),specInstanceId()});
   c.fact(current, fld);
   
   collect(expr,c);

@@ -45,7 +45,7 @@ rebel::lang::Syntax::Config findReferencedConfig(loc ref, set[Module] mods, TMod
 set[Fact] gatherFacts(set[Module] mods) = {f | Module m <- mods, /Fact f <- m.parts}; 
 
 rel[Spec spc, str instance, State initialState] buildInstances(rebel::lang::Syntax::Config cfg, set[Module] mods, TModel tm) {
-  rel[Spec,str,State] instances = {};
+  rel[Spec,str,State] instances = {<s,"<instance>",uninitialized()> | Module m <- mods, /Spec s <- m.parts, /Id instance <- s.instances};
   
   visit (cfg) {
     case (InstanceSetup)`<{Id ","}+ labels> : <Type spec> <InState? inState> <WithAssignments? assignments>` : {

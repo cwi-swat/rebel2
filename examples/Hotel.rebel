@@ -3,17 +3,17 @@ module Hotel
 spec Key
 
 spec Card
-  first: Key,
+  frst: Key,
   second: Key;
   
   event create(fst: Key, snd: Key) 
-    post: this.first' = fst, this.second' = snd;
+    post: this.frst' = fst, this.second' = snd;
   
   internal event equal(fst: Key, snd: Key)
-    pre: this.first = fst, this.second = snd;
+    pre: this.frst = fst, this.second = snd;
     
   internal event check(r: Room) 
-    pre: r.check(this.second) || r.update(this.first, this.second);  
+    pre: r.check(this.second) || r.update(this.frst, this.second);  
     
   states:
     (*) -> created: create;

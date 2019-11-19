@@ -20,8 +20,9 @@ str translateDynamicPart(Config cfg) {
             '<buildInstanceRel(cfg.instances)>
             '<buildInstanceInStateRel(cfg.instances, cfg.numberOfTransitions)>
             '<buildRaisedEventsRel(cfg.instances<0,1>, cfg.numberOfTransitions)>
-            '<buildChangedInstancesRel(cfg.instances<1>, cfg.numberOfTransitions)>
+            '<buildChangedInstancesRel(cfg.instances<0,1>, cfg.numberOfTransitions)>
             '<buildStateVectors(lookupSpecs(cfg.instances), cfg)>
+            '<buildEnumRels(lookupSpecs(cfg.instances))>
             '<buildEventParamRels(lookupSpecs(cfg.instances), cfg)>"; 
 
   return def;
@@ -55,6 +56,12 @@ private str buildParamTuples(Spec s, Event e, FormalParam p, Config cfg) {
   }
 
   return "\<= {<intercalate(",", upperBound)>}"; 
+}
+
+private str buildEnumRels(set[Spec] specs) {
+  list[str] rels = ["<s.name>_<instance> (instance:id) = {\<<instance>\>}" | Spec s <- specs, /Id instance <- s.instances];
+  return "<for (r <- rels) {><r>
+         '<}>";
 }
 
 private str buildStateVectors(set[Spec] specs, Config cfg) {
@@ -104,8 +111,8 @@ private str buildFieldTuples(Spec spc, Field f, Config cfg) {
 }
 
 
-private str buildChangedInstancesRel(set[str] instances, int numberOfTransitions) 
-  = "changedInstance (cur:id, nxt:id, instance:id) \<= {<intercalate(",", ["\<c<c>,c<c+1>,<i>\>" | int c <- [1..numberOfTransitions], str i <- instances])>}
+private str buildChangedInstancesRel(rel[Spec,str] instances, int numberOfTransitions) 
+  = "changedInstance (cur:id, nxt:id, instance:id) \<= {<intercalate(",", ["\<c<c>,c<c+1>,<i>\>" | int c <- [1..numberOfTransitions], Spec s <- instances<0>, !isEmptySpec(s), str i <- instances[s]])>}
     '";
   
 private str buildRaisedEventsRel(rel[Spec spc, str instance] instances, int numberOfTransitions) 
@@ -130,7 +137,7 @@ private str buildInstanceInStateRel(rel[Spec spc, str instance, State state] ins
   = "instanceInState (config:id, instance:id, state:id) \>= {<buildInitialInstanceInStateTuples(instances)>}\<= {<buildInstanceInStateTuples(instances<spc,instance>, numberOfTransitions)>}";
 
 private str buildInitialInstanceInStateTuples(rel[Spec spc, str instance, State state] instances)
-  = intercalate(",", ["\<c1,<i>,<translateConfigState(s, st)>\>" | <s,i,st> <- instances]);
+  = intercalate(",", ["\<c1,<i>,<translateConfigState(s, st)>\>" | <s,i,st> <- instances, !isEmptySpec(s)]);
 
 private str buildInstanceInStateTuples(rel[Spec spc, str instance] instances, int numberOfTransitions)
   = intercalate(",", ["\<c<c>,<i>,<toLowerCase(st)>\>" | int c <- [1..numberOfTransitions+1], <s,i> <- instances, str st <- lookupStateLabelsWithDefaultState(s)]);
