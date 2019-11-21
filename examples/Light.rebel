@@ -1,7 +1,5 @@
 module Light
 
-spec Boolean [TRUE,FALSE]
-
 spec Light
   switch: Boolean;
   
@@ -16,6 +14,8 @@ spec Light
     (*) -> lightOn: switchOn;
     lightOn -> lightOff: switchOff;
     lightOff -> lightOn: switchOn;
+    
+spec Boolean [TRUE,FALSE]
     
 config OneLight = l1: Light;
  

@@ -9,7 +9,6 @@ import List;
 
 data AType
   = intType()
-  | dateType()
   | stringType()
   | boolType()
   | voidType()
@@ -26,6 +25,8 @@ data ScopeRole
   = specScope()
   | eventScope()
   | quantScope()
+  | factScope()
+  | assertScope() 
   ;
 
 data Phase
@@ -55,7 +56,6 @@ data PathRole
   ;
 
 str prettyAType(intType()) = "Integer";
-str prettyAType(dateType()) = "Date";  
 str prettyAType(boolType()) = "Boolean";
 str prettyAType(stringType()) = "String";
 str prettyAType(specType(str name)) = "<name>";
@@ -83,7 +83,6 @@ TModel rebelTModelFromTree(Tree pt, bool debug = false, PathConfig pathConf = pa
 }
 
 tuple[list[str] typeNames, set[IdRole] idRoles] rebelTypeNamesAndRole(specType(str name)) = <[name], {specId()}>;
-tuple[list[str] typeNames, set[IdRole] idRoles] rebelTypeNamesAndRole(enumType(str name)) = <[name], {enumId()}>;
 
 default tuple[list[str] typeNames, set[IdRole] idRoles] rebelTypeNamesAndRole(AType t) = <[], {}>;
 
@@ -313,15 +312,11 @@ void collect(current: (Expr)`(<Expr expr>)`, Collector c) {
 void collect(current: (Expr)`- <Expr expr>`, Collector c) {
   c.calculate("sign", current, [expr], 
     AType (Solver s) {
-      s.requireEqual(expr, intType());
+      s.requireEqual(expr, intType(), error(current, "Expression should be of type integer"));
       return intType();
     });
     
   collect(expr, c);
-}
-
-void collect(current: (Lit)`now`, Collector c) {
-  c.fact(current, dateType());
 }
 
 void collect(current: (Expr)`<Expr expr>'`, Collector c) {
@@ -471,10 +466,6 @@ void collect(current: (TypeName)`Integer`, Collector c) {
 
 void collect(current: (TypeName)`String`, Collector c) {
   c.fact(current, stringType());
-}
-
-void collect(current: (TypeName)`Date`, Collector c) {
-  c.fact(current, dateType());
 }
 
 void collect(current: TypeName tn, Collector c) {

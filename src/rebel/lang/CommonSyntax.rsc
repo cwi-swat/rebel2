@@ -45,7 +45,6 @@ syntax Decl = {Id ","}+ vars ":" Expr expr;
 syntax Expr
   = brackets: "(" Expr ")"
   > var: Id
-  //| fieldAccess: "this" "." Id
   | fieldAccess: Expr "." Id 
   | Lit
   > nextVal: Expr "\'"
@@ -61,7 +60,6 @@ syntax Lit
   = Int
   | StringConstant
   | setLit: "{" {Expr ","}* elems "}" 
-  | "now"
   ;
 
 syntax Type

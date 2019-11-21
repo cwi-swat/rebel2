@@ -31,7 +31,7 @@ spec FlashLight
     far -> near: crossFarToNear;   
       
 assert EverybodyCrossedInTheLeastTime
-  = eventually ((forall a: Adventurer | a is far) && (exists fl: FlashLight | fl.totalTimeSpend = 17));
+  = eventually ((forall a: Adventurer | a is far) && (exists fl: FlashLight | fl.totalTimeSpend < 17));
 
 config EverybodyNear
   = a1,a2,a3,a4: Adventurer is near, 

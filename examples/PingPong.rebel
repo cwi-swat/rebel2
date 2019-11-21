@@ -1,38 +1,28 @@
 module PingPong
 
 spec PingPong 
-  name: String,
   times: Integer;
   
-  event start(name: String)
+  event start()
     post: 
-      this.name' = name,
       this.times' = 0;
-  
-  event changeName(name: String) 
-    post:
-      this.name' = name;
-  
+    
   event hit()  
     post: 
       this.times' = this.times + 1; 
     
   states:
     (*) -> ping: start;
-    ping -> pong: hit, changeName;
+    ping -> pong: hit;
     pong -> ping: hit;
     
-fact UniqueNames
-  = always forall p1,p2: PingPong | 
-    ((p1 is initialized && p2 is initialized && p1 != p2) => p1.name != p2.name);     
+fact LessThan10TimesHit
+  = always forall p: PingPong | (p is initialized => p.times < 10);     
     
 config OneMachine = p: PingPong;    
 config TwoMachines = p1,p2: PingPong;
      
 assert HitFiveAndThreeTimes
   = eventually exists p1,p2: PingPong | p1 != p2 && p1.times = 5 && p2.times = 3;
-
-assert CanHitNext
-  = eventually exists p: PingPong | p.times = 2 && next changeName on p;
    
-check CanHitNext starting at OneMachine in max 6 steps;   
+check HitFiveAndThreeTimes starting at TwoMachines in max 10 steps;   

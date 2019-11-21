@@ -126,8 +126,8 @@ str translate((Formula)`<Expr lhs> \<= <Expr rhs>`, Context ctx) = translateRest
 str translate((Formula)`<Expr lhs> \>= <Expr rhs>`, Context ctx) = translateRestrictionEq(lhs, rhs, "\>=", ctx);
 str translate((Formula)`<Expr lhs> \> <Expr rhs>`,  Context ctx) = translateRestrictionEq(lhs, rhs, "\>",  ctx);
 
-str translate((Formula)`if <Formula cond> then <Formula then> else <Formula \else>`,  Context ctx) 
-  = translate((Formula)`(<Formula cond> =\> <Formula then>) ∧ (¬ (<Formula cond>) =\> <Formula \else>)`, ctx);
+str translate((Formula)`if <Formula cond> then <Formula then> else <Formula els>`,  Context ctx) 
+  = translate((Formula)`((<Formula cond> =\> <Formula then>) && (!(<Formula cond>) =\> <Formula els>))`, ctx);
 
 default str translate(Formula f, Context ctx) { throw "No translation function implemented yet for `<f>`"; }
 
@@ -177,34 +177,48 @@ str translateRelExpr(current:(Expr)`(<Expr e>)`, Context ctx) {
 }
 
 str translateRelExpr(current:(Expr)`<Expr spcExpr>.<Id field>`, Context ctx) {
-  str spc = "";
-  if (specType(str name) := getType(spcExpr, ctx.tm)) {
-    spc = name;
-  } else {
-    throw "Left hand side is not a spec?";
-  }
-  
   str renameIfPrim() = "[<field>-\><spcExpr><capitalize("<field>")>]" when isPrim(getType(field,ctx.tm));
   default str renameIfPrim() = "[<field>]";
-  
-  str resultRel = "(<translateRelExpr(spcExpr, ctx)> ⨝ <spc><capitalize("<field>")><if (ctx.curConfigRel != "") {> ⨝ <ctx.curConfigRel><}>)<renameIfPrim()>";
 
-  ctx.addHeader(current@\loc, ("<field>": type2Str(getType(field, ctx.tm))));
-  return resultRel;  
+  Define def = getDefinition(field@\loc, ctx.tm);
+  
+  switch (def.idRole) {
+    case fieldId(): {
+      str spc = "";
+      if (specType(str name) := getType(spcExpr, ctx.tm)) {
+        spc = name;
+      } else {
+        throw "Left hand side is not a spec?";
+      }
+      
+      str resultRel = "(<translateRelExpr(spcExpr, ctx)> ⨝ <spc><capitalize("<field>")><if (ctx.curConfigRel != "") {> ⨝ <ctx.curConfigRel><}>)<renameIfPrim()>";
+    
+      ctx.addHeader(current@\loc, ("<field>": type2Str(getType(field, ctx.tm))));
+      return resultRel;  
+    }
+    case specInstanceId(): {
+      return "<spcExpr>_<field>";  
+    }
+  }
 }
+
+Define getDefinition(loc use, TModel tm) = tm.definitions[def] when use in tm.facts, {def} := tm.useDef[use];
 
 str translateRelExpr(current:(Expr)`<Id id>`, Context ctx) {
   ctx.addHeader(current@\loc, ("<id>": type2Str(getType(current,ctx.tm))));
   
-  switch (getType(current, ctx.tm)) {
-    case specType(str specName): {
-      if ("<id>" == specName) { // its a reference to the specification it self 
-        return "(<specName> ⨝ Instance)[instance]"; 
-      } else {
-        return "<id>";
+  Define def = getDefinition(current@\loc, ctx.tm);
+  
+  switch (def.idRole) {
+    case specId(): {
+      if (specType(str name) := getType(current, ctx.tm)) { 
+        return "(<name> ⨝ Instance)[instance]"; 
       }
     }
+    case quantVarId(): return "<id>";
   }
+  
+  throw "No translation implemented for expr `<id>` at <current@\loc> with role `<def.idRole>`";
 }
 
 str translateRelExpr(current:(Expr)`<Expr lhs> + <Expr rhs>`, Context ctx) = translateSetRelExpr(current@\loc, lhs, rhs, "+", ctx); 

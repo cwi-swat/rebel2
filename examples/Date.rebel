@@ -1,0 +1,39 @@
+module Date
+
+spec Date [NOW]
+  year: Integer,
+  month: Month,
+  date: Integer;
+  
+  event create(year: Integer, month: Month, day: Integer) 
+    post: this.year' = year, this.month' = month, this.date' = day;
+    
+  states:
+    (*) -> created: create;
+    
+spec Month [JAN,FEB,MAR,APR,MAY,JUN,JUL,AUG,SEP,OCT,NOV,DEC] 
+
+fact CorrectDate
+  = always forall d:Date | (d is initialized => (
+      d.year >= 1900 && d.year <= 2200 &&
+      d.date > 0 && 
+      if d.month = Month.JAN then d.date < 32 else
+      if d.month = Month.FEB then d.date < 30 else
+      if d.month = Month.MAR then d.date < 32 else
+      if d.month = Month.APR then d.date < 31 else
+      if d.month = Month.MAY then d.date < 32 else
+      if d.month = Month.JUN then d.date < 31 else
+      if d.month = Month.JUL then d.date < 32 else
+      if d.month = Month.AUG then d.date < 32 else
+      if d.month = Month.SEP then d.date < 31 else
+      if d.month = Month.OCT then d.date < 32 else
+      if d.month = Month.NOV then d.date < 31 else
+      d.date < 32)); 
+
+assert SomeInitializedDate
+  = eventually exists d: Date | d is initialized;
+
+config SomeDate = d1: Date;
+
+check SomeInitializedDate starting at SomeDate in max 2 steps;      
+      
