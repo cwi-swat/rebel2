@@ -147,7 +147,7 @@ pred possibleTransitionsPingPong[step: (cur:id, nxt:id)]
 // Fact: LessThan10TimesHit
 ∀ cur ∈ Config | (∀ p ∈ (PingPong ⨝ Instance)[instance] | (inState[cur, p, initialized] ⇒ (some ((p ⨝ PingPongTimes ⨝ cur)[times->pTimes]) where (pTimes < 10))))
 // Asserts: this is where the checks get added
-∃ cur ∈ Config | (∃ p1 ∈ (PingPong ⨝ Instance)[instance],p2 ∈ (PingPong ⨝ Instance)[instance] | p1 != p2 ∧ (some ((p1 ⨝ PingPongTimes ⨝ cur)[times->p1Times]) where (p1Times = 5)) ∧ (some ((p2 ⨝ PingPongTimes ⨝ cur)[times->p2Times]) where (p2Times = 3)))
+∃ cur ∈ Config | (∃ p1 ∈ (PingPong ⨝ Instance)[instance],p2 ∈ (PingPong ⨝ Instance)[instance] | p1 ≠ p2 ∧ (some ((p1 ⨝ PingPongTimes ⨝ cur)[times->p1Times]) where (p1Times = 5)) ∧ (some ((p2 ⨝ PingPongTimes ⨝ cur)[times->p2Times]) where (p2Times = 3)))
 
 // Minimize the number of steps by minimizing the number of Configurations
 objectives: minimize Config[count()]

@@ -158,7 +158,7 @@ void analyse(current:(Expr)`<Id var>`, AnalysisContext ctx) {
 
 void analyse(current:(Expr)`<Expr expr>.<Id field>`, AnalysisContext ctx) {
   Define fldDef = getDefinition(field@\loc, ctx);
-  Define exprDef = getDefintion(expr@\loc, ctx);
+  Define exprDef = getDefinition(expr@\loc, ctx);
   
   ScopeRole scp = getBaseScopeRole(fldDef, ctx);
   
@@ -199,7 +199,7 @@ void analyse((Decl)`<{Id ","}+ vars>: <Expr expr>`, AnalysisContext ctx) {
 }
 
 private Define getDefinition(loc use, AnalysisContext ctx) {
-  if (ctx.tm.useDef has use) {
+  if (!(ctx.tm.useDef has use)) {
     throw "Unable to find the definition for `<use>`";
   } else if ({loc def} := ctx.tm.useDef[use]) { 
     if (def in ctx.tm.definitions) {
@@ -208,6 +208,7 @@ private Define getDefinition(loc use, AnalysisContext ctx) {
       throw "Unable to define role for `<def>`";
     }
   }
+  
 }
 
 @memo
