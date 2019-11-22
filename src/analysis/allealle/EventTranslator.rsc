@@ -58,7 +58,6 @@ tuple[str fieldName, str relName] findRootRel(Expr exp, str instRel, Spec spc, E
   Decl findDecl(loc locOfVar) {
     visit(evnt.body) {
       case cur:(Decl)`<{Id ","}+ vars> : <Expr expr>`: { 
-        //if (Id var <- vars, var@\loc == locOfVar) {
         if (cur@\loc == locOfVar) {
           return cur; 
         }
@@ -92,10 +91,6 @@ tuple[str fieldName, str relName] findRootRel(Expr exp, str instRel, Spec spc, E
 }
 
 private tuple[set[str],list[str]] syncedInstanceRels(Spec s, Event e, str instRel, Graph[SyncedWith] syncDep, SyncScope scp, Config cfg) {
-  //map[loc,RelHeader] rl = ();
-  //RelHeader lookupHeader(loc expr) = rl[expr] when expr in rl; 
-  //default RelHeader lookupHeader(loc expr) { throw "Expression location `<expr>` not in rel header map"; }
-  //void addHeader(loc expr, RelHeader header) { rl += (expr:header); }
   Context c = ctx(cfg);
 
   list[str] syncLets = [];
@@ -204,17 +199,7 @@ private str translatePost(Event event, Context ctx)
 private default str translatePost(Event event, Context ctx) = "";     
 
 str translate((Formula)`(<Formula f>)`, Context ctx) = "(<translate(f,ctx)>)";
-
 str translate((Formula)`!<Formula f>`, Context ctx) = "¬ (<translate(f,ctx)>)";
-
-str getFieldName(Expr expr, Context ctx) {
-  Heading header = ctx.cfg.rm[expr@\loc].heading;
-  if (size(header) > 1) {
-    throw "More than 1 attribute in the relation, unable to determine field name";
-  }
-  
-  return dom2Str(getOneFrom(header)); 
-}
 
 str translate((Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, Context ctx) { 
   str relOfSync = translateRelExpr(spc, ctx);
@@ -273,8 +258,8 @@ str translate(current:(Decl)`<{Id ","}+ ids>: <Expr expr>`, Context ctx) {
   return intercalate(",", ["<name>:<te><maybeRename(getFieldName(expr,ctx),"<name>")>" | Id name <- ids]); 
 } 
 
-str translate((Formula)`<Expr lhs> in <Expr rhs>`,    Context ctx) = "some (<translateRelExpr(rhs,ctx)> ∩ <translateRelExpr(lhs,ctx)>[<getFieldName(lhs,ctx)> -\> <getFieldName(rhs,ctx)>])";
-str translate((Formula)`<Expr lhs> notin <Expr rhs>`, Context ctx) = "no (<translateRelExpr(rhs,ctx)> ∩ <translateRelExpr(lhs,ctx)>[<getFieldName(lhs,ctx)> -\> <getFieldName(rhs,ctx)>])";
+str translate((Formula)`<Expr lhs> in <Expr rhs>`,    Context ctx) = "some (<translateRelExpr(rhs,ctx)> ∩ <translateRelExpr(lhs,ctx)>[<getFieldName(lhs,ctx)>-\><getFieldName(rhs,ctx)>])";
+str translate((Formula)`<Expr lhs> notin <Expr rhs>`, Context ctx) = "no (<translateRelExpr(rhs,ctx)> ∩ <translateRelExpr(lhs,ctx)>[<getFieldName(lhs,ctx)>-\><getFieldName(rhs,ctx)>])";
 
 str translate((Formula)`<Formula lhs> && <Formula rhs>`,    Context ctx) = "(<translate(lhs,ctx)> ∧ <translate(rhs,ctx)>)";
 str translate((Formula)`<Formula lhs> || <Formula rhs>`,    Context ctx) = "(<translate(lhs,ctx)> ∨ <translate(rhs,ctx)>)";
@@ -291,8 +276,7 @@ str translate((Formula)`<Expr lhs> \<= <Expr rhs>`, Context ctx) = translateRest
 str translate((Formula)`<Expr lhs> \>= <Expr rhs>`, Context ctx) = translateRestrictionEq(lhs, rhs, "\>=", ctx);
 str translate((Formula)`<Expr lhs> \> <Expr rhs>`,  Context ctx) = translateRestrictionEq(lhs, rhs, "\>",  ctx);
 
-str translate((Formula)`if <Formula cond> then <Formula then> else <Formula \else>`,  Context ctx) 
-  = translate((Formula)`(<Formula cond> =\> <Formula then>) && (!(<Formula cond>) =\> <Formula \else>)`, ctx);
+str translate((Formula)`if <Formula cond> then <Formula then> else <Formula \else>`,  Context ctx) = translate((Formula)`(<Formula cond> =\> <Formula then>) && (!(<Formula cond>) =\> <Formula \else>)`, ctx);
 
 default str translate(Formula f, Context ctx) { throw "No translation function implemented yet for `<f>`"; }
 
@@ -324,22 +308,13 @@ str translateRestrictionEq(Expr lhs, Expr rhs, str operator, Context ctx) {
   }
 
   set[str] refRels = findReferencedRels(lhs) + findReferencedRels(rhs);
-
   return "(some (<intercalate(" ⨯ ", [*refRels])>) where (<translateAttrExpr(lhs,ctx)> <operator> <translateAttrExpr(rhs,ctx)>))";
 }  
 
 str translateRelExpr(current:(Expr)`(<Expr e>)`, Context ctx) = "(<translateRelExpr(e,ctx)>)";
 str translateRelExpr(current:(Expr)`<Id id>`, Context ctx) = ctx.cfg.rm[current@\loc].relExpr;
 str translateRelExpr(current:(Expr)`<Expr expr>'`, Context ctx) = ctx.cfg.rm[current@\loc].relExpr;
-str translateRelExpr(current:(Expr)`<Expr expr>.<Id id>`, Context ctx) = ctx.cfg.rm[id@\loc].relExpr;
-//{ 
-  //if ({loc def} := ctx.cfg.tm.useDef[id@\loc], specInstanceId() := ctx.cfg.tm.definitions[def].idRole, specType(str name) := getType(expr, ctx.cfg.tm)) {
-  //  // It is a reference to a 'enum' value
-  //  ctx.addHeader(current@\loc, ("instance" : "id"));
-  //  return "<name>_<id>"; 
-  //}  
-//}
-
+str translateRelExpr(current:(Expr)`<Expr expr>.<Id field>`, Context ctx) = ctx.cfg.rm[current@\loc].relExpr;
 
 str translateRelExpr(current:(Expr)`{<Id var> : <Expr expr> | <Formula f>}`, Context ctx) {
   str te = translateRelExpr(expr, ctx);
@@ -348,30 +323,20 @@ str translateRelExpr(current:(Expr)`{<Id var> : <Expr expr> | <Formula f>}`, Con
   return  "{<res> | <translate(f,ctx)>}<maybeRename("<var>",getFieldName(current,ctx))>"; 
 }
 
-str translateRelExpr(current:(Expr)`<Expr lhs> + <Expr rhs>`, Context ctx) = translateSetRelExpr(current@\loc, lhs, rhs, "+", ctx); 
-str translateRelExpr(current:(Expr)`<Expr lhs> - <Expr rhs>`, Context ctx) = translateSetRelExpr(current@\loc, lhs, rhs, "-", ctx);
+str translateRelExpr(current:(Expr)`<Expr lhs> + <Expr rhs>`, Context ctx) = ctx.cfg.rm[current@\loc].relExpr; 
+str translateRelExpr(current:(Expr)`<Expr lhs> - <Expr rhs>`, Context ctx) = ctx.cfg.rm[current@\loc].relExpr;
+
 default str translateRelExpr(Expr e, Context ctx) { throw "Can not translate expression `<e>` at location <e@\loc>"; }
 
-private str translateSetRelExpr(loc current, Expr lhs, Expr rhs, str op, Context ctx) {
-  str lhsRes = translateRelExpr(lhs,ctx);
-  str rhsRes = translateRelExpr(rhs,ctx);
-  
-  str lhsFieldName = getFieldName(lhs, ctx);
-  str rhsFieldName = getFieldName(rhs, ctx);
-  
-  return "(<lhsRes> <op> (<rhsRes><maybeRename(rhsFieldName, lhsFieldName)>))";
-}
-
-str translateAttrExpr((Expr)`(<Expr e>)`, Context ctx) = "(<translateAttrExpr(e,ctx,prefix)>)"; 
-str translateAttrExpr((Expr)`<Id id>`, Context ctx) = "<id>";
-str translateAttrExpr((Expr)`this.<Id id>`, Context ctx) = "cur<capitalize("<id>")>";
-str translateAttrExpr((Expr)`this.<Id id>'`, Context ctx) = "nxt<capitalize("<id>")>";
-
-str translateAttrExpr((Expr)`<Lit l>`, Context ctx) = translateLit(l);
-
-str translateAttrExpr((Expr)`- <Expr e>`, Context ctx) = "-<translateAttrExpr(e,ctx)>";
+str translateAttrExpr((Expr)`(<Expr e>)`,              Context ctx) = "(<translateAttrExpr(e,ctx,prefix)>)"; 
+str translateAttrExpr((Expr)`<Id id>`,                 Context ctx) = "<id>";
+str translateAttrExpr((Expr)`this.<Id id>`,            Context ctx) = "cur<capitalize("<id>")>";
+str translateAttrExpr((Expr)`this.<Id id>'`,           Context ctx) = "nxt<capitalize("<id>")>";
+str translateAttrExpr((Expr)`<Expr expr>.<Id fld>`,    Context ctx) = "<fld>";
+str translateAttrExpr((Expr)`<Lit l>`,                 Context ctx) = translateLit(l);
+str translateAttrExpr((Expr)`- <Expr e>`,              Context ctx) = "- <translateAttrExpr(e,ctx)>";
 str translateAttrExpr((Expr)`<Expr lhs> * <Expr rhs>`, Context ctx) = "<translateAttrExpr(lhs,ctx)> * <translateAttrExpr(rhs,ctx)>";
-str translateAttrExpr((Expr)`<Expr lhs> / <Expr rhs>`, Context ctx) = "<translateAttrExpr(lhs,ctx)> \\ <translateAttrExpr(rhs,ctx)>";
+str translateAttrExpr((Expr)`<Expr lhs> / <Expr rhs>`, Context ctx) = "<translateAttrExpr(lhs,ctx)> / <translateAttrExpr(rhs,ctx)>";
 str translateAttrExpr((Expr)`<Expr lhs> + <Expr rhs>`, Context ctx) = "<translateAttrExpr(lhs,ctx)> + <translateAttrExpr(rhs,ctx)>";
 str translateAttrExpr((Expr)`<Expr lhs> - <Expr rhs>`, Context ctx) = "<translateAttrExpr(lhs,ctx)> - <translateAttrExpr(rhs,ctx)>";
 
@@ -379,3 +344,13 @@ default str translateAttrExpr(Expr e, Context ctx) { throw "Can not translate ex
 
 str translateLit((Lit)`<Int i>`) = "<i>";
 str translateLit((Lit)`<StringConstant s>`) = "<s>";
+
+str getFieldName(Expr expr, Context ctx) {
+  Heading header = ctx.cfg.rm[expr@\loc].heading;
+  if (size(header) > 1) {
+    throw "More than 1 attribute in the relation, unable to determine field name";
+  }
+  
+  return getOneFrom(header); 
+}
+

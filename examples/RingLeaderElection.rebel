@@ -60,8 +60,8 @@ assert AProcessWillAlwaysBeElected
 assert OnlyOneCanGetElected
   = eventually exists p1,p2: Process | p1 is elected && p2 is elected && p1 != p2;  
 
-check EventuallyOneIsElected starting at RingOfThree in max 4 steps;
+check EventuallyOneIsElected from RingOfThree in max 4 steps;
   
-check OnlyOneCanGetElected starting at RingOfThree in max 10 steps;  
+check OnlyOneCanGetElected from RingOfThree in max 10 steps;  
 
-check AProcessWillAlwaysBeElected starting at RingOfThree in max 7 steps;
+check AProcessWillAlwaysBeElected from RingOfThree in max 7 steps;

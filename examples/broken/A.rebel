@@ -1,8 +1,0 @@
-module broken::A
-
-import broken::B
-import broken::C
-
-spec A
-  b: B,
-  c: C; 

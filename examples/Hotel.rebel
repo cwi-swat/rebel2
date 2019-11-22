@@ -79,4 +79,4 @@ assert NoIntruder
         next (enterRoom on g2 && 
           next enterRoom on g1)); 
       
-check NoIntruder starting at EmptyHotel in max 10 steps;
+check NoIntruder from EmptyHotel in max 10 steps;

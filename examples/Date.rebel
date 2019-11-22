@@ -35,5 +35,5 @@ assert SomeInitializedDate
 
 config SomeDate = d1: Date;
 
-check SomeInitializedDate starting at SomeDate in max 2 steps;      
+check SomeInitializedDate from SomeDate in max 2 steps;      
       
