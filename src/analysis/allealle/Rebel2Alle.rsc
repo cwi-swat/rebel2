@@ -27,10 +27,10 @@ import String;
 import util::Maybe;
 import util::Benchmark;
 
-import analysis::allealle::Rebel2Alle;
 import analysis::allealle::ConfigTranslator;
 import analysis::allealle::LTLTranslator;
 import analysis::allealle::SyncedEventGraphBuilder;
+import analysis::allealle::RelationCollector;
 
 import rebel::lang::Syntax;
 import rebel::lang::Parser;

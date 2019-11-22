@@ -121,12 +121,9 @@ void collect(current:(Formula)`<Id event> on <Expr spc> <WithAssignments? with>`
   collect(spc, c);
 }
 
-void collect(current:(Check)`check <Id assrt> starting at <Id config> in <SearchDepth depth> <Objectives? objs>;`, Collector c) {
-  //c.define("check_<assrt>", checkId(), current, defType(checkType()));
-  
+void collect(current:(Check)`check <Id assrt> from <Id config> in <SearchDepth depth> <Objectives? objs>;`, Collector c) {
   c.enterScope(current); 
     c.use(assrt, {assertId()});
     c.use(config, {configId()});
-    //collect(instances, c);
   c.leaveScope(current);  
 }

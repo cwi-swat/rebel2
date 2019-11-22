@@ -25,4 +25,4 @@ config TwoMachines = p1,p2: PingPong;
 assert HitFiveAndThreeTimes
   = eventually exists p1,p2: PingPong | p1 != p2 && p1.times = 5 && p2.times = 3;
    
-check HitFiveAndThreeTimes starting at TwoMachines in max 10 steps;   
+check HitFiveAndThreeTimes from TwoMachines in max 10 steps;   

@@ -4,6 +4,7 @@ import analysis::allealle::CommonTranslationFunctions;
 
 import rebel::lang::Syntax;
 import rebel::lang::TypeChecker;
+import analysis::allealle::RelationCollector;
 
 import String;
 import IO;
@@ -12,7 +13,7 @@ import List;
 
 Config buildConfig(str checkName, set[Module] mods, TModel tm) {
   if (Module m <- mods, 
-    /(Check)`check <Id name> starting at <Id cfg> in <SearchDepth depth> <Objectives? _>;` <- m.parts, "<name>" == checkName) {
+    /(Check)`check <Id name> from <Id cfg> in <SearchDepth depth> <Objectives? _>;` <- m.parts, "<name>" == checkName) {
     rebel::lang::Syntax::Config c = findReferencedConfig(cfg@\loc, mods, tm);
     
     rel[Spec,str,State] instances = buildInstances(c, mods, tm);
@@ -20,8 +21,10 @@ Config buildConfig(str checkName, set[Module] mods, TModel tm) {
     int searchDepth = buildSearchDepth(depth);  
     
     set[Fact] facts = gatherFacts(mods);
+    
+    RelMapping rm = constructRelMapping(mods, tm);
 
-    return config(instances, initialValues, facts, tm, searchDepth);
+    return config(instances, initialValues, facts, tm, rm, searchDepth);
    }
 }
 

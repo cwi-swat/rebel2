@@ -157,8 +157,10 @@ void analyse(current:(Expr)`<Id var>`, AnalysisContext ctx) {
 }
 
 void analyse(current:(Expr)`<Expr expr>.<Id field>`, AnalysisContext ctx) {
-  Define d = getDefinition(field@\loc, ctx);
-  ScopeRole scp = getBaseScopeRole(d, ctx);
+  Define fldDef = getDefinition(field@\loc, ctx);
+  Define exprDef = getDefintion(expr@\loc, ctx);
+  
+  ScopeRole scp = getBaseScopeRole(fldDef, ctx);
   
   if (scp == eventScope()) {
     if ((Expr)`this.<Id field>` := current) {
@@ -166,6 +168,8 @@ void analyse(current:(Expr)`<Expr expr>.<Id field>`, AnalysisContext ctx) {
       str relName = (primedScope() := getContainingScopeRole(current@\loc, ctx)) ? "nxt<capitalize("<field>")>" : "cur<capitalize("<field>")>";
       
       ctx.add(current@\loc, <relName, h>);
+    } else if (exprDef.idRole == specId(), specType(str name) := getType(expr@\loc, ctx)) {
+      ;
     } 
   }
 } 
@@ -255,3 +259,7 @@ private default AType getType(loc expr, AnalysisContext ctx) { throw "No type in
 private Domain type2Dom(intType()) = intDom();
 private Domain type2Dom(strType()) = strDom();
 private default Domain type2Dom(AType t) = idDom();
+
+str dom2Str(intType()) = "int";
+str dom2Str(strType()) = "str";
+default str dom2Str(AType t) = "id";

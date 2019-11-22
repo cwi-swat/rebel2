@@ -2,6 +2,7 @@ module analysis::allealle::EventTranslator
 
 import analysis::allealle::CommonTranslationFunctions;
 import analysis::allealle::SyncedEventGraphBuilder;
+import analysis::allealle::RelationCollector;
 
 import rebel::lang::Syntax;
 import rebel::lang::TypeChecker;
@@ -13,9 +14,7 @@ import List;
 import Map;
 import ParseTree;
 
-alias RelHeader = map[str attName, str attDomain];
-
-data Context = ctx(RelHeader (loc) lookupHeader, void (loc, RelHeader) addHeader, Config cfg);
+data Context = ctx(Config cfg);
 
 str constructTransitionFunction(Spec spc, Graph[SyncedWith] syncDep, Config cfg) {
   list[str] getEventParams(Event e) { 
@@ -93,11 +92,11 @@ tuple[str fieldName, str relName] findRootRel(Expr exp, str instRel, Spec spc, E
 }
 
 private tuple[set[str],list[str]] syncedInstanceRels(Spec s, Event e, str instRel, Graph[SyncedWith] syncDep, SyncScope scp, Config cfg) {
-  map[loc,RelHeader] rl = ();
-  RelHeader lookupHeader(loc expr) = rl[expr] when expr in rl; 
-  default RelHeader lookupHeader(loc expr) { throw "Expression location `<expr>` not in rel header map"; }
-  void addHeader(loc expr, RelHeader header) { rl += (expr:header); }
-  Context c = ctx(lookupHeader, addHeader, cfg);
+  //map[loc,RelHeader] rl = ();
+  //RelHeader lookupHeader(loc expr) = rl[expr] when expr in rl; 
+  //default RelHeader lookupHeader(loc expr) { throw "Expression location `<expr>` not in rel header map"; }
+  //void addHeader(loc expr, RelHeader header) { rl += (expr:header); }
+  Context c = ctx(cfg);
 
   list[str] syncLets = [];
   set[str] relNames = {};
@@ -127,12 +126,7 @@ str translateEventsToPreds(Spec spc, Config cfg) =
 private bool isFrameEvent(Event e) = "<e.name>" == "__frame";
 
 str translateEventToPred(Spec spc, Event event, str instanceRel, Config cfg) {
-  map[loc,RelHeader] rl = ();
-  RelHeader lookupHeader(loc expr) = rl[expr] when expr in rl; 
-  default RelHeader lookupHeader(loc expr) { throw "Expression at `<expr>` not in rel header map"; }
-  void addHeader(loc expr, RelHeader header) { rl += (expr:header); }
-  
-  Context c = ctx(lookupHeader, addHeader, cfg);
+  Context c = ctx(cfg);
   
   list[str] letRels = buildLetVars(spc, event, instanceRel, cfg);
   list[str] paramVars = ["step:(cur:id, nxt:id)", "<getLowerCaseSpecName(spc)>: (instance:id)"] + buildParamVars(event, c);
@@ -144,11 +138,6 @@ str translateEventToPred(Spec spc, Event event, str instanceRel, Config cfg) {
 }
 
 str translateFrameEvent(Spec spc, Event frameEvent, str instRel, Config cfg) {
-  map[loc,RelHeader] rl = ();
-  RelHeader lookupHeader(loc expr) = rl[expr] when expr in rl; 
-  default RelHeader lookupHeader(loc expr) { throw "Expression location not in rel header map"; }
-  void addHeader(loc expr, RelHeader header) { rl += (expr:header); }
-
   list[str] letRels = buildLetVars(spc, frameEvent, instRel, cfg);
 
   return "pred frame<getCapitalizedSpecName(spc)>[step: (cur:id, nxt:id), <getLowerCaseSpecName(spc)>: (instance:id)] 
@@ -156,7 +145,7 @@ str translateFrameEvent(Spec spc, Event frameEvent, str instRel, Config cfg) {
          '    nxtState = curState <if (/Field f := spc.fields) {>∧
          '    (
          '      curState ⊆ uninitialized ∨ 
-         '      (<translatePost(frameEvent, ctx(lookupHeader, addHeader, cfg))>)
+         '      (<translatePost(frameEvent, ctx(cfg))>)
          '    )<}>
          '  )
          '";
@@ -219,12 +208,12 @@ str translate((Formula)`(<Formula f>)`, Context ctx) = "(<translate(f,ctx)>)";
 str translate((Formula)`!<Formula f>`, Context ctx) = "¬ (<translate(f,ctx)>)";
 
 str getFieldName(Expr expr, Context ctx) {
-  RelHeader header = ctx.lookupHeader(expr@\loc);
+  Heading header = ctx.cfg.rm[expr@\loc].heading;
   if (size(header) > 1) {
     throw "More than 1 attribute in the relation, unable to determine field name";
   }
   
-  return getOneFrom(header); 
+  return dom2Str(getOneFrom(header)); 
 }
 
 str translate((Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, Context ctx) { 
@@ -281,9 +270,6 @@ str translate((Formula)`exists <{Decl ","}+ decls> | <Formula form>`, Context ct
 
 str translate(current:(Decl)`<{Id ","}+ ids>: <Expr expr>`, Context ctx) {
   str te = translateRelExpr(expr, ctx);
-  
-  ctx.addHeader(current@\loc, ctx.lookupHeader(expr@\loc));
-
   return intercalate(",", ["<name>:<te><maybeRename(getFieldName(expr,ctx),"<name>")>" | Id name <- ids]); 
 } 
 
@@ -312,7 +298,7 @@ default str translate(Formula f, Context ctx) { throw "No translation function i
 
 str translateEq(Expr lhs, Expr rhs, str op, Context ctx) {
   // Is it equality on attributes?
-  if (isAttributeType(lhs, ctx.cfg.tm) && isAttributeType(rhs, ctx.cfg.tm)) {
+  if (isPrim(lhs, ctx.cfg.tm) && isPrim(rhs, ctx.cfg.tm)) {
     // it is equality on attributes
     return translateRestrictionEq(lhs, rhs, op, ctx);
   } else {
@@ -324,63 +310,39 @@ str translateRelEq(Expr lhs, Expr rhs, str op, Context ctx)
   = "<translateRelExpr(lhs, ctx)> <op> <translateRelExpr(rhs, ctx)><maybeRename(getFieldName(rhs,ctx),getFieldName(lhs,ctx))>"; 
 
 str translateRestrictionEq(Expr lhs, Expr rhs, str operator, Context ctx) {
-  set[str] findReferencedRels(Expr expr, Context ctx) {
-    set[str] rels = {};
-    set[loc] nr = {};
-  
+  set[str] findReferencedRels(Expr expr) {
+    set[str] rels = {}; 
     top-down visit(expr) {
-      case (Expr)`this.<Id field>` : {if (field@\loc notin nr) rels += "cur<capitalize("<field>")>";} 
-      case (Expr)`this.<Id field>'`: {rels += "nxt<capitalize("<field>")>"; nr += field@\loc;}
-      case (Expr)`<Id param>`      : rels += "<param>";  // event param is referenced
+      case Expr e2 :  {
+        if (e2@\loc in ctx.cfg.rm) {
+          rels += ctx.cfg.rm[e2@\loc].relExpr;
+        }
+      }
     }
     
     return rels;
   }
 
-  set[str] refRels = findReferencedRels(lhs, ctx) + findReferencedRels(rhs, ctx);
+  set[str] refRels = findReferencedRels(lhs) + findReferencedRels(rhs);
 
   return "(some (<intercalate(" ⨯ ", [*refRels])>) where (<translateAttrExpr(lhs,ctx)> <operator> <translateAttrExpr(rhs,ctx)>))";
 }  
 
-str translateRelExpr(current:(Expr)`(<Expr e>)`, Context ctx) {
-  str res = translateRelExpr(e,ctx);
-  ctx.addHeader(current@\loc, ctx.lookupHeader(e@\loc));
-  
-  return  "(<res>)"; 
-}
-
-loc findDef(loc use, TModel tm) = def when {def} := tm.useDef[use];
-default loc findDef(loc l, TModel _) { throw "Unable to find definition for variable defined at `<l>`"; }
-
-str translateRelExpr(current:(Expr)`<Id id>`, Context ctx) {
-  ctx.addHeader(current@\loc, ("<id>": type2Str(getType(current,ctx.cfg.tm))));
-  return "<id>";
-}
-
-str translateRelExpr(current:(Expr)`this.<Id id>`, Context ctx) { 
-  str fieldName = isPrim(getType(current, ctx.cfg.tm)) ? "cur<capitalize("<id>")>" : "<id>";
-  ctx.addHeader(current@\loc, (fieldName: type2Str(getType(current,ctx.cfg.tm))));
-  return "cur<capitalize("<id>")>";
-}
-
-str translateRelExpr(current:(Expr)`this.<Id id>'`, Context ctx) {
-  str fieldName = isPrim(getType(current, ctx.cfg.tm)) ? "nxt<capitalize("<id>")>" : "<id>";
-  ctx.addHeader(current@\loc, (fieldName: type2Str(getType(current,ctx.cfg.tm))));
-  return "nxt<capitalize("<id>")>";
-}
-
-default str translateRelExpr(current:(Expr)`<Expr expr>.<Id id>`, Context ctx) { 
-  if ({loc def} := ctx.cfg.tm.useDef[id@\loc], specInstanceId() := ctx.cfg.tm.definitions[def].idRole, specType(str name) := getType(expr, ctx.cfg.tm)) {
-    // It is a reference to a 'enum' value
-    ctx.addHeader(current@\loc, ("instance" : "id"));
-    return "<name>_<id>"; 
-  }
-}
+str translateRelExpr(current:(Expr)`(<Expr e>)`, Context ctx) = "(<translateRelExpr(e,ctx)>)";
+str translateRelExpr(current:(Expr)`<Id id>`, Context ctx) = ctx.cfg.rm[current@\loc].relExpr;
+str translateRelExpr(current:(Expr)`<Expr expr>'`, Context ctx) = ctx.cfg.rm[current@\loc].relExpr;
+str translateRelExpr(current:(Expr)`<Expr expr>.<Id id>`, Context ctx) = ctx.cfg.rm[id@\loc].relExpr;
+//{ 
+  //if ({loc def} := ctx.cfg.tm.useDef[id@\loc], specInstanceId() := ctx.cfg.tm.definitions[def].idRole, specType(str name) := getType(expr, ctx.cfg.tm)) {
+  //  // It is a reference to a 'enum' value
+  //  ctx.addHeader(current@\loc, ("instance" : "id"));
+  //  return "<name>_<id>"; 
+  //}  
+//}
 
 
 str translateRelExpr(current:(Expr)`{<Id var> : <Expr expr> | <Formula f>}`, Context ctx) {
   str te = translateRelExpr(expr, ctx);
-  ctx.addHeader(current@\loc, ctx.lookupHeader(expr@\loc));
   str res = "<var>:<te><maybeRename(getFieldName(expr,ctx),"<var>")>";
   
   return  "{<res> | <translate(f,ctx)>}<maybeRename("<var>",getFieldName(current,ctx))>"; 
@@ -396,7 +358,6 @@ private str translateSetRelExpr(loc current, Expr lhs, Expr rhs, str op, Context
   
   str lhsFieldName = getFieldName(lhs, ctx);
   str rhsFieldName = getFieldName(rhs, ctx);
-  ctx.addHeader(current, (lhsFieldName : type2Str(getType(lhs, ctx.cfg.tm))));
   
   return "(<lhsRes> <op> (<rhsRes><maybeRename(rhsFieldName, lhsFieldName)>))";
 }
@@ -406,7 +367,6 @@ str translateAttrExpr((Expr)`<Id id>`, Context ctx) = "<id>";
 str translateAttrExpr((Expr)`this.<Id id>`, Context ctx) = "cur<capitalize("<id>")>";
 str translateAttrExpr((Expr)`this.<Id id>'`, Context ctx) = "nxt<capitalize("<id>")>";
 
-str translateAttrExpr((Expr)`now`, Context ctx) { throw "Not yet supported"; }
 str translateAttrExpr((Expr)`<Lit l>`, Context ctx) = translateLit(l);
 
 str translateAttrExpr((Expr)`- <Expr e>`, Context ctx) = "-<translateAttrExpr(e,ctx)>";

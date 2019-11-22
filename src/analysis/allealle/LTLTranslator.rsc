@@ -2,6 +2,7 @@ module analysis::allealle::LTLTranslator
 
 import analysis::allealle::CommonTranslationFunctions;
 import analysis::allealle::EventTranslator;
+import analysis::allealle::RelationCollector;
 
 import rebel::lang::Syntax;
 import rebel::lang::TypeChecker;
@@ -133,7 +134,7 @@ default str translate(Formula f, Context ctx) { throw "No translation function i
 
 str translateEq(Expr lhs, Expr rhs, str op, Context ctx) {
   // Is it equality on attributes?
-  if (isAttributeType(lhs, ctx.tm) && isAttributeType(rhs, ctx.tm)) {
+  if (isPrim(lhs, ctx.tm) && isPrim(rhs, ctx.tm)) {
     // it is equality on attributes
     return translateRestrictionEq(lhs, rhs, op, ctx);
   } else {

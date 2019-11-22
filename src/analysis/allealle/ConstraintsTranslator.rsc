@@ -7,6 +7,7 @@ import analysis::allealle::CommonTranslationFunctions;
 import analysis::allealle::EventTranslator;
 import analysis::allealle::LTLTranslator;
 import analysis::allealle::SyncedEventGraphBuilder;
+import analysis::allealle::RelationCollector;
 
 import String;
 import IO;

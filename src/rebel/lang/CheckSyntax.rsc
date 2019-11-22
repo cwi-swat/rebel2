@@ -38,7 +38,7 @@ syntax Formula
   | Id event "on" Expr var WithAssignments? with
   ;
 
-syntax Check = "check" Id name "starting" "at" Id config "in" SearchDepth depth Objectives? objs ";";
+syntax Check = "check" Id name "from" Id config "in" SearchDepth depth Objectives? objs ";";
   
 syntax SearchDepth
   = "max" Int steps "steps"
