@@ -19,58 +19,43 @@ data Domain
   | strDom()
   ;
   
-data ScopeRole 
-  = primedScope()
-  | syncScope()
-  ;  
-
-data AnalysisContext = actx(RelExpr (loc l) lookup, void (loc l, RelExpr r) add, TModel tm, map[loc,ScopeRole] scopes, set[str] emptySpecs); 
+data AnalysisContext = actx(RelExpr (loc l) lookup, void (loc l, RelExpr r) add, void (str) setCurRel, str () getCurRel, void (str) setStepRel, str () getStepRel, TModel tm, map[loc,Spec] specs, set[str] emptySpecs); 
 
 RelMapping constructRelMapping(set[Module] mods, TModel tm) {
   RelMapping mapping = ();
-  
   void addRel(loc l, RelExpr r) { mapping[l] = r; }
   RelExpr lookupRel(loc l) = mapping[l] when l in mapping;
-  default RelExpr lookup(loc l) { throw "No Relation expression stored for location `l`"; }
+  default RelExpr lookupRel(loc l) { throw "No Relation expression stored for location `<l>`"; }
   
-  map[loc,ScopeRole] scopes = constructScopeMap(mods, tm);
+  str curRel = "cur";
+  void setCur(str c) { curRel = c; }
+  str getCur() = curRel;
+  
+  str stepRel = "step";
+  void setStep(str s) { stepRel = s; }
+  str getStep() = stepRel;
+  
+  map[loc,Spec] specs = (s@\loc : s | Module m <- mods, /Spec s <- m.parts); 
   set[str] emptySpecs = findEmptySpecs(mods);
   
   for (Module m <- mods) {
     // First do all the events in the specification
     for (/Spec s <- m.parts, /Event ev <- s.events) {
-      analyse(ev, actx(lookupRel, addRel, tm, scopes, emptySpecs));    
+      analyse(ev, "<s.name>", actx(lookupRel, addRel, setCur, getCur, setStep, getStep, tm, specs, emptySpecs));    
     }
   }
   
   return mapping; 
 }
 
-private map[loc,ScopeRole] constructScopeMap(set[Module] mods, TModel tm) {
-  map[loc,ScopeRole] scopes = ();
-  
-  visit (mods) {
-    case Spec spc: scopes[spc@\loc] = eventScope();
-    case Event ev: scopes[ev@\loc] = eventScope();
-    case current:(Formula)`forall <{Decl ","}+ decls> | <Formula f>`: scopes[current@\loc] = quantScope();
-    case current:(Formula)`exists <{Decl ","}+ decls> | <Formula f>`: scopes[current@\loc] = quantScope();
-    case current:(Expr)`{<Decl d> | <Formula frm>}`: scopes[current@\loc] = quantScope();
-    case current:(Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`: scopes[current@\loc] =syncScope();
-    case current:(Expr)`<Expr e>'`: scopes[current@\loc] = primedScope(); 
-    case Fact f: scopes[f@\loc] = factScope();
-    case Assert a: scopes[a@\loc] = assertScope();
-  }
-  
-  return scopes;
-}
-
 private set[str] findEmptySpecs(set[Module] mods) = {"<s.name>" | Module m <- mods, /Spec s <- m.parts, isEmptySpec(s)};
 private bool isEmptySpec(Spec spc) = /Field _ !:= spc.fields && /Transition _ !:= spc.states;
 
-void analyse((Event)`<Modifier? modi> event <Id name>(<{FormalParam ","}* params>) <EventBody body>`, AnalysisContext ctx) {
+void analyse(current:(Event)`<Modifier? modi> event <Id name>(<{FormalParam ","}* params>) <EventBody body>`, str specName, AnalysisContext ctx) {
   // Add relations for parameters
   for (FormalParam p <- params) {
-    ctx.add(p.name@\loc, <"<p.name>", ("<p.name>" : type2Dom(getType(p.name@\loc, ctx)))>);  
+    str fldName = isPrim(p.name@\loc,ctx) ? "<p.name>" : "instance"; 
+    ctx.add(p.name@\loc, <"<p.name>", (fldName : type2Dom(getType(p.name@\loc, ctx)))>);
   }
   analyse(body, ctx);  
 }
@@ -127,7 +112,9 @@ void analyse((Formula)`exists <{Decl ","}+ decls> | <Formula f>`, AnalysisContex
     analyse(d,ctx);
   }
   analyse(f,ctx);
-}
+} 
+
+void analyse((Formula)`noOp(<Expr expr>)`, AnalysisContext ctx) { analyse(expr,ctx); }
 
 //From Check Syntax
 void analyse((Formula)`eventually <Formula f>`, AnalysisContext ctx) = analyse(f,ctx);
@@ -140,76 +127,105 @@ void analyse((Formula)`<Id event> on <Expr var> <WithAssignments? \with>`, Analy
 void analyse(current:(Expr)`(<Expr expr>)`, AnalysisContext ctx) {
   analyse(expr,ctx);
   ctx.add(current@\loc, ctx.lookup(expr@\loc));
-}
-
-void analyse(current:(Expr)`<Id var>`, AnalysisContext ctx) {
-  Define def = getDefinition(var@\loc, ctx);
-  ScopeRole scp = getBaseScopeRole(def, ctx);
-  
-  if (scp == eventScope()) {
-    switch (def.idRole) { 
-      case paramId(): ctx.add(current@\loc, ctx.lookup(def.defined));
-      case quantVarId(): ctx.add(current@\loc, ctx.lookup(def.defined));
-      default: throw "Id expression at `<current@\loc>` is used in a way not yet handled by the relation analyser";        
-    }
-  } else if (scp == factScope() || scp == assertScope()) {
-    switch (def.idRole) {
-      case specId(): ctx.add(current@\loc, ("(Instance ⨝ <capitalize("var")>)[instance]" : ("instance" : idDom())));
-      case quantVarId(): ctx.add(current@\loc, ctx.lookup(def.defined));
-      default: throw "Id expression at `<current@\loc>` is used in a way not yet handled by the relation analyser";        
-    }
-  }  
-}
-
-void analyse(current:(Expr)`<Expr expr>.<Id field>`, AnalysisContext ctx) {
-  analyse(expr,ctx);
-  
-  Define fldDef = getDefinition(field@\loc, ctx);
-  
-  ScopeRole scp = getBaseScopeRole(fldDef, ctx);
-  Maybe[RelExpr] resolved = nothing(); 
-  
-  if (scp == eventScope()) {
-    if ((Expr)`this.<Id field>` := current) {
-      bool isPrimed = primedScope() := getContainingScopeRole(current@\loc, ctx);
-      
-      str relName = isPrimed ? "nxt<capitalize("<field>")>" : "cur<capitalize("<field>")>";    
-      str fieldName = isPrim(current@\loc,ctx) ? (isPrimed ? "nxt<capitalize("<field>")>" : "cur<capitalize("<field>")>") : "<field>"; 
-      
-      resolved = just(<relName, (fieldName : type2Dom(getType(field@\loc, ctx)))>);
-    } else {
-      Define exprDef = getDefinition(expr@\loc, ctx);
-     
-      if (exprDef.idRole == specId(), specType(str name) := getType(expr@\loc, ctx)) {
-        if (fldDef.idRole == fieldId()) {
-          str relName = "(<capitalize(name)><capitalize("<field>")> ⨝ (Instance |x| <name>)[instance] ⨝ cur)[<field>]";
-          resolved = just(<relName, ("<field>" : type2Dom(getType(field@\loc, ctx)))>);
-        } else if (fldDef.idRole == specInstanceId()) { 
-          if (name in ctx.emptySpecs) {
-            resolved = just(<"<name>_<field>", ("instance" : type2Dom(getType(field@\loc, ctx)))>);
-          } else {
-            relName = "(<capitalize(name)><capitalize("<field>")> ⨝ <name>_<field> ⨝ cur)[<field>]";  
-            resolved = just(<relName, ("<field>" : type2Dom(getType(field@\loc, ctx)))>);
-          }
-        } 
-      } else if (exprDef.idRole == paramId(), specType(str name) := getType(expr@\loc, ctx)) {
-        str relName = "(<capitalize(name)><capitalize("<field>")> ⨝ <expr><renameIfNeeded(ctx.lookup(expr@\loc).relExpr, "instance")> ⨝ cur)[<field>]";  
-        resolved = just(<relName, ("<field>" : type2Dom(getType(field@\loc, ctx)))>);
-      }
-    } 
-  }
-  
-  if (just(re) := resolved) {
-    ctx.add(current@\loc, re);
-  } else {
-    throw "Unable to resolve relation for expression `<current>` at <current@\loc>";
-  } 
 } 
-void analyse(current:(Expr)`<Lit lit>`, AnalysisContext ctx) {}
+ 
+void analyse(current:(Expr)`<Id var>`, AnalysisContext ctx)  {
+  analyse(var,ctx);
+  ctx.add(current@\loc, ctx.lookup(var@\loc));
+}
+
+void analyse(current:(Expr)`<Lit l>`, AnalysisContext ctx) {
+  analyse(l,ctx);
+  ctx.add(current@\loc, ctx.lookup(l@\loc));
+}
+
+void analyse(current:(Id)`<Id var>`, AnalysisContext ctx) {
+  Define def = getDefinition(var@\loc, ctx);
+
+  switch (def.idRole) { 
+    case paramId(): ctx.add(current@\loc, ctx.lookup(def.defined));
+    case quantVarId(): ctx.add(current@\loc, <"<var>", ctx.lookup(def.defined).heading>);
+    case fieldId(): ctx.add(current@\loc, <"(<getSpecName(current@\loc,ctx)><capitalize("<var>")> ⨝ <ctx.getCurRel()>)", ("instance":idDom(), "<var>": type2Dom(getType(current@\loc,ctx)))>);
+    case specId(): ctx.add(current@\loc, <"(Instance ⨝ <capitalize("<var>")>)[instance]", ("instance":idDom())>);
+    case specInstanceId(): ctx.add(current@\loc, <"<getSpecName(current@\loc,ctx)>_<var>", ("instance":idDom())>);
+    default: throw "Id expression at `<current@\loc>` with role `<def.idRole>` is used in a way not yet handled by the relation analyser";        
+  }
+}
+
+void analyse(current:(Expr)`<Expr expr>.<Id fld>`, AnalysisContext ctx) {
+  analyse(expr,ctx);
+  analyse(fld,ctx);
+  
+  RelExpr exprRel  = ctx.lookup(expr@\loc);
+  RelExpr fieldRel = ctx.lookup(fld@\loc);
+  
+  ctx.add(current@\loc, <"(<exprRel.relExpr> ⨝ <fieldRel.relExpr>)[<fld>]", ("<fld>":type2Dom(getType(fld@\loc,ctx)))>);
+}
+
+void analyse(current:(Expr)`<Expr spc>[<Id fld>]`, AnalysisContext ctx) {
+  analyse(spc,ctx);
+  analyse(fld,ctx);
+  
+  RelExpr exprRel  = ctx.lookup(spc@\loc);
+  RelExpr fieldRel = ctx.lookup(fld@\loc);
+  
+  ctx.add(current@\loc, <"<fieldRel.relExpr>", ("instance":type2Dom(getType(fld@\loc,ctx)))>);
+}
+
+//void analyse(current:(Expr)`<Expr expr>.<Id field>`, AnalysisContext ctx) {
+//  Define fldDef = getDefinition(field@\loc, ctx);
+//  
+//  ScopeRole scp = getBaseScopeRole(fldDef, ctx);
+//  Maybe[RelExpr] resolved = nothing(); 
+//  
+//  if (scp == specScope()) {
+//    if ((Expr)`this.<Id field>` := current) {
+//      bool isPrimed = primedScope() := getContainingScopeRole(current@\loc, ctx);
+//      
+//      str relName = isPrimed ? "nxt<capitalize("<field>")>" : "cur<capitalize("<field>")>";    
+//      str fieldName = isPrim(current@\loc,ctx) ? (isPrimed ? "nxt<capitalize("<field>")>" : "cur<capitalize("<field>")>") : "<field>"; 
+//      
+//      resolved = just(<relName, (fieldName : type2Dom(getType(field@\loc, ctx)))>);
+//    } else {
+//      Define exprDef = getDefinition(expr@\loc, ctx);
+//     
+//      if (exprDef.idRole == specId(), specType(str name) := getType(expr@\loc, ctx)) {
+//        if (fldDef.idRole == fieldId()) {
+//          str relName = "(<capitalize(name)><capitalize("<field>")> ⨝ (Instance |x| <name>)[instance] ⨝ cur)[<field>]";
+//          resolved = just(<relName, ("<field>" : type2Dom(getType(field@\loc, ctx)))>);
+//        } else if (fldDef.idRole == specInstanceId()) { 
+//          if (name in ctx.emptySpecs) {
+//            resolved = just(<"<name>_<field>", ("instance" : type2Dom(getType(field@\loc, ctx)))>);
+//          } else {
+//            relName = "(<capitalize(name)><capitalize("<field>")> ⨝ <name>_<field> ⨝ cur)[<field>]";  
+//            resolved = just(<relName, ("<field>" : type2Dom(getType(field@\loc, ctx)))>);
+//          }
+//        } 
+//      } else if (exprDef.idRole == paramId(), specType(str name) := getType(expr@\loc, ctx)) {
+//        analyse(expr,ctx);
+//        str relName = "(<capitalize(name)><capitalize("<field>")> ⨝ <expr><renameIfNeeded(ctx.lookup(expr@\loc).relExpr, "instance")> ⨝ cur)[<field>]";  
+//        resolved = just(<relName, ("<field>" : type2Dom(getType(field@\loc, ctx)))>);
+//      }
+//    } 
+//  } else if (scp in {assertScope(), factScope()}) {
+//    println("Annotating assert and fact expressions");
+//  }
+//  
+//  if (just(re) := resolved) {
+//    ctx.add(current@\loc, re);
+//  } else {
+//    throw "Unable to resolve relation for expression `<current>` at <current@\loc>";
+//  } 
+//} 
 
 void analyse(current:(Expr)`<Expr expr>'`, AnalysisContext ctx) {
+  str curRel = ctx.getCurRel();
+  ctx.setCurRel("nxt");
+  
   analyse(expr, ctx);
   ctx.add(current@\loc, ctx.lookup(expr@\loc));
+  
+  ctx.setCurRel(curRel);
 }
 
 void analyse(current:(Expr)`- <Expr expr>`, AnalysisContext ctx) {
@@ -232,20 +248,35 @@ void analyse(current:(Expr)`<Expr lhs> + <Expr rhs>`, AnalysisContext ctx) {
   switch ({getType(lhs@\loc, ctx), getType(rhs@\loc, ctx)}) {
     case {setType(AType tipe), tipe}: setOperation(current@\loc, lhs, rhs, "∪", ctx);
     case {setType(AType tipe), setType(tipe)}: setOperation(current@\loc, lhs, rhs, "∪", ctx);
+    case {intType()}: ctx.add(current@\loc, ctx.lookup(lhs@\loc));  
   }  
 }
+
 void analyse(current:(Expr)`<Expr lhs> - <Expr rhs>`, AnalysisContext ctx) {
   analyse(lhs,ctx); 
   analyse(rhs,ctx);
 
-  switch ({getType(lhs,ctx), getType(rhs,ctx)}) {
+  switch ({getType(lhs@\loc,ctx), getType(rhs@\loc,ctx)}) {
     case {setType(AType tipe), tipe}: setOperation(current@\loc, lhs, rhs, "∖", ctx);
     case {setType(AType tipe), setType(tipe)}: setOperation(current@\loc, lhs, rhs, "∖", ctx);
+    case {intType()}: ctx.add(current@\loc, ctx.lookup(lhs@\loc));  
   }  
 }
 
-void analyse(current:(Expr)`<Expr lhs> * <Expr rhs>`, AnalysisContext ctx) {analyse(lhs,ctx); analyse(rhs,ctx);}
-void analyse(current:(Expr)`<Expr lhs> / <Expr rhs>`, AnalysisContext ctx) {analyse(lhs,ctx); analyse(rhs,ctx);}
+void analyse(current:(Expr)`<Expr lhs> * <Expr rhs>`, AnalysisContext ctx) {
+  analyse(lhs,ctx); 
+  analyse(rhs,ctx);
+  
+  ctx.add(current@\loc, ctx.lookup(lhs@\loc));  
+}
+
+void analyse(current:(Expr)`<Expr lhs> / <Expr rhs>`, AnalysisContext ctx) {
+  analyse(lhs,ctx); 
+  analyse(rhs,ctx);
+  
+  ctx.add(current@\loc, ctx.lookup(lhs@\loc));  
+}
+
 void analyse(current:(Expr)`{<Decl d> | <Formula f>}`, AnalysisContext ctx) {analyse(d,ctx); analyse(f,ctx);}
   
 void analyse((Decl)`<{Id ","}+ vars>: <Expr expr>`, AnalysisContext ctx) {
@@ -253,6 +284,38 @@ void analyse((Decl)`<{Id ","}+ vars>: <Expr expr>`, AnalysisContext ctx) {
   
   for (Id var <- vars) {
     ctx.add(var@\loc, ctx.lookup(expr@\loc));
+  }
+}
+
+void analyse(current:(Lit)`this`, AnalysisContext ctx) {
+  ctx.add(current@\loc, <"<toLowerCase(getSpecName(current@\loc,ctx))>", ("instance": idDom())>);
+}
+
+void analyse(current:(Lit)`<Int i>`, AnalysisContext ctx) {
+  ctx.add(current@\loc, <"__IntConst_<i>", ("const_<i>":intDom())>); 
+}
+
+void analyse(current:(Lit)`<StringConstant s>`, AnalysisContext ctx) {
+  ctx.add(current@\loc, <"__StrConst_<unquote(s)>", ("const_<unquote(s)>":strDom())>);
+}
+
+void analyse(current:(Lit)`{<{Expr ","}* elems>}`, AnalysisContext ctx) {
+  if ((Lit)`{}` := current) {
+    ctx.add(current@\loc, <"__EMPTY", ("instance":idDom())>);
+  }
+} 
+
+private str unquote(StringConstant s) = "<s>"[1..-1];
+
+private str getSpecName(loc l, AnalysisContext ctx) { 
+  Define d = getDefinition(l, ctx);
+
+  if (d.defined in ctx.specs) {
+    return "<ctx.specs[d.defined].name>";
+  } else if (d.scope in ctx.specs) {
+    return "<ctx.specs[d.scope].name>";
+  } else {
+    throw "Unable to determine spec for `<d.name>` at <l>"; 
   }
 }
 
@@ -269,46 +332,6 @@ private Define getDefinition(loc use, AnalysisContext ctx) {
     }
   }
   
-}
-
-@memo
-private rel[loc,loc] getContainmentRel(set[loc] scopes) {
-  rel[loc,loc] containment = {};
-  
-  for (l <- scopes, other <- scopes, l != other, isContainedIn(l,other)) {
-    containment += <l,other>;
-  }
-  
-  return containment;
-}
-
-private ScopeRole getBaseScopeRole(Define d, AnalysisContext ctx) {
-  ScopeRole currentRole = getScopeRole(d, ctx);
-  
-  rel[loc,loc] containment = getContainmentRel(ctx.scopes<0>);
-  loc largest = d.scope;
-  while (/<largest, loc other> := containment) {
-    largest = other;
-  }     
-  
-  return ctx.scopes[largest];
-}
-
-private ScopeRole getContainingScopeRole(loc l, AnalysisContext ctx) {
-  bool found = false;
-  set[loc] scopes = ctx.scopes<0>;
-    
-  loc smallest = l.top;
-  for (loc other <- scopes, isContainedIn(l, other), isContainedIn(other, smallest)) {
-    smallest = other;
-    found = true;
-  }
-  
-  if (!found) {
-    throw "Unable to find containing scope for location `<l>`";
-  }
-  
-  return ctx.scopes[smallest];  
 }
 
 private str getFieldName(RelExpr re) {
@@ -334,9 +357,6 @@ private str renameIfNeeded(str lhs, str rhs) {
   
   return "[<lhs> as <rhs>]"; 
 }
-
-private ScopeRole getScopeRole(Define d, AnalysisContext ctx) = ctx.scopes[d.scope] when d.scope in ctx.scopes;
-private default ScopeRole getScopeRole(Define d, AnalysisContext ctx) { throw "Unable to find scope for scope definition at `<d.scope>`"; }  
 
 private bool isPrim(loc expr, AnalysisContext ctx) = isPrim(t) when AType t := getType(expr, ctx);
 

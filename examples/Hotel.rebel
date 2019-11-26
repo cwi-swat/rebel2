@@ -61,6 +61,7 @@ spec FrontDesk
       g.checkin(c),
       r.check(fst),
       c.equal(fst,snd), 
+      //c.frst = fst,
       snd notin this.issued;
     post: 
       this.issued' = this.issued + snd;

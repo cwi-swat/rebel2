@@ -3,12 +3,12 @@ module sync::double::Follower
 spec Follower 
   times: Integer;
   
-  init event start() 
+  event start() 
     post: 
       this.times' = 0;
    
-  event hit()
-    post: this.times' = this.times + 2;
+  internal event hit(times: Integer)
+    post: this.times' = this.times + times;
   
   states : 
     (*) -> active : start;

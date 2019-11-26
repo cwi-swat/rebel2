@@ -4,7 +4,7 @@ test SetId [[
   spec Simple
     id: Integer;
     
-    init event start(id: Integer) 
+    event start(id: Integer) 
       post: this.id' = id;
     
     states:
@@ -17,7 +17,7 @@ test EventVariant [[
   
   spec EV
     event base() 
-      success var
+      variant var
   
   states:
     (*) -> started: base::var;

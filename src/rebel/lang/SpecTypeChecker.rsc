@@ -30,6 +30,7 @@ void collect(current: (Spec)`spec <Id name> <Instances? instances> <Fields? fiel
   c.define("<name>", specId(), current, defType(specType("<name>")));
   
   c.enterScope(current); 
+    c.define("this", specId(), current, defType(specType("<name>")));
     c.setScopeInfo(c.getScope(), specScope(), specInfo("<name>"));
     
     for (/Id instance <- instances) {
@@ -229,9 +230,10 @@ void collect(current: (Formula)`<Expr spc>.<Id event>(<{Expr ","}* arguments>)`,
 }
 
 void collect(current: (Lit)`this`, Collector c) {
-  if (just(specType(str name)) := getCurrentSpecType(c)) {
-    c.fact(current, specType(name));
-  } else {
-    c.report(error(current, "`this` can only be reference in the event bodies in a specification"));
-  }
+  c.use(current, {specId()});
+  //if (just(specType(str name)) := getCurrentSpecType(c)) {
+  //  c.fact(current, specType(name));
+  //} else {
+  //  c.report(error(current, "`this` can only be reference in the event bodies in a specification"));
+  //}
 }

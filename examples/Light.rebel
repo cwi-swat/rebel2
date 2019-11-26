@@ -4,22 +4,21 @@ spec Light
   switch: Boolean;
   
   event switchOn() 
-    post: this.switch' = Boolean.TRUE;
+    post: this.switch' = Boolean[TRUE];
   
   event switchOff()
-    pre: this.switch = Boolean.TRUE;
-    post: this.switch' = Boolean.FALSE;
+    pre: this.switch = Boolean[TRUE];
+    post: this.switch' = Boolean[FALSE];
     
   states:
     (*) -> lightOn: switchOn;
     lightOn -> lightOff: switchOff;
     lightOff -> lightOn: switchOn;
     
-spec Boolean [TRUE,FALSE]
+spec Boolean [TRUE,FALSE] 
     
 config OneLight = l1: Light;
  
-assert CanBeTurnedOnAndOff
-  = eventually exists l: Light | next switchOff on l;
+assert CanBeTurnedOnAndOff = eventually exists l: Light | next switchOff on l;
     
 check CanBeTurnedOnAndOff from OneLight in max 4 steps;

@@ -20,7 +20,7 @@ spec Process
     pre: if (this.pid > this.toSend) 
            then this.succ.received(this.pid) 
            else this.succ.received(this.toSend); 
-    
+        
   states:
     notElected -> notElected: send, received::lower, received::higher; 
     notElected -> elected: received::elected;

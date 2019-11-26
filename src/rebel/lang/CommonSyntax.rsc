@@ -37,7 +37,7 @@ syntax Formula
   ;
 
 syntax Formula
-  = noOp: "noop" "(" Expr spc ")" 
+  = noOp: "noOp" "(" Expr spc ")" 
   ;
 
 syntax Decl = {Id ","}+ vars ":" Expr expr;
@@ -46,6 +46,7 @@ syntax Expr
   = brackets: "(" Expr ")"
   > var: Id
   | fieldAccess: Expr "." Id 
+  | instanceAccess: Expr spc "[" Id inst"]"
   | Lit
   > nextVal: Expr "\'"
   > "-" Expr

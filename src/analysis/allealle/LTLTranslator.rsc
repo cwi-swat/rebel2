@@ -25,7 +25,8 @@ str buildAssert(str assertName, set[Module] mods, TModel tm) {
   void addHeader(loc expr, RelHeader header) { rl += (expr:header); }
     
   if (Module m <- mods, /(Assert)`assert <Id name> = <Formula form>;` <- m.parts, "<name>" == assertName) {
-    return translate(form, ctx(lookupHeader, addHeader, "", tm)); 
+    return "// Assert: <name>
+           '<translate(form, ctx(lookupHeader, addHeader, "", tm))>"; 
   }
 }
 

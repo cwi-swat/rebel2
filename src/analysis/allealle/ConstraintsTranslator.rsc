@@ -26,6 +26,7 @@ str translateConstraints(set[Spec] spcs, Config cfg, str check) {
              '<noMachineWithoutState(spcs)>
              '<machineOnlyHasValuesWhenInitialized(spcs, cfg)>
              '<noTransitionsBetweenUnrelatedStates()>
+             '<changeSetPredicates(spcs)>
              '<helperPredicates()>
              '<translateEventPredicates(spcs, cfg)>
              '<transitionFunction(spcs, cfg)>
@@ -153,6 +154,20 @@ private str noTransitionsBetweenUnrelatedStates()
     '∀ o ∈ order ⨝ raisedEvent | (o[cur as config] ⨝ instanceInState)[state-\>from] ⨯ (o[nxt as config] ⨝ instanceInState)[state-\>to] ⨯ o[event] ⊆ allowedTransitions
     '";
 
+private str changeSetPredicates(set[Spec] spcs) 
+  = "// Change set predicates
+    'pred inChangeSet[step: (cur:id, nxt:id), instances: (instance:id)]
+    '  = instances ⊆ (changedInstance ⨝ step)[instance]
+    ' 
+    'pred notInChangeSet[step: (cur:id, nxt:id), instances: (instance:id)]
+    '  = no instances ∩ (changedInstance ⨝ step)[instance]
+    '
+    'pred changeSetCanContain[step: (cur:id, nxt:id), instances: (instance:id)]
+    '  = (changedInstance ⨝ step)[instance] ⊆ instances <if (freeInstances != []) {>∪ <intercalate(" ∪ ", freeInstances)><}>
+    '"
+    when list[str] freeInstances := ["<s.name>_<inst>" | Spec s <- spcs, /Instances instances <- s.instances, /(Instance)`<Id inst>*` <- instances.instances];
+
+
 private str helperPredicates() 
   = "// Generic predicates
     'pred forceState[curState: (state:id), nxtState: (state:id), raisedEvent: (event:id)]
@@ -183,8 +198,7 @@ private bool isFrameEvent(Event e) = "<e.name>" == "__frame";
 private str translateFacts(Config cfg) = translateFacts(cfg.facts, cfg.tm);
     
 private str encodeAsserts(str check) 
-  = "// Asserts: this is where the checks get added
-    '<check>
+  = "<check>
     '";
 
 private str findMinimumExample(set[Spec] spcs) 

@@ -13,6 +13,7 @@ import Set;
 import List;
 import Map;
 import ParseTree;
+import util::Maybe;
 
 data Context = ctx(Config cfg);
 
@@ -21,12 +22,12 @@ str constructTransitionFunction(Spec spc, Graph[SyncedWith] syncDep, Config cfg)
     list[str] actuals = ["step", "inst"];
     
     for (/FormalParam p <- e.params) {
-      actuals += "(step ⨝ ParamEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(e)><getCapitalizedParamName(p)>)[<p.name>]";
+      actuals += "(step ⨝ ParamEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(e)><getCapitalizedParamName(p)>)[<(isPrim(p.tipe,cfg.tm) ? "<p.name>" : "<p.name>-\>instance")>]";
     }
 
     return actuals;
   }
-  
+   
   str buildTransCond(Event e) {
     tuple[set[str] names, list[str] syncs] lets = syncedInstanceRels(spc, e, "inst", syncDep, top(), cfg);
     lets.names += {"inst"};
@@ -34,7 +35,7 @@ str constructTransitionFunction(Spec spc, Graph[SyncedWith] syncDep, Config cfg)
     
     return "(event<getCapitalizedSpecName(spc)><getCapitalizedEventName(e)>[<intercalate(",", getEventParams(e))>] ∧
            '(step ⨝ raisedEvent)[event] = Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(e)> ∧
-           '<if (lets.syncs != []) {>let <intercalate(", ", dup(lets.syncs))> | <}>(changedInstance ⨝ step)[instance] ⊆ <intercalate(" ∪ ", [*lets.names])>)";
+           '<if (lets.syncs != []) {>let <intercalate(", ", dup(lets.syncs))> | <}>changeSetCanContain[step, <intercalate(" ∪ ", [*lets.names])>])";
   }
   
   list[str] eventTrans = [buildTransCond(e) | Event e <- lookupEvents(spc), !isFrameEvent(e), !isInternalEvent(e)];
@@ -45,7 +46,7 @@ str constructTransitionFunction(Spec spc, Graph[SyncedWith] syncDep, Config cfg)
          '      <intercalate("\n∨\n", eventTrans)>
          '    ))
          '    ∧<}>
-         '    (no inst ∩ (changedInstance ⨝ step)[instance] ⇒ frame<getCapitalizedSpecName(spc)>[step, inst])
+         '    (notInChangeSet[step, inst] ⇒ frame<getCapitalizedSpecName(spc)>[step, inst])
          '"; 
 }
 
@@ -54,27 +55,32 @@ private data SyncScope
   | scope(str inst, Spec s, Event e, map[str,Expr] actuals, SyncScope parent)
   ;
 
-tuple[str fieldName, str relName] findRootRel(Expr exp, str instRel, Spec spc, Event evnt, SyncScope scp, Context ctx) {
+lrel[str fieldName, str relName] findRootRel(Expr exp, str instRel, Spec spc, Event evnt, SyncScope scp, Context ctx) {
   Decl findDecl(loc locOfVar) {
     visit(evnt.body) {
       case cur:(Decl)`<{Id ","}+ vars> : <Expr expr>`: { 
-        if (cur@\loc == locOfVar) {
-          return cur; 
+        for (Id var <- vars) {
+          if (var@\loc == locOfVar) {
+            return cur;
+          } 
         }
       }
     }
     throw "Unable to find binding decl";
   }
   
-  translateRelExpr(exp, ctx);
-  str fieldName = getFieldName(exp, ctx);
   IdRole role = getIdRole(exp, ctx.cfg.tm);
   
   switch(role) {
-    case fieldId(): return <fieldName,"(<getCapitalizedSpecName(spc)><capitalize(fieldName)> ⨝ cur ⨝ <instRel>)[<fieldName> -\> instance]">;
+    case fieldId(): {
+      lrel[str,str] result = [<getLowerCaseSpecName(spc), instRel>];
+      result += <getLowerCaseSpecName(spc), "<ctx.cfg.rm[exp@\loc].relExpr><renameIfNecessary(exp, "instance", ctx)>">;
+      return result;  
+    }
     case paramId(): { 
+      str fieldName = "<exp>";
       if (top() := scp) {
-        return <fieldName, "(ParamEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(evnt)><capitalize(fieldName)> ⨝ step)[<fieldName> -\> instance]">;
+        return [<fieldName, "(ParamEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(evnt)><capitalize(fieldName)> ⨝ step)[<fieldName> -\> instance]">];
       } else if (scope(str inst, Spec s, Event e, map[str,Expr] actuals, SyncScope parent) := scp, fieldName in actuals) {  
         return findRootRel(actuals[fieldName], inst, s, e, parent, ctx);
       } else {
@@ -98,12 +104,16 @@ private tuple[set[str],list[str]] syncedInstanceRels(Spec s, Event e, str instRe
   
   for (SyncedWith synced <- syncDep[<s,e>]) {
     for (/f:(Formula)`<Expr exp>.<Id ev>(<{Expr ","}* args>)` := e.body, "<ev>" == "<synced.e.name>", getSpecTypeName(exp,cfg.tm) == "<synced.s.name>") {
-      tuple[str fieldName, str relName] root = findRootRel(exp, instRel, s, e, scp, c); 
-
-      syncLets += "<root.fieldName> = <root.relName>";
-      relNames += root.fieldName;      
+      lrel[str,str] root = findRootRel(exp, instRel, s, e, scp, c); 
       
-      if (<n,sl> := syncedInstanceRels(synced.s, synced.e, root.fieldName, syncDep, scope(root.fieldName, s, e, ("<fp.name>":arg | /FormalParam fp <- synced.e.params, Expr arg <- args), scp), cfg)) {
+      str newInstRel = "";
+      for (<str varName, str relExpr> <- root) {
+        syncLets += "<varName> = <relExpr>";
+        relNames += varName;
+        newInstRel = varName;
+      }      
+      
+      if (<n,sl> := syncedInstanceRels(synced.s, synced.e, newInstRel, syncDep, scope(newInstRel, s, e, ("<fp.name>":arg | /FormalParam fp <- synced.e.params, Expr arg <- args), scp), cfg)) {
         syncLets += sl;
         relNames += n;
       } 
@@ -150,13 +160,6 @@ private list[str] buildLetVars(Spec spc, Event event, str instRel, Config cfg) {
   str renamePrimField(Field f, str prefix) = "<f.name>-\><prefix><getCapitalizedFieldName(f)>";
   list[str] letRels = ["cur = step[cur-\>config]", "nxt = step[nxt-\>config]", "curState = (instanceInState ⨝ cur ⨝ <instRel>)[state]", "nxtState = (instanceInState ⨝ nxt ⨝ <instRel>)[state]"];
   
-  for (/Field f <- spc.fields) {
-    str relName = "<getCapitalizedSpecName(spc)><getCapitalizedFieldName(f)>";
-
-    letRels += "cur<getCapitalizedFieldName(f)> = (cur ⨝ <relName> ⨝ <instRel>)<if (isPrim(f.tipe,cfg.tm)) {>[<renamePrimField(f, "cur")>]<} else {>[<f.name>]<}>";
-    letRels += "nxt<getCapitalizedFieldName(f)> = (nxt ⨝ <relName> ⨝ <instRel>)<if (isPrim(f.tipe,cfg.tm)) {>[<renamePrimField(f, "nxt")>]<} else {>[<f.name>]<}>";
-  }    
-
   return letRels;
 }
 
@@ -164,7 +167,7 @@ private list[str] buildParamVars(Event event, Context ctx) {
   list[str] varDefs = [];
   
   for (/FormalParam p <- event.params) {
-    varDefs += "<p.name>: (<p.name>:<convertType(p.tipe)>)";
+    varDefs += "<p.name>: (<isPrim(p.tipe,ctx.cfg.tm) ? "<p.name>" : "instance">:<convertType(p.tipe)>)";
   }
   
   return varDefs;
@@ -180,7 +183,7 @@ private str translateEventBody(Spec spc, Event event, Context ctx) {
           '  // Generic event conditions
           '  forceState[curState, nxtState, Event<getCapitalizedSpecName(spc)><capitalize("<event.name>")>] ∧
           '  // Make sure this instance is in the change set
-          '  <getLowerCaseSpecName(spc)> ⊆ (changedInstance ⨝ step)[instance]
+          '  inChangeSet[step, <getLowerCaseSpecName(spc)>]
           ')";
 }
 
@@ -214,10 +217,10 @@ str translate((Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, Context ct
   list[Expr] args = [a | Expr a <- params];
    
   for (int i <- [0..size(formals)]) {
-    if ((Expr)`<Int ii>` := args[i]) {
-      actuals += "__C<ii>[val-\><formals[i].name>]"; 
-    } else {
-      actuals += "<translateRelExpr(args[i], ctx)><maybeRename(getFieldName(args[i], ctx), "<formals[i].name>")>";
+    switch (args[i]) {
+      case (Expr)`<Int ii>`: actuals += "__IntConst_<ii>[const_<ii>-\><formals[i].name>]"; 
+      case (Expr)`<StringConstant s>`: actuals += "__StrConst_<unquote(s)>[const_<unquote(s)>-\><formals[i].name>]";
+      default: actuals += "<translateRelExpr(args[i], ctx)><maybeRename(getFieldName(args[i], ctx), isPrim(formals[i].tipe,ctx.cfg.tm) ? "<formals[i].name>" : "instance")>";
     }
   }
    
@@ -232,14 +235,7 @@ default str getSpecTypeName(Expr expr, TModel tm) { throw "Expression `<expr>` i
 
 str translate((Formula)`<Expr lhs> is <Id state>`, Context ctx) {
   str specOfLhs = getSpecTypeName(lhs, ctx.cfg.tm);
-  
-  translateRelExpr(lhs, ctx);
-  str fieldName = getFieldName(lhs,ctx);
-   
-  str specRel = isParam(lhs, ctx.cfg.tm) ?
-    "<fieldName>[<fieldName>-\>instance]" : 
-    "cur<capitalize(fieldName)>[<fieldName>-\>instance]";  
-  
+  str specRel = ctx.cfg.rm[lhs@\loc].relExpr; 
   str stateRel = "<state>" == "initialized" ?
     "initialized" :
     "State<capitalize(specOfLhs)><capitalize("<state>")>";
@@ -248,14 +244,14 @@ str translate((Formula)`<Expr lhs> is <Id state>`, Context ctx) {
 } 
 
 str translate((Formula)`forall <{Decl ","}+ decls> | <Formula form>`, Context ctx) 
-  = "(forall <intercalate(",", [translate(d,ctx) | Decl d <- decls])> | <translate(form,ctx)>)";
+  = "(∀ <intercalate(",", [translate(d,ctx) | Decl d <- decls])> | <translate(form,ctx)>)";
 
 str translate((Formula)`exists <{Decl ","}+ decls> | <Formula form>`, Context ctx) 
   = "(exists <intercalate(",", [translate(d,ctx) | Decl d <- decls])> | <translate(form,ctx)>)";
 
 str translate(current:(Decl)`<{Id ","}+ ids>: <Expr expr>`, Context ctx) {
   str te = translateRelExpr(expr, ctx);
-  return intercalate(",", ["<name>:<te><maybeRename(getFieldName(expr,ctx),"<name>")>" | Id name <- ids]); 
+  return intercalate(",", ["<name> ∈ <te>" | Id name <- ids]); 
 } 
 
 str translate((Formula)`<Expr lhs> in <Expr rhs>`,    Context ctx) = "some (<translateRelExpr(rhs,ctx)> ∩ <translateRelExpr(lhs,ctx)>[<getFieldName(lhs,ctx)>-\><getFieldName(rhs,ctx)>])";
@@ -278,6 +274,10 @@ str translate((Formula)`<Expr lhs> \> <Expr rhs>`,  Context ctx) = translateRest
 
 str translate((Formula)`if <Formula cond> then <Formula then> else <Formula \else>`,  Context ctx) = translate((Formula)`(<Formula cond> =\> <Formula then>) && (!(<Formula cond>) =\> <Formula \else>)`, ctx);
 
+str translate((Formula)`noOp(<Expr expr>)`, Context ctx) {
+  return "notInChangeSet[step, <ctx.cfg.rm[expr@\loc].relExpr><renameIfNecessary(expr, "instance", ctx)>]";
+}
+
 default str translate(Formula f, Context ctx) { throw "No translation function implemented yet for `<f>`"; }
 
 str translateEq(Expr lhs, Expr rhs, str op, Context ctx) {
@@ -290,17 +290,30 @@ str translateEq(Expr lhs, Expr rhs, str op, Context ctx) {
   }
 }
 
-str translateRelEq(Expr lhs, Expr rhs, str op, Context ctx) 
-  = "<translateRelExpr(lhs, ctx)> <op> <translateRelExpr(rhs, ctx)><maybeRename(getFieldName(rhs,ctx),getFieldName(lhs,ctx))>"; 
+str translateRelEq(Expr lhs, Expr rhs, str op, Context ctx)  
+  = "<translateRelExpr(lhs, ctx)> <op> <translateRelExpr(rhs, ctx)><maybeRename(getFieldName(rhs,ctx),getFieldName(lhs,ctx))>";
 
 str translateRestrictionEq(Expr lhs, Expr rhs, str operator, Context ctx) {
   set[str] findReferencedRels(Expr expr) {
+    set[loc] done = {};
     set[str] rels = {}; 
+    
     top-down visit(expr) {
-      case Expr e2 :  {
-        if (e2@\loc in ctx.cfg.rm) {
-          rels += ctx.cfg.rm[e2@\loc].relExpr;
+      // We only want fields and parameters
+      case current:(Expr)`<Expr exp>'`: {
+        RelExpr r = ctx.cfg.rm[current@\loc];
+        rels += prefix(r, "nxt");
+        done += exp@\loc;
+      }
+      case current:(Expr)`<Expr exp>.<Id fld>`: {
+        if (current@\loc notin done) {
+          RelExpr r = ctx.cfg.rm[current@\loc];
+          rels += prefix(r, "cur");
         }
+      }
+      case current:(Expr)`<Id id>`: {
+        RelExpr r = ctx.cfg.rm[current@\loc];
+        rels += prefix(r, "param"); 
       }
     }
     
@@ -311,10 +324,20 @@ str translateRestrictionEq(Expr lhs, Expr rhs, str operator, Context ctx) {
   return "(some (<intercalate(" ⨯ ", [*refRels])>) where (<translateAttrExpr(lhs,ctx)> <operator> <translateAttrExpr(rhs,ctx)>))";
 }  
 
+str prefix(RelExpr r, str prefix) {
+  if (size(r.heading) > 1) {
+    throw "Can only prefix an unary relation";
+  }
+  
+  str fld = getOneFrom(r.heading);
+  return "<r.relExpr><maybeRename(fld, "<prefix>_<fld>")>";
+}
+
 str translateRelExpr(current:(Expr)`(<Expr e>)`, Context ctx) = "(<translateRelExpr(e,ctx)>)";
 str translateRelExpr(current:(Expr)`<Id id>`, Context ctx) = ctx.cfg.rm[current@\loc].relExpr;
 str translateRelExpr(current:(Expr)`<Expr expr>'`, Context ctx) = ctx.cfg.rm[current@\loc].relExpr;
 str translateRelExpr(current:(Expr)`<Expr expr>.<Id field>`, Context ctx) = ctx.cfg.rm[current@\loc].relExpr;
+str translateRelExpr(current:(Expr)`<Expr spc>[<Id field>]`, Context ctx) = ctx.cfg.rm[current@\loc].relExpr;
 
 str translateRelExpr(current:(Expr)`{<Id var> : <Expr expr> | <Formula f>}`, Context ctx) {
   str te = translateRelExpr(expr, ctx);
@@ -328,10 +351,10 @@ str translateRelExpr(current:(Expr)`<Expr lhs> - <Expr rhs>`, Context ctx) = ctx
 
 default str translateRelExpr(Expr e, Context ctx) { throw "Can not translate expression `<e>` at location <e@\loc>"; }
 
-str translateAttrExpr((Expr)`(<Expr e>)`,              Context ctx) = "(<translateAttrExpr(e,ctx,prefix)>)"; 
-str translateAttrExpr((Expr)`<Id id>`,                 Context ctx) = "<id>";
-str translateAttrExpr((Expr)`this.<Id id>`,            Context ctx) = "cur<capitalize("<id>")>";
-str translateAttrExpr((Expr)`this.<Id id>'`,           Context ctx) = "nxt<capitalize("<id>")>";
+str translateAttrExpr((Expr)`(<Expr e>)`,              Context ctx) = "(<translateAttrExpr(e,ctx)>)"; 
+str translateAttrExpr((Expr)`<Id id>`,                 Context ctx) = "param_<id>";
+str translateAttrExpr((Expr)`this.<Id id>`,            Context ctx) = "cur_<id>";
+str translateAttrExpr((Expr)`this.<Id id>'`,           Context ctx) = "nxt_<id>";
 str translateAttrExpr((Expr)`<Expr expr>.<Id fld>`,    Context ctx) = "<fld>";
 str translateAttrExpr((Expr)`<Lit l>`,                 Context ctx) = translateLit(l);
 str translateAttrExpr((Expr)`- <Expr e>`,              Context ctx) = "- <translateAttrExpr(e,ctx)>";
@@ -344,6 +367,15 @@ default str translateAttrExpr(Expr e, Context ctx) { throw "Can not translate ex
 
 str translateLit((Lit)`<Int i>`) = "<i>";
 str translateLit((Lit)`<StringConstant s>`) = "<s>";
+
+str renameIfNecessary(Expr expr, str renamed, Context ctx) {
+  str origName = getFieldName(expr,ctx);
+  if (origName != renamed) {
+    return "[<origName> as <renamed>]";
+  } else {
+    return "";
+  }
+}
 
 str getFieldName(Expr expr, Context ctx) {
   Heading header = ctx.cfg.rm[expr@\loc].heading;

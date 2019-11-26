@@ -6,26 +6,32 @@ spec Leader
   followers: set Follower,
   nrOfHits: Integer;
   
-  init event start()  
+  event start()  
     post: 
       this.nrOfHits' = 0,  
       this.followers' = {};    
       
   event add(follower: Follower) 
-    pre: 
-      follower is initialized; 
-    post: 
-     this.followers' = this.followers + follower; 
+    pre: follower is initialized; 
+    post: this.followers' = this.followers + follower; 
   
   event complete()
   
-  event hitAll() 
-    pre: forall f:this.followers | f.hit();
+  event hitSome() 
+    pre: 
+      exists f:this.followers | f.hit(), // there must be at least one linked follower that gets hit
+      forall f:this.followers | (f.hit() || noOp(f)); // either a linked follower is hit or it should not change 
     post: this.nrOfHits' = this.nrOfHits + 1;
   
   states:
     (*) -> link: start;
     link -> link: add; 
     link -> active: complete;
-    active -> active: hitAll; 
-     
+    active -> active: hitSome; 
+
+assert AFollowerWith5Hits = eventually exists f1,f2: Follower | f1 != f2 && f1.nrOfHits = 3 && f2 is initialized; 
+  
+config Simple
+  = l: Leader, f1,f2,f3: Follower;
+  
+check AFollowerWith5Hits from Simple in max 12 steps;   
