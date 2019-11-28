@@ -59,7 +59,7 @@ spec FrontDesk
   event checkin(fst: Key, snd: Key, c: Card, r: Room, g: Guest)
     pre:  
       g.checkin(c),
-      r.check(fst),
+      r.check(fst), 
       c.equal(fst,snd), 
       snd notin this.issued;
     post: 
@@ -79,4 +79,4 @@ assert NoIntruder
         next (enterRoom on g2 && 
           next enterRoom on g1)); 
       
-check NoIntruder starting at EmptyHotel in max 10 steps;
+check NoIntruder from EmptyHotel in max 10 steps;

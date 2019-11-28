@@ -6,6 +6,7 @@ import util::PathUtil;
 extend analysis::typepal::TypePal;
 
 import List;
+import IO;
 
 data AType
   = intType()
@@ -22,11 +23,13 @@ data AType
   ;
 
 data ScopeRole
-  = specScope()
+  = moduleScope()
+  | specScope()
   | eventScope()
   | quantScope()
   | factScope()
   | assertScope() 
+  | primedScope()
   ;
 
 data Phase
@@ -106,6 +109,7 @@ void handleImports(Collector c, Tree root, PathConfig pcfg) {
     
     while (list[QualifiedName] modulesToImport := c.getStack(__REBEL_IMPORT_QUEUE) && modulesToImport != []) {
       c.clearStack(__REBEL_IMPORT_QUEUE);
+      println(intercalate(", ", ["<n>" | n <- modulesToImport]));
       
         for (m <- modulesToImport, m notin imported) {
           if (<true, l> := lookupModule(m, pcfg)) {
@@ -174,8 +178,8 @@ private void collectQuant([], Formula f, Collector c) {
 }
   
 private void collectQuant([Decl hd, *tl], Formula f, Collector c) {
-    collect(hd, c);
-    collectQuant(tl, f, c);
+  collect(hd, c);
+  collectQuant(tl, f, c);
 }
 
 
@@ -197,7 +201,7 @@ void collect(current: (Formula)`exists <{Decl ","}+ dcls> | <Formula frm>`, Coll
 
 void collect(current: (Decl)`<{Id ","}+ vars> : <Expr expr>`, Collector c) {
   for (Id var <- vars) {
-    c.define("<var>", quantVarId(), current, defTypeCall([expr@\loc], 
+    c.define("<var>", quantVarId(), var, defTypeCall([expr@\loc], 
       AType (Solver s) {
         if (setType(AType elemType) := s.getType(expr)) {
           return elemType;
@@ -304,6 +308,11 @@ void collect(current: (Formula)`<Expr lhs> \<= <Expr rhs>`, Collector c) {
   collect(lhs, rhs, c);
 }
 
+void collect(current: (Formula)`noOp(<Expr expr>)`, Collector c) {
+  c.fact(current, boolType());
+  collect(expr, c);
+}
+
 void collect(current: (Expr)`(<Expr expr>)`, Collector c) {
   c.fact(current, expr);
   collect(expr, c);
@@ -324,8 +333,10 @@ void collect(current: (Expr)`<Expr expr>'`, Collector c) {
     c.report(error(current, "Can not reference post value in precondition"));
   }
   
-  c.fact(current, expr);
-  collect(expr, c);
+  c.enterScope(current);
+    c.fact(current, expr);
+    collect(expr, c);
+  c.leaveScope(current);
 }
 
 void collect(current: (Expr)`<Expr lhs> + <Expr rhs>`, Collector c) {
@@ -400,11 +411,19 @@ void collect(current: (Expr)`<Id var>`, Collector c) {
 }
 
 void collect(current: (Expr)`<Expr expr>.<Id fld>`, Collector c) {
-  c.useViaType(expr, fld, {fieldId(),specInstanceId()});
+  c.useViaType(expr, fld, {fieldId()});
   c.fact(current, fld);
   
   collect(expr,c);
 }
+
+void collect(current: (Expr)`<Expr spc>[<Id inst>]`, Collector c) {
+  c.useViaType(spc, inst, {specInstanceId()});
+  c.fact(current, inst);
+  
+  collect(spc,c);
+}
+
 
 void collect(current: (Expr)`<Lit l>`, Collector c) {
   collect(l, c); 

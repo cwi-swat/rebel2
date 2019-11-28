@@ -114,19 +114,16 @@ void collect(current:(Formula)`first <Formula form>`, Collector c) {
   collect(form, c);  
 }
 
-void collect(current:(Formula)`<Id event> on <Expr spc> <WithAssignments? with>`, Collector c) {
+void collect(current:(Formula)`<TransEvent event> on <Expr spc> <WithAssignments? with>`, Collector c) {
   c.fact(current, boolType());
   
   c.useViaType(spc, event, {eventId()});
   collect(spc, c);
 }
 
-void collect(current:(Check)`check <Id assrt> starting at <Id config> in <SearchDepth depth> <Objectives? objs>;`, Collector c) {
-  //c.define("check_<assrt>", checkId(), current, defType(checkType()));
-  
+void collect(current:(Check)`check <Id assrt> from <Id config> in <SearchDepth depth> <Objectives? objs>;`, Collector c) {
   c.enterScope(current); 
     c.use(assrt, {assertId()});
     c.use(config, {configId()});
-    //collect(instances, c);
   c.leaveScope(current);  
 }

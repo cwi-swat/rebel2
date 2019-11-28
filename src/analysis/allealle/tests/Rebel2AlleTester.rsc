@@ -20,9 +20,14 @@ import analysis::Normalizer;
 import util::PathUtil;
 import analysis::graphs::Graph;
 
+void checkAllInDir(loc base) {
+  
+}
+
 void translatePingPong(str check)         = performCheck(check, parseModule(|project://rebel2/examples/PingPong.rebel|));
 void translateCoffeeMachine()             = performCheck("MachineIsServing", parseModule(|project://rebel2/examples/CoffeeMachine.rebel|));
-void translateLeaderAndFollower()         = performCheck("UniqueFollower", parseModule(|project://rebel2/examples/sync/double/Leader.rebel|));
+void translateLeaderAndFollower(str check) = performCheck(check, parseModule(|project://rebel2/examples/sync/double/Leader.rebel|));
+void translateMultiFollower(str check)    = performCheck(check, parseModule(|project://rebel2/examples/sync/multi/Leader.rebel|));
 void translateHotel()                     = performCheck("NoIntruder", parseModule(|project://rebel2/examples/Hotel.rebel|));
 void translateRopeBridge()                = performCheck("EverybodyCrossedInTheLeastTime", parseModule(|project://rebel2/examples/RopeBridge.rebel|));
 void translateLeaderElection(str check)   = performCheck(check, parseModule(|project://rebel2/examples/RingLeaderElection.rebel|));  

@@ -16,5 +16,4 @@ TModel check(Tree spc) = rebelTModelFromTree(spc, debug=true, pathConf = pathCon
 bool runRebelTests()
   = runTests([|project://rebel2/src/rebel/lang/tests/tests.ttl|], #Module, check);
 
-
 TModel checkSpec(loc spc) = rebelTModelFromTree(parseModule(spc), debug=true, pathConf = pathConfig(srcs=[ project(spc) + "src", project(spc) + "examples"], lib=[]));

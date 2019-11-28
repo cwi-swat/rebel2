@@ -3,6 +3,8 @@ module analysis::allealle::CommonTranslationFunctions
 import rebel::lang::Syntax;
 import rebel::lang::TypeChecker;
 
+import analysis::allealle::RelationCollector;
+
 import String;
 import Node;
 import IO;
@@ -11,7 +13,9 @@ data Config = config(rel[Spec spc, str instance, State initialState] instances,
                      rel[Spec spc, str instance, str field, str val] initialValues, 
                      set[Fact] facts,
                      TModel tm,
+                     RelMapping rm,
                      int numberOfTransitions,
+                     bool finiteTrace = true,
                      int maxSizeIntegerSets = 5,
                      int maxSizeStringSets = 5);
 
@@ -52,13 +56,6 @@ str getSpecOfType(Type tipe, TModel tm) {
   }
 }
 
-bool isAttributeType(intType()) = true;
-bool isAttributeType(stringType()) = true;
-default bool isAttributeType(AType tipe) = false;
-
-bool isAttributeType(Expr expr, TModel tm) = isAttributeType(getType(expr, tm));
-bool isAttributeType(FormalParam p, TModel tm) = isAttributeType(getType(p, tm));
-
 str type2Str(intType()) = "int";
 str type2Str(stringType()) = "str";
 default str type2Str(AType t) = "id"; 
@@ -86,6 +83,9 @@ IdRole getIdRole(expr:(Expr)`<Id id>`, TModel tm) = tm.definitions[def].idRole w
 IdRole getIdRole(expr:(Expr)`this.<Id id>`, TModel tm) = tm.definitions[def].idRole when {loc def} := tm.useDef[id@\loc];
 
 default IdRole getIdRole(Expr expr, TModel tm) { throw "Role of identifier `<expr>` can not be found in type model"; }
+
+IdRole getIdRole(loc expr, TModel tm) = tm.definitions[def].idRole when {loc def} := tm.useDef[expr];
+default IdRole getIdRole(Expr expr, TModel tm) { throw "Role can not be found for expression at `<expr>`"; }
 
 bool isParam(Expr expr, TModel tm) 
   = getIdRole(expr,tm) == paramId();
@@ -176,7 +176,10 @@ private bool isSetOfType(Type tipe, AType elemType, TModel tm) {
 }
 
 bool isPrim(Type tipe, TModel tm) = isPrim(t) when tipe@\loc in tm.facts, AType t := tm.facts[tipe@\loc];
-bool isPrim(Type tipe, TModel tm) { throw "No type information found for `<tipe>`"; }
+default bool isPrim(Type tipe, TModel tm) { throw "No type information found for `<tipe>`"; }
+
+bool isPrim(Expr expr, TModel tm) = isPrim(t) when expr@\loc in tm.facts, AType t := tm.facts[expr@\loc];
+default bool isPrim(Expr expr, TModel tm) { throw "No type information found for `<expr>` at <expr@\loc>"; }
 
 bool isPrim(intType()) = true;
 bool isPrim(stringType()) = true;

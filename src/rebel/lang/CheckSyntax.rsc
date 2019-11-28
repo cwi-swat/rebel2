@@ -35,22 +35,24 @@ syntax Formula
   | "always" Formula form
   | "next" Formula form
   | "first" Formula form
-  | Id event "on" Expr var WithAssignments? with
+  | TransEvent event "on" Expr var WithAssignments? with
   ;
 
-syntax Check = "check" Id name "starting" "at" Id config "in" SearchDepth depth Objectives? objs ";";
+syntax Check = "check" Id name "from" Id config "in" SearchDepth depth Objectives? objs ";";
   
 syntax SearchDepth
   = "max" Int steps "steps"
   ;  
 
 syntax Objectives
-  = "with" Objective obj
+  = "with" {Objective ","}+ objs
   ;
   
 syntax Objective
   = "minimal" Expr expr
   | "maximal" Expr expr
+  | "infinite" "trace"
+  | "finite" "trace"
   ;
   
 keyword Keywords 
@@ -65,4 +67,7 @@ keyword Keywords
   | "maximal"
   | "on"
   | "first"
+  | "inifinite"
+  | "finite"
+  | "trace"
   ;

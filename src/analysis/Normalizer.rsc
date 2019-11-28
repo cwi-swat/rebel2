@@ -66,9 +66,9 @@ list[Event] normalizeEvents(list[Event] events, TModel origTm) {
     when {loc eventDef} := origTm.useDef[eventRef]; 
   
   Formula buildSyncDisj(orig:(Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, set[Define] variants) 
-    = buildSyncDisj([(Formula)`<Expr spc>.<Id varId>(<{Expr ","}* params>)` | Define var <- variants, Id varId := [Id]"<event>__<var.id>"]); 
+    = buildFormDisj([(Formula)`<Expr spc>.<Id varId>(<{Expr ","}* params>)` | Define var <- variants, Id varId := [Id]"<event>__<var.id>"]); 
   
-  Formula buildSyncDisj(list[Formula] variants) = [Formula]"(<intercalate(" || ", variants)>)";  
+  Formula buildFormDisj(list[Formula] terms) = [Formula]"(<intercalate(" || ", terms)>)"; 
   
   void checkForVariantDefs(Event e) {
     bool changed = false;
@@ -88,7 +88,7 @@ list[Event] normalizeEvents(list[Event] events, TModel origTm) {
       events += addedEvents;      
     }
   }
-  
+   
   void checkForVariantSyncs(Event e) {
     events -= e;
     events += visit(e) {

@@ -3,10 +3,10 @@ module sync::multi::Follower
 spec Follower 
   nrOfHits: Integer;
   
-  init event start()
+  event start()
     post: this.nrOfHits' = 0;
   
-  event hit() 
+  internal event hit() 
     post: this.nrOfHits' = this.nrOfHits + 1;
     
   states:

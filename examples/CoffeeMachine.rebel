@@ -59,6 +59,6 @@ config InitialMachine
 assert MachineIsServing
   = eventually exists m: CoffeeMachine | m is serve;  
   
-check MachineIsServing starting at InitialMachine in max 10 steps;
+check MachineIsServing from InitialMachine in max 10 steps;
 
     

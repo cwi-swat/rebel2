@@ -71,13 +71,17 @@ private str buildSingleEventRel(str specName, Event e)
   when str event := replaceAll("<e.name>", "::", "_");
 
 private str buildConstantRels(set[Spec] spcs) {
-  set[int] argConstants = {};
+  set[str] constRels = {};
   
-  for (Spec s <- spcs, Event e <- s.events, /(Formula)`<Expr _>.<Id _>(<{Expr ","}* params>)` := e.body, /(Lit)`<Int i>` := params) {
-    argConstants += toInt("<i>");
+  for (/(Expr)`<Lit l>` := spcs) {
+    switch (l) {
+      case (Lit)`<Int i>`:            constRels += "__IntConst_<i> (const_<i>: int) = {\<<i>\>}";
+      case (Lit)`<StringConstant s>`: constRels += "__StrConst_<unquote(s)> (const_<unquote(s)>: str) = {\<<s>\>}";
+      case (Lit)`{}`:                 constRels += "__EMPTY (instance:id) = {}"; 
+    }
   }
   
-  return "<for (i <- argConstants) {>__C<i> (val:int) = {\<<i>\>}
+  return "<for (r <- constRels) {><r>
          '<}>";  
 }
 

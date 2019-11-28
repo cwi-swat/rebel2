@@ -9,8 +9,13 @@ syntax Part
 syntax Spec = "spec" Id name Instances? instances Fields? fields Constraints? constraints Event* events States? states;
 
 syntax Instances
-  = "[" {Id ","}+ instances "]"
-  ; 
+  = "[" {Instance ","}+ instances "]"
+  ;
+  
+syntax Instance 
+  = Id 
+  | Id "*"
+  ;
 
 syntax Fields
   = {Field ","}+ fields ";"
