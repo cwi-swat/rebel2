@@ -52,13 +52,13 @@ void performCheck(str check, Module m, PathConfig pathConf = pathConfig(srcs=[ex
   TModel tm = rebelTModelFromTree(normalized.initModule, pathConf = normPathConfig);  
   
   Config cfg = buildConfig(check, normalized.allMods, tm);
-  str alleSpec = translateSpecs(cfg, buildAssert(check, normalized.allMods, tm));
+  str alleSpec = translateSpecs(cfg, check, normalized.allMods);
    
   ModelFinderResult mfr = checkInitialSolution(implodeProblem(alleSpec));
 
   if (sat(Model currentModel, Model (Domain) nextModel, void () stop) := mfr) {
     stop();
-    Trace trace = buildTrace(currentModel, normalized.allMods, cfg.instances<0,1>, tm);
+    Trace trace = buildTrace(currentModel, normalized.allMods, cfg.instances<0,1>, tm, cfg.finiteTrace);
     println(trace2Str(trace));
   }  
 }
@@ -105,11 +105,11 @@ private Maybe[loc] lookupModule(QualifiedName name, PathConfig pcfg) {
     return nothing();
 }
   
-str translateSpecs(Config config, str check, bool debug = true) {
+str translateSpecs(Config config, str check, set[Module] normalizedMods, bool debug = true) {
   set[Spec] normalizedSpecs = {inst.spc | inst <- config.instances};
 
   print("Translating Rebel to AlleAlle ...");
-  tuple[str alleSpec, int time] res = bmTranslate(normalizedSpecs, config, check);
+  tuple[str alleSpec, int time] res = translate(normalizedSpecs, normalizedMods, config, check);
   println("done, took: <res.time> ms.");
   
   if (debug) {
@@ -118,13 +118,18 @@ str translateSpecs(Config config, str check, bool debug = true) {
   
   return res.alleSpec;  
 }  
-
-private tuple[str, int] bmTranslate(set[Spec] normalizedSpecs, Config cfg, str check) {
+ 
+private tuple[str, int] translate(set[Spec] normalizedSpecs, set[Module] normalizedMods, Config cfg, str check) {
   int startTime = cpuTime();
 
   str alleSpec = "<translateStaticPart(normalizedSpecs)>
                  '<translateDynamicPart(cfg)>
-                 '<translateConstraints(normalizedSpecs, cfg, check)>";
+                 '<translateConstraints(normalizedSpecs, cfg, check)>
+                 '<translateFacts(normalizedMods, cfg)>
+                 '<translateAssert(check, normalizedMods, cfg)>
+                 '
+                 '// Minimize the number of steps by minimizing the number of Configurations
+                 'objectives: minimize Config[count()]"; 
 
   return <alleSpec, (cpuTime() - startTime) / 1000000>;
 }
@@ -133,6 +138,7 @@ private tuple[str, int] bmTranslate(set[Spec] normalizedSpecs, Config cfg, str c
 data Trace
   = step(Configuration conf, RaisedEvent re, Trace next)
   | goal(Configuration conf)
+  | goalInfiniteTrace(Configuration conf, RaisedEvent re, int backTo)
   ;
 
 data Configuration 
@@ -144,13 +150,14 @@ data RaisedEvent
   | raisedEventVariant(Spec spc, Event event, str eventName, str variant, str instance, rel[str param, str val] arguments, set[str] affectedInstances)
   ;
 
-Trace buildTrace(Model alleModel, set[Module] mods, rel[Spec spc, str instance] instances, TModel tm) {
+Trace buildTrace(Model alleModel, set[Module] mods, rel[Spec spc, str instance] instances, TModel tm, bool finiteTrace) {
   set[Spec] specs = {s | Module m <- mods, /Spec s <- m.parts};
   
   int nrOfConfigs = getNrOfConfigs(alleModel); 
 
   Trace buildTrace(int stepNr) = step(getConfiguration(stepNr, specs, instances, alleModel, tm), getRaisedEvent(stepNr, specs, instances, alleModel, tm), buildTrace(stepNr + 1)) when stepNr < nrOfConfigs;
-  default Trace buildTrace(int stepNr) = goal(getConfiguration(stepNr, specs, instances, alleModel, tm)); 
+  default Trace buildTrace(int stepNr) = goal(getConfiguration(stepNr, specs, instances, alleModel, tm)) when finiteTrace;
+  default Trace buildTrace(int stepNr) = goalInfiniteTrace(getConfiguration(stepNr, specs, instances, alleModel, tm), getRaisedEvent(stepNr, specs, instances, alleModel, tm), getBackTo(alleModel)) when !finiteTrace; 
 
   return buildTrace(1);   
 }
@@ -161,6 +168,16 @@ int getNrOfConfigs(Model alleModel) {
   
   int nrOfConfigs = getNumber(configRel.tuples[-1], "c");
   return nrOfConfigs;
+}
+
+int getBackTo(Model alleModel) { 
+  loopRel = findRelation(alleModel, "loop");
+  
+  if (/idAttribute("nxt", str id) := loopRel.tuples[0]) {
+    return getNumber(id, "c");
+  }  
+  
+  throw "Unable to find configuration to link back to";
 }
 
 int getNumber(fixedTuple([idAttribute(str _, str id)]), str prefix) = getNumber(id, prefix);
@@ -316,17 +333,26 @@ str trace2Str(Trace t) =
   '===============
   '<trace2Str(1, t)>";
 
-str trace2Str(int step, step(Configuration cfg, RaisedEvent re, Trace next)) =
-  "Configuration <step>: 
-  '---------------
-  '<config2Str(cfg)>
-  '<raisedEvent2Str(re)>
-  '
-  '<trace2Str(step+1, next)>";
+str trace2Str(int step, step(Configuration cfg, RaisedEvent re, Trace next))
+  = "Configuration <step>: 
+    '---------------
+    '<config2Str(cfg)>
+    '<raisedEvent2Str(re)>
+    '
+    '<trace2Str(step+1, next)>";
 
 str trace2Str(int step, goal(Configuration cfg)) 
   = "Configuration <step>: (GOAL)
+    '---------------
     '<config2Str(cfg)>";
+
+str trace2Str(int step, goalInfiniteTrace(Configuration cfg, RaisedEvent re, int backTo)) 
+  = "Configuration <step>: (GOAL)
+    '---------------
+    '<config2Str(cfg)>
+    '<raisedEvent2Str(re)>
+    'Back to Configuration <backTo>";
+
 
 private str getVal({str v}) = v;
 private default str getVal(set[str] val) = "{<intercalate(",", [*val])>}";

@@ -13,18 +13,19 @@ import List;
 
 Config buildConfig(str checkName, set[Module] mods, TModel tm) {
   if (Module m <- mods, 
-    /(Check)`check <Id name> from <Id cfg> in <SearchDepth depth> <Objectives? _>;` <- m.parts, "<name>" == checkName) {
+    /chk:(Check)`check <Id name> from <Id cfg> in <SearchDepth depth> <Objectives? _>;` <- m.parts, "<name>" == checkName) {
     rebel::lang::Syntax::Config c = findReferencedConfig(cfg@\loc, mods, tm);
     
     rel[Spec,str,State] instances = buildInstances(c, mods, tm);
     rel[Spec,str,str,str] initialValues = buildInitialValues(c, mods, tm);
     int searchDepth = buildSearchDepth(depth);  
+    bool infiniteTrace = withInfiniteTrace(chk);
     
     set[Fact] facts = gatherFacts(mods);
     
     RelMapping rm = constructRelMapping(mods, tm);
 
-    return config(instances, initialValues, facts, tm, rm, searchDepth);
+    return config(instances, initialValues, facts, tm, rm, searchDepth, finiteTrace = !infiniteTrace);
    }
 }
 
@@ -37,6 +38,8 @@ str config2Str(Spec s, str instance, Config cfg)
 
 int buildSearchDepth((SearchDepth)`max <Int steps> steps`) = toInt("<steps>") + 1;
 
+bool withInfiniteTrace(Check chk) = /(Objective)`infinite trace` := chk;
+
 rebel::lang::Syntax::Config findReferencedConfig(loc ref, set[Module] mods, TModel tm) {
   for (Module m <- mods, /rebel::lang::Syntax::Config cfg <- m.parts, {cfg@\loc} == tm.useDef[ref]) {
     return cfg;
@@ -48,7 +51,7 @@ rebel::lang::Syntax::Config findReferencedConfig(loc ref, set[Module] mods, TMod
 set[Fact] gatherFacts(set[Module] mods) = {f | Module m <- mods, /Fact f <- m.parts}; 
 
 rel[Spec spc, str instance, State initialState] buildInstances(rebel::lang::Syntax::Config cfg, set[Module] mods, TModel tm) {
-  rel[Spec,str,State] instances = {<s,"<instance>",uninitialized()> | Module m <- mods, /Spec s <- m.parts, /Id instance <- s.instances};
+  rel[Spec,str,State] instances = {<s,"<instance>",noState()> | Module m <- mods, /Spec s <- m.parts, /Id instance <- s.instances};
   
   visit (cfg) {
     case (InstanceSetup)`<{Id ","}+ labels> : <Type spec> <InState? inState> <WithAssignments? assignments>` : {

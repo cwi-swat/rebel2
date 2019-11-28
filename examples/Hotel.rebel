@@ -59,9 +59,8 @@ spec FrontDesk
   event checkin(fst: Key, snd: Key, c: Card, r: Room, g: Guest)
     pre:  
       g.checkin(c),
-      r.check(fst),
+      r.check(fst), 
       c.equal(fst,snd), 
-      //c.frst = fst,
       snd notin this.issued;
     post: 
       this.issued' = this.issued + snd;

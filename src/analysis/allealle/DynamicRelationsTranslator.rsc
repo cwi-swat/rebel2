@@ -16,11 +16,11 @@ str translateConfigState(Spec spc, state(str name)) = "state_<toLowerCase("<spc.
 
 str translateDynamicPart(Config cfg) {
   str def = "// Dynamic configuration of state machines
-            '<buildConfigRels(cfg.numberOfTransitions)>
+            '<buildConfigRels(cfg.numberOfTransitions, cfg.finiteTrace)>
             '<buildInstanceRel(cfg.instances)>
             '<buildInstanceInStateRel(cfg.instances, cfg.numberOfTransitions)>
-            '<buildRaisedEventsRel(cfg.instances<0,1>, cfg.numberOfTransitions)>
-            '<buildChangedInstancesRel(cfg.instances<0,1>, cfg.numberOfTransitions)>
+            '<buildRaisedEventsRel(cfg.instances<0,1>, cfg.numberOfTransitions, cfg.finiteTrace)>
+            '<buildChangedInstancesRel(cfg.instances<0,1>, cfg.numberOfTransitions, cfg.finiteTrace)>
             '<buildStateVectors(lookupSpecs(cfg.instances), cfg)>
             '<buildEnumRels(lookupSpecs(cfg.instances))>
             '<buildEventParamRels(lookupSpecs(cfg.instances), cfg)>"; 
@@ -44,15 +44,25 @@ private str buildEventParamRel(Spec s, Event e, FormalParam p, Config cfg) {
 }  
 
 private str buildParamTuples(Spec s, Event e, FormalParam p, Config cfg) {
-  list[str] upperBound = [];  
-  for (int i <- [1..cfg.numberOfTransitions]) {
+  void addTuple(int i, int j) {
     if (isPrim(p.tipe, cfg.tm)) {
-      upperBound += "\<c<i>,c<i+1>,?\>";
+      upperBound += "\<c<i>,c<j>,?\>";
     } else {
       for (str otherInst <- getInstancesOfType(p.tipe, cfg.instances<0,1>, cfg.tm)) {
-        upperBound += "\<c<i>,c<i+1>,<otherInst>\>";
+        upperBound += "\<c<i>,c<j>,<otherInst>\>";
       }
     } 
+  }
+
+  list[str] upperBound = [];  
+  for (int i <- [1..cfg.numberOfTransitions]) {
+    addTuple(i, i+1);
+  }
+  
+  if (!cfg.finiteTrace) {
+    for (int i <- [cfg.numberOfTransitions..0]) {
+      addTuple(cfg.numberOfTransitions, i);
+    }  
   }
 
   return "\<= {<intercalate(",", upperBound)>}"; 
@@ -111,23 +121,37 @@ private str buildFieldTuples(Spec spc, Field f, Config cfg) {
 }
 
 
-private str buildChangedInstancesRel(rel[Spec,str] instances, int numberOfTransitions) 
-  = "changedInstance (cur:id, nxt:id, instance:id) \<= {<intercalate(",", ["\<c<c>,c<c+1>,<i>\>" | int c <- [1..numberOfTransitions], Spec s <- instances<0>, !isEmptySpec(s), str i <- instances[s]])>}
-    '";
+private str buildChangedInstancesRel(rel[Spec,str] instances, int numberOfTransitions, bool finiteTrace) { 
+  list[str] tuples = ["\<c<c>,c<c+1>,<i>\>" | int c <- [1..numberOfTransitions], Spec s <- instances<0>, !isEmptySpec(s), str i <- instances[s]];
+    
+  if (!finiteTrace) {
+    tuples += ["\<c<numberOfTransitions>,c<c>,<i>\>" | int c <- [numberOfTransitions..0], Spec s <- instances<0>, !isEmptySpec(s), str i <- instances[s]];
+  }
+    
+  return "changedInstance (cur:id, nxt:id, instance:id) \<= {<intercalate(",", tuples)>}
+         '";
+}
   
-private str buildRaisedEventsRel(rel[Spec spc, str instance] instances, int numberOfTransitions) 
-  = "raisedEvent (cur:id, nxt:id, event:id, instance:id) \<= {<intercalate(",", [tups | <spc, i> <- instances, str tups := buildRaisedEventsTuples(spc, i, numberOfTransitions), tups != ""])>}";
+private str buildRaisedEventsRel(rel[Spec spc, str instance] instances, int numberOfTransitions, bool finiteTrace) 
+  = "raisedEvent (cur:id, nxt:id, event:id, instance:id) \<= {<intercalate(",", [tups | <spc, i> <- instances, str tups := buildRaisedEventsTuples(spc, i, numberOfTransitions, finiteTrace), tups != ""])>}";
 
-private str buildRaisedEventsTuples(Spec spc, str instance, int numberOfTransitions)
-  = intercalate(",", ["\<c<c>,c<c+1>,<toLowerCase(event)>,<instance>\>" | int c <- [1..numberOfTransitions], str event <- lookupRaisableEventName(spc)]);
+private str buildRaisedEventsTuples(Spec spc, str instance, int numberOfTransitions, bool finiteTrace) {
+  list[str] tuples = ["\<c<c>,c<c+1>,<toLowerCase(event)>,<instance>\>" | int c <- [1..numberOfTransitions], str event <- lookupRaisableEventName(spc)];
+  
+  if (!finiteTrace) {
+    tuples += ["\<c<numberOfTransitions>,c<c>,<toLowerCase(event)>,<instance>\>" | int c <- [numberOfTransitions..0], str event <- lookupRaisableEventName(spc)];
+  }
+  
+  return intercalate(",", tuples);
+}
 
-private str buildConfigRels(int numberOfTransitions)
+private str buildConfigRels(int numberOfTransitions, bool finiteTrace)
   = "Config (config:id) \>= {\<c1\>} \<= {<intercalate(",", ["\<c<i>\>" | int i <- [1..numberOfTransitions+1]])>}
     'order (cur:id, nxt:id) \<= {<intercalate(",", ["\<c<i>,c<i+1>\>" | int i <- [1..numberOfTransitions]])>}
     'first (config:id) = {\<c1\>}
     'last (config:id) \<= {<intercalate(",", ["\<c<i>\>" | int i <- [1..numberOfTransitions+1]])>}
-    'back (config:id) \<= {<intercalate(",", ["\<c<i>\>" | int i <- [1..numberOfTransitions+1]])>}
-    'loop (cur:id, nxt:id) \<= {<intercalate(",", ["\<c<i>,c<j>\>" | int i <- [2..numberOfTransitions+1], int j <- [1..i+1]])>}
+    '<if (!finiteTrace) {>back (config:id) \<= {<intercalate(",", ["\<c<i>\>" | int i <- [1..numberOfTransitions+1]])>}
+    'loop (cur:id, nxt:id) \<= {<intercalate(",", ["\<c<i>,c<j>\>" | int i <- [2..numberOfTransitions+1], int j <- [1..i+1]])>}<}>
     '";
 
 private str buildInstanceRel(rel[Spec spc, str instance, State initialState] instances)
@@ -137,7 +161,7 @@ private str buildInstanceInStateRel(rel[Spec spc, str instance, State state] ins
   = "instanceInState (config:id, instance:id, state:id) \>= {<buildInitialInstanceInStateTuples(instances)>}\<= {<buildInstanceInStateTuples(instances<spc,instance>, numberOfTransitions)>}";
 
 private str buildInitialInstanceInStateTuples(rel[Spec spc, str instance, State state] instances)
-  = intercalate(",", ["\<c1,<i>,<translateConfigState(s, st)>\>" | <s,i,st> <- instances, !isEmptySpec(s)]);
+  = intercalate(",", ["\<c1,<i>,<translateConfigState(s, st)>\>" | <s,i,st> <- instances, !isEmptySpec(s), st != noState()]);
 
 private str buildInstanceInStateTuples(rel[Spec spc, str instance] instances, int numberOfTransitions)
   = intercalate(",", ["\<c<c>,<i>,<toLowerCase(st)>\>" | int c <- [1..numberOfTransitions+1], <s,i> <- instances, str st <- lookupStateLabelsWithDefaultState(s)]);

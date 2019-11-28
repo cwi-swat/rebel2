@@ -15,6 +15,7 @@ data Config = config(rel[Spec spc, str instance, State initialState] instances,
                      TModel tm,
                      RelMapping rm,
                      int numberOfTransitions,
+                     bool finiteTrace = true,
                      int maxSizeIntegerSets = 5,
                      int maxSizeStringSets = 5);
 
@@ -82,6 +83,9 @@ IdRole getIdRole(expr:(Expr)`<Id id>`, TModel tm) = tm.definitions[def].idRole w
 IdRole getIdRole(expr:(Expr)`this.<Id id>`, TModel tm) = tm.definitions[def].idRole when {loc def} := tm.useDef[id@\loc];
 
 default IdRole getIdRole(Expr expr, TModel tm) { throw "Role of identifier `<expr>` can not be found in type model"; }
+
+IdRole getIdRole(loc expr, TModel tm) = tm.definitions[def].idRole when {loc def} := tm.useDef[expr];
+default IdRole getIdRole(Expr expr, TModel tm) { throw "Role can not be found for expression at `<expr>`"; }
 
 bool isParam(Expr expr, TModel tm) 
   = getIdRole(expr,tm) == paramId();

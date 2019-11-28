@@ -20,6 +20,10 @@ import analysis::Normalizer;
 import util::PathUtil;
 import analysis::graphs::Graph;
 
+void checkAllInDir(loc base) {
+  
+}
+
 void translatePingPong(str check)         = performCheck(check, parseModule(|project://rebel2/examples/PingPong.rebel|));
 void translateCoffeeMachine()             = performCheck("MachineIsServing", parseModule(|project://rebel2/examples/CoffeeMachine.rebel|));
 void translateLeaderAndFollower(str check) = performCheck(check, parseModule(|project://rebel2/examples/sync/double/Leader.rebel|));

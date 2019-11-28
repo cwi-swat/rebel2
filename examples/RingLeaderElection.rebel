@@ -27,17 +27,17 @@ spec Process
     
 fact UniqueIds
   = always forall p1,p2: Process | 
-      ((p1 is initialized && p2 is initialized && p1.pid = p2.pid) => p1 = p2);    
+    ((p1 is initialized && p2 is initialized && p1.pid = p2.pid) => p1 = p2); 
 
 fact PositiveIds
   = always forall p: Process | (p is initialized => p.pid > 0);
 
 fact InitialToSendIsZero
   = first forall p: Process | p.toSend = 0; 
-
-//fact Ring
-//  = always forall p1: Process | exists p2: Process | p1 != p2 && p1.succ = p2;
     
+fact Progress
+  = forall p:Process | eventually next send on p;
+      
 // ---------------------------
     
 config RingOfThree
@@ -45,23 +45,19 @@ config RingOfThree
     p1 with succ = p2,
     p2 with succ = p3,
     p3 with succ = p1; 
-  
-config RingOfTwo
-  = p1,p2: Process is notElected,
-    p1 with succ = p2,
-    p2 with succ = p1;
-        
+
 assert EventuallyOneIsElected
   = eventually exists p: Process | p is elected;
 
 assert AProcessWillAlwaysBeElected
-  = always (forall p: Process | p is notElected);
+  //= eventually always (exists p: Process | p is elected);
+  = always forall p: Process | !(p is elected);
 
-assert OnlyOneCanGetElected
+assert OnlyOneCanGetElected 
   = eventually exists p1,p2: Process | p1 is elected && p2 is elected && p1 != p2;  
 
-check EventuallyOneIsElected from RingOfThree in max 4 steps;
-  
+check EventuallyOneIsElected from RingOfThree in max 6 steps;
+   
 check OnlyOneCanGetElected from RingOfThree in max 10 steps;  
-
-check AProcessWillAlwaysBeElected from RingOfThree in max 7 steps;
+ 
+check AProcessWillAlwaysBeElected from RingOfThree in max 4 steps with infinite trace;

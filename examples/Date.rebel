@@ -1,39 +1,61 @@
 module Date
 
-spec Date [NOW]
+spec Date [NOW*]
   year: Integer,
-  month: Month,
-  date: Integer;
+  month: Integer,
+  day: Integer;
   
-  event create(year: Integer, month: Month, day: Integer) 
-    post: this.year' = year, this.month' = month, this.date' = day;
+  event create(year: Integer, month: Integer, day: Integer) 
+    post: this.year' = year, this.month' = month, this.day' = day;
+  
+  event after(other: Date) 
+    pre: other is initialized, noOp(other);
+    variant years
+      pre: this.year > other.year;
     
+    variant month
+      pre: this.year = other.year, this.month > other.month;
+    
+    variant day
+      pre: this.year = other.year, this.month = other.month, this.day > other.day;
+      
   states:
     (*) -> created: create;
+    created -> created: after::years;
     
-spec Month [JAN,FEB,MAR,APR,MAY,JUN,JUL,AUG,SEP,OCT,NOV,DEC] 
-
 fact CorrectDate
   = always forall d:Date | (d is initialized => (
       d.year >= 1900 && d.year <= 2200 &&
-      d.date > 0 && 
-      if d.month = Month[JAN] then d.date < 32 else
-      if d.month = Month[FEB] then d.date < 30 else
-      if d.month = Month[MAR] then d.date < 32 else
-      if d.month = Month.APR then d.date < 31 else
-      if d.month = Month.MAY then d.date < 32 else
-      if d.month = Month.JUN then d.date < 31 else
-      if d.month = Month.JUL then d.date < 32 else
-      if d.month = Month.AUG then d.date < 32 else
-      if d.month = Month.SEP then d.date < 31 else
-      if d.month = Month.OCT then d.date < 32 else
-      if d.month = Month.NOV then d.date < 31 else
-      d.date < 32)); 
+      d.month > 0 && d.month < 13 &&
+      d.day > 0 && 
+      if d.month = 1 then d.day < 32 else
+      if d.month = 2 then d.day < 30 else
+      if d.month = 3 then d.day < 32 else
+      if d.month = 4 then d.day < 31 else
+      if d.month = 5 then d.day < 32 else
+      if d.month = 6 then d.day < 31 else
+      if d.month = 7 then d.day < 32 else
+      if d.month = 8 then d.day < 32 else
+      if d.month = 9 then d.day < 31 else
+      if d.month = 10 then d.day < 32 else
+      if d.month = 11 then d.day < 31 else
+      d.day < 32)); 
 
-assert SomeInitializedDate
-  = eventually exists d: Date | d is initialized;
+fact TimeAlwaysMovesForward
+  = always exists d1: Date[NOW] | next exists d2: Date[NOW] | ( 
+      d2.year > d1.year || 
+      (d2.year = d1.year && d2.month > d1.month) || 
+      (d2.year = d1.year && d2.month = d1.month && d2.day > d1.day)
+    );   
+ 
+fact NowAlwaysExists = always (Date[NOW] is initialized);
 
-config SomeDate = d1: Date;
+assert SomeInitializedDate = eventually exists d: Date | d is initialized;
 
-check SomeInitializedDate from SomeDate in max 2 steps;      
+//assert OneDateIsAfterAnother = eventually exists d1,d2:Date | d1 != d2 && next after::years on d1;
+
+config SomeDates = d1,d2,d3: Date;
+
+check SomeInitializedDate from SomeDates in max 2 steps;
+//check OneDateIsAfterAnother from SomeDates in max 5 steps;      
       

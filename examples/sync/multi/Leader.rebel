@@ -29,9 +29,8 @@ spec Leader
     link -> active: complete;
     active -> active: hitSome; 
 
-assert AFollowerWith5Hits = eventually exists f1,f2: Follower | f1 != f2 && f1.nrOfHits = 3 && f2 is initialized; 
+assert AFollowerWith5Hits = eventually exists f1,f2: Follower | f1 != f2 && f1.nrOfHits = 3 && f2.nrOfHits = 1; 
   
-config Simple
-  = l: Leader, f1,f2,f3: Follower;
+config Simple = l: Leader, f1,f2,f3: Follower;
   
 check AFollowerWith5Hits from Simple in max 12 steps;   

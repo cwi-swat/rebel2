@@ -114,7 +114,7 @@ void collect(current:(Formula)`first <Formula form>`, Collector c) {
   collect(form, c);  
 }
 
-void collect(current:(Formula)`<Id event> on <Expr spc> <WithAssignments? with>`, Collector c) {
+void collect(current:(Formula)`<TransEvent event> on <Expr spc> <WithAssignments? with>`, Collector c) {
   c.fact(current, boolType());
   
   c.useViaType(spc, event, {eventId()});

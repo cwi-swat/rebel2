@@ -17,42 +17,39 @@ import IO;
 import ParseTree;
 
 str translateConstraints(set[Spec] spcs, Config cfg, str check) {
-  str cons = "<configurationConstraints()>
-             '<genericTypeConstraints()>
+  str cons = "<configurationConstraints(cfg.finiteTrace)>
+             '<genericTypeConstraints(cfg.finiteTrace)>
              '<machineFieldTypeConstraints(spcs, cfg)>
              '<eventParamTypeAndMultiplicityConstraints(spcs, cfg)>
              '<allConfigsAreReachable()>
-             '<onlyOneTriggeringEvent()>
+             '<onlyOneTriggeringEvent(cfg.finiteTrace)>
              '<noMachineWithoutState(spcs)>
              '<machineOnlyHasValuesWhenInitialized(spcs, cfg)>
-             '<noTransitionsBetweenUnrelatedStates()>
+             '<noTransitionsBetweenUnrelatedStates(cfg.finiteTrace)>
              '<changeSetPredicates(spcs)>
              '<helperPredicates()>
              '<translateEventPredicates(spcs, cfg)>
              '<transitionFunction(spcs, cfg)>
-             '<translateFacts(cfg)>
-             '<encodeAsserts(check)>
-             '<findMinimumExample(spcs)>
              '";
   
   return cons;
 }
 
-private str configurationConstraints() 
+private str configurationConstraints(bool finiteTrace) 
   = "
     '// Constraints for the configuration and ordering relations
     'order ⊆ Config[config as cur] ⨯ Config[config as nxt]
     'last = Config ∖ order[cur-\>config]  // There is only one last configuration
-    'back ⊆ Config 
+    '<if (!finiteTrace) {>back ⊆ Config 
     'lone back   
-    'loop ⊆ last[config as cur] ⨯ back[config as nxt] // Loop contains at most one tuple going back from the last configuration to the 
+    'loop ⊆ last[config as cur] ⨯ back[config as nxt] // Loop contains at most one tuple going back from the last configuration to the<}> 
     '";
 
-private str genericTypeConstraints() 
+private str genericTypeConstraints(bool finiteTrace) 
   = "// Generic \'Type\' constraints    
-    'raisedEvent ⊆ order ⨯ allowedTransitions[event] ⨯ Instance[instance]
+    'raisedEvent ⊆ (order<if (!finiteTrace) {> ∪ loop<}>) ⨯ allowedTransitions[event] ⨯ Instance[instance]
     'instanceInState ⊆ Instance[instance] ⨯ Config ⨯ State
-    'changedInstance ⊆ order ⨯ Instance[instance]
+    'changedInstance ⊆ (order<if (!finiteTrace) {> ∪ loop<}>) ⨯ Instance[instance]
     ";
     
 private str machineFieldTypeConstraints(set[Spec] spcs, Config cfg) {
@@ -76,9 +73,9 @@ private str allConfigsAreReachable()
     '∀ c ∈ Config ∖ first | c ⊆ (first[config as cur] ⨝ ^\<cur,nxt\>order)[nxt -\> config]
     '";
     
-private str onlyOneTriggeringEvent()
+private str onlyOneTriggeringEvent(bool finiteTrace)
   = "// Generic: Every transition can only happen by exactly one event
-    '∀ o ∈ order | one o ⨝ raisedEvent
+    '∀ o ∈ order<if (!finiteTrace) {> ∪ loop<}> | one o ⨝ raisedEvent
     '";
     
 private str noMachineWithoutState(set[Spec] spcs)
@@ -130,10 +127,10 @@ private str eventParamTypeAndMultiplicityConstraints(set[Spec] spcs, Config cfg)
     str relName = "ParamEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)><getCapitalizedParamName(p)>";
 
     if (isPrim(p.tipe, cfg.tm)) {
-      typeCons += "<relName>[cur,nxt] ⊆ order";
+      typeCons += "<relName>[cur,nxt] ⊆ order<if (!cfg.finiteTrace) {> ∪ loop<}>";
       multCons += "(some (step ⨝ Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>) ⇔ one (step ⨝ <relName>))"; 
     } else {
-      typeCons += "<relName> ⊆ order ⨯ (Instance ⨝ <p.tipe.tp>)[instance-\><p.name>]";
+      typeCons += "<relName> ⊆ (order<if (!cfg.finiteTrace) {> ∪ loop<}>) ⨯ (Instance ⨝ <p.tipe.tp>)[instance-\><p.name>]";
 
       str mult = (setType(_) := getType(p, cfg.tm)) ? "some" : "one";
       multCons += "(some (step ⨝ Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>) ⇔ <mult> (step ⨝ <relName>))";                 
@@ -143,15 +140,15 @@ private str eventParamTypeAndMultiplicityConstraints(set[Spec] spcs, Config cfg)
   return "<intercalate("\n", typeCons)>
          '<if (multCons != []) {>
          '// Specific per event
-         '∀ step ∈ order ⨝ raisedEvent | (
+         '∀ step ∈ (order<if (!cfg.finiteTrace) {> ∪ loop<}>) ⨝ raisedEvent | (
          '  <intercalate(" ∧\n", multCons)>
          ')<}>
          '";
 }
    
-private str noTransitionsBetweenUnrelatedStates() 
+private str noTransitionsBetweenUnrelatedStates(bool finiteTrace) 
   = "// Generic: Transitions are only allowed between if an event is specified between two states
-    '∀ o ∈ order ⨝ raisedEvent | (o[cur as config] ⨝ instanceInState)[state-\>from] ⨯ (o[nxt as config] ⨝ instanceInState)[state-\>to] ⨯ o[event] ⊆ allowedTransitions
+    '∀ o ∈ (order<if (!finiteTrace) {> ∪ loop<}>) ⨝ raisedEvent | (o[cur as config] ⨝ instanceInState)[state-\>from] ⨯ (o[nxt as config] ⨝ instanceInState)[state-\>to] ⨯ o[event] ⊆ allowedTransitions
     '";
 
 private str changeSetPredicates(set[Spec] spcs) 
@@ -190,17 +187,7 @@ private bool hasTransitions(Spec s) = /Transition _ := s.states;
 
 private str transitionFunction(set[Spec] spcs, Config cfg) 
   = "// Transition function
-    '∀ step ∈ order | <intercalate(" ∧ ", ["possibleTransitions<getCapitalizedSpecName(s)>[step]" | s <- spcs, hasTransitions(s)])>
+    '∀ step ∈ order<if (!cfg.finiteTrace) {> ∪ loop<}>| <intercalate(" ∧ ", ["possibleTransitions<getCapitalizedSpecName(s)>[step]" | s <- spcs, hasTransitions(s)])>
     '";  
 
 private bool isFrameEvent(Event e) = "<e.name>" == "__frame";
-
-private str translateFacts(Config cfg) = translateFacts(cfg.facts, cfg.tm);
-    
-private str encodeAsserts(str check) 
-  = "<check>
-    '";
-
-private str findMinimumExample(set[Spec] spcs) 
-  = "// Minimize the number of steps by minimizing the number of Configurations
-    'objectives: minimize Config[count()]"; 
