@@ -114,11 +114,54 @@ void collect(current:(Formula)`first <Formula form>`, Collector c) {
   collect(form, c);  
 }
 
-void collect(current:(Formula)`<TransEvent event> on <Expr spc> <WithAssignments? with>`, Collector c) {
+void collect(current:(Formula)`<TransEvent event> on <Expr spc> <WithAssignments? w>`, Collector c) {
   c.fact(current, boolType());
+
+  if ((TransEvent)`*` !:= event) {   
+    c.useViaType(spc, event, {eventId()});    
+  }
   
-  c.useViaType(spc, event, {eventId()});
-  collect(spc, c);
+  if (/WithAssignments wa := w) {
+    map[str,Expr] namedArgs = ();
+    for (/(Assignment)`<Id name> = <Expr val>` <- wa.assignments) {
+      namedArgs["<name>"] = val;
+      //c.useViaType(event, name, {paramId()});
+    }  
+    
+    c.calculate("check for raised event <event>", current, event + [namedArgs[n] | n <- namedArgs], 
+      AType (Solver s) {
+        eType = s.getType(event);
+        
+        if (eventType(namedTypeList(ntl)) := s.getType(event)) {
+          map[str,AType] namedFormals = (name : tipe | <str name, AType tipe> <- ntl); 
+          map[str,AType] namedArgs = (n : s.getType(namedArgs[n]) | n <- namedArgs);
+                  
+          s.requireTrue(namedArgs - namedFormals == (), 
+            error(current, "Expected arguments %t, found %t", namedTypeList([<n,namedFormals[n]> | n <- namedFormals]), namedTypeList([<n,namedArgs[n]> | n <- namedArgs]))); 
+        } else {
+          s.report(error(current, "Event expected, found %t", eType));
+        }
+        
+        return boolType();
+      });
+  }
+    
+  //c.push("event", event);
+  collect(spc, w, c);
+  //c.pop("event");      
+}
+
+void collect(current:(WithAssignments)`with <{Assignment ","}+ assignments>`, Collector c) {
+  collect(assignments,c);
+}
+
+void collect(current:(Assignment)`<Id name> = <Expr val>`, Collector c) {
+  //event = c.top("event");
+  //println(event);
+  //c.useViaType(event, name, {paramId()});
+  c.fact(name, val);
+  
+  collect(val,c);
 }
 
 void collect(current:(Check)`check <Id assrt> from <Id config> in <SearchDepth depth> <Objectives? objs>;`, Collector c) {

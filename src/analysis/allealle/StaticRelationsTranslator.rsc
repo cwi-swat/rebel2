@@ -85,6 +85,8 @@ private str buildConstantRels(set[Spec] spcs) {
          '<}>";  
 }
 
+private str unquote(StringConstant s) = "<s>"[1..-1];
+
 private rel[str,str,str] flattenTransitions(Spec s)
   = {<"<cfrom>", "<cto>", "event_<name>_<event>"> | 
       str name := getLowerCaseSpecName(s),

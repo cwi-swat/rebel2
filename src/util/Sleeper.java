@@ -10,7 +10,7 @@ public class Sleeper {
 	public void sleep(IInteger ms) {
 		try {
 			Thread.sleep(ms.longValue());
-		} catch (InterruptedException e) {
+		} catch (InterruptedException e) { 
 			e.printStackTrace();
 		}		
 	}

@@ -12,6 +12,8 @@ import IO;
 import Location;
 
 loc normalize(Module m, TModel origTm) {
+  m = normalizeEventVariantSyncs(m, origTm);
+
   m = visit(m) {
     case (Part)`<Spec spc>` => (Part)`<Spec nSpc>` when Spec nSpc := normalize(spc, origTm)
   }
@@ -28,9 +30,10 @@ loc normalize(Module m, TModel origTm) {
 Spec normalize(Spec spc, TModel origTm) {
   set[str] fields = {"<f.name>" | /Field f := spc};
   
-  list[Event] normEvents = normalizeEvents([e | Event e <- spc.events], origTm);
-  normEvents = addFrameConditions(fields, normEvents);
+  list[Event] normEvents = [e | Event e <- spc.events];
   normEvents = addEmptyTransitionIfNecessary(spc, normEvents);
+  normEvents = normalizeEvents(normEvents, origTm);
+  normEvents = addFrameConditions(fields, normEvents);
   if (fields != {} || /Transition _ := spc.states){
     normEvents += createFrameEvent(spc);
   }
@@ -39,6 +42,29 @@ Spec normalize(Spec spc, TModel origTm) {
   spc.states = normalizeStates(spc.states);
 
   return spc;
+}
+
+Module normalizeEventVariantSyncs(Module m, TModel origTm) {
+  set[Define] variants = {d | Define d <- origTm.definitions<1>, d.idRole == eventVariantId()};
+  set[Define] findVariants(loc eventRef) = {v | v <- variants, isContainedIn(v.defined, eventDef)} when {loc eventDef} := origTm.useDef[eventRef]; 
+  default set[Define] findVariants(loc eventRef) = {};  
+
+  Formula buildSyncDisj(orig:(Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, set[Define] variants) 
+    = buildFormDisj([(Formula)`<Expr spc>.<Id varId>(<{Expr ","}* params>)` | Define var <- variants, Id varId := [Id]"<event>__<var.id>"]); 
+
+  Formula buildRaisedDisj(orig:(Formula)`<TransEvent evnt> on <Expr spc> <WithAssignments? as>`, set[Define] variants)
+    = buildFormDisj([(Formula)`<TransEvent varEvnt> on <Expr spc> <WithAssignments? as>` | Define var <- variants, TransEvent varEvnt := [TransEvent]"<evnt>__<var.id>"]);
+
+  Formula buildFormDisj(list[Formula] terms) = [Formula]"(<intercalate(" || ", terms)>)";
+  
+  return visit(m) {
+    case orig:(Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)` => buildSyncDisj(orig, vars) 
+      when set[Define] vars := findVariants(event@\loc), vars != {}     
+
+    case orig:(Formula)`<TransEvent evnt> on <Expr spc> <WithAssignments? as>` => buildRaisedDisj(orig, vars) 
+      when set[Define] vars := findVariants(evnt@\loc), vars != {}     
+
+  } 
 }
 
 Event createFrameEvent(Spec spc) {
@@ -61,45 +87,37 @@ list[Event] addFrameConditions(set[str] fields, list[Event] events) {
 }
 
 list[Event] normalizeEvents(list[Event] events, TModel origTm) {
-  set[Define] variants = {d | Define d <- origTm.definitions<1>, d.idRole == eventVariantId()};
-  set[Define] findVariants(loc eventRef) = {v | v <- variants, isContainedIn(v.defined, eventDef)}
-    when {loc eventDef} := origTm.useDef[eventRef]; 
+  //set[Define] variants = {d | Define d <- origTm.definitions<1>, d.idRole == eventVariantId()};
+  //set[Define] findVariants(loc eventRef) = {v | v <- variants, isContainedIn(v.defined, eventDef)}
+  //  when {loc eventDef} := origTm.useDef[eventRef]; 
+  //    
+  //Formula buildSyncDisj(orig:(Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, set[Define] variants) 
+  //  = buildFormDisj([(Formula)`<Expr spc>.<Id varId>(<{Expr ","}* params>)` | Define var <- variants, Id varId := [Id]"<event>__<var.id>"]); 
+  //
+  //Formula buildFormDisj(list[Formula] terms) = [Formula]"(<intercalate(" || ", terms)>)"; 
   
-  Formula buildSyncDisj(orig:(Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, set[Define] variants) 
-    = buildFormDisj([(Formula)`<Expr spc>.<Id varId>(<{Expr ","}* params>)` | Define var <- variants, Id varId := [Id]"<event>__<var.id>"]); 
-  
-  Formula buildFormDisj(list[Formula] terms) = [Formula]"(<intercalate(" || ", terms)>)"; 
-  
-  void checkForVariantDefs(Event e) {
-    bool changed = false;
-    
-    list[Event] addedEvents = [];
-    
-    // Check for variants
-    for (EventVariant ev <- e.body.variants) {
-      changed = true;
-      
-      addedEvents += normalizeVariant(ev, e);
-    }
-
-    if (changed) {
-      // remove the original event, add the variants as seperate events;
-      events -= e;
-      events += addedEvents;      
-    }
-  }
+  list[Event] checkForVariantDefs(Event e) = [normalizeVariant(ev, e) | EventVariant ev <- e.body.variants];
    
-  void checkForVariantSyncs(Event e) {
-    events -= e;
-    events += visit(e) {
-      case orig:(Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)` => buildSyncDisj(orig, vars) 
-        when set[Define] vars := findVariants(event@\loc), vars != {} 
-    }  
-  }
-  
+  //Event checkForVariantSyncs(Event e) 
+  //  = visit(e) {
+  //      case orig:(Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)` => buildSyncDisj(orig, vars) 
+  //        when set[Define] vars := findVariants(event@\loc), vars != {} 
+  //    };  
+  //
+  //for (Event e <- events) {
+  //  Event changed = checkForVariantSyncs(e);
+  //  if (changed != e) {
+  //    events -= e;
+  //    events += changed;        
+  //  }
+  //}
+
   for (Event e <- events) {
-    checkForVariantSyncs(e);
-    checkForVariantDefs(e);
+    list[Event] varEvents = checkForVariantDefs(e);
+    if (varEvents != []) {
+      events -= e;
+      events += varEvents;
+    } 
   }
   
   return events;
@@ -230,6 +248,10 @@ private Event* buildNormEvents(list[Event] es) {
 }
 
 private States? normalizeStates(States? states) {
+  if (/States sts !:= states) {
+    return states;
+  }
+  
   states = normalizeInnerStates(states);
   
   lrel[str super, str inner] mapping = [<"<super>", "<n>"> | /(Transition)`<State super> <InnerStates inner> { <Transition* trans> }` := states, State n <- inner.states];

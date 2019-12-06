@@ -9,6 +9,5 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/allealle"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/salix"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/typepal"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

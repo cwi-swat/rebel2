@@ -19,14 +19,14 @@ data Domain
   | strDom()
   ;
   
-data AnalysisContext = actx(RelExpr (loc l) lookup, void (loc l, RelExpr r) add, str curRel, str stepRel, TModel tm, map[loc,Spec] specs, set[str] emptySpecs); 
+data AnalysisContext = actx(RelExpr (loc l) lookup, void (loc l, RelExpr r) add, str curRel, str stepRel, TModel tm, map[loc,Spec] specs, set[str] emptySpecs, void (loc,str) addCurRelScoped, str (loc) lookupCurRelScoped); 
 
-AnalysisContext nextCurRel(AnalysisContext old) = actx(old.lookup, old.add, getNextCurRel(old.curRel), old.stepRel, old.tm, old.specs, old.emptySpecs);
-AnalysisContext newCurRel(str newCurRel, AnalysisContext old) = actx(old.lookup, old.add, newCurRel, old.stepRel, old.tm, old.specs, old.emptySpecs);
+AnalysisContext nextCurRel(AnalysisContext old) = actx(old.lookup, old.add, getNextCurRel(old.curRel), old.stepRel, old.tm, old.specs, old.emptySpecs, old.addCurRelScoped, old.lookupCurRelScoped);
+AnalysisContext newCurRel(str newCurRel, AnalysisContext old) = actx(old.lookup, old.add, newCurRel, old.stepRel, old.tm, old.specs, old.emptySpecs, old.addCurRelScoped, old.lookupCurRelScoped);
 
-AnalysisContext nextStepRel(AnalysisContext old) = actx(old.lookup, old.add, old.curRel, getNextStepRel(old.stepRel), old.tm, old.specs, old.emptySpecs);
+AnalysisContext nextStepRel(AnalysisContext old) = actx(old.lookup, old.add, old.curRel, getNextStepRel(old.stepRel), old.tm, old.specs, old.emptySpecs, old.addCurRelScoped, old.lookupCurRelScoped);
 
-AnalysisContext nextStepAndCurRel(AnalysisContext old) = actx(old.lookup, old.add, getNextCurRel(old.curRel), getNextStepRel(old.stepRel), old.tm, old.specs, old.emptySpecs);
+AnalysisContext nextCurAndStepRel(AnalysisContext old) = actx(old.lookup, old.add, getNextCurRel(old.curRel), getNextStepRel(old.stepRel), old.tm, old.specs, old.emptySpecs, old.addCurRelScoped, old.lookupCurRelScoped);
 
 RelMapping constructRelMapping(set[Module] mods, TModel tm) {
   RelMapping mapping = ();
@@ -34,10 +34,15 @@ RelMapping constructRelMapping(set[Module] mods, TModel tm) {
   RelExpr lookupRel(loc l) = mapping[l] when l in mapping;
   default RelExpr lookupRel(loc l) { throw "No Relation expression stored for location `<l>`"; }
   
+  map[loc,str] curRelScoped = ();
+  void addCurRelScoped(loc l, str r) { curRelScoped[l] = r; }
+  str lookupCurRelScoped(loc l) = curRelScoped[l] when l in curRelScoped;
+  default str lookupCurRelScoped(loc l) { throw "No current relation stored for expression at <l>"; }
+  
   map[loc,Spec] specs = (s@\loc : s | Module m <- mods, /Spec s <- m.parts); 
   set[str] emptySpecs = findEmptySpecs(mods);
   
-  AnalysisContext ctx = actx(lookupRel, addRel, defaultCurRel(), defaultStepRel(), tm, specs, emptySpecs);
+  AnalysisContext ctx = actx(lookupRel, addRel, defaultCurRel(), defaultStepRel(), tm, specs, emptySpecs, addCurRelScoped, lookupCurRelScoped);
   
   for (Module m <- mods) {
     // First do all the events in the specification
@@ -129,12 +134,21 @@ void analyse((Formula)`exists <{Decl ","}+ decls> | <Formula f>`, AnalysisContex
 void analyse((Formula)`noOp(<Expr expr>)`, AnalysisContext ctx) { analyse(expr,ctx); }
 
 //From Check Syntax
-void analyse((Formula)`eventually <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurRel(ctx));
-void analyse((Formula)`always <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurRel(ctx));
-void analyse((Formula)`next <Formula f>`, AnalysisContext ctx) = analyse(f,nextStepAndCurRel(ctx));
+void analyse((Formula)`eventually <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurAndStepRel(ctx));
+void analyse((Formula)`always <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurAndStepRel(ctx));
+void analyse((Formula)`next <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurAndStepRel(ctx));
 void analyse((Formula)`first <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurRel(ctx));
 
-void analyse((Formula)`<Id event> on <Expr var> <WithAssignments? \with>`, AnalysisContext ctx) = analyse(var,ctx);
+void analyse((Formula)`<TransEvent event> on <Expr var> <WithAssignments? w>`, AnalysisContext ctx) { 
+  analyse(var,ctx);
+  
+  for (/(Assignment)`<Id fieldName> = <Expr val>` <- w) {
+    analyse(val,ctx);
+  }
+}
+
+void analyse((WithAssignments)`with <{Assignment ","}+ assignments>`, AnalysisContext ctx) {
+}
 
 // From Common Syntax
 void analyse(current:(Expr)`(<Expr expr>)`, AnalysisContext ctx) {
@@ -166,6 +180,13 @@ void analyse(current:(Id)`<Id var>`, AnalysisContext ctx) {
 }
 
 void analyse(current:(Expr)`<Expr expr>.<Id fld>`, AnalysisContext ctx) {
+  
+  Maybe[Define] md = getDefinitionIfExists(expr@\loc, ctx);
+  if (just(Define d) := md, d.idRole in {quantVarId()}) {
+    str curRel = ctx.lookupCurRelScoped(d.defined);
+    ctx = newCurRel(curRel, ctx); 
+  }
+  
   analyse(expr,ctx);
   analyse(fld,ctx);
   
@@ -251,6 +272,7 @@ void analyse(current:(Decl)`<{Id ","}+ vars>: <Expr expr>`, AnalysisContext ctx)
   
   for (Id var <- vars) {
     ctx.add(var@\loc, ctx.lookup(expr@\loc));
+    ctx.addCurRelScoped(var@\loc, ctx.curRel);
   }
   
   ctx.add(current@\loc, ctx.lookup(expr@\loc));
@@ -303,6 +325,22 @@ private Define getDefinition(loc use, AnalysisContext ctx) {
   
 }
 
+private Maybe[Define] getDefinitionIfExists(loc use, AnalysisContext ctx) {
+  if (use notin ctx.tm.useDef<0>) {
+    return nothing();
+  } 
+  
+  if ({loc def} := ctx.tm.useDef[use]) { 
+    if (def in ctx.tm.definitions) {
+      return just(ctx.tm.definitions[def]);
+    } else {
+      return nothing();
+    }
+  }
+  
+}
+
+
 private str getFieldName(RelExpr re) {
   if (size(re.heading) > 1) {
     throw "More than 1 attribute in the relation, unable to determine field name";
@@ -330,18 +368,18 @@ private str renameIfNeeded(str lhs, str rhs) {
 private bool isPrim(loc expr, AnalysisContext ctx) = isPrim(t) when AType t := getType(expr, ctx);
 
 private bool isPrim(intType()) = true;
-private bool isPrim(strType()) = true;
+private bool isPrim(stringType()) = true;
 private default bool isPrim(AType t) = false;
 
 private AType getType(loc expr, AnalysisContext ctx) = ctx.tm.facts[expr] when expr in ctx.tm.facts;
 private default AType getType(loc expr, AnalysisContext ctx) { throw "No type information known for expression at `<expr>`"; }
 
 private Domain type2Dom(intType()) = intDom();
-private Domain type2Dom(strType()) = strDom();
+private Domain type2Dom(stringType()) = strDom();
 private default Domain type2Dom(AType t) = idDom();
 
 str dom2Str(intType()) = "int";
-str dom2Str(strType()) = "str";
+str dom2Str(stringType()) = "str";
 default str dom2Str(AType t) = "id";
 
 private str getNextCurRel(str oldCurRel) {

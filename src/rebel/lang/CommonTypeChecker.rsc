@@ -20,6 +20,7 @@ data AType
   | stateType()
   | eventType(AType argTypes)
   | moduleType()
+  | namedTypeList(list[tuple[str, AType]] ntl)
   ;
 
 data ScopeRole
@@ -109,7 +110,6 @@ void handleImports(Collector c, Tree root, PathConfig pcfg) {
     
     while (list[QualifiedName] modulesToImport := c.getStack(__REBEL_IMPORT_QUEUE) && modulesToImport != []) {
       c.clearStack(__REBEL_IMPORT_QUEUE);
-      println(intercalate(", ", ["<n>" | n <- modulesToImport]));
       
         for (m <- modulesToImport, m notin imported) {
           if (<true, l> := lookupModule(m, pcfg)) {

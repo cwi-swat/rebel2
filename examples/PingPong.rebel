@@ -4,25 +4,28 @@ spec PingPong
   times: Integer;
   
   event start()
-    post: 
-      this.times' = 0;
+    post: this.times' = 0;
     
-  event hit()  
-    post: 
-      this.times' = this.times + 1; 
+  event hit(times: Integer) 
+    pre: times > 0;
+    post: this.times' = this.times + times; 
+  
+  event unhit()
+    pre: this.times > 0;
+    post: this.times' = this.times - 1;
     
   states:
     (*) -> ping: start;
-    ping -> pong: hit;
-    pong -> ping: hit;
-    
-fact LessThan10TimesHit
-  = always forall p: PingPong | (p is initialized => p.times < 10);     
-    
+    ping -> pong: hit, unhit;
+    pong -> ping: hit, unhit;
+        
 config OneMachine = p: PingPong;    
 config TwoMachines = p1,p2: PingPong;
      
-assert HitFiveAndThreeTimes
-  = eventually exists p1,p2: PingPong | p1 != p2 && p1.times = 5 && p2.times = 3;
-   
-check HitFiveAndThreeTimes from TwoMachines in max 10 steps;   
+assert HitTwoAndFourTimes = eventually exists p1,p2: PingPong | p1 != p2 && p1.times = 4 && p2.times = 2;
+
+assert CantHaveNegativeTimes = eventually exists p: PingPong | p.times < 0;
+
+check HitTwoAndFourTimes from TwoMachines in max 15 steps;
+
+check CantHaveNegativeTimes from OneMachine in max 15 steps;

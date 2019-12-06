@@ -125,7 +125,7 @@ private str buildChangedInstancesRel(rel[Spec,str] instances, int numberOfTransi
   list[str] tuples = ["\<c<c>,c<c+1>,<i>\>" | int c <- [1..numberOfTransitions], Spec s <- instances<0>, !isEmptySpec(s), str i <- instances[s]];
     
   if (!finiteTrace) {
-    tuples += ["\<c<numberOfTransitions>,c<c>,<i>\>" | int c <- [numberOfTransitions..0], Spec s <- instances<0>, !isEmptySpec(s), str i <- instances[s]];
+    tuples += ["\<c<c>,c<j>,<i>\>" | int c <- [numberOfTransitions..0], int j <- [c..0], Spec s <- instances<0>, !isEmptySpec(s), str i <- instances[s]];
   }
     
   return "changedInstance (cur:id, nxt:id, instance:id) \<= {<intercalate(",", tuples)>}
@@ -139,7 +139,7 @@ private str buildRaisedEventsTuples(Spec spc, str instance, int numberOfTransiti
   list[str] tuples = ["\<c<c>,c<c+1>,<toLowerCase(event)>,<instance>\>" | int c <- [1..numberOfTransitions], str event <- lookupRaisableEventName(spc)];
   
   if (!finiteTrace) {
-    tuples += ["\<c<numberOfTransitions>,c<c>,<toLowerCase(event)>,<instance>\>" | int c <- [numberOfTransitions..0], str event <- lookupRaisableEventName(spc)];
+    tuples += ["\<c<c>,c<j>,<toLowerCase(event)>,<instance>\>" | int c <- [numberOfTransitions..0], int j <- [c..0], str event <- lookupRaisableEventName(spc)];
   }
   
   return intercalate(",", tuples);

@@ -4,39 +4,31 @@ spec CoffeeMachine
   amountNeeded: Integer;
    
   init event powerOn() 
-    post: 
-      this.amountNeeded' = 0;
+    post: this.amountNeeded' = 0;
     
   event powerOff()
   
   event selectAmericano()
-    post: 
-      this.amountNeeded' = 130;
+    post: this.amountNeeded' = 130;
     
   event selectEspresso()
-    post: 
-      this.amountNeeded' = 120;
+    post: this.amountNeeded' = 120;
     
   event selectNormal()
-    post: 
-      this.amountNeeded' = 100;
+    post: this.amountNeeded' = 100;
     
   event selectLatte() 
-    post: 
-      this.amountNeeded' = 150;
+    post: this.amountNeeded' = 150;
        
   event pay(amount: Integer)
-    pre: 
-      (amount = 5 || amount = 10 || amount = 20 || amount = 50);
-    post: 
-      this.amountNeeded' = this.amountNeeded - amount;
+    pre: (amount = 5 || amount = 10 || amount = 20 || amount = 50);
+    post: this.amountNeeded' = this.amountNeeded - amount;
   
     variant amountNotMet
       pre: this.amountNeeded - amount > 0;
       
     variant amountMet
-      pre: 
-        this.amountNeeded - amount = 0;
+      pre: this.amountNeeded - amount = 0;
                  
   event cancel() 
     post: this.amountNeeded' = 0;
@@ -53,12 +45,12 @@ spec CoffeeMachine
     active -> (*): powerOff;
     (*) -> waiting: powerOn;  
 
-config InitialMachine
-  = cm1,cm2: CoffeeMachine;
+config InitialMachine = cm: CoffeeMachine;
   
-assert MachineIsServing
-  = eventually exists m: CoffeeMachine | m is serve;  
-  
+assert MachineIsServing = eventually exists m: CoffeeMachine | m is serve;  
 check MachineIsServing from InitialMachine in max 10 steps;
+  
+assert MachineWillNeverServe = always exists m: CoffeeMachine | !(m is serve);    
+check MachineWillNeverServe from InitialMachine in max 5 steps with infinite trace;
 
     

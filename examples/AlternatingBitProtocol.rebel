@@ -1,30 +1,78 @@
 module AlternatingBitProtocol
 
+spec Bit [ONE, ZERO, EMPTY]
+
 spec Channel
-  val: Integer;
-  
-  event open() 
-    post: this.val' = -1;
+  checksum: Bit;
     
-  internal event accept(val: Integer) 
-    pre: val = 0 || val = 1;
-    post: this.val' = val;
+  internal event accept(checksum: Bit) 
+    variant normal
+      post: this.checksum' = checksum;
+      
+    //variant lost
+    //  post: this.checksum' = -1;
+
+  internal event read(checksum: Bit)
+    pre: this.checksum = checksum;
+    post: this.checksum' = Bit[EMPTY];
   
-  event lose()
-    post: this.val' = -1;
-
   states:
-    (*) -> empty: open;
-    empty -> nonempty: accept;
-    nonempty -> nonempty: accept;
-    nonempty -> empty: lose;
+    //empty -> empty: accept::lost;
+    empty -> nonempty: accept::normal;
+    nonempty -> nonempty: accept::normal;
+    nonempty -> empty: read; //, accept::lost;
 
-spec Sender
+spec EndPoint
   send: Channel,
   receive: Channel,
-  lastSendValue: Integer;
+  lastSendValue: Bit,
+  lastReceivedValue: Bit;
+  
+  event sending() 
+    variant readNok
+      pre: this.lastSendValue != this.lastReceivedValue, this.send.accept(this.lastSendValue);  
 
-spec Receiver
-  receive: Channel,
-  send: Channel,
-  lastReceivedValue: Integer;
+    variant readOk
+      pre: 
+        this.lastSendValue = this.lastReceivedValue, 
+        if this.lastSendValue = Bit[ZERO] 
+          then this.send.accept(Bit[ONE])
+          else this.send.accept(Bit[ZERO]);
+      post: 
+        if this.lastSendValue = Bit[ZERO] 
+          then this.lastSendValue' = Bit[ONE]
+          else this.lastSendValue' = Bit[ZERO];    
+    
+  event reading(checksum: Bit)
+    pre: this.receive.read(checksum);
+    post: this.lastReceivedValue' = checksum;
+  
+  //event empty()
+  
+  states:
+    active -> active: sending::readNok, sending::readOk, reading, empty;
+
+fact InitialChannelsAreEmpty = first forall c:Channel | c.checksum = Bit[EMPTY];
+    
+//fact Progress = 
+//  always exists p: EndPoint | (p.lastSendValue = 0 || p.lastSendValue = 1) && next sending on p;       
+    
+config Standard 
+  = k,l: Channel is empty, 
+    sender, receiver: EndPoint is active,
+    sender with send = k, receive = l, lastSendValue = Bit[ZERO], lastReceivedValue = Bit[ONE],
+    receiver with receive = k, send = l, lastReceivedValue = Bit[ZERO], lastSendValue = Bit[ZERO];      
+
+assert CanSendAndReceive
+  = eventually exists sender,receiver: EndPoint | sender != receiver && reading on sender && eventually reading on receiver;
+  
+assert CanNotReadEmpty
+  = eventually exists ep: EndPoint | ep.lastReceivedValue = Bit[EMPTY];    
+
+assert Livelock
+  = (eventually forall s: EndPoint | always (!sending on s && !reading on s)); 
+  
+check CanSendAndReceive from Standard in max 10 steps;
+
+check Livelock from Standard in max 10 steps with infinite trace;   
+    

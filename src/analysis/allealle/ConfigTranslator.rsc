@@ -91,6 +91,7 @@ rel[str field, str val] buildAssignments(WithAssignments assignments) {
   set[str] translateLit((Expr)`<Int i>`) = {"<i>"};
   set[str] translateLit((Expr)`<StringConstant s>`) = {"<s>"};
   set[str] translateLit((Expr)`{<{Expr ","}* elems>}`) = {"<e>" | e <- elems};  
+  set[str] translateLit((Expr)`<Expr spc>[<Id inst>]`) = {"<inst>"};
   default set[str] translateLit(Lit l) { throw "No translation function for literal `<l>`";};
   
   rel[str,str] vals = {};

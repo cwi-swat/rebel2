@@ -30,7 +30,7 @@ str translate((Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, Context ct
   Event syncedEvent = lookupEventByName("<event>", syncedSpec);
 
   // Fix synced event param values
-  list[str] actuals = ["step", "<relOfSync><maybeRename(getFieldName(spc,ctx), "instance")>"];
+  list[str] actuals = [ctx.stepRel, "<relOfSync><maybeRename(getFieldName(spc,ctx), "instance")>"];
   
   list[FormalParam] formals = [p | FormalParam p <- syncedEvent.params];
   list[Expr] args = [a | Expr a <- params];
@@ -58,19 +58,28 @@ str translate((Formula)`<Expr lhs> is <Id state>`, Context ctx) {
 
 str translate((Formula)`eventually <Formula f>`, Context ctx) {
   str configRel = (ctx.curRel == defaultCurRel()) ? "Config" : "(<ctx.curRel>[config as cur] ⨝ *\<cur,nxt\>order)[nxt-\>config]";
-  ctx = nextCurRel(ctx);
-  return "∃ <ctx.curRel> ∈ <configRel> | <translate(f, ctx)>";
+  ctx = nextCurAndStepRel(ctx);
+  return "∃ <ctx.curRel> ∈ <configRel> | let <ctx.stepRel> = (<ctx.curRel>[config as cur] ⨝ (order<if (!ctx.cfg.finiteTrace) {> ∪ loop<}>)) | <translate(f, ctx)>";
 } 
 
 str translate((Formula)`always <Formula f>`, Context ctx) {
   str configRel = (ctx.curRel == defaultCurRel()) ? "Config" : "(<ctx.curRel>[config as cur] ⨝ *\<cur,nxt\>order)[nxt-\>config]";
-  ctx = nextCurRel(ctx);
-  return "∀ <ctx.curRel> ∈ <configRel> | <translate(f, ctx)>";
+  ctx = nextCurAndStepRel(ctx);
+  return "∀ <ctx.curRel> ∈ <configRel> | let <ctx.stepRel> = (<ctx.curRel>[config as cur] ⨝ (order<if (!ctx.cfg.finiteTrace) {> ∪ loop<}>)) | <translate(f, ctx)>";
 }
 
 str translate((Formula)`next <Formula f>`, Context ctx) {
   newCtx = nextCurAndStepRel(ctx);
-  return "let <newCtx.stepRel> = (order ⨝ <ctx.curRel>[config as cur]), prev = <ctx.curRel>, <newCtx.curRel> = <newCtx.stepRel>[nxt-\>config] | <translate(f, newCtx)>";
+  
+  str cons = "let <newCtx.stepRel> = ((order<if (!ctx.cfg.finiteTrace) {> ∪ loop<}>) ⨝ <ctx.curRel>[config as cur]), <newCtx.curRel> = <newCtx.stepRel>[nxt-\>config] | <translate(f, newCtx)>";
+  
+  if (ctx.cfg.finiteTrace) {
+    // next does not work when the current config is the last config
+    //cons = "(<ctx.curRel> != last =\> <cons>)";
+    ;  
+  }
+  
+  return cons; 
 }
 
 str translate((Formula)`first <Formula f>`, Context ctx) {
@@ -81,8 +90,31 @@ str translate((Formula)`first <Formula f>`, Context ctx) {
 str translate((Formula)`<TransEvent event> on <Expr var> <WithAssignments? with>`, Context ctx) {
   str spec = getSpecTypeName(var, ctx.cfg.tm); 
   str r = translateRelExpr(var, ctx); 
-  // TODO; handle the With assignments expression
-  return "Event<capitalize(spec)><capitalize("<event>")> ⊆ (raisedEvent ⨝ <ctx.stepRel> ⨝ <r>)[event]";
+
+  if ((TransEvent)`*` := event) {
+    return "some (raisedEvent ⨝ <ctx.stepRel> ⨝ <r>)";
+  }
+  
+  set[str] paramConstraints = {};
+  str spc = "";
+  if (specType(str name) := getType(var,ctx.cfg.tm)) {
+    spc = name;
+  } else {
+    throw "Must be of spec type";
+  }
+  
+  for (/(Assignment)`<Id fld> = <Expr val>` <- \with) {
+    str paramRel = "(ParamEvent<spc><capitalize("<event>")><capitalize("<fld>")> ⨝ <ctx.stepRel>)[<fld>]";
+    
+    if (isPrim(val, ctx.cfg.tm)) {
+      AttRes r = translateAttrExpr(val, ctx);
+      paramConstraints += "some (<paramRel><if (r.rels != {}) {> ⨯ <intercalate(" ⨯ ", [*r.rels])><}>) where (<fld> = <r.constraint>)";
+    } else {
+      paramConstraints += "<paramRel> = <translateRelExpr(val,ctx)>";
+    }    
+  }
+  
+  return "<for (pc <- paramConstraints) {><pc> ∧ <}>Event<capitalize(spec)><capitalize("<event>")> ⊆ (raisedEvent ⨝ <ctx.stepRel> ⨝ <r>)[event]";
 }
 
 str translate((Formula)`forall <{Decl ","}+ decls> | <Formula form>`, Context ctx) 
@@ -135,46 +167,12 @@ str translateEq(Expr lhs, Expr rhs, str op, Context ctx) {
 str translateRelEq(Expr lhs, Expr rhs, str op, Context ctx)  
   = "<translateRelExpr(lhs, ctx)> <op> <translateRelExpr(rhs, ctx)><maybeRename(getFieldName(rhs,ctx),getFieldName(lhs,ctx))>";
 
-str translateRestrictionEq(Expr lhs, Expr rhs, str operator, Context ctx) {
-  set[str] findReferencedRels(Expr expr) {
-    set[loc] done = {};
-    set[str] rels = {}; 
-    
-    top-down visit(expr) {
-      // We only want fields and parameters
-      case current:(Expr)`<Expr exp>'`: {
-        RelExpr r = ctx.cfg.rm[current@\loc];
-        rels += prefix(r, "nxt");
-        done += exp@\loc;
-      }
-      case current:(Expr)`<Expr exp>.<Id fld>`: {
-        RelExpr r = ctx.cfg.rm[current@\loc];
-        if ((Expr)`this` := exp && current@\loc notin done) {
-          rels += prefix(r, "cur");
-        } else {
-          role = getIdRole(exp@\loc,ctx.cfg.tm);
-          if (role == paramId()) {
-            rels += prefix(r, "param");
-          } else if (role == quantVarId()) {
-            rels += prefix(r, "<exp>");
-          }
-        } 
-      }
-      case current:(Expr)`<Id id>`: {
-        if (getIdRole(current@\loc,ctx.cfg.tm) == paramId()) {
-          RelExpr r = ctx.cfg.rm[current@\loc];
-          rels += prefix(r, "param");
-        } 
-      }
-    }
-    
-    return rels;
-  }
+str translateRestrictionEq(Expr lhs, Expr rhs, str op, Context ctx) {
+  AttRes l = translateAttrExpr(lhs, ctx);
+  AttRes r = translateAttrExpr(rhs, ctx);
 
-  set[str] refRels = findReferencedRels(lhs) + findReferencedRels(rhs);
-  return "(some (<intercalate(" ⨯ ", [*refRels])>) where (<translateAttrExpr(lhs,ctx)> <operator> <translateAttrExpr(rhs,ctx)>))";
+  return "(some (<intercalate(" ⨯ ", [*(l.rels + r.rels)])>) where (<l.constraint> <op> <r.constraint>))";
 }  
-
 
 str translateRelExpr(current:(Expr)`(<Expr e>)`, Context ctx) = "(<translateRelExpr(e,ctx)>)";
 str translateRelExpr(current:(Expr)`<Id id>`, Context ctx) = ctx.cfg.rm[current@\loc].relExpr;
@@ -189,24 +187,74 @@ str translateRelExpr(current:(Expr)`{<Id var> : <Expr expr> | <Formula f>}`, Con
 
 str translateRelExpr(current:(Expr)`<Expr lhs> + <Expr rhs>`, Context ctx) = ctx.cfg.rm[current@\loc].relExpr; 
 str translateRelExpr(current:(Expr)`<Expr lhs> - <Expr rhs>`, Context ctx) = ctx.cfg.rm[current@\loc].relExpr;
-str translateRelExpr(current:(Expr)`{<{Expr ","}* elems>}`, Context ctx) = ctx.cfg.rm[current@\loc].relExpr;
+str translateRelExpr(current:(Expr)`{<{Expr ","}* elems>}`  , Context ctx) = ctx.cfg.rm[current@\loc].relExpr;
+
+str translateRelExpr(current:(Expr)`this`, Context ctx) = ctx.cfg.rm[current@\loc].relExpr;
 
 default str translateRelExpr(Expr e, Context ctx) { throw "Can not translate expression `<e>` at location <e@\loc>"; }
 
-str translateAttrExpr((Expr)`(<Expr e>)`,              Context ctx) = "(<translateAttrExpr(e,ctx)>)"; 
-str translateAttrExpr((Expr)`<Id id>`,                 Context ctx) = "param_<id>";
-str translateAttrExpr((Expr)`this.<Id id>`,            Context ctx) = "cur_<id>";
-str translateAttrExpr((Expr)`this.<Id id>'`,           Context ctx) = "nxt_<id>";
-str translateAttrExpr((Expr)`<Expr expr>.<Id fld>`,    Context ctx) = "param_<fld>" when paramId() := getIdRole(expr@\loc,ctx.cfg.tm);
-str translateAttrExpr((Expr)`<Expr expr>.<Id fld>`,    Context ctx) = "<expr>_<fld>" when quantVarId() := getIdRole(expr@\loc,ctx.cfg.tm);
-str translateAttrExpr((Expr)`<Lit l>`,                 Context ctx) = translateLit(l);
-str translateAttrExpr((Expr)`- <Expr e>`,              Context ctx) = "- <translateAttrExpr(e,ctx)>";
-str translateAttrExpr((Expr)`<Expr lhs> * <Expr rhs>`, Context ctx) = "<translateAttrExpr(lhs,ctx)> * <translateAttrExpr(rhs,ctx)>";
-str translateAttrExpr((Expr)`<Expr lhs> / <Expr rhs>`, Context ctx) = "<translateAttrExpr(lhs,ctx)> / <translateAttrExpr(rhs,ctx)>";
-str translateAttrExpr((Expr)`<Expr lhs> + <Expr rhs>`, Context ctx) = "<translateAttrExpr(lhs,ctx)> + <translateAttrExpr(rhs,ctx)>";
-str translateAttrExpr((Expr)`<Expr lhs> - <Expr rhs>`, Context ctx) = "<translateAttrExpr(lhs,ctx)> - <translateAttrExpr(rhs,ctx)>";
+alias AttRes = tuple[set[str] rels, str constraint];
+ 
+AttRes translateAttrExpr((Expr)`(<Expr e>)`, Context ctx) {
+  AttRes r = translateAttExpr(e, ctx);   
+  return <r.rels, "(<r.constraint>)">;
+} 
 
-default str translateAttrExpr(Expr e, Context ctx) { throw "Can not translate expression `<e>` at location <e@\loc>"; }
+AttRes translateAttrExpr(current:(Expr)`<Id id>`, Context ctx) {
+ str r = "<ctx.cfg.rm[current@\loc].relExpr><renameIfNecessary(current, "param_<id>", ctx)>";
+ return <{r}, "param_<id>">;
+}
+
+AttRes translateAttrExpr(current:(Expr)`this.<Id id>`, Context ctx) {
+ str r = "<ctx.cfg.rm[current@\loc].relExpr><renameIfNecessary(current, "cur_<id>", ctx)>";
+ return <{r}, "cur_<id>">;
+}
+
+AttRes translateAttrExpr(current:(Expr)`this.<Id id>'`, Context ctx) {
+ str r = "<ctx.cfg.rm[current@\loc].relExpr><renameIfNecessary(current, "nxt_<id>", ctx)>";
+ return <{r}, "nxt_<id>">;
+}
+
+AttRes translateAttrExpr(current:(Expr)`<Expr spc>[<Id inst>].<Id fld>`, Context ctx) {
+ str r = "<ctx.cfg.rm[current@\loc].relExpr><renameIfNecessary(current, "const_<id>", ctx)>";
+ return <{r}, "const_<id>">;
+}
+
+AttRes translateAttrExpr(current:(Expr)`<Expr expr>.<Id fld>`,    Context ctx) {
+  str r = ctx.cfg.rm[current@\loc].relExpr;
+
+  IdRole role = getIdRole(expr@\loc,ctx.cfg.tm);
+  str newFld = "";
+  switch (role) {
+    case paramId(): newFld = "param_<fld>";
+    case quantVarId(): newFld = "<expr>";
+  }
+  
+  r = "<r><renameIfNecessary(current, newFld, ctx)>";
+  return <{r}, newFld>;
+}
+
+AttRes translateAttrExpr((Expr)`- <Expr e>`, Context ctx) { 
+  AttRes r = translateAttrExpr(e,ctx);
+  return <r.rels, "(- <r.constraint>)">;
+}
+
+private AttRes translateBinAttrExpr(Expr lhs, Expr rhs, str op, Context ctx) {
+   AttRes l = translateAttrExpr(lhs,ctx);
+   AttRes r = translateAttrExpr(rhs,ctx);
+   
+   return <l.rels + r.rels, "<l.constraint> <op> <r.constraint>">;
+}
+
+AttRes translateAttrExpr((Expr)`<Expr lhs> * <Expr rhs>`, Context ctx) = translateBinAttrExpr(lhs, rhs, "*", ctx);
+AttRes translateAttrExpr((Expr)`<Expr lhs> / <Expr rhs>`, Context ctx) = translateBinAttrExpr(lhs, rhs, "/", ctx);
+AttRes translateAttrExpr((Expr)`<Expr lhs> + <Expr rhs>`, Context ctx) = translateBinAttrExpr(lhs, rhs, "+", ctx);
+AttRes translateAttrExpr((Expr)`<Expr lhs> - <Expr rhs>`, Context ctx) = translateBinAttrExpr(lhs, rhs, "-", ctx);
+
+AttRes translateAttrExpr((Expr)`<Lit l>`, Context ctx) = <{}, translateLit(l)>;
+
+default AttRes translateAttrExpr(Expr e, Context ctx) { throw "Can not translate expression `<e>` at location <e@\loc>"; }
+
 
 str translateLit((Lit)`<Int i>`) = "<i>";
 str translateLit((Lit)`<StringConstant s>`) = "<s>";

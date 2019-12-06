@@ -127,7 +127,7 @@ void collect(current: (Event)`<Modifier? modi> event <Id name>(<{FormalParam ","
   
   c.define("<name>", eventId(), current, defType(fp, 
     AType (Solver s) {
-      return eventType(atypeList([s.getType(f) | f <- fp]));
+      return eventType(namedTypeList([<"<f>",s.getType(f)> | f <- fp]));
     }));
   
   c.enterScope(current);
@@ -214,7 +214,9 @@ void collect(current: (Formula)`<Expr spc>.<Id event>(<{Expr ","}* arguments>)`,
     AType (Solver s) {
       eType = s.getType(event);
       
-      if (eventType(formalTypes) := s.getType(event)) {
+      if (eventType(namedTypeList(ntl)) := s.getType(event)) {
+        AType formalTypes = atypeList([tipe | <str _, AType tipe> <- ntl]);
+        
         argTypes = atypeList([s.getType(a) | a <- args]);
         s.requireEqual(argTypes, formalTypes, 
           error(current, "Expected arguments %t, found %t", formalTypes, argTypes)); 

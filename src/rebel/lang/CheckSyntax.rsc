@@ -38,6 +38,10 @@ syntax Formula
   | TransEvent event "on" Expr var WithAssignments? with
   ;
 
+syntax TransEvent 
+  = wildcard: "*"
+  ;
+
 syntax Check = "check" Id name "from" Id config "in" SearchDepth depth Objectives? objs ";";
   
 syntax SearchDepth

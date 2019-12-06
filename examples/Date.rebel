@@ -9,7 +9,7 @@ spec Date [NOW*]
     post: this.year' = year, this.month' = month, this.day' = day;
   
   event after(other: Date) 
-    pre: other is initialized, noOp(other);
+    pre: other is initialized;
     variant years
       pre: this.year > other.year;
     
@@ -50,12 +50,11 @@ fact TimeAlwaysMovesForward
  
 fact NowAlwaysExists = always (Date[NOW] is initialized);
 
-assert SomeInitializedDate = eventually exists d: Date | d is initialized;
+assert SomeInitializedDate = eventually exists d: Date | d != Date[NOW] && d is initialized;
 
 //assert OneDateIsAfterAnother = eventually exists d1,d2:Date | d1 != d2 && next after::years on d1;
 
 config SomeDates = d1,d2,d3: Date;
 
-check SomeInitializedDate from SomeDates in max 2 steps;
-//check OneDateIsAfterAnother from SomeDates in max 5 steps;      
+check SomeInitializedDate from SomeDates in max 3 steps;
       

@@ -34,3 +34,8 @@ void translateLeaderElection(str check)   = performCheck(check, parseModule(|pro
 void translateId()                        = performCheck("ConsecutiveValues", parseModule(|project://rebel2/examples/lib/checks/IdChecks.rebel|));
 void translateLight(str check)            = performCheck(check, parseModule(|project://rebel2/examples/Light.rebel|)); 
 void translateDate(str check)             = performCheck(check, parseModule(|project://rebel2/examples/Date.rebel|)); 
+void translateABP(str check)              = performCheck(check, parseModule(|project://rebel2/examples/AlternatingBitProtocol.rebel|));
+
+void translateDebitCard(str check)        = performCheck(check, parseModule(|project://rebel2/examples/local/debitcard/DebitCard.rebel|));
+
+void translate(loc rebelFile, str check)  = performCheck(check, parseModule(rebelFile)); 
