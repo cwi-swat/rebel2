@@ -15,9 +15,13 @@ import Map;
 import List;
 
 str translateAssert(str assertName, set[Module] mods, Config cfg) {
+  int lastParam = 0;
+  str nxtParam() { lastParam += 1; return "param_<lastParam>"; }
+  Context c = ctx(cfg, defaultCurRel(), defaultStepRel(), nxtParam);
+  
   if (Module m <- mods, /(Assert)`assert <Id name> = <Formula form>;` <- m.parts, "<name>" == assertName) {
     return "// Assert: <name>
-           '<translate(form, ctx(cfg, defaultCurRel(), defaultStepRel()))>
+           '<translate(form, c)>
            '<if (!cfg.finiteTrace) {>// Force infinite traces
            'some loop <}>
            '"; 
@@ -25,8 +29,12 @@ str translateAssert(str assertName, set[Module] mods, Config cfg) {
 }
 
 str translateFacts(set[Module] mods, Config cfg) {
+  int lastParam = 0;
+  str nxtParam() { lastParam += 1; return "param_<lastParam>"; }
+  Context c = ctx(cfg, defaultCurRel(), defaultStepRel(), nxtParam);
+
   list[str] alleFacts = ["// Fact: <f.name>
-                        '<translate(f.form, ctx(cfg, defaultCurRel(), defaultStepRel()))>" | Module m <- mods, /Fact f <- m.parts];  
+                        '<translate(f.form, c)>" | Module m <- mods, /Fact f <- m.parts];  
 
   return intercalate("\n", alleFacts);
 }

@@ -28,7 +28,11 @@ str constructTransitionFunction(Spec spc, Graph[SyncedWith] syncDep, Config cfg)
   }
    
   str buildTransCond(Event e) {
-    tuple[set[str] names, list[str] syncs] lets = syncedInstanceRels(spc, e, "inst", syncDep, top(), ctx(cfg, defaultCurRel(), defaultStepRel()));
+    int lastParam = 0;
+    str nxtParam() { lastParam += 1; return "param_<lastParam>"; }
+    Context c = ctx(cfg, defaultCurRel(), defaultStepRel(), nxtParam);
+
+    tuple[set[str] names, list[str] syncs] lets = syncedInstanceRels(spc, e, "inst", syncDep, top(), c);
     lets.names += {"inst"};
     if (lets.syncs != []) lets.syncs = ["cur = step[cur-\>config]"] + lets.syncs;
     
@@ -128,7 +132,9 @@ str translateEventsToPreds(Spec spc, Config cfg) =
 private bool isFrameEvent(Event e) = "<e.name>" == "__frame";
 
 str translateEventToPred(Spec spc, Event event, str instanceRel, Config cfg) {
-  Context c = ctx(cfg, defaultCurRel(), defaultStepRel());
+  int lastParam = 0;
+  str nxtParam() { lastParam += 1; return "param_<lastParam>"; }
+  Context c = ctx(cfg, defaultCurRel(), defaultStepRel(), nxtParam);
   
   list[str] letRels = buildLetVars(spc, event, instanceRel, cfg);
   list[str] paramVars = ["step:(cur:id, nxt:id)", "<getLowerCaseSpecName(spc)>: (instance:id)"] + buildParamVars(event, c);
@@ -140,6 +146,10 @@ str translateEventToPred(Spec spc, Event event, str instanceRel, Config cfg) {
 }
 
 str translateFrameEvent(Spec spc, Event frameEvent, str instRel, Config cfg) {
+  int lastParam = 0;
+  str nxtParam() { lastParam += 1; return "param_<lastParam>"; }
+  Context c = ctx(cfg, defaultCurRel(), defaultStepRel(), nxtParam);
+  
   list[str] letRels = buildLetVars(spc, frameEvent, instRel, cfg);
 
   return "pred frame<getCapitalizedSpecName(spc)>[step: (cur:id, nxt:id), <getLowerCaseSpecName(spc)>: (instance:id)] 
@@ -147,7 +157,7 @@ str translateFrameEvent(Spec spc, Event frameEvent, str instRel, Config cfg) {
          '    nxtState = curState <if (/Field f := spc.fields) {>∧
          '    (
          '      curState ⊆ uninitialized ∨ 
-         '      (<translatePost(frameEvent, ctx(cfg, defaultCurRel(), defaultStepRel()))>)
+         '      (<translatePost(frameEvent, c)>)
          '    )<}>
          '  )
          '";

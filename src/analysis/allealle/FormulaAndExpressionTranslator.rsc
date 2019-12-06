@@ -14,11 +14,11 @@ import Map;
 import ParseTree;
 import util::Maybe;
 
-data Context = ctx(Config cfg, str curRel, str stepRel);
+data Context = ctx(Config cfg, str curRel, str stepRel, str () nxtParamPrefix);
 
-Context nextCurRel(Context old) = ctx(old.cfg, getNextCurRel(old.curRel), old.stepRel);
-Context nextStepRel(Context old) = ctx(old.cfg, old.curRel, getNextStepRel(old.stepRel));
-Context nextCurAndStepRel(Context old) = ctx(old.cfg, getNextCurRel(old.curRel), getNextStepRel(old.stepRel));
+Context nextCurRel(Context old) = ctx(old.cfg, getNextCurRel(old.curRel), old.stepRel, old.nxtParamPrefix);
+Context nextStepRel(Context old) = ctx(old.cfg, old.curRel, getNextStepRel(old.stepRel), old.nxtParamPrefix);
+Context nextCurAndStepRel(Context old) = ctx(old.cfg, getNextCurRel(old.curRel), getNextStepRel(old.stepRel), old.nxtParamPrefix);
 
 str translate((Formula)`(<Formula f>)`, Context ctx) = "(<translate(f,ctx)>)";
 str translate((Formula)`!<Formula f>`, Context ctx) = "¬ (<translate(f,ctx)>)";
@@ -201,8 +201,9 @@ AttRes translateAttrExpr((Expr)`(<Expr e>)`, Context ctx) {
 } 
 
 AttRes translateAttrExpr(current:(Expr)`<Id id>`, Context ctx) {
- str r = "<ctx.cfg.rm[current@\loc].relExpr><renameIfNecessary(current, "param_<id>", ctx)>";
- return <{r}, "param_<id>">;
+ str fld = "<ctx.nxtParamPrefix()>_<id>";
+ str r = "<ctx.cfg.rm[current@\loc].relExpr><renameIfNecessary(current, fld, ctx)>";
+ return <{r}, fld>;
 }
 
 AttRes translateAttrExpr(current:(Expr)`this.<Id id>`, Context ctx) {
@@ -220,13 +221,13 @@ AttRes translateAttrExpr(current:(Expr)`<Expr spc>[<Id inst>].<Id fld>`, Context
  return <{r}, "const_<id>">;
 }
 
-AttRes translateAttrExpr(current:(Expr)`<Expr expr>.<Id fld>`,    Context ctx) {
+AttRes translateAttrExpr(current:(Expr)`<Expr expr>.<Id fld>`, Context ctx) {
   str r = ctx.cfg.rm[current@\loc].relExpr;
 
   IdRole role = getIdRole(expr@\loc,ctx.cfg.tm);
   str newFld = "";
   switch (role) {
-    case paramId(): newFld = "param_<fld>";
+    case paramId(): newFld = "<ctx.nxtParamPrefix()>_<fld>";
     case quantVarId(): newFld = "<expr>";
   }
   
