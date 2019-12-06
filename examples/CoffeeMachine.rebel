@@ -3,7 +3,7 @@ module CoffeeMachine
 spec CoffeeMachine
   amountNeeded: Integer;
    
-  init event powerOn() 
+  event powerOn() 
     post: this.amountNeeded' = 0;
     
   event powerOff()

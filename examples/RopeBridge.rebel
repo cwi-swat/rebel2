@@ -3,27 +3,27 @@ module RopeBridge
 spec Adventurer
   timeToCross: Integer;
     
-  internal event cross()
+  internal event crossNearToFar()
+  internal event crossFarToNear()
     
   states:
-    near -> far: cross;
-    far -> near: cross;
+    near -> far: crossNearToFar;
+    far -> near: crossFarToNear;
     
 spec FlashLight
   totalTimeSpend: Integer;
   
   event crossNearToFar(p1: Adventurer, p2: Adventurer)
     pre: 
-      p1 is near, p2 is near,
-      p1.cross(), p2.cross();
+      p1.crossNearToFar(), p2.crossNearToFar();
     post:
       if p1.timeToCross > p2.timeToCross 
         then this.totalTimeSpend' = this.totalTimeSpend + p1.timeToCross
         else this.totalTimeSpend' = this.totalTimeSpend + p2.timeToCross;
       
   event crossFarToNear(p: Adventurer)
-    pre: p is far, p.cross();
-    post: this.totalTimeSpend' >= this.totalTimeSpend + p.timeToCross; 
+    pre: p.crossFarToNear();
+    post: this.totalTimeSpend' = this.totalTimeSpend + p.timeToCross; 
     
   states:
     near -> far: crossNearToFar;
