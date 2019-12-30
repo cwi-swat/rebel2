@@ -1,16 +1,12 @@
-module analysis::RebelTrace
+module rebel::checker::RebelTrace
 
 import rebel::lang::Syntax;
 import rebel::lang::Parser;
 import rebel::lang::TypeChecker;
 
-import analysis::allealle::CommonTranslationFunctions;
-//import ModelFinder;              // From AlleAlle
-//import translation::Syntax;      // From AlleAlle
-//import translation::AST;         // From AlleAlle
+import rebel::checker::translation::CommonTranslationFunctions;
+
 import translation::SMTInterface;// From AlleAlle
-//import ide::Parser;              // From AlleAlle
-//import ide::Imploder;            // From AlleAlle
 import util::ModelPrinter;       // From AlleAlle
 import smtlogic::Core;           // From AlleAlle
 import smtlogic::Ints;           // From AlleAlle

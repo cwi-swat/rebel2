@@ -12,9 +12,9 @@ spec Adventurer
     
 spec FlashLight
   totalTimeSpend: Integer;
-  
+    
   event crossNearToFar(p1: Adventurer, p2: Adventurer)
-    pre: 
+    pre:  
       p1.crossNearToFar(), p2.crossNearToFar();
     post:
       if p1.timeToCross > p2.timeToCross 

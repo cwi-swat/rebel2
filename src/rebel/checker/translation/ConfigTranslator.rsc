@@ -1,10 +1,9 @@
-module analysis::allealle::ConfigTranslator
-
-import analysis::allealle::CommonTranslationFunctions;
+module rebel::checker::translation::ConfigTranslator
 
 import rebel::lang::Syntax;
 import rebel::lang::TypeChecker;
-import analysis::allealle::RelationCollector;
+import rebel::checker::translation::RelationCollector;
+import rebel::checker::translation::CommonTranslationFunctions;
 
 import String;
 import IO;
@@ -23,9 +22,7 @@ Config buildConfig(str checkName, set[Module] mods, TModel tm) {
     
     set[Fact] facts = gatherFacts(mods);
     
-    RelMapping rm = constructRelMapping(mods, tm);
-
-    return config(instances, initialValues, facts, tm, rm, searchDepth, finiteTrace = !infiniteTrace);
+    return config(instances, initialValues, facts, tm, searchDepth, finiteTrace = !infiniteTrace);
    }
 }
 
@@ -57,9 +54,14 @@ rel[Spec spc, str instance, State initialState] buildInstances(rebel::lang::Synt
     case (InstanceSetup)`<{Id ","}+ labels> : <Type spec> <InState? inState> <WithAssignments? assignments>` : {
       Spec s = lookupSpecByRef(spec@\loc, mods, tm);
       
-      State st = uninitialized();
-      if (/InState ist := inState, "<ist.state>" != "uninitialized") {
-        st = state("<ist.state>");
+      //State st = uninitialized();
+      State st = noState();
+      if (/InState ist := inState) {
+        if ("<ist.state>" == "uninitialized") {
+          st = uninitialized();
+        } else {
+          st = state("<ist.state>");
+        }
       }
       
       instances += {<s, "<label>", st> | Id label <- labels};

@@ -1,58 +1,146 @@
 // Static configuration of state machines
 // Define the specs that can take place in the transition system
 Date (spec:id) = {<date>}
+IBAN (spec:id) = {<iban>}
+DebitCard (spec:id) = {<debitcard>}
+Boolean (spec:id) = {<boolean>}
+RequestReason (spec:id) = {<requestreason>}
+BrandType (spec:id) = {<brandtype>}
 
 // Define all possible states for all machines
-State (state:id) = {<state_uninitialized>,<state_finalized>,<state_date_created>}
-initialized (state:id) = {<state_date_created>}
+State (state:id) = {<state_uninitialized>,<state_finalized>,<state_date_created>,<state_iban_created>,<state_debitcard_requestedbycustomer>,<state_debitcard_expired>,<state_debitcard_nowrongpinentries>,<state_debitcard_requested>,<state_debitcard_requestedlost>,<state_debitcard_requestedstolen>,<state_debitcard_requestednew>,<state_debitcard_produced>,<state_debitcard_onewrongpinentry>,<state_debitcard_blocked>,<state_debitcard_active>,<state_debitcard_twowrongpinentries>,<state_debitcard_replacementrequested>}
+initialized (state:id) = {<state_date_created>,<state_iban_created>,<state_debitcard_requestedbycustomer>,<state_debitcard_expired>,<state_debitcard_nowrongpinentries>,<state_debitcard_requested>,<state_debitcard_requestedlost>,<state_debitcard_requestedstolen>,<state_debitcard_requestednew>,<state_debitcard_produced>,<state_debitcard_onewrongpinentry>,<state_debitcard_blocked>,<state_debitcard_active>,<state_debitcard_twowrongpinentries>,<state_debitcard_replacementrequested>}
 finalized (state:id) = {<state_finalized>}
 uninitialized (state:id) = {<state_uninitialized>}
 StateDateCreated (state:id) = {<state_date_created>}
 
+StateIBANCreated (state:id) = {<state_iban_created>}
+
+StateDebitCardRequestedStolen (state:id) = {<state_debitcard_requestedstolen>}
+StateDebitCardExpired (state:id) = {<state_debitcard_expired>}
+StateDebitCardRequestedByCustomer (state:id) = {<state_debitcard_requestedbycustomer>}
+StateDebitCardNoWrongPinEntries (state:id) = {<state_debitcard_nowrongpinentries>}
+StateDebitCardBlocked (state:id) = {<state_debitcard_blocked>}
+StateDebitCardTwoWrongPinEntries (state:id) = {<state_debitcard_twowrongpinentries>}
+StateDebitCardProduced (state:id) = {<state_debitcard_produced>}
+StateDebitCardRequestedNew (state:id) = {<state_debitcard_requestednew>}
+StateDebitCardActive (state:id) = {<state_debitcard_active>}
+StateDebitCardRequested (state:id) = {<state_debitcard_requested>}
+StateDebitCardReplacementRequested (state:id) = {<state_debitcard_replacementrequested>}
+StateDebitCardOneWrongPinEntry (state:id) = {<state_debitcard_onewrongpinentry>}
+StateDebitCardRequestedLost (state:id) = {<state_debitcard_requestedlost>}
+
+
+
+
+
 // Define which transitions are allowed (in the form of `from a state` -> ` via an event` -> `to a state`
-allowedTransitions (from:id, to:id, event:id) = {<state_date_created,state_date_created,event_date_before>,<state_uninitialized,state_date_created,event_date_create>,<state_date_created,state_date_created,event_date_after>,<state_date_created,state_date_created,event_date_yearsafter>}
+allowedTransitions (from:id, to:id, event:id) = {<state_date_created,state_date_created,event_date_before>,<state_uninitialized,state_date_created,event_date_create>,<state_date_created,state_date_created,event_date_after>,<state_date_created,state_date_created,event_date_yearsafter>,<state_uninitialized,state_iban_created,event_iban_create>,<state_debitcard_expired,state_finalized,event_debitcard_closed>,<state_uninitialized,state_debitcard_requestedstolen,event_debitcard_requested__stolen>,<state_debitcard_requestedbycustomer,state_finalized,event_debitcard_closed>,<state_debitcard_produced,state_debitcard_nowrongpinentries,event_debitcard_activated>,<state_debitcard_requestedstolen,state_finalized,event_debitcard_closed>,<state_debitcard_requestedlost,state_finalized,event_debitcard_closed>,<state_debitcard_requestednew,state_finalized,event_debitcard_closed>,<state_debitcard_requestednew,state_debitcard_produced,event_debitcard_produced>,<state_debitcard_requestedlost,state_debitcard_produced,event_debitcard_produced>,<state_debitcard_nowrongpinentries,state_debitcard_onewrongpinentry,event_debitcard_transactionoccurred__wrongpin>,<state_debitcard_expired,state_finalized,event_debitcard_empty>,<state_uninitialized,state_debitcard_requestedbycustomer,event_debitcard_requested__customer>,<state_debitcard_requestedstolen,state_debitcard_produced,event_debitcard_produced>,<state_debitcard_onewrongpinentry,state_finalized,event_debitcard_closed>,<state_debitcard_produced,state_finalized,event_debitcard_closed>,<state_debitcard_nowrongpinentries,state_finalized,event_debitcard_closed>,<state_debitcard_blocked,state_debitcard_expired,event_debitcard_transactionoccurred__expired>,<state_debitcard_twowrongpinentries,state_debitcard_blocked,event_debitcard_transactionoccurred__wrongpin>,<state_debitcard_active,state_finalized,event_debitcard_closed>,<state_uninitialized,state_debitcard_requestedlost,event_debitcard_requested__lost>,<state_debitcard_blocked,state_debitcard_nowrongpinentries,event_debitcard_unblocked>,<state_debitcard_requestedbycustomer,state_debitcard_produced,event_debitcard_produced>,<state_debitcard_requested,state_finalized,event_debitcard_closed>,<state_debitcard_onewrongpinentry,state_debitcard_twowrongpinentries,event_debitcard_transactionoccurred__wrongpin>,<state_uninitialized,state_debitcard_requestednew,event_debitcard_requested__new>,<state_debitcard_onewrongpinentry,state_debitcard_expired,event_debitcard_transactionoccurred__expired>,<state_debitcard_onewrongpinentry,state_debitcard_nowrongpinentries,event_debitcard_transactionoccurred>,<state_debitcard_nowrongpinentries,state_debitcard_nowrongpinentries,event_debitcard_transactionoccurred>,<state_debitcard_replacementrequested,state_debitcard_nowrongpinentries,event_debitcard_produced>,<state_debitcard_blocked,state_finalized,event_debitcard_closed>,<state_debitcard_nowrongpinentries,state_debitcard_expired,event_debitcard_transactionoccurred__expired>,<state_debitcard_twowrongpinentries,state_debitcard_nowrongpinentries,event_debitcard_transactionoccurred>,<state_debitcard_twowrongpinentries,state_debitcard_expired,event_debitcard_transactionoccurred__expired>,<state_uninitialized,state_debitcard_replacementrequested,event_debitcard_requested__expired>,<state_debitcard_blocked,state_finalized,event_debitcard_toomanyresets>,<state_debitcard_replacementrequested,state_finalized,event_debitcard_closed>,<state_debitcard_twowrongpinentries,state_finalized,event_debitcard_closed>}
 // Define each event as single relation so that the events can be used as variables in the constraints 
-EventDateBefore__month (event:id) = {<event_date_before__month>}
+EventDebitCardProduced (event:id) = {<event_debitcard_produced>}
 EventDateBefore__years (event:id) = {<event_date_before__years>}
+EventDebitCardClosed (event:id) = {<event_debitcard_closed>}
 EventDate__frame (event:id) = {<event_date___frame>}
 EventDateBefore__day (event:id) = {<event_date_before__day>}
+EventIBAN__frame (event:id) = {<event_iban___frame>}
 EventDateAfter__years (event:id) = {<event_date_after__years>}
 EventDateYearsAfter (event:id) = {<event_date_yearsafter>}
 EventDateCreate (event:id) = {<event_date_create>}
 EventDateAfter__day (event:id) = {<event_date_after__day>}
 EventDateAfter__month (event:id) = {<event_date_after__month>}
+EventDateBefore__month (event:id) = {<event_date_before__month>}
+EventDebitCardTransactionOccurred__expired (event:id) = {<event_debitcard_transactionoccurred__expired>}
+EventDebitCardRequested__new (event:id) = {<event_debitcard_requested__new>}
+EventDebitCardRequested__expired (event:id) = {<event_debitcard_requested__expired>}
+EventIBANCreate (event:id) = {<event_iban_create>}
+EventDebitCardTransactionOccurred__ok (event:id) = {<event_debitcard_transactionoccurred__ok>}
+EventDebitCardTransactionOccurred__wrongPin (event:id) = {<event_debitcard_transactionoccurred__wrongpin>}
+EventDebitCardUnblocked (event:id) = {<event_debitcard_unblocked>}
+EventDebitCardTooManyResets (event:id) = {<event_debitcard_toomanyresets>}
+EventDebitCardRequested__stolen (event:id) = {<event_debitcard_requested__stolen>}
+EventDebitCard__frame (event:id) = {<event_debitcard___frame>}
+EventDebitCardRequested__customer (event:id) = {<event_debitcard_requested__customer>}
+EventDebitCardRequested__lost (event:id) = {<event_debitcard_requested__lost>}
+EventDebitCardEmpty (event:id) = {<event_debitcard_empty>}
+EventDebitCardActivated (event:id) = {<event_debitcard_activated>}
 
+__IntConst_0 (const_0: int) = {<0>}
+__StrConst_ (const_: str) = {<"">}
 __IntConst_5 (const_5: int) = {<5>}
 
+
 // Dynamic configuration of state machines
-Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>}
-order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>}
+Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>}
+order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>}
 first (config:id) = {<c1>}
-last (config:id) <= {<c1>,<c2>,<c3>,<c4>}
+last (config:id) <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>}
+back (config:id) = {}
+loop (cur:id, nxt:id) = {}
 
+Instance (spec:id, instance:id) = {<requestreason,EXPIRED>,<boolean,TRUE>,<brandtype,VPAY>,<brandtype,MAESTRO>,<requestreason,LOST>,<debitcard,dc>,<boolean,FALSE>,<requestreason,NEW>,<requestreason,STOLEN>,<date,d2>,<date,d1>,<date,NOW>,<iban,an>,<requestreason,CUSTOMER>}
+instanceInState (config:id, instance:id, state:id) >={<c1,dc,state_uninitialized>}<= {<c1,an,state_uninitialized>,<c1,an,state_iban_created>,<c1,dc,state_debitcard_requestedlost>,<c1,dc,state_debitcard_requestednew>,<c1,dc,state_debitcard_requestedstolen>,<c1,dc,state_debitcard_requestedbycustomer>,<c1,dc,state_debitcard_expired>,<c1,dc,state_debitcard_nowrongpinentries>,<c1,dc,state_debitcard_active>,<c1,dc,state_finalized>,<c1,dc,state_debitcard_blocked>,<c1,dc,state_debitcard_requested>,<c1,dc,state_debitcard_replacementrequested>,<c1,dc,state_debitcard_twowrongpinentries>,<c1,dc,state_uninitialized>,<c1,dc,state_debitcard_onewrongpinentry>,<c1,dc,state_debitcard_produced>,<c1,d1,state_date_created>,<c1,d1,state_uninitialized>,<c1,d2,state_date_created>,<c1,d2,state_uninitialized>,<c1,NOW,state_date_created>,<c1,NOW,state_uninitialized>,<c2,an,state_uninitialized>,<c2,an,state_iban_created>,<c2,dc,state_debitcard_requestedlost>,<c2,dc,state_debitcard_requestednew>,<c2,dc,state_debitcard_requestedstolen>,<c2,dc,state_debitcard_requestedbycustomer>,<c2,dc,state_debitcard_expired>,<c2,dc,state_debitcard_nowrongpinentries>,<c2,dc,state_debitcard_active>,<c2,dc,state_finalized>,<c2,dc,state_debitcard_blocked>,<c2,dc,state_debitcard_requested>,<c2,dc,state_debitcard_replacementrequested>,<c2,dc,state_debitcard_twowrongpinentries>,<c2,dc,state_uninitialized>,<c2,dc,state_debitcard_onewrongpinentry>,<c2,dc,state_debitcard_produced>,<c2,d1,state_date_created>,<c2,d1,state_uninitialized>,<c2,d2,state_date_created>,<c2,d2,state_uninitialized>,<c2,NOW,state_date_created>,<c2,NOW,state_uninitialized>,<c3,an,state_uninitialized>,<c3,an,state_iban_created>,<c3,dc,state_debitcard_requestedlost>,<c3,dc,state_debitcard_requestednew>,<c3,dc,state_debitcard_requestedstolen>,<c3,dc,state_debitcard_requestedbycustomer>,<c3,dc,state_debitcard_expired>,<c3,dc,state_debitcard_nowrongpinentries>,<c3,dc,state_debitcard_active>,<c3,dc,state_finalized>,<c3,dc,state_debitcard_blocked>,<c3,dc,state_debitcard_requested>,<c3,dc,state_debitcard_replacementrequested>,<c3,dc,state_debitcard_twowrongpinentries>,<c3,dc,state_uninitialized>,<c3,dc,state_debitcard_onewrongpinentry>,<c3,dc,state_debitcard_produced>,<c3,d1,state_date_created>,<c3,d1,state_uninitialized>,<c3,d2,state_date_created>,<c3,d2,state_uninitialized>,<c3,NOW,state_date_created>,<c3,NOW,state_uninitialized>,<c4,an,state_uninitialized>,<c4,an,state_iban_created>,<c4,dc,state_debitcard_requestedlost>,<c4,dc,state_debitcard_requestednew>,<c4,dc,state_debitcard_requestedstolen>,<c4,dc,state_debitcard_requestedbycustomer>,<c4,dc,state_debitcard_expired>,<c4,dc,state_debitcard_nowrongpinentries>,<c4,dc,state_debitcard_active>,<c4,dc,state_finalized>,<c4,dc,state_debitcard_blocked>,<c4,dc,state_debitcard_requested>,<c4,dc,state_debitcard_replacementrequested>,<c4,dc,state_debitcard_twowrongpinentries>,<c4,dc,state_uninitialized>,<c4,dc,state_debitcard_onewrongpinentry>,<c4,dc,state_debitcard_produced>,<c4,d1,state_date_created>,<c4,d1,state_uninitialized>,<c4,d2,state_date_created>,<c4,d2,state_uninitialized>,<c4,NOW,state_date_created>,<c4,NOW,state_uninitialized>,<c5,an,state_uninitialized>,<c5,an,state_iban_created>,<c5,dc,state_debitcard_requestedlost>,<c5,dc,state_debitcard_requestednew>,<c5,dc,state_debitcard_requestedstolen>,<c5,dc,state_debitcard_requestedbycustomer>,<c5,dc,state_debitcard_expired>,<c5,dc,state_debitcard_nowrongpinentries>,<c5,dc,state_debitcard_active>,<c5,dc,state_finalized>,<c5,dc,state_debitcard_blocked>,<c5,dc,state_debitcard_requested>,<c5,dc,state_debitcard_replacementrequested>,<c5,dc,state_debitcard_twowrongpinentries>,<c5,dc,state_uninitialized>,<c5,dc,state_debitcard_onewrongpinentry>,<c5,dc,state_debitcard_produced>,<c5,d1,state_date_created>,<c5,d1,state_uninitialized>,<c5,d2,state_date_created>,<c5,d2,state_uninitialized>,<c5,NOW,state_date_created>,<c5,NOW,state_uninitialized>,<c6,an,state_uninitialized>,<c6,an,state_iban_created>,<c6,dc,state_debitcard_requestedlost>,<c6,dc,state_debitcard_requestednew>,<c6,dc,state_debitcard_requestedstolen>,<c6,dc,state_debitcard_requestedbycustomer>,<c6,dc,state_debitcard_expired>,<c6,dc,state_debitcard_nowrongpinentries>,<c6,dc,state_debitcard_active>,<c6,dc,state_finalized>,<c6,dc,state_debitcard_blocked>,<c6,dc,state_debitcard_requested>,<c6,dc,state_debitcard_replacementrequested>,<c6,dc,state_debitcard_twowrongpinentries>,<c6,dc,state_uninitialized>,<c6,dc,state_debitcard_onewrongpinentry>,<c6,dc,state_debitcard_produced>,<c6,d1,state_date_created>,<c6,d1,state_uninitialized>,<c6,d2,state_date_created>,<c6,d2,state_uninitialized>,<c6,NOW,state_date_created>,<c6,NOW,state_uninitialized>}
+raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_iban_create,an>,<c2,c3,event_iban_create,an>,<c3,c4,event_iban_create,an>,<c4,c5,event_iban_create,an>,<c5,c6,event_iban_create,an>,<c1,c2,event_debitcard_transactionoccurred__wrongpin,dc>,<c1,c2,event_debitcard_requested__customer,dc>,<c1,c2,event_debitcard_empty,dc>,<c1,c2,event_debitcard_activated,dc>,<c1,c2,event_debitcard_unblocked,dc>,<c1,c2,event_debitcard_produced,dc>,<c1,c2,event_debitcard_requested__stolen,dc>,<c1,c2,event_debitcard_toomanyresets,dc>,<c1,c2,event_debitcard_closed,dc>,<c1,c2,event_debitcard_transactionoccurred__ok,dc>,<c1,c2,event_debitcard_requested__new,dc>,<c1,c2,event_debitcard_requested__expired,dc>,<c1,c2,event_debitcard_transactionoccurred__expired,dc>,<c1,c2,event_debitcard_requested__lost,dc>,<c2,c3,event_debitcard_transactionoccurred__wrongpin,dc>,<c2,c3,event_debitcard_requested__customer,dc>,<c2,c3,event_debitcard_empty,dc>,<c2,c3,event_debitcard_activated,dc>,<c2,c3,event_debitcard_unblocked,dc>,<c2,c3,event_debitcard_produced,dc>,<c2,c3,event_debitcard_requested__stolen,dc>,<c2,c3,event_debitcard_toomanyresets,dc>,<c2,c3,event_debitcard_closed,dc>,<c2,c3,event_debitcard_transactionoccurred__ok,dc>,<c2,c3,event_debitcard_requested__new,dc>,<c2,c3,event_debitcard_requested__expired,dc>,<c2,c3,event_debitcard_transactionoccurred__expired,dc>,<c2,c3,event_debitcard_requested__lost,dc>,<c3,c4,event_debitcard_transactionoccurred__wrongpin,dc>,<c3,c4,event_debitcard_requested__customer,dc>,<c3,c4,event_debitcard_empty,dc>,<c3,c4,event_debitcard_activated,dc>,<c3,c4,event_debitcard_unblocked,dc>,<c3,c4,event_debitcard_produced,dc>,<c3,c4,event_debitcard_requested__stolen,dc>,<c3,c4,event_debitcard_toomanyresets,dc>,<c3,c4,event_debitcard_closed,dc>,<c3,c4,event_debitcard_transactionoccurred__ok,dc>,<c3,c4,event_debitcard_requested__new,dc>,<c3,c4,event_debitcard_requested__expired,dc>,<c3,c4,event_debitcard_transactionoccurred__expired,dc>,<c3,c4,event_debitcard_requested__lost,dc>,<c4,c5,event_debitcard_transactionoccurred__wrongpin,dc>,<c4,c5,event_debitcard_requested__customer,dc>,<c4,c5,event_debitcard_empty,dc>,<c4,c5,event_debitcard_activated,dc>,<c4,c5,event_debitcard_unblocked,dc>,<c4,c5,event_debitcard_produced,dc>,<c4,c5,event_debitcard_requested__stolen,dc>,<c4,c5,event_debitcard_toomanyresets,dc>,<c4,c5,event_debitcard_closed,dc>,<c4,c5,event_debitcard_transactionoccurred__ok,dc>,<c4,c5,event_debitcard_requested__new,dc>,<c4,c5,event_debitcard_requested__expired,dc>,<c4,c5,event_debitcard_transactionoccurred__expired,dc>,<c4,c5,event_debitcard_requested__lost,dc>,<c5,c6,event_debitcard_transactionoccurred__wrongpin,dc>,<c5,c6,event_debitcard_requested__customer,dc>,<c5,c6,event_debitcard_empty,dc>,<c5,c6,event_debitcard_activated,dc>,<c5,c6,event_debitcard_unblocked,dc>,<c5,c6,event_debitcard_produced,dc>,<c5,c6,event_debitcard_requested__stolen,dc>,<c5,c6,event_debitcard_toomanyresets,dc>,<c5,c6,event_debitcard_closed,dc>,<c5,c6,event_debitcard_transactionoccurred__ok,dc>,<c5,c6,event_debitcard_requested__new,dc>,<c5,c6,event_debitcard_requested__expired,dc>,<c5,c6,event_debitcard_transactionoccurred__expired,dc>,<c5,c6,event_debitcard_requested__lost,dc>,<c1,c2,event_date_create,d1>,<c2,c3,event_date_create,d1>,<c3,c4,event_date_create,d1>,<c4,c5,event_date_create,d1>,<c5,c6,event_date_create,d1>,<c1,c2,event_date_create,d2>,<c2,c3,event_date_create,d2>,<c3,c4,event_date_create,d2>,<c4,c5,event_date_create,d2>,<c5,c6,event_date_create,d2>,<c1,c2,event_date_create,NOW>,<c2,c3,event_date_create,NOW>,<c3,c4,event_date_create,NOW>,<c4,c5,event_date_create,NOW>,<c5,c6,event_date_create,NOW>}
+changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c1,c2,an>,<c1,c2,dc>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c2,c3,an>,<c2,c3,dc>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c3,c4,an>,<c3,c4,dc>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>,<c4,c5,an>,<c4,c5,dc>,<c5,c6,d1>,<c5,c6,d2>,<c5,c6,NOW>,<c5,c6,an>,<c5,c6,dc>}
 
-Instance (spec:id, instance:id) = {<date,d3>,<date,d2>,<date,d1>,<date,NOW>}
-instanceInState (config:id, instance:id, state:id) >= {<c1,d3,state_uninitialized>,<c1,d2,state_uninitialized>,<c1,d1,state_uninitialized>}<= {<c1,d1,state_date_created>,<c1,d1,state_uninitialized>,<c1,d1,state_finalized>,<c1,d2,state_date_created>,<c1,d2,state_uninitialized>,<c1,d2,state_finalized>,<c1,d3,state_date_created>,<c1,d3,state_uninitialized>,<c1,d3,state_finalized>,<c1,NOW,state_date_created>,<c1,NOW,state_uninitialized>,<c1,NOW,state_finalized>,<c2,d1,state_date_created>,<c2,d1,state_uninitialized>,<c2,d1,state_finalized>,<c2,d2,state_date_created>,<c2,d2,state_uninitialized>,<c2,d2,state_finalized>,<c2,d3,state_date_created>,<c2,d3,state_uninitialized>,<c2,d3,state_finalized>,<c2,NOW,state_date_created>,<c2,NOW,state_uninitialized>,<c2,NOW,state_finalized>,<c3,d1,state_date_created>,<c3,d1,state_uninitialized>,<c3,d1,state_finalized>,<c3,d2,state_date_created>,<c3,d2,state_uninitialized>,<c3,d2,state_finalized>,<c3,d3,state_date_created>,<c3,d3,state_uninitialized>,<c3,d3,state_finalized>,<c3,NOW,state_date_created>,<c3,NOW,state_uninitialized>,<c3,NOW,state_finalized>,<c4,d1,state_date_created>,<c4,d1,state_uninitialized>,<c4,d1,state_finalized>,<c4,d2,state_date_created>,<c4,d2,state_uninitialized>,<c4,d2,state_finalized>,<c4,d3,state_date_created>,<c4,d3,state_uninitialized>,<c4,d3,state_finalized>,<c4,NOW,state_date_created>,<c4,NOW,state_uninitialized>,<c4,NOW,state_finalized>}
-raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_date_create,d1>,<c2,c3,event_date_create,d1>,<c3,c4,event_date_create,d1>,<c1,c2,event_date_create,d2>,<c2,c3,event_date_create,d2>,<c3,c4,event_date_create,d2>,<c1,c2,event_date_create,d3>,<c2,c3,event_date_create,d3>,<c3,c4,event_date_create,d3>,<c1,c2,event_date_create,NOW>,<c2,c3,event_date_create,NOW>,<c3,c4,event_date_create,NOW>}
-changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,d3>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,d3>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,d3>,<c3,c4,NOW>}
-
-DateYear (config:id, instance:id, year:int) <= {<c1,d1,?>,<c2,d1,?>,<c3,d1,?>,<c4,d1,?>,<c1,d2,?>,<c2,d2,?>,<c3,d2,?>,<c4,d2,?>,<c1,d3,?>,<c2,d3,?>,<c3,d3,?>,<c4,d3,?>,<c1,NOW,?>,<c2,NOW,?>,<c3,NOW,?>,<c4,NOW,?>}
-DateMonth (config:id, instance:id, month:int) <= {<c1,d1,?>,<c2,d1,?>,<c3,d1,?>,<c4,d1,?>,<c1,d2,?>,<c2,d2,?>,<c3,d2,?>,<c4,d2,?>,<c1,d3,?>,<c2,d3,?>,<c3,d3,?>,<c4,d3,?>,<c1,NOW,?>,<c2,NOW,?>,<c3,NOW,?>,<c4,NOW,?>}
-DateDay (config:id, instance:id, day:int) <= {<c1,d1,?>,<c2,d1,?>,<c3,d1,?>,<c4,d1,?>,<c1,d2,?>,<c2,d2,?>,<c3,d2,?>,<c4,d2,?>,<c1,d3,?>,<c2,d3,?>,<c3,d3,?>,<c4,d3,?>,<c1,NOW,?>,<c2,NOW,?>,<c3,NOW,?>,<c4,NOW,?>}
+DateYear (config:id, instance:id, year:int) <= {<c1,d1,?>,<c2,d1,?>,<c3,d1,?>,<c4,d1,?>,<c5,d1,?>,<c6,d1,?>,<c1,d2,?>,<c2,d2,?>,<c3,d2,?>,<c4,d2,?>,<c5,d2,?>,<c6,d2,?>,<c1,NOW,?>,<c2,NOW,?>,<c3,NOW,?>,<c4,NOW,?>,<c5,NOW,?>,<c6,NOW,?>}
+DateMonth (config:id, instance:id, month:int) <= {<c1,d1,?>,<c2,d1,?>,<c3,d1,?>,<c4,d1,?>,<c5,d1,?>,<c6,d1,?>,<c1,d2,?>,<c2,d2,?>,<c3,d2,?>,<c4,d2,?>,<c5,d2,?>,<c6,d2,?>,<c1,NOW,?>,<c2,NOW,?>,<c3,NOW,?>,<c4,NOW,?>,<c5,NOW,?>,<c6,NOW,?>}
+DateDay (config:id, instance:id, day:int) <= {<c1,d1,?>,<c2,d1,?>,<c3,d1,?>,<c4,d1,?>,<c5,d1,?>,<c6,d1,?>,<c1,d2,?>,<c2,d2,?>,<c3,d2,?>,<c4,d2,?>,<c5,d2,?>,<c6,d2,?>,<c1,NOW,?>,<c2,NOW,?>,<c3,NOW,?>,<c4,NOW,?>,<c5,NOW,?>,<c6,NOW,?>}
+IBANNumber (config:id, instance:id, number:int) <= {<c1,an,?>,<c2,an,?>,<c3,an,?>,<c4,an,?>,<c5,an,?>,<c6,an,?>}
+DebitCardAccountNumber (config:id, instance:id, accountNumber:id) <= {<c1,dc,an>,<c2,dc,an>,<c3,dc,an>,<c4,dc,an>,<c5,dc,an>,<c6,dc,an>}
+DebitCardPinHash (config:id, instance:id, pinHash:str) <= {<c1,dc,?>,<c2,dc,?>,<c3,dc,?>,<c4,dc,?>,<c5,dc,?>,<c6,dc,?>}
+DebitCardExpiry (config:id, instance:id, expiry:id) <= {<c1,dc,d1>,<c1,dc,d2>,<c1,dc,NOW>,<c2,dc,d1>,<c2,dc,d2>,<c2,dc,NOW>,<c3,dc,d1>,<c3,dc,d2>,<c3,dc,NOW>,<c4,dc,d1>,<c4,dc,d2>,<c4,dc,NOW>,<c5,dc,d1>,<c5,dc,d2>,<c5,dc,NOW>,<c6,dc,d1>,<c6,dc,d2>,<c6,dc,NOW>}
+DebitCardBrandType (config:id, instance:id, brandType:id) <= {<c1,dc,MAESTRO>,<c1,dc,VPAY>,<c2,dc,MAESTRO>,<c2,dc,VPAY>,<c3,dc,MAESTRO>,<c3,dc,VPAY>,<c4,dc,MAESTRO>,<c4,dc,VPAY>,<c5,dc,MAESTRO>,<c5,dc,VPAY>,<c6,dc,MAESTRO>,<c6,dc,VPAY>}
+DebitCardRequestReason (config:id, instance:id, requestReason:id) <= {<c1,dc,NEW>,<c1,dc,LOST>,<c1,dc,EXPIRED>,<c1,dc,STOLEN>,<c1,dc,CUSTOMER>,<c2,dc,NEW>,<c2,dc,LOST>,<c2,dc,EXPIRED>,<c2,dc,STOLEN>,<c2,dc,CUSTOMER>,<c3,dc,NEW>,<c3,dc,LOST>,<c3,dc,EXPIRED>,<c3,dc,STOLEN>,<c3,dc,CUSTOMER>,<c4,dc,NEW>,<c4,dc,LOST>,<c4,dc,EXPIRED>,<c4,dc,STOLEN>,<c4,dc,CUSTOMER>,<c5,dc,NEW>,<c5,dc,LOST>,<c5,dc,EXPIRED>,<c5,dc,STOLEN>,<c5,dc,CUSTOMER>,<c6,dc,NEW>,<c6,dc,LOST>,<c6,dc,EXPIRED>,<c6,dc,STOLEN>,<c6,dc,CUSTOMER>}
+DebitCardPinReset (config:id, instance:id, pinReset:id) <= {<c1,dc,FALSE>,<c1,dc,TRUE>,<c2,dc,FALSE>,<c2,dc,TRUE>,<c3,dc,FALSE>,<c3,dc,TRUE>,<c4,dc,FALSE>,<c4,dc,TRUE>,<c5,dc,FALSE>,<c5,dc,TRUE>,<c6,dc,FALSE>,<c6,dc,TRUE>}
 
 Date_NOW (instance:id) = {<NOW>}
+Boolean_TRUE (instance:id) = {<TRUE>}
+Boolean_FALSE (instance:id) = {<FALSE>}
+RequestReason_NEW (instance:id) = {<NEW>}
+RequestReason_LOST (instance:id) = {<LOST>}
+RequestReason_STOLEN (instance:id) = {<STOLEN>}
+RequestReason_EXPIRED (instance:id) = {<EXPIRED>}
+RequestReason_CUSTOMER (instance:id) = {<CUSTOMER>}
+BrandType_MAESTRO (instance:id) = {<MAESTRO>}
+BrandType_VPAY (instance:id) = {<VPAY>}
 
-ParamEventDateYearsAfterNrOfYears (cur:id, nxt:id, nrOfYears:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>}
-ParamEventDateYearsAfterOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,d3>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,d3>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,d3>,<c3,c4,NOW>}
-ParamEventDateAfter__yearsOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,d3>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,d3>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,d3>,<c3,c4,NOW>}
-ParamEventDateBefore__yearsOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,d3>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,d3>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,d3>,<c3,c4,NOW>}
-ParamEventDateCreateYear (cur:id, nxt:id, year:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>}
-ParamEventDateCreateMonth (cur:id, nxt:id, month:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>}
-ParamEventDateCreateDay (cur:id, nxt:id, day:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>}
-ParamEventDateBefore__dayOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,d3>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,d3>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,d3>,<c3,c4,NOW>}
-ParamEventDateBefore__monthOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,d3>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,d3>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,d3>,<c3,c4,NOW>}
-ParamEventDateAfter__monthOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,d3>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,d3>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,d3>,<c3,c4,NOW>}
-ParamEventDateAfter__dayOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,d3>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,d3>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,d3>,<c3,c4,NOW>}
+ParamEventDateYearsAfterNrOfYears (cur:id, nxt:id, nrOfYears:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>}
+ParamEventDateYearsAfterOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>,<c5,c6,d1>,<c5,c6,d2>,<c5,c6,NOW>}
+ParamEventDateAfter__yearsOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>,<c5,c6,d1>,<c5,c6,d2>,<c5,c6,NOW>}
+ParamEventDateBefore__yearsOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>,<c5,c6,d1>,<c5,c6,d2>,<c5,c6,NOW>}
+ParamEventDateCreateYear (cur:id, nxt:id, year:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>}
+ParamEventDateCreateMonth (cur:id, nxt:id, month:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>}
+ParamEventDateCreateDay (cur:id, nxt:id, day:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>}
+ParamEventDateBefore__dayOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>,<c5,c6,d1>,<c5,c6,d2>,<c5,c6,NOW>}
+ParamEventDateBefore__monthOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>,<c5,c6,d1>,<c5,c6,d2>,<c5,c6,NOW>}
+ParamEventDateAfter__monthOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>,<c5,c6,d1>,<c5,c6,d2>,<c5,c6,NOW>}
+ParamEventDateAfter__dayOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>,<c5,c6,d1>,<c5,c6,d2>,<c5,c6,NOW>}
+ParamEventIBANCreateNumber (cur:id, nxt:id, number:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>}
+ParamEventDebitCardTransactionOccurred__okPinHash (cur:id, nxt:id, pinHash:str) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>}
+ParamEventDebitCardTransactionOccurred__wrongPinPinHash (cur:id, nxt:id, pinHash:str) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>}
+ParamEventDebitCardTransactionOccurred__expiredPinHash (cur:id, nxt:id, pinHash:str) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>}
+ParamEventDebitCardProducedPinHash (cur:id, nxt:id, pinHash:str) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>}
+ParamEventDebitCardRequested__expiredAccountNumber (cur:id, nxt:id, accountNumber:id) <= {<c1,c2,an>,<c2,c3,an>,<c3,c4,an>,<c4,c5,an>,<c5,c6,an>}
+ParamEventDebitCardRequested__expiredReason (cur:id, nxt:id, reason:id) <= {<c1,c2,NEW>,<c1,c2,LOST>,<c1,c2,EXPIRED>,<c1,c2,STOLEN>,<c1,c2,CUSTOMER>,<c2,c3,NEW>,<c2,c3,LOST>,<c2,c3,EXPIRED>,<c2,c3,STOLEN>,<c2,c3,CUSTOMER>,<c3,c4,NEW>,<c3,c4,LOST>,<c3,c4,EXPIRED>,<c3,c4,STOLEN>,<c3,c4,CUSTOMER>,<c4,c5,NEW>,<c4,c5,LOST>,<c4,c5,EXPIRED>,<c4,c5,STOLEN>,<c4,c5,CUSTOMER>,<c5,c6,NEW>,<c5,c6,LOST>,<c5,c6,EXPIRED>,<c5,c6,STOLEN>,<c5,c6,CUSTOMER>}
+ParamEventDebitCardRequested__expiredExpiry (cur:id, nxt:id, expiry:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>,<c5,c6,d1>,<c5,c6,d2>,<c5,c6,NOW>}
+ParamEventDebitCardRequested__expiredBrandType (cur:id, nxt:id, brandType:id) <= {<c1,c2,MAESTRO>,<c1,c2,VPAY>,<c2,c3,MAESTRO>,<c2,c3,VPAY>,<c3,c4,MAESTRO>,<c3,c4,VPAY>,<c4,c5,MAESTRO>,<c4,c5,VPAY>,<c5,c6,MAESTRO>,<c5,c6,VPAY>}
+ParamEventDebitCardRequested__stolenAccountNumber (cur:id, nxt:id, accountNumber:id) <= {<c1,c2,an>,<c2,c3,an>,<c3,c4,an>,<c4,c5,an>,<c5,c6,an>}
+ParamEventDebitCardRequested__stolenReason (cur:id, nxt:id, reason:id) <= {<c1,c2,NEW>,<c1,c2,LOST>,<c1,c2,EXPIRED>,<c1,c2,STOLEN>,<c1,c2,CUSTOMER>,<c2,c3,NEW>,<c2,c3,LOST>,<c2,c3,EXPIRED>,<c2,c3,STOLEN>,<c2,c3,CUSTOMER>,<c3,c4,NEW>,<c3,c4,LOST>,<c3,c4,EXPIRED>,<c3,c4,STOLEN>,<c3,c4,CUSTOMER>,<c4,c5,NEW>,<c4,c5,LOST>,<c4,c5,EXPIRED>,<c4,c5,STOLEN>,<c4,c5,CUSTOMER>,<c5,c6,NEW>,<c5,c6,LOST>,<c5,c6,EXPIRED>,<c5,c6,STOLEN>,<c5,c6,CUSTOMER>}
+ParamEventDebitCardRequested__stolenExpiry (cur:id, nxt:id, expiry:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>,<c5,c6,d1>,<c5,c6,d2>,<c5,c6,NOW>}
+ParamEventDebitCardRequested__stolenBrandType (cur:id, nxt:id, brandType:id) <= {<c1,c2,MAESTRO>,<c1,c2,VPAY>,<c2,c3,MAESTRO>,<c2,c3,VPAY>,<c3,c4,MAESTRO>,<c3,c4,VPAY>,<c4,c5,MAESTRO>,<c4,c5,VPAY>,<c5,c6,MAESTRO>,<c5,c6,VPAY>}
+ParamEventDebitCardRequested__newAccountNumber (cur:id, nxt:id, accountNumber:id) <= {<c1,c2,an>,<c2,c3,an>,<c3,c4,an>,<c4,c5,an>,<c5,c6,an>}
+ParamEventDebitCardRequested__newReason (cur:id, nxt:id, reason:id) <= {<c1,c2,NEW>,<c1,c2,LOST>,<c1,c2,EXPIRED>,<c1,c2,STOLEN>,<c1,c2,CUSTOMER>,<c2,c3,NEW>,<c2,c3,LOST>,<c2,c3,EXPIRED>,<c2,c3,STOLEN>,<c2,c3,CUSTOMER>,<c3,c4,NEW>,<c3,c4,LOST>,<c3,c4,EXPIRED>,<c3,c4,STOLEN>,<c3,c4,CUSTOMER>,<c4,c5,NEW>,<c4,c5,LOST>,<c4,c5,EXPIRED>,<c4,c5,STOLEN>,<c4,c5,CUSTOMER>,<c5,c6,NEW>,<c5,c6,LOST>,<c5,c6,EXPIRED>,<c5,c6,STOLEN>,<c5,c6,CUSTOMER>}
+ParamEventDebitCardRequested__newExpiry (cur:id, nxt:id, expiry:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>,<c5,c6,d1>,<c5,c6,d2>,<c5,c6,NOW>}
+ParamEventDebitCardRequested__newBrandType (cur:id, nxt:id, brandType:id) <= {<c1,c2,MAESTRO>,<c1,c2,VPAY>,<c2,c3,MAESTRO>,<c2,c3,VPAY>,<c3,c4,MAESTRO>,<c3,c4,VPAY>,<c4,c5,MAESTRO>,<c4,c5,VPAY>,<c5,c6,MAESTRO>,<c5,c6,VPAY>}
+ParamEventDebitCardRequested__customerAccountNumber (cur:id, nxt:id, accountNumber:id) <= {<c1,c2,an>,<c2,c3,an>,<c3,c4,an>,<c4,c5,an>,<c5,c6,an>}
+ParamEventDebitCardRequested__customerReason (cur:id, nxt:id, reason:id) <= {<c1,c2,NEW>,<c1,c2,LOST>,<c1,c2,EXPIRED>,<c1,c2,STOLEN>,<c1,c2,CUSTOMER>,<c2,c3,NEW>,<c2,c3,LOST>,<c2,c3,EXPIRED>,<c2,c3,STOLEN>,<c2,c3,CUSTOMER>,<c3,c4,NEW>,<c3,c4,LOST>,<c3,c4,EXPIRED>,<c3,c4,STOLEN>,<c3,c4,CUSTOMER>,<c4,c5,NEW>,<c4,c5,LOST>,<c4,c5,EXPIRED>,<c4,c5,STOLEN>,<c4,c5,CUSTOMER>,<c5,c6,NEW>,<c5,c6,LOST>,<c5,c6,EXPIRED>,<c5,c6,STOLEN>,<c5,c6,CUSTOMER>}
+ParamEventDebitCardRequested__customerExpiry (cur:id, nxt:id, expiry:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>,<c5,c6,d1>,<c5,c6,d2>,<c5,c6,NOW>}
+ParamEventDebitCardRequested__customerBrandType (cur:id, nxt:id, brandType:id) <= {<c1,c2,MAESTRO>,<c1,c2,VPAY>,<c2,c3,MAESTRO>,<c2,c3,VPAY>,<c3,c4,MAESTRO>,<c3,c4,VPAY>,<c4,c5,MAESTRO>,<c4,c5,VPAY>,<c5,c6,MAESTRO>,<c5,c6,VPAY>}
+ParamEventDebitCardRequested__lostAccountNumber (cur:id, nxt:id, accountNumber:id) <= {<c1,c2,an>,<c2,c3,an>,<c3,c4,an>,<c4,c5,an>,<c5,c6,an>}
+ParamEventDebitCardRequested__lostReason (cur:id, nxt:id, reason:id) <= {<c1,c2,NEW>,<c1,c2,LOST>,<c1,c2,EXPIRED>,<c1,c2,STOLEN>,<c1,c2,CUSTOMER>,<c2,c3,NEW>,<c2,c3,LOST>,<c2,c3,EXPIRED>,<c2,c3,STOLEN>,<c2,c3,CUSTOMER>,<c3,c4,NEW>,<c3,c4,LOST>,<c3,c4,EXPIRED>,<c3,c4,STOLEN>,<c3,c4,CUSTOMER>,<c4,c5,NEW>,<c4,c5,LOST>,<c4,c5,EXPIRED>,<c4,c5,STOLEN>,<c4,c5,CUSTOMER>,<c5,c6,NEW>,<c5,c6,LOST>,<c5,c6,EXPIRED>,<c5,c6,STOLEN>,<c5,c6,CUSTOMER>}
+ParamEventDebitCardRequested__lostExpiry (cur:id, nxt:id, expiry:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>,<c5,c6,d1>,<c5,c6,d2>,<c5,c6,NOW>}
+ParamEventDebitCardRequested__lostBrandType (cur:id, nxt:id, brandType:id) <= {<c1,c2,MAESTRO>,<c1,c2,VPAY>,<c2,c3,MAESTRO>,<c2,c3,VPAY>,<c3,c4,MAESTRO>,<c3,c4,VPAY>,<c4,c5,MAESTRO>,<c4,c5,VPAY>,<c5,c6,MAESTRO>,<c5,c6,VPAY>}
+    
 
 // Constraints for the configuration and ordering relations
 order ⊆ Config[config as cur] ⨯ Config[config as nxt]
@@ -65,37 +153,96 @@ instanceInState ⊆ Instance[instance] ⨯ Config ⨯ State
 changedInstance ⊆ (order) ⨯ Instance[instance]
     
 // Machine specific `type` constraints
-DateYear[config,instance]  ⊆ Config ⨯ (Instance ⨝ Date)[instance]
+// For `IBAN`
+ParamEventIBANCreateNumber[cur,nxt] ⊆ order ∪ loop
+IBANNumber[config,instance]  ⊆ Config ⨯ (Instance ⨝ IBAN)[instance]
+// For `Date`
+ParamEventDateCreateYear[cur,nxt] ⊆ order ∪ loop
+ParamEventDateBefore__monthOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->other]
+ParamEventDateYearsAfterNrOfYears[cur,nxt] ⊆ order ∪ loop
+ParamEventDateBefore__dayOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->other]
+ParamEventDateYearsAfterOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->other]
+ParamEventDateAfter__monthOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->other]
+ParamEventDateBefore__yearsOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->other]
+ParamEventDateAfter__dayOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->other]
+ParamEventDateCreateDay[cur,nxt] ⊆ order ∪ loop
 DateMonth[config,instance]  ⊆ Config ⨯ (Instance ⨝ Date)[instance]
+ParamEventDateCreateMonth[cur,nxt] ⊆ order ∪ loop
+ParamEventDateAfter__yearsOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->other]
 DateDay[config,instance]  ⊆ Config ⨯ (Instance ⨝ Date)[instance]
+DateYear[config,instance]  ⊆ Config ⨯ (Instance ⨝ Date)[instance]
+// For `DebitCard`
+DebitCardAccountNumber  ⊆ Config ⨯ (Instance ⨝ DebitCard)[instance] ⨯ (Instance ⨝ IBAN)[instance->accountNumber]
+ParamEventDebitCardRequested__newAccountNumber ⊆ (order ∪ loop) ⨯ (Instance ⨝ IBAN)[instance->accountNumber]
+ParamEventDebitCardRequested__newExpiry ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->expiry]
+ParamEventDebitCardRequested__customerBrandType ⊆ (order ∪ loop) ⨯ (Instance ⨝ BrandType)[instance->brandType]
+ParamEventDebitCardRequested__customerExpiry ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->expiry]
+ParamEventDebitCardRequested__newBrandType ⊆ (order ∪ loop) ⨯ (Instance ⨝ BrandType)[instance->brandType]
+DebitCardBrandType  ⊆ Config ⨯ (Instance ⨝ DebitCard)[instance] ⨯ (Instance ⨝ BrandType)[instance->brandType]
+ParamEventDebitCardRequested__lostBrandType ⊆ (order ∪ loop) ⨯ (Instance ⨝ BrandType)[instance->brandType]
+ParamEventDebitCardRequested__customerReason ⊆ (order ∪ loop) ⨯ (Instance ⨝ RequestReason)[instance->reason]
+ParamEventDebitCardTransactionOccurred__expiredPinHash[cur,nxt] ⊆ order ∪ loop
+ParamEventDebitCardTransactionOccurred__okPinHash[cur,nxt] ⊆ order ∪ loop
+ParamEventDebitCardRequested__expiredReason ⊆ (order ∪ loop) ⨯ (Instance ⨝ RequestReason)[instance->reason]
+ParamEventDebitCardRequested__lostAccountNumber ⊆ (order ∪ loop) ⨯ (Instance ⨝ IBAN)[instance->accountNumber]
+ParamEventDebitCardRequested__stolenReason ⊆ (order ∪ loop) ⨯ (Instance ⨝ RequestReason)[instance->reason]
+DebitCardPinHash[config,instance]  ⊆ Config ⨯ (Instance ⨝ DebitCard)[instance]
+ParamEventDebitCardRequested__expiredExpiry ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->expiry]
+ParamEventDebitCardRequested__stolenExpiry ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->expiry]
+ParamEventDebitCardRequested__lostExpiry ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->expiry]
+ParamEventDebitCardRequested__customerAccountNumber ⊆ (order ∪ loop) ⨯ (Instance ⨝ IBAN)[instance->accountNumber]
+ParamEventDebitCardRequested__stolenBrandType ⊆ (order ∪ loop) ⨯ (Instance ⨝ BrandType)[instance->brandType]
+ParamEventDebitCardRequested__expiredBrandType ⊆ (order ∪ loop) ⨯ (Instance ⨝ BrandType)[instance->brandType]
+DebitCardExpiry  ⊆ Config ⨯ (Instance ⨝ DebitCard)[instance] ⨯ (Instance ⨝ Date)[instance->expiry]
+ParamEventDebitCardTransactionOccurred__wrongPinPinHash[cur,nxt] ⊆ order ∪ loop
+ParamEventDebitCardRequested__newReason ⊆ (order ∪ loop) ⨯ (Instance ⨝ RequestReason)[instance->reason]
+DebitCardPinReset  ⊆ Config ⨯ (Instance ⨝ DebitCard)[instance] ⨯ (Instance ⨝ Boolean)[instance->pinReset]
+DebitCardRequestReason  ⊆ Config ⨯ (Instance ⨝ DebitCard)[instance] ⨯ (Instance ⨝ RequestReason)[instance->requestReason]
+ParamEventDebitCardProducedPinHash[cur,nxt] ⊆ order ∪ loop
+ParamEventDebitCardRequested__expiredAccountNumber ⊆ (order ∪ loop) ⨯ (Instance ⨝ IBAN)[instance->accountNumber]
+ParamEventDebitCardRequested__stolenAccountNumber ⊆ (order ∪ loop) ⨯ (Instance ⨝ IBAN)[instance->accountNumber]
+ParamEventDebitCardRequested__lostReason ⊆ (order ∪ loop) ⨯ (Instance ⨝ RequestReason)[instance->reason]
 
-ParamEventDateCreateYear[cur,nxt] ⊆ order
-ParamEventDateCreateMonth[cur,nxt] ⊆ order
-ParamEventDateCreateDay[cur,nxt] ⊆ order
-ParamEventDateYearsAfterNrOfYears[cur,nxt] ⊆ order
-ParamEventDateYearsAfterOther ⊆ (order) ⨯ (Instance ⨝ Date)[instance->other]
-ParamEventDateAfter__yearsOther ⊆ (order) ⨯ (Instance ⨝ Date)[instance->other]
-ParamEventDateAfter__monthOther ⊆ (order) ⨯ (Instance ⨝ Date)[instance->other]
-ParamEventDateAfter__dayOther ⊆ (order) ⨯ (Instance ⨝ Date)[instance->other]
-ParamEventDateBefore__yearsOther ⊆ (order) ⨯ (Instance ⨝ Date)[instance->other]
-ParamEventDateBefore__monthOther ⊆ (order) ⨯ (Instance ⨝ Date)[instance->other]
-ParamEventDateBefore__dayOther ⊆ (order) ⨯ (Instance ⨝ Date)[instance->other]
 
-// Specific per event
-∀ step ∈ (order) ⨝ raisedEvent | (
-  (some (step ⨝ EventDateCreate) ⇔ one (step ⨝ ParamEventDateCreateYear)) ∧
-  (some (step ⨝ EventDateCreate) ⇔ one (step ⨝ ParamEventDateCreateMonth)) ∧
-  (some (step ⨝ EventDateCreate) ⇔ one (step ⨝ ParamEventDateCreateDay)) ∧
+// Specific per event: parameter multiplicity constraints
+∀ step ∈ (order ∪ loop) ⨝ raisedEvent | (
+  (some (step ⨝ EventDebitCardRequested__customer) ⇔ one (step ⨝ ParamEventDebitCardRequested__customerAccountNumber)) ∧
+  (some (step ⨝ EventDebitCardRequested__stolen) ⇔ one (step ⨝ ParamEventDebitCardRequested__stolenReason)) ∧
+  (some (step ⨝ EventDebitCardTransactionOccurred__expired) ⇔ one (step ⨝ ParamEventDebitCardTransactionOccurred__expiredPinHash)) ∧
+  (some (step ⨝ EventDebitCardProduced) ⇔ one (step ⨝ ParamEventDebitCardProducedPinHash)) ∧
+  (some (step ⨝ EventDebitCardRequested__lost) ⇔ one (step ⨝ ParamEventDebitCardRequested__lostBrandType)) ∧
+  (some (step ⨝ EventDebitCardRequested__expired) ⇔ one (step ⨝ ParamEventDebitCardRequested__expiredBrandType)) ∧
   (some (step ⨝ EventDateYearsAfter) ⇔ one (step ⨝ ParamEventDateYearsAfterNrOfYears)) ∧
-  (some (step ⨝ EventDateYearsAfter) ⇔ one (step ⨝ ParamEventDateYearsAfterOther)) ∧
-  (some (step ⨝ EventDateAfter__years) ⇔ one (step ⨝ ParamEventDateAfter__yearsOther)) ∧
+  (some (step ⨝ EventDebitCardRequested__customer) ⇔ one (step ⨝ ParamEventDebitCardRequested__customerExpiry)) ∧
+  (some (step ⨝ EventDebitCardRequested__new) ⇔ one (step ⨝ ParamEventDebitCardRequested__newBrandType)) ∧
+  (some (step ⨝ EventDebitCardRequested__new) ⇔ one (step ⨝ ParamEventDebitCardRequested__newReason)) ∧
+  (some (step ⨝ EventDebitCardRequested__expired) ⇔ one (step ⨝ ParamEventDebitCardRequested__expiredReason)) ∧
   (some (step ⨝ EventDateAfter__month) ⇔ one (step ⨝ ParamEventDateAfter__monthOther)) ∧
-  (some (step ⨝ EventDateAfter__day) ⇔ one (step ⨝ ParamEventDateAfter__dayOther)) ∧
-  (some (step ⨝ EventDateBefore__years) ⇔ one (step ⨝ ParamEventDateBefore__yearsOther)) ∧
+  (some (step ⨝ EventDateCreate) ⇔ one (step ⨝ ParamEventDateCreateMonth)) ∧
+  (some (step ⨝ EventDebitCardRequested__new) ⇔ one (step ⨝ ParamEventDebitCardRequested__newAccountNumber)) ∧
+  (some (step ⨝ EventDateYearsAfter) ⇔ one (step ⨝ ParamEventDateYearsAfterOther)) ∧
+  (some (step ⨝ EventDateCreate) ⇔ one (step ⨝ ParamEventDateCreateDay)) ∧
+  (some (step ⨝ EventDebitCardRequested__expired) ⇔ one (step ⨝ ParamEventDebitCardRequested__expiredAccountNumber)) ∧
+  (some (step ⨝ EventDebitCardRequested__stolen) ⇔ one (step ⨝ ParamEventDebitCardRequested__stolenExpiry)) ∧
+  (some (step ⨝ EventDebitCardTransactionOccurred__wrongPin) ⇔ one (step ⨝ ParamEventDebitCardTransactionOccurred__wrongPinPinHash)) ∧
+  (some (step ⨝ EventDebitCardRequested__customer) ⇔ one (step ⨝ ParamEventDebitCardRequested__customerReason)) ∧
+  (some (step ⨝ EventDebitCardRequested__stolen) ⇔ one (step ⨝ ParamEventDebitCardRequested__stolenAccountNumber)) ∧
+  (some (step ⨝ EventDateBefore__day) ⇔ one (step ⨝ ParamEventDateBefore__dayOther)) ∧
   (some (step ⨝ EventDateBefore__month) ⇔ one (step ⨝ ParamEventDateBefore__monthOther)) ∧
-  (some (step ⨝ EventDateBefore__day) ⇔ one (step ⨝ ParamEventDateBefore__dayOther))
+  (some (step ⨝ EventDateBefore__years) ⇔ one (step ⨝ ParamEventDateBefore__yearsOther)) ∧
+  (some (step ⨝ EventDebitCardRequested__expired) ⇔ one (step ⨝ ParamEventDebitCardRequested__expiredExpiry)) ∧
+  (some (step ⨝ EventDebitCardRequested__new) ⇔ one (step ⨝ ParamEventDebitCardRequested__newExpiry)) ∧
+  (some (step ⨝ EventDebitCardRequested__customer) ⇔ one (step ⨝ ParamEventDebitCardRequested__customerBrandType)) ∧
+  (some (step ⨝ EventDebitCardRequested__lost) ⇔ one (step ⨝ ParamEventDebitCardRequested__lostExpiry)) ∧
+  (some (step ⨝ EventDebitCardTransactionOccurred__ok) ⇔ one (step ⨝ ParamEventDebitCardTransactionOccurred__okPinHash)) ∧
+  (some (step ⨝ EventDateAfter__day) ⇔ one (step ⨝ ParamEventDateAfter__dayOther)) ∧
+  (some (step ⨝ EventDateCreate) ⇔ one (step ⨝ ParamEventDateCreateYear)) ∧
+  (some (step ⨝ EventDebitCardRequested__lost) ⇔ one (step ⨝ ParamEventDebitCardRequested__lostReason)) ∧
+  (some (step ⨝ EventDebitCardRequested__stolen) ⇔ one (step ⨝ ParamEventDebitCardRequested__stolenBrandType)) ∧
+  (some (step ⨝ EventIBANCreate) ⇔ one (step ⨝ ParamEventIBANCreateNumber)) ∧
+  (some (step ⨝ EventDebitCardRequested__lost) ⇔ one (step ⨝ ParamEventDebitCardRequested__lostAccountNumber)) ∧
+  (some (step ⨝ EventDateAfter__years) ⇔ one (step ⨝ ParamEventDateAfter__yearsOther))
 )
-
 // Generic: All configurations are reachable
 ∀ c ∈ Config ∖ first | c ⊆ (first[config as cur] ⨝ ^<cur,nxt>order)[nxt -> config]
 
@@ -103,13 +250,27 @@ ParamEventDateBefore__dayOther ⊆ (order) ⨯ (Instance ⨝ Date)[instance->oth
 ∀ o ∈ order | one o ⨝ raisedEvent
 
 // Specif: In every configuration all machines have a state IFF its a machine which is not empty
-∀ c ∈ Config, inst ∈ Instance | one instanceInState ⨝ c ⨝ inst
+∀ c ∈ Config, inst ∈ (Instance ∖ ((Boolean+RequestReason+BrandType) ⨝ Instance)) | one instanceInState ⨝ c ⨝ inst
 
 // Specific per machine: In every configuration iff a machine is in an initialized state then it must have values
-∀ c ∈ Config, inst ∈ (Instance ⨝ Date)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one DateYear ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Date)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one DateMonth ⨝ c ⨝ inst)
+// for `IBAN`
+∀ c ∈ Config, inst ∈ (Instance ⨝ IBAN)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one IBANNumber ⨝ c ⨝ inst)
+// for `Date`
 ∀ c ∈ Config, inst ∈ (Instance ⨝ Date)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one DateDay ⨝ c ⨝ inst)
-
+∀ c ∈ Config, inst ∈ (Instance ⨝ Date)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one DateMonth ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Date)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one DateYear ⨝ c ⨝ inst)
+// for `DebitCard`
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no DebitCardRequestReason ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no DebitCardExpiry ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one DebitCardRequestReason ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no DebitCardBrandType ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one DebitCardExpiry ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no DebitCardAccountNumber ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one DebitCardPinReset ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no DebitCardPinReset ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one DebitCardAccountNumber ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one DebitCardPinHash ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one DebitCardBrandType ⨝ c ⨝ inst)
 
 // Generic: Transitions are only allowed between if an event is specified between two states
 ∀ o ∈ (order) ⨝ raisedEvent | (o[cur as config] ⨝ instanceInState)[state->from] ⨯ (o[nxt as config] ⨝ instanceInState)[state->to] ⨯ o[event] ⊆ allowedTransitions
@@ -131,41 +292,53 @@ pred forceState[curState: (state:id), nxtState: (state:id), raisedEvent: (event:
 pred inState[config: (config:id), instance: (instance:id), state: (state:id)]
   = ((instance ⨯ config) ⨝ instanceInState)[state] ⊆ state
 
-pred eventDateYearsAfter[step:(cur:id, nxt:id), date: (instance:id), nrOfYears: (nrOfYears:int), other: (instance:id)]
+// Event predicates for `IBAN`
+pred eventIBANCreate[step:(cur:id, nxt:id), iban: (instance:id), number: (number:int)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ date)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+        curState = (instanceInState ⨝ cur ⨝ iban)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ iban)[state] |
     ( 
       // Preconditions 
-      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (other ⨝ (DateYear ⨝ cur))[year][year as param_1_year]) where (cur_year = param_1_year + 5)) ∧
-      (some ((other ⨝ (DateMonth ⨝ cur))[month][month as param_2_month] ⨯ (date ⨝ (DateMonth ⨝ cur))[month][month as cur_month]) where (cur_month = param_2_month)) ∧
-      (some ((other ⨝ (DateDay ⨝ cur))[day][day as param_3_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (cur_day = param_3_day))  ∧ 
+      (some (number[number as param_1_number]) where (param_1_number > 0))  ∧ 
       // Postconditions
-      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
-      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
-      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      (some (number[number as param_2_number] ⨯ (iban ⨝ (IBANNumber ⨝ nxt))[number][number as nxt_number]) where (nxt_number = param_2_number))  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventDateYearsAfter] ∧
+      forceState[curState, nxtState, EventIBANCreate] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, date]
+      inChangeSet[step, iban]
     )
 
-pred eventDateAfter__years[step:(cur:id, nxt:id), date: (instance:id), other: (instance:id)]
+pred frameIBAN[step: (cur:id, nxt:id), iban: (instance:id)] 
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ iban)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ iban)[state] | (
+    nxtState = curState ∧
+    (
+      curState ⊆ uninitialized ∨ 
+      (// Postconditions
+       (some ((iban ⨝ (IBANNumber ⨝ nxt))[number][number as nxt_number] ⨯ (iban ⨝ (IBANNumber ⨝ cur))[number][number as cur_number]) where (nxt_number = cur_number)))
+    )
+  )
+
+// Event predicates for `Date`
+pred eventDateAfter__month[step:(cur:id, nxt:id), date: (instance:id), other: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
         curState = (instanceInState ⨝ cur ⨝ date)[state],
         nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
     ( 
       // Preconditions 
-      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (other ⨝ (DateYear ⨝ cur))[year][year as param_1_year]) where (cur_year > param_1_year)) ∧
+      (some ((other ⨝ (DateMonth ⨝ cur))[month][month as param_1_month] ⨯ (date ⨝ (DateMonth ⨝ cur))[month][month as cur_month]) where (cur_month > param_1_month)) ∧
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (other ⨝ (DateYear ⨝ cur))[year][year as param_2_year]) where (cur_year = param_2_year)) ∧
       inState[cur, other, initialized]  ∧ 
       // Postconditions
       (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
       (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
       (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventDateAfter__years] ∧
+      forceState[curState, nxtState, EventDateAfter__month] ∧
       // Make sure this instance is in the change set
       inChangeSet[step, date]
     )
@@ -185,6 +358,47 @@ pred eventDateBefore__years[step:(cur:id, nxt:id), date: (instance:id), other: (
       (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
       // Generic event conditions
       forceState[curState, nxtState, EventDateBefore__years] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, date]
+    )
+
+pred eventDateBefore__month[step:(cur:id, nxt:id), date: (instance:id), other: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ date)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+    ( 
+      // Preconditions 
+      (some ((other ⨝ (DateMonth ⨝ cur))[month][month as param_1_month] ⨯ (date ⨝ (DateMonth ⨝ cur))[month][month as cur_month]) where (cur_month < param_1_month)) ∧
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (other ⨝ (DateYear ⨝ cur))[year][year as param_2_year]) where (cur_year = param_2_year)) ∧
+      inState[cur, other, initialized]  ∧ 
+      // Postconditions
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
+      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
+      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDateBefore__month] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, date]
+    )
+
+pred eventDateAfter__day[step:(cur:id, nxt:id), date: (instance:id), other: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ date)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+    ( 
+      // Preconditions 
+      (some ((other ⨝ (DateDay ⨝ cur))[day][day as param_1_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (cur_day > param_1_day)) ∧
+      (some ((other ⨝ (DateMonth ⨝ cur))[month][month as param_2_month] ⨯ (date ⨝ (DateMonth ⨝ cur))[month][month as cur_month]) where (cur_month = param_2_month)) ∧
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (other ⨝ (DateYear ⨝ cur))[year][year as param_3_year]) where (cur_year = param_3_year)) ∧
+      inState[cur, other, initialized]  ∧ 
+      // Postconditions
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
+      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
+      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDateAfter__day] ∧
       // Make sure this instance is in the change set
       inChangeSet[step, date]
     )
@@ -221,6 +435,45 @@ pred eventDateCreate[step:(cur:id, nxt:id), date: (instance:id), year: (year:int
       inChangeSet[step, date]
     )
 
+pred eventDateAfter__years[step:(cur:id, nxt:id), date: (instance:id), other: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ date)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+    ( 
+      // Preconditions 
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (other ⨝ (DateYear ⨝ cur))[year][year as param_1_year]) where (cur_year > param_1_year)) ∧
+      inState[cur, other, initialized]  ∧ 
+      // Postconditions
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
+      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
+      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDateAfter__years] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, date]
+    )
+
+pred eventDateYearsAfter[step:(cur:id, nxt:id), date: (instance:id), nrOfYears: (nrOfYears:int), other: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ date)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+    ( 
+      // Preconditions 
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (other ⨝ (DateYear ⨝ cur))[year][year as param_1_year]) where (cur_year = param_1_year + 5)) ∧
+      (some ((other ⨝ (DateMonth ⨝ cur))[month][month as param_2_month] ⨯ (date ⨝ (DateMonth ⨝ cur))[month][month as cur_month]) where (cur_month = param_2_month)) ∧
+      (some ((other ⨝ (DateDay ⨝ cur))[day][day as param_3_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (cur_day = param_3_day))  ∧ 
+      // Postconditions
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
+      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
+      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDateYearsAfter] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, date]
+    )
+
 pred eventDateBefore__day[step:(cur:id, nxt:id), date: (instance:id), other: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
@@ -242,68 +495,354 @@ pred eventDateBefore__day[step:(cur:id, nxt:id), date: (instance:id), other: (in
       inChangeSet[step, date]
     )
 
-pred eventDateBefore__month[step:(cur:id, nxt:id), date: (instance:id), other: (instance:id)]
+// Event predicates for `DebitCard`
+pred eventDebitCardClosed[step:(cur:id, nxt:id), debitcard: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ date)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
     ( 
-      // Preconditions 
-      (some ((other ⨝ (DateMonth ⨝ cur))[month][month as param_1_month] ⨯ (date ⨝ (DateMonth ⨝ cur))[month][month as cur_month]) where (cur_month < param_1_month)) ∧
-      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (other ⨝ (DateYear ⨝ cur))[year][year as param_2_year]) where (cur_year = param_2_year)) ∧
-      inState[cur, other, initialized]  ∧ 
+       
       // Postconditions
-      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
-      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
-      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = (debitcard ⨝ (DebitCardRequestReason ⨝ cur))[requestReason] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset] ∧
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = (debitcard ⨝ (DebitCardAccountNumber ⨝ cur))[accountNumber] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ (debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = cur_pinHash)) ∧
+      (debitcard ⨝ (DebitCardBrandType ⨝ nxt))[brandType] = (debitcard ⨝ (DebitCardBrandType ⨝ cur))[brandType]  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventDateBefore__month] ∧
+      forceState[curState, nxtState, EventDebitCardClosed] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, date]
+      inChangeSet[step, debitcard]
     )
 
-pred eventDateAfter__month[step:(cur:id, nxt:id), date: (instance:id), other: (instance:id)]
+pred eventDebitCardTransactionOccurred__wrongPin[step:(cur:id, nxt:id), debitcard: (instance:id), pinHash: (pinHash:str)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ date)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
     ( 
       // Preconditions 
-      (some ((other ⨝ (DateMonth ⨝ cur))[month][month as param_1_month] ⨯ (date ⨝ (DateMonth ⨝ cur))[month][month as cur_month]) where (cur_month > param_1_month)) ∧
-      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (other ⨝ (DateYear ⨝ cur))[year][year as param_2_year]) where (cur_year = param_2_year)) ∧
-      inState[cur, other, initialized]  ∧ 
+      ((eventDateAfter__years[step, (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance], Date_NOW] ∨ (eventDateAfter__day[step, (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance], Date_NOW] ∨ eventDateAfter__month[step, (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance], Date_NOW]))) ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ pinHash[pinHash as param_1_pinHash]) where (cur_pinHash != param_1_pinHash))  ∧ 
       // Postconditions
-      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
-      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
-      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = (debitcard ⨝ (DebitCardRequestReason ⨝ cur))[requestReason] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset] ∧
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = (debitcard ⨝ (DebitCardAccountNumber ⨝ cur))[accountNumber] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ (debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = cur_pinHash)) ∧
+      (debitcard ⨝ (DebitCardBrandType ⨝ nxt))[brandType] = (debitcard ⨝ (DebitCardBrandType ⨝ cur))[brandType]  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventDateAfter__month] ∧
+      forceState[curState, nxtState, EventDebitCardTransactionOccurred__wrongPin] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, date]
+      inChangeSet[step, debitcard]
     )
 
-pred eventDateAfter__day[step:(cur:id, nxt:id), date: (instance:id), other: (instance:id)]
+pred eventDebitCardRequested__stolen[step:(cur:id, nxt:id), debitcard: (instance:id), accountNumber: (instance:id), reason: (instance:id), expiry: (instance:id), brandType: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ date)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
     ( 
       // Preconditions 
-      (some ((other ⨝ (DateDay ⨝ cur))[day][day as param_1_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (cur_day > param_1_day)) ∧
-      (some ((other ⨝ (DateMonth ⨝ cur))[month][month as param_2_month] ⨯ (date ⨝ (DateMonth ⨝ cur))[month][month as cur_month]) where (cur_month = param_2_month)) ∧
-      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (other ⨝ (DateYear ⨝ cur))[year][year as param_3_year]) where (cur_year = param_3_year)) ∧
-      inState[cur, other, initialized]  ∧ 
+      reason = RequestReason_STOLEN ∧
+      inState[cur, accountNumber, initialized] ∧
+      eventDateYearsAfter[step, expiry, __IntConst_5[const_5->nrOfYears], Date_NOW]  ∧ 
       // Postconditions
-      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
-      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
-      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = accountNumber[instance as accountNumber] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = expiry[instance as expiry] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash != "")) ∧
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = reason[instance as requestReason] ∧
+      (debitcard ⨝ (DebitCardBrandType ⨝ nxt))[brandType] = brandType[instance as brandType] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = Boolean_FALSE[instance as pinReset]  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventDateAfter__day] ∧
+      forceState[curState, nxtState, EventDebitCardRequested__stolen] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, date]
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardRequested__lost[step:(cur:id, nxt:id), debitcard: (instance:id), accountNumber: (instance:id), reason: (instance:id), expiry: (instance:id), brandType: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      reason = RequestReason_LOST ∧
+      inState[cur, accountNumber, initialized] ∧
+      eventDateYearsAfter[step, expiry, __IntConst_5[const_5->nrOfYears], Date_NOW]  ∧ 
+      // Postconditions
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = accountNumber[instance as accountNumber] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = expiry[instance as expiry] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash != "")) ∧
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = reason[instance as requestReason] ∧
+      (debitcard ⨝ (DebitCardBrandType ⨝ nxt))[brandType] = brandType[instance as brandType] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = Boolean_FALSE[instance as pinReset]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardRequested__lost] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardTransactionOccurred__ok[step:(cur:id, nxt:id), debitcard: (instance:id), pinHash: (pinHash:str)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      ((eventDateAfter__years[step, (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance], Date_NOW] ∨ (eventDateAfter__day[step, (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance], Date_NOW] ∨ eventDateAfter__month[step, (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance], Date_NOW]))) ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ pinHash[pinHash as param_1_pinHash]) where (cur_pinHash = param_1_pinHash))  ∧ 
+      // Postconditions
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = (debitcard ⨝ (DebitCardRequestReason ⨝ cur))[requestReason] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset] ∧
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = (debitcard ⨝ (DebitCardAccountNumber ⨝ cur))[accountNumber] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ (debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = cur_pinHash)) ∧
+      (debitcard ⨝ (DebitCardBrandType ⨝ nxt))[brandType] = (debitcard ⨝ (DebitCardBrandType ⨝ cur))[brandType]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardTransactionOccurred__ok] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardRequested__customer[step:(cur:id, nxt:id), debitcard: (instance:id), accountNumber: (instance:id), reason: (instance:id), expiry: (instance:id), brandType: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      reason = RequestReason_CUSTOMER ∧
+      inState[cur, accountNumber, initialized] ∧
+      eventDateYearsAfter[step, expiry, __IntConst_5[const_5->nrOfYears], Date_NOW]  ∧ 
+      // Postconditions
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = accountNumber[instance as accountNumber] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = expiry[instance as expiry] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash != "")) ∧
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = reason[instance as requestReason] ∧
+      (debitcard ⨝ (DebitCardBrandType ⨝ nxt))[brandType] = brandType[instance as brandType] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = Boolean_FALSE[instance as pinReset]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardRequested__customer] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardRequested__new[step:(cur:id, nxt:id), debitcard: (instance:id), accountNumber: (instance:id), reason: (instance:id), expiry: (instance:id), brandType: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      reason = RequestReason_NEW ∧
+      inState[cur, accountNumber, initialized] ∧
+      eventDateYearsAfter[step, expiry, __IntConst_5[const_5->nrOfYears], Date_NOW]  ∧ 
+      // Postconditions
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = accountNumber[instance as accountNumber] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = expiry[instance as expiry] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash != "")) ∧
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = reason[instance as requestReason] ∧
+      (debitcard ⨝ (DebitCardBrandType ⨝ nxt))[brandType] = brandType[instance as brandType] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = Boolean_FALSE[instance as pinReset]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardRequested__new] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardRequested__expired[step:(cur:id, nxt:id), debitcard: (instance:id), accountNumber: (instance:id), reason: (instance:id), expiry: (instance:id), brandType: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      reason = RequestReason_EXPIRED ∧
+      inState[cur, accountNumber, initialized] ∧
+      eventDateYearsAfter[step, expiry, __IntConst_5[const_5->nrOfYears], Date_NOW]  ∧ 
+      // Postconditions
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = accountNumber[instance as accountNumber] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = expiry[instance as expiry] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash != "")) ∧
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = reason[instance as requestReason] ∧
+      (debitcard ⨝ (DebitCardBrandType ⨝ nxt))[brandType] = brandType[instance as brandType] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = Boolean_FALSE[instance as pinReset]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardRequested__expired] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardUnblocked[step:(cur:id, nxt:id), debitcard: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset] = Boolean_FALSE[instance as pinReset]  ∧ 
+      // Postconditions
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = (debitcard ⨝ (DebitCardRequestReason ⨝ cur))[requestReason] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset] ∧
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = (debitcard ⨝ (DebitCardAccountNumber ⨝ cur))[accountNumber] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ (debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = cur_pinHash)) ∧
+      (debitcard ⨝ (DebitCardBrandType ⨝ nxt))[brandType] = (debitcard ⨝ (DebitCardBrandType ⨝ cur))[brandType]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardUnblocked] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardActivated[step:(cur:id, nxt:id), debitcard: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+       
+      // Postconditions
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = (debitcard ⨝ (DebitCardRequestReason ⨝ cur))[requestReason] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset] ∧
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = (debitcard ⨝ (DebitCardAccountNumber ⨝ cur))[accountNumber] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ (debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = cur_pinHash)) ∧
+      (debitcard ⨝ (DebitCardBrandType ⨝ nxt))[brandType] = (debitcard ⨝ (DebitCardBrandType ⨝ cur))[brandType]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardActivated] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardEmpty[step:(cur:id, nxt:id), debitcard: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+       
+      // Postconditions
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = (debitcard ⨝ (DebitCardRequestReason ⨝ cur))[requestReason] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset] ∧
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = (debitcard ⨝ (DebitCardAccountNumber ⨝ cur))[accountNumber] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ (debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = cur_pinHash)) ∧
+      (debitcard ⨝ (DebitCardBrandType ⨝ nxt))[brandType] = (debitcard ⨝ (DebitCardBrandType ⨝ cur))[brandType]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardEmpty] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardTransactionOccurred__expired[step:(cur:id, nxt:id), debitcard: (instance:id), pinHash: (pinHash:str)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ pinHash[pinHash as param_1_pinHash]) where (cur_pinHash = param_1_pinHash)) ∧
+      ((eventDateBefore__day[step, (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance], Date_NOW] ∨ (eventDateBefore__years[step, (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance], Date_NOW] ∨ eventDateBefore__month[step, (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance], Date_NOW])))  ∧ 
+      // Postconditions
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = (debitcard ⨝ (DebitCardRequestReason ⨝ cur))[requestReason] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset] ∧
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = (debitcard ⨝ (DebitCardAccountNumber ⨝ cur))[accountNumber] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ (debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = cur_pinHash)) ∧
+      (debitcard ⨝ (DebitCardBrandType ⨝ nxt))[brandType] = (debitcard ⨝ (DebitCardBrandType ⨝ cur))[brandType]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardTransactionOccurred__expired] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred frameDebitCard[step: (cur:id, nxt:id), debitcard: (instance:id)] 
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] | (
+    nxtState = curState ∧
+    (
+      curState ⊆ uninitialized ∨ 
+      (// Postconditions
+       (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = (debitcard ⨝ (DebitCardAccountNumber ⨝ cur))[accountNumber] ∧
+       (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ (debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = cur_pinHash)) ∧
+       (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry] ∧
+       (debitcard ⨝ (DebitCardBrandType ⨝ nxt))[brandType] = (debitcard ⨝ (DebitCardBrandType ⨝ cur))[brandType] ∧
+       (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = (debitcard ⨝ (DebitCardRequestReason ⨝ cur))[requestReason] ∧
+       (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset])
+    )
+  )
+
+pred eventDebitCardProduced[step:(cur:id, nxt:id), debitcard: (instance:id), pinHash: (pinHash:str)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      (some (pinHash[pinHash as param_1_pinHash]) where (param_1_pinHash != ""))  ∧ 
+      // Postconditions
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = (debitcard ⨝ (DebitCardRequestReason ⨝ cur))[requestReason] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset] ∧
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = (debitcard ⨝ (DebitCardAccountNumber ⨝ cur))[accountNumber] ∧
+      (debitcard ⨝ (DebitCardBrandType ⨝ nxt))[brandType] = (debitcard ⨝ (DebitCardBrandType ⨝ cur))[brandType] ∧
+      (some (pinHash[pinHash as param_2_pinHash] ⨯ (debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = param_2_pinHash))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardProduced] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardTooManyResets[step:(cur:id, nxt:id), debitcard: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset] = Boolean_TRUE[instance as pinReset]  ∧ 
+      // Postconditions
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = (debitcard ⨝ (DebitCardRequestReason ⨝ cur))[requestReason] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset] ∧
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = (debitcard ⨝ (DebitCardAccountNumber ⨝ cur))[accountNumber] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ (debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = cur_pinHash)) ∧
+      (debitcard ⨝ (DebitCardBrandType ⨝ nxt))[brandType] = (debitcard ⨝ (DebitCardBrandType ⨝ cur))[brandType]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardTooManyResets] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
     )
 
 
+// Transition function for `BrandType`
+pred possibleTransitionsBrandType[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ BrandType)[instance] |
+    
+    (notInChangeSet[step, inst] ⇒ frameBrandType[step, inst])
+
+// Transition function for `IBAN`
+pred possibleTransitionsIBAN[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ IBAN)[instance] |
+    (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
+      (eventIBANCreate[step,inst,(step ⨝ ParamEventIBANCreateNumber)[number]] ∧
+      (step ⨝ raisedEvent)[event] = EventIBANCreate ∧
+      changeSetCanContain[step, inst])
+    ))
+    ∧
+    (notInChangeSet[step, inst] ⇒ frameIBAN[step, inst])
+
+// Transition function for `Boolean`
+pred possibleTransitionsBoolean[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ Boolean)[instance] |
+    
+    (notInChangeSet[step, inst] ⇒ frameBoolean[step, inst])
+
+// Transition function for `Date`
 pred possibleTransitionsDate[step: (cur:id, nxt:id)] 
   = ∀ inst ∈ (Instance ⨝ Date)[instance] |
     (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
@@ -314,21 +853,96 @@ pred possibleTransitionsDate[step: (cur:id, nxt:id)]
     ∧
     (notInChangeSet[step, inst] ⇒ frameDate[step, inst])
 
+// Transition function for `RequestReason`
+pred possibleTransitionsRequestReason[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ RequestReason)[instance] |
+    
+    (notInChangeSet[step, inst] ⇒ frameRequestReason[step, inst])
+
+// Transition function for `Limit`
+pred possibleTransitionsLimit[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ Limit)[instance] |
+    
+    (notInChangeSet[step, inst] ⇒ frameLimit[step, inst])
+
+// Transition function for `DebitCard`
+pred possibleTransitionsDebitCard[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ DebitCard)[instance] |
+    (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
+      (eventDebitCardClosed[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardClosed ∧
+      changeSetCanContain[step, inst])
+      ∨
+      (eventDebitCardTooManyResets[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardTooManyResets ∧
+      changeSetCanContain[step, inst])
+      ∨
+      (eventDebitCardEmpty[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardEmpty ∧
+      changeSetCanContain[step, inst])
+      ∨
+      (eventDebitCardTransactionOccurred__ok[step,inst,(step ⨝ ParamEventDebitCardTransactionOccurred__okPinHash)[pinHash]] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardTransactionOccurred__ok ∧
+      let cur = step[cur->config], debitcard = inst, debitcard = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance] | changeSetCanContain[step, inst ∪ debitcard])
+      ∨
+      (eventDebitCardUnblocked[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardUnblocked ∧
+      changeSetCanContain[step, inst])
+      ∨
+      (eventDebitCardTransactionOccurred__wrongPin[step,inst,(step ⨝ ParamEventDebitCardTransactionOccurred__wrongPinPinHash)[pinHash]] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardTransactionOccurred__wrongPin ∧
+      let cur = step[cur->config], debitcard = inst, debitcard = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance] | changeSetCanContain[step, inst ∪ debitcard])
+      ∨
+      (eventDebitCardTransactionOccurred__expired[step,inst,(step ⨝ ParamEventDebitCardTransactionOccurred__expiredPinHash)[pinHash]] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardTransactionOccurred__expired ∧
+      let cur = step[cur->config], debitcard = inst, debitcard = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance] | changeSetCanContain[step, inst ∪ debitcard])
+      ∨
+      (eventDebitCardProduced[step,inst,(step ⨝ ParamEventDebitCardProducedPinHash)[pinHash]] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardProduced ∧
+      changeSetCanContain[step, inst])
+      ∨
+      (eventDebitCardRequested__expired[step,inst,(step ⨝ ParamEventDebitCardRequested__expiredAccountNumber)[accountNumber->instance],(step ⨝ ParamEventDebitCardRequested__expiredReason)[reason->instance],(step ⨝ ParamEventDebitCardRequested__expiredExpiry)[expiry->instance],(step ⨝ ParamEventDebitCardRequested__expiredBrandType)[brandType->instance]] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardRequested__expired ∧
+      let cur = step[cur->config], expiry = (ParamEventDebitCardRequested__expiredExpiry ⨝ step)[expiry -> instance] | changeSetCanContain[step, inst ∪ expiry])
+      ∨
+      (eventDebitCardActivated[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardActivated ∧
+      changeSetCanContain[step, inst])
+      ∨
+      (eventDebitCardRequested__stolen[step,inst,(step ⨝ ParamEventDebitCardRequested__stolenAccountNumber)[accountNumber->instance],(step ⨝ ParamEventDebitCardRequested__stolenReason)[reason->instance],(step ⨝ ParamEventDebitCardRequested__stolenExpiry)[expiry->instance],(step ⨝ ParamEventDebitCardRequested__stolenBrandType)[brandType->instance]] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardRequested__stolen ∧
+      let cur = step[cur->config], expiry = (ParamEventDebitCardRequested__stolenExpiry ⨝ step)[expiry -> instance] | changeSetCanContain[step, inst ∪ expiry])
+      ∨
+      (eventDebitCardRequested__new[step,inst,(step ⨝ ParamEventDebitCardRequested__newAccountNumber)[accountNumber->instance],(step ⨝ ParamEventDebitCardRequested__newReason)[reason->instance],(step ⨝ ParamEventDebitCardRequested__newExpiry)[expiry->instance],(step ⨝ ParamEventDebitCardRequested__newBrandType)[brandType->instance]] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardRequested__new ∧
+      let cur = step[cur->config], expiry = (ParamEventDebitCardRequested__newExpiry ⨝ step)[expiry -> instance] | changeSetCanContain[step, inst ∪ expiry])
+      ∨
+      (eventDebitCardRequested__customer[step,inst,(step ⨝ ParamEventDebitCardRequested__customerAccountNumber)[accountNumber->instance],(step ⨝ ParamEventDebitCardRequested__customerReason)[reason->instance],(step ⨝ ParamEventDebitCardRequested__customerExpiry)[expiry->instance],(step ⨝ ParamEventDebitCardRequested__customerBrandType)[brandType->instance]] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardRequested__customer ∧
+      let cur = step[cur->config], expiry = (ParamEventDebitCardRequested__customerExpiry ⨝ step)[expiry -> instance] | changeSetCanContain[step, inst ∪ expiry])
+      ∨
+      (eventDebitCardRequested__lost[step,inst,(step ⨝ ParamEventDebitCardRequested__lostAccountNumber)[accountNumber->instance],(step ⨝ ParamEventDebitCardRequested__lostReason)[reason->instance],(step ⨝ ParamEventDebitCardRequested__lostExpiry)[expiry->instance],(step ⨝ ParamEventDebitCardRequested__lostBrandType)[brandType->instance]] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardRequested__lost ∧
+      let cur = step[cur->config], expiry = (ParamEventDebitCardRequested__lostExpiry ⨝ step)[expiry -> instance] | changeSetCanContain[step, inst ∪ expiry])
+    ))
+    ∧
+    (notInChangeSet[step, inst] ⇒ frameDebitCard[step, inst])
+
 
 // Transition function
-∀ step ∈ order| possibleTransitionsDate[step]
+∀ step ∈ order| possibleTransitionsDate[step] ∧ possibleTransitionsIBAN[step] ∧ possibleTransitionsDebitCard[step]
 
 
-// Fact: CorrectDate
-∀ cur_1 ∈ Config | let step_1 = (cur_1[config as cur] ⨝ (order)) | (∀ d ∈ (Instance ⨝ Date)[instance] | ((inState[cur_1, d, initialized] ⇒ (((some ((d ⨝ (DateYear ⨝ cur_1))[year][year as d]) where (d >= 1900)) ∧ ((some ((d ⨝ (DateYear ⨝ cur_1))[year][year as d]) where (d <= 2200)) ∧ ((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d > 0)) ∧ ((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d < 13)) ∧ ((some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d]) where (d > 0)) ∧ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 1)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d]) where (d < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 1)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 2)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d]) where (d < 30)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 2)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 3)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d]) where (d < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 3)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 4)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d]) where (d < 31)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 4)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 5)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d]) where (d < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 5)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 6)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d]) where (d < 31)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 6)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 7)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d]) where (d < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 7)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 8)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d]) where (d < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 8)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 9)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d]) where (d < 31)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 9)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 10)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d]) where (d < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 10)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 11)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d]) where (d < 31)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d]) where (d = 11)))) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d]) where (d < 32))))))))))))))))))))))))))))))))))))))))))))
-// Fact: TimeAlwaysMovesForward
-∀ cur_1 ∈ Config | let step_1 = (cur_1[config as cur] ⨝ (order)) | (∃ d1 ∈ Date_NOW | let step_2 = ((order) ⨝ cur_1[config as cur]), cur_2 = step_2[nxt->config] | (∃ d2 ∈ Date_NOW | (((some ((d1 ⨝ (DateYear ⨝ cur_1))[year][year as d1] ⨯ (d2 ⨝ (DateYear ⨝ cur_2))[year][year as d2]) where (d2 > d1)) ∨ ((((some ((d1 ⨝ (DateYear ⨝ cur_1))[year][year as d1] ⨯ (d2 ⨝ (DateYear ⨝ cur_2))[year][year as d2]) where (d2 = d1)) ∧ (some ((d2 ⨝ (DateMonth ⨝ cur_2))[month][month as d2] ⨯ (d1 ⨝ (DateMonth ⨝ cur_1))[month][month as d1]) where (d2 > d1)))) ∨ (((some ((d1 ⨝ (DateYear ⨝ cur_1))[year][year as d1] ⨯ (d2 ⨝ (DateYear ⨝ cur_2))[year][year as d2]) where (d2 = d1)) ∧ ((some ((d2 ⨝ (DateMonth ⨝ cur_2))[month][month as d2] ⨯ (d1 ⨝ (DateMonth ⨝ cur_1))[month][month as d1]) where (d2 = d1)) ∧ (some ((d2 ⨝ (DateDay ⨝ cur_2))[day][day as d2] ⨯ (d1 ⨝ (DateDay ⨝ cur_1))[day][day as d1]) where (d2 > d1))))))))))
-// Fact: NowAlwaysExists
-∀ cur_1 ∈ Config | let step_1 = (cur_1[config as cur] ⨝ (order)) | (inState[cur_1, Date_NOW, initialized])
-// Assert: SomeInitializedDate
-∃ cur_1 ∈ Config | let step_1 = (cur_1[config as cur] ⨝ (order)) | (∃ d ∈ (Instance ⨝ Date)[instance] | (d != Date_NOW ∧ inState[cur_1, d, initialized]))
+// Fact `NowAlwaysExists`
+∀ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (inState[cur_1, Date_NOW, initialized])
+// Fact `TimeMovesForward`
+∀ cur_1 ∈ Config - last | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∃ d1 ∈ Date_NOW | let step_2 = ((order ∪ loop) ⨝ cur_1[config as cur]), cur_2 = step_2[nxt->config] | (∃ d2 ∈ Date_NOW | (((some ((d2 ⨝ (DateYear ⨝ cur_2))[year][year as d2_year] ⨯ (d1 ⨝ (DateYear ⨝ cur_1))[year][year as d1_year]) where (d2_year > d1_year)) ∨ ((((some ((d2 ⨝ (DateYear ⨝ cur_2))[year][year as d2_year] ⨯ (d1 ⨝ (DateYear ⨝ cur_1))[year][year as d1_year]) where (d2_year = d1_year)) ∧ (some ((d2 ⨝ (DateMonth ⨝ cur_2))[month][month as d2_month] ⨯ (d1 ⨝ (DateMonth ⨝ cur_1))[month][month as d1_month]) where (d2_month > d1_month)))) ∨ (((some ((d2 ⨝ (DateYear ⨝ cur_2))[year][year as d2_year] ⨯ (d1 ⨝ (DateYear ⨝ cur_1))[year][year as d1_year]) where (d2_year = d1_year)) ∧ ((some ((d2 ⨝ (DateMonth ⨝ cur_2))[month][month as d2_month] ⨯ (d1 ⨝ (DateMonth ⨝ cur_1))[month][month as d1_month]) where (d2_month = d1_month)) ∧ (some ((d2 ⨝ (DateDay ⨝ cur_2))[day][day as d2_day] ⨯ (d1 ⨝ (DateDay ⨝ cur_1))[day][day as d1_day]) where (d2_day > d1_day))))))))))
+// Fact `CorrectDate`
+∀ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∀ d ∈ (Instance ⨝ Date)[instance] | ((inState[cur_1, d, initialized] ⇒ (((some ((d ⨝ (DateYear ⨝ cur_1))[year][year as d_year]) where (d_year >= 1900)) ∧ ((some ((d ⨝ (DateYear ⨝ cur_1))[year][year as d_year]) where (d_year <= 2200)) ∧ ((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month > 0)) ∧ ((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month < 13)) ∧ ((some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day > 0)) ∧ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 1)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 1)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 2)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 30)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 2)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 3)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 3)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 4)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 31)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 4)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 5)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 5)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 6)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 31)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 6)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 7)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 7)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 8)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 8)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 9)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 31)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 9)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 10)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 10)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 11)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 31)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 11)))) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32))))))))))))))))))))))))))))))))))))))))))))
+// Fact `IBANsAreUnique`
+∀ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∀ iban1 ∈ (Instance ⨝ IBAN)[instance],iban2 ∈ (Instance ⨝ IBAN)[instance] | ((((inState[cur_1, iban1, initialized] ∧ (inState[cur_1, iban2, initialized] ∧ (some ((iban1 ⨝ (IBANNumber ⨝ cur_1))[number][number as iban1_number] ⨯ (iban2 ⨝ (IBANNumber ⨝ cur_1))[number][number as iban2_number]) where (iban1_number = iban2_number))))) ⇒ iban1 = iban2)))
 
-
-
+// Assert `CardCanExpire`
+∃ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∃ d ∈ (Instance ⨝ DebitCard)[instance] | (((EventDebitCardTransactionOccurred__ok ⊆ (raisedEvent ⨝ step_1 ⨝ d)[event]) ∨ ((EventDebitCardTransactionOccurred__wrongPin ⊆ (raisedEvent ⨝ step_1 ⨝ d)[event]) ∨ (EventDebitCardTransactionOccurred__expired ⊆ (raisedEvent ⨝ step_1 ⨝ d)[event])))))
 // Minimize the number of steps by minimizing the number of Configurations
 objectives: minimize Config[count()]

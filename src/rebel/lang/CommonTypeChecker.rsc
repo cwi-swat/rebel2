@@ -1,12 +1,14 @@
 module rebel::lang::CommonTypeChecker
 
 import rebel::lang::CommonSyntax;
-import util::PathUtil;
+//import rebel::lang::DependencyAnalyzer;
+//import util::PathUtil;
 
 extend analysis::typepal::TypePal;
 
 import List;
 import IO;
+//import ValueIO;
 
 data AType
   = intType()
@@ -26,7 +28,7 @@ data AType
 data ScopeRole
   = moduleScope()
   | specScope()
-  | eventScope()
+  | eventScope() 
   | quantScope()
   | factScope()
   | assertScope() 
@@ -68,23 +70,54 @@ str prettyAType(eventType(AType argTypes)) = "event <prettyAType(argTypes)>";
 str prettyAType(voidType()) = "*";
 str prettyAType(setType(AType elem)) = "set of <prettyAType(elem)>";
 
-TModel rebelTModelFromTree(Tree pt, bool debug = false, PathConfig pathConf = pathConfig(pt@\loc)){
-    if (pt has top) pt = pt.top;
- 
-    c = newCollector("collectAndSolve", pt, config = tconfig(getTypeNamesAndRole = rebelTypeNamesAndRole,
-                                                             isSubType = subtype,
-                                                             verbose=debug, 
-                                                             logTModel = debug, 
-                                                             logAttempts = debug, 
-                                                             logSolverIterations= debug, 
-                                                             logSolverSteps = debug));  
+//TModel rebelTModelFromModule(Module root, Graph[RebelDependency] depGraph, PathConfig pcfg, bool saveTModels = true, bool debug = false){
+//  c = newCollector("collectAndSolve", root, config = tconfig(getTypeNamesAndRole = rebelTypeNamesAndRole,
+//                                                           isSubType = subtype,
+//                                                           verbose=debug, 
+//                                                           logTModel = debug, 
+//                                                           logAttempts = debug, 
+//                                                           logSolverIterations= debug, 
+//                                                           logSolverSteps = debug));  
+//
+//  handleImports(c, root, depGraph);
+//  TModel model = newSolver(root, c.run()).run();
+//   
+//  if (saveTModels) { 
+//    save(root,model,pcfg);
+//  }
+//  
+//  return model;
+//}
+//
+//void handleImports(Collector c, Module root, Graph[RebelDependency] depGraph) {
+//    set[Module] dirtyModules = findDirtyModules(root, depGraph);
+//
+//    for (Module m <- dirtyModules) {
+//      collect(m, c);
+//    }
+//    
+//    for (resolvedAndCheckedModule(Module m, TModel tm, datetime _) <- depGraph<0> + depGraph<1>) {
+//      c.addTModel(tm);
+//    }
+//}
 
-    collect(pt, c);
-    handleImports(c, pt, pathConf);
-    
-    TModel model = newSolver(pt, c.run()).run();
-    return model;
-}
+//TModel rebelTModelFromTree(Tree pt, bool debug = false, PathConfig pathConf = pathConfig(pt@\loc)){
+//    if (pt has top) pt = pt.top;
+// 
+//    c = newCollector("collectAndSolve", pt, config = tconfig(getTypeNamesAndRole = rebelTypeNamesAndRole,
+//                                                             isSubType = subtype,
+//                                                             verbose=debug, 
+//                                                             logTModel = debug, 
+//                                                             logAttempts = debug, 
+//                                                             logSolverIterations= debug, 
+//                                                             logSolverSteps = debug));  
+//
+//    collect(pt, c);
+//    handleImports(c, pt, pathConf);
+//    
+//    TModel model = newSolver(pt, c.run()).run();
+//    return model;
+//}
 
 tuple[list[str] typeNames, set[IdRole] idRoles] rebelTypeNamesAndRole(specType(str name)) = <[name], {specId()}>;
 
@@ -92,37 +125,37 @@ default tuple[list[str] typeNames, set[IdRole] idRoles] rebelTypeNamesAndRole(AT
 
 private str __REBEL_IMPORT_QUEUE = "__rebelImportQueue";
 
-str getFileName((QualifiedName)`<{Id "::"}+ moduleName>`) = replaceAll("<moduleName>.rebel", "::", "/");
+//str getFileName((QualifiedName)`<{Id "::"}+ moduleName>`) = replaceAll("<moduleName>.rebel", "::", "/");
 
-tuple[bool, loc] lookupModule(QualifiedName name, PathConfig pcfg) {
-    for (s <- pcfg.srcs) {
-        result = (s + replaceAll("<name>", "::", "/"))[extension = "rebel"];
-
-        if (exists(result)) {
-          return <true, result>;
-        }
-    }
-    return <false, |invalid:///|>;
-}
-
-void handleImports(Collector c, Tree root, PathConfig pcfg) {
-    set[QualifiedName] imported = {};
-    
-    while (list[QualifiedName] modulesToImport := c.getStack(__REBEL_IMPORT_QUEUE) && modulesToImport != []) {
-      c.clearStack(__REBEL_IMPORT_QUEUE);
-      
-        for (m <- modulesToImport, m notin imported) {
-          if (<true, l> := lookupModule(m, pcfg)) {
-            collect(parse(#start[Module], l).top, c);
-          }
-          else {
-            c.report(error(m, "Cannot find module %v in %v", "<m>", pcfg.srcs));
-          }
-          
-          imported += m; 
-        }
-    }
-}
+//tuple[bool, loc] lookupModule(QualifiedName name, PathConfig pcfg) {
+//    for (s <- pcfg.srcs) {
+//        result = (s + replaceAll("<name>", "::", "/"))[extension = "rebel"];
+//
+//        if (exists(result)) {
+//          return <true, result>;
+//        }
+//    }
+//    return <false, |invalid:///|>;
+//}
+//
+//void handleImports(Collector c, Tree root, PathConfig pcfg) {
+//    set[QualifiedName] imported = {};
+//    
+//    while (list[QualifiedName] modulesToImport := c.getStack(__REBEL_IMPORT_QUEUE) && modulesToImport != []) {
+//      c.clearStack(__REBEL_IMPORT_QUEUE);
+//      
+//        for (m <- modulesToImport, m notin imported) {
+//          if (<true, l> := lookupModule(m, pcfg)) {
+//            collect(parse(#start[Module], l).top, c);
+//          }
+//          else {
+//            c.report(error(m, "Cannot find module %v in %v", "<m>", pcfg.srcs));
+//          }
+//          
+//          imported += m; 
+//        }
+//    }
+//}
     
 void collect(current: (Module)`<ModuleId modDef> <Import* imports> <Part+ parts>`, Collector c) { 
   c.define("<modDef.name>", moduleId(), current, defType(moduleType()));

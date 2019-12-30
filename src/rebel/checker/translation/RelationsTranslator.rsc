@@ -1,20 +1,32 @@
-module analysis::allealle::DynamicRelationsTranslator
+module rebel::checker::translation::RelationsTranslator
 
 import rebel::lang::Syntax;
 import rebel::lang::TypeChecker;
-
-import analysis::allealle::CommonTranslationFunctions;
+import rebel::checker::translation::CommonTranslationFunctions;
 
 import String;
 import Set;
 import List;
 import IO;
 
-str translateConfigState(Spec spc, uninitialized()) = "state_uninitialized";
-str translateConfigState(Spec spc, finalized())     = "state_finalized";
-str translateConfigState(Spec spc, state(str name)) = "state_<toLowerCase("<spc.name>")>_<toLowerCase("<name>")>";
+str translateRelationDefinitions(Config cfg) 
+  = "<translateStaticPart(cfg.instances<0>)>
+    '
+    '<translateDynamicPart(cfg)>
+    ";
 
-str translateDynamicPart(Config cfg) {
+private str translateStaticPart(set[Spec] spcs) {
+  str def = "// Static configuration of state machines
+            '<buildSpecRel(spcs)>
+            '<buildStateRel(spcs)>
+            '<buildAllowedTransitionRel(spcs)>
+            '<buildEventsAsSingleRels(spcs)>
+            '<buildConstantRels(spcs)>"; 
+
+  return def;
+}
+
+private str translateDynamicPart(Config cfg) {
   str def = "// Dynamic configuration of state machines
             '<buildConfigRels(cfg.numberOfTransitions, cfg.finiteTrace)>
             '<buildInstanceRel(cfg.instances)>
@@ -27,6 +39,96 @@ str translateDynamicPart(Config cfg) {
 
   return def;
 }
+
+
+private str buildSpecRel(set[Spec] spcs) 
+  = "// Define the specs that can take place in the transition system
+    '<for (s <- spcs) {><buildSpecRel(s)>
+    '<}>";
+  
+private str buildSpecRel(Spec spc) 
+  = "<getCapitalizedSpecName(spc)> (spec:id) = {\<<getLowerCaseSpecName(spc)>\>}";  
+  
+private str buildStateRel(set[Spec] spcs) 
+  = "// Define all possible states for all machines
+    'State (state:id) = {\<state_uninitialized\>,\<state_finalized\>,<stateTuples>}
+    'initialized (state:id) = {<stateTuples>}
+    'finalized (state:id) = {\<state_finalized\>}
+    'uninitialized (state:id) = {\<state_uninitialized\>}
+    '<buildIndividualStateRels(spcs)>"
+  when stateTuples := intercalate(",", [st | s <- spcs, str st := buildStateTuples(s), st != ""]);
+
+private str buildIndividualStateRels(set[Spec] spcs)
+  = "<for (s <- spcs) {><buildIndividualStateRel(s)>
+    '<}>";
+
+private str buildIndividualStateRel(Spec spc)
+  = "<for (rebel::lang::SpecSyntax::State s <- states) {>State<getCapitalizedSpecName(spc)><capitalize("<s>")> (state:id) = {\<<getStateLabel(spc, s)>\>}
+    '<}>"
+    when set[rebel::lang::SpecSyntax::State] states := lookupStates(spc);
+  
+private str buildStateTuples(Spec spc) 
+  = intercalate(",", ["\<state_<s>\>" | str s <- states])
+  when 
+    str name := getLowerCaseSpecName(spc),
+    set[str] states := {"<name>_<toLowerCase("<s.name>")>" | /rebel::lang::SpecSyntax::State s := spc.states, s has name};
+
+private str buildAllowedTransitionRel(set[Spec] spcs)
+  = "// Define which transitions are allowed (in the form of `from a state` -\> ` via an event` -\> `to a state`
+    'allowedTransitions (from:id, to:id, event:id) = {<intercalate(",", [tt | s <- spcs, str tt := buildAllowedTransitionTuples(s), tt != ""])>}";
+
+private str buildAllowedTransitionTuples(Spec spc)
+  = intercalate(",", ["\<<f>,<t>,<e>\>" | <f,t,e> <- flattenTransitions(spc)])
+  when /Transition _ := spc.states;
+
+private default str buildAllowedTransitionTuples(Spec s) = "";
+  
+private str buildEventsAsSingleRels(set[Spec] spcs)
+  = "// Define each event as single relation so that the events can be used as variables in the constraints 
+    '<for (r <- rels) {><r>
+    '<}>"
+    when
+      set[str] rels := {buildSingleEventRel("<s.name>", e) | s <- spcs, /Event e := s.events};
+    
+private str buildSingleEventRel(str specName, Event e) 
+  = "Event<capitalize(specName)><capitalize(event)> (event:id) = {\<event_<toLowerCase(specName)>_<toLowerCase(event)>\>}"
+  when str event := replaceAll("<e.name>", "::", "_");
+
+private str buildConstantRels(set[Spec] spcs) {
+  set[str] constRels = {};
+  
+  for (/(Expr)`<Lit l>` := spcs) {
+    switch (l) {
+      case (Lit)`<Int i>`:            constRels += "__IntConst_<i> (const_<i>: int) = {\<<i>\>}";
+      case (Lit)`<StringConstant s>`: constRels += "__StrConst_<unquote(s)> (const_<unquote(s)>: str) = {\<<s>\>}";
+      case (Lit)`{}`:                 constRels += "__EMPTY (instance:id) = {}"; 
+    }
+  }
+  
+  return "<for (r <- constRels) {><r>
+         '<}>";  
+}
+
+private str unquote(StringConstant s) = "<s>"[1..-1];
+
+private rel[str,str,str] flattenTransitions(Spec s)
+  = {<"<cfrom>", "<cto>", "event_<name>_<event>"> | 
+      str name := getLowerCaseSpecName(s),
+      /(Transition)`<State from> -\> <State to> : <{TransEvent ","}+ events>;` := s.states,
+      str cfrom := convertFromState(from, name), str cto := convertToState(to, name),
+      str event <- {toLowerCase(replaceAll("<e>", "::", "_")) | TransEvent e <- events}};
+
+private str convertFromState((State)`(*)`, str _) = "state_uninitialized";
+private default str convertFromState(rebel::lang::SpecSyntax::State st, str spec) = convertState(st, spec);   
+
+private str convertToState((State)`(*)`, str _) = "state_finalized";
+private default str convertToState(rebel::lang::SpecSyntax::State st, str spec) = convertState(st, spec);
+
+private str convertState(rebel::lang::SpecSyntax::State st, str spec) = "state_<spec>_<toLowerCase("<st>")>";   
+  
+str translateConfigState(Spec spc, uninitialized()) = "state_uninitialized";
+str translateConfigState(Spec spc, finalized())     = "state_finalized";
+str translateConfigState(Spec spc, state(str name)) = "state_<toLowerCase("<spc.name>")>_<toLowerCase("<name>")>";
 
 private str buildEventParamRels(set[Spec] specs, Config cfg) {
   list[str] rels = [];
@@ -150,15 +252,18 @@ private str buildConfigRels(int numberOfTransitions, bool finiteTrace)
     'order (cur:id, nxt:id) \<= {<intercalate(",", ["\<c<i>,c<i+1>\>" | int i <- [1..numberOfTransitions]])>}
     'first (config:id) = {\<c1\>}
     'last (config:id) \<= {<intercalate(",", ["\<c<i>\>" | int i <- [1..numberOfTransitions+1]])>}
-    '<if (!finiteTrace) {>back (config:id) \<= {<intercalate(",", ["\<c<i>\>" | int i <- [1..numberOfTransitions+1]])>}
-    'loop (cur:id, nxt:id) \<= {<intercalate(",", ["\<c<i>,c<j>\>" | int i <- [2..numberOfTransitions+1], int j <- [1..i+1]])>}<}>
+    'back (config:id) <if (finiteTrace) {>= {}<} else {> \<= {<intercalate(",", ["\<c<i>\>" | int i <- [1..numberOfTransitions+1]])>} <}>
+    'loop (cur:id, nxt:id) <if (finiteTrace) {>= {}<} else {> \<= {<intercalate(",", ["\<c<i>,c<j>\>" | int i <- [2..numberOfTransitions+1], int j <- [1..i+1]])>} <}>
     '";
 
 private str buildInstanceRel(rel[Spec spc, str instance, State initialState] instances)
   = "Instance (spec:id, instance:id) = {<intercalate(",", ["\<<toLowerCase("<inst.spc.name>")>,<inst.instance>\>" | inst <- instances])>}";
   
-private str buildInstanceInStateRel(rel[Spec spc, str instance, State state] instances, int numberOfTransitions) 
-  = "instanceInState (config:id, instance:id, state:id) \>= {<buildInitialInstanceInStateTuples(instances)>}\<= {<buildInstanceInStateTuples(instances<spc,instance>, numberOfTransitions)>}";
+private str buildInstanceInStateRel(rel[Spec spc, str instance, State state] instances, int numberOfTransitions) {
+  str initialTup = buildInitialInstanceInStateTuples(instances);
+  str iisRel = "instanceInState (config:id, instance:id, state:id) <if (initialTup != "") {>\>={<initialTup>}<}>\<= {<buildInstanceInStateTuples(instances<spc,instance>, numberOfTransitions)>}";
+  return iisRel;
+}
 
 private str buildInitialInstanceInStateTuples(rel[Spec spc, str instance, State state] instances)
   = intercalate(",", ["\<c1,<i>,<translateConfigState(s, st)>\>" | <s,i,st> <- instances, !isEmptySpec(s), st != noState()]);

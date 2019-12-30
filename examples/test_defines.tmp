@@ -1,0 +1,12 @@
+{
+  <|project://rebel2/examples/local/types/Boolean.rebel|(30,27,<3,0>,<3,27>),"this",specId(),|project://rebel2/examples/local/types/Boolean.rebel|(30,27,<3,0>,<3,27>),defType(specType("Boolean"))>,
+  <|project://rebel2/examples/local/debitcard/Common.rebel|(63,69,<5,0>,<11,0>),"this",specId(),|project://rebel2/examples/local/debitcard/Common.rebel|(63,69,<5,0>,<11,0>),defType(specType("BrandType"))>,
+  <|project://rebel2/examples/local/types/Boolean.rebel|(0,57,<1,0>,<3,27>),"Boolean",specId(),|project://rebel2/examples/local/types/Boolean.rebel|(30,27,<3,0>,<3,27>),defType(specType("Boolean"))>,
+  <|global-scope:///|,"local::types::Boolean",moduleId(),|project://rebel2/examples/local/types/Boolean.rebel|(0,57,<1,0>,<3,27>),defType(moduleType())>,
+  <|project://rebel2/examples/local/types/Boolean.rebel|(30,27,<3,0>,<3,27>),"FALSE",specInstanceId(),|project://rebel2/examples/local/types/Boolean.rebel|(50,5,<3,20>,<3,25>),defType(specType("Boolean"))>,
+  <|project://rebel2/examples/local/debitcard/Common.rebel|(63,69,<5,0>,<11,0>),"VPAY",specInstanceId(),|project://rebel2/examples/local/debitcard/Common.rebel|(88,4,<5,25>,<5,29>),defType(specType("BrandType"))>,
+  <|project://rebel2/examples/local/debitcard/Common.rebel|(0,132,<1,0>,<11,0>),"BrandType",specId(),|project://rebel2/examples/local/debitcard/Common.rebel|(63,69,<5,0>,<11,0>),defType(specType("BrandType"))>,
+  <|project://rebel2/examples/local/debitcard/Common.rebel|(63,69,<5,0>,<11,0>),"MAESTRO",specInstanceId(),|project://rebel2/examples/local/debitcard/Common.rebel|(79,7,<5,16>,<5,23>),defType(specType("BrandType"))>,
+  <|global-scope:///|,"local::debitcard::Common",moduleId(),|project://rebel2/examples/local/debitcard/Common.rebel|(0,132,<1,0>,<11,0>),defType(moduleType())>,
+  <|project://rebel2/examples/local/types/Boolean.rebel|(30,27,<3,0>,<3,27>),"TRUE",specInstanceId(),|project://rebel2/examples/local/types/Boolean.rebel|(44,4,<3,14>,<3,18>),defType(specType("Boolean"))>
+}

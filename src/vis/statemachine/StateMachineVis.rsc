@@ -13,6 +13,9 @@ import salix::lib::UML;
 import vis::statemachine::salix::StateMachineCat;
 
 alias Model = tuple[loc spc, Spec prev];
+  
+alias Instances = rel[Spec spc, str instance];
+alias Values = rel[int cfg, Spec spc, str instance, str val];
 
 App[Model] createVis(loc spc, int port) {
   if (/Spec s := parseModule(spc).parts) {

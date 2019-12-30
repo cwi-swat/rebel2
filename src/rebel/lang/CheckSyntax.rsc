@@ -33,6 +33,7 @@ syntax Formula
   = non-assoc "if" Formula cond "then" Formula then "else" Formula else
   > "eventually" Formula form
   | "always" Formula form
+  | "always-last" Formula form
   | "next" Formula form
   | "first" Formula form
   | TransEvent event "on" Expr var WithAssignments? with
@@ -66,6 +67,7 @@ keyword Keywords
   | "fact"
   | "eventually"
   | "always"
+  | "always-last"
   | "next"
   | "minimal"
   | "maximal"

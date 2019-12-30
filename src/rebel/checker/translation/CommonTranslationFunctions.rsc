@@ -1,9 +1,9 @@
-module analysis::allealle::CommonTranslationFunctions
+module rebel::checker::translation::CommonTranslationFunctions
 
 import rebel::lang::Syntax;
 import rebel::lang::TypeChecker;
 
-import analysis::allealle::RelationCollector;
+import rebel::checker::translation::RelationCollector;
 
 import String;
 import Node;
@@ -11,9 +11,8 @@ import IO;
 
 data Config = config(rel[Spec spc, str instance, State initialState] instances, 
                      rel[Spec spc, str instance, str field, str val] initialValues, 
-                     set[Fact] facts,
+                     set[Fact] facts, 
                      TModel tm,
-                     RelMapping rm,
                      int numberOfTransitions,
                      bool finiteTrace = true,
                      int maxSizeIntegerSets = 5,
@@ -91,9 +90,9 @@ bool isParam(Expr expr, TModel tm)
   = getIdRole(expr,tm) == paramId();
 default bool isParam(Expr _, TModel _) = false;
 
-Spec getSpecByType(Expr expr, rel[Spec spc, str instance, State initialState] instances, TModel tm) {
+Spec getSpecByType(Expr expr, set[Spec] specs, TModel tm) {
   if (specType(str specName) := getType(expr, tm)) {
-    return lookupSpecByName(specName, instances);
+    return lookupSpecByName(specName, specs);
   }
   
   throw "Expression `<expr>` is not of spec type";
@@ -103,8 +102,8 @@ Spec getSpecByType(Expr expr, rel[Spec spc, str instance, State initialState] in
 set[Spec] lookupSpecs(rel[Spec spc, str instance, State initialState] instances) = {i.spc | i <- instances}; 
 
 //@memo
-Spec lookupSpecByName(str specName, rel[Spec spc, str instance, State initialState] instances) {
-  for (s <- lookupSpecs(instances), "<s.name>" == specName) {
+private Spec lookupSpecByName(str specName, set[Spec] specs) {
+  for (s <- specs, "<s.name>" == specName) {
     return s;
   }
   
@@ -116,13 +115,23 @@ set[rebel::lang::SpecSyntax::State] lookupStates(Spec spc)
   = {delAnnotationsRec(st) | /rebel::lang::SpecSyntax::State st <- spc.states, st has name};
 
 //@memo
-set[str] lookupStateLabels(Spec spc) 
-  = {getStateLabel(spc, st) | rebel::lang::SpecSyntax::State st <- lookupStates(spc)} 
-  when str specName := toLowerCase("<spc.name>");
+set[str] lookupStateLabels(Spec spc) {
+  set[str] states = {getStateLabel(spc, st) | rebel::lang::SpecSyntax::State st <- lookupStates(spc)};
+  
+  if (/(Transition)`(*) -\> <State _> : <{TransEvent ","}+ _>;` := spc.states) {
+    states += "state_uninitialized";
+  }
+  
+  if (/(Transition)`<State _> -\> (*) : <{TransEvent ","}+ _>;` := spc.states) {
+    states += "state_finalized";
+  } 
+  
+  return states; 
+}
 
 //@memo
 set[str] lookupStateLabelsWithDefaultState(Spec spc)
-  = lookupStateLabels(spc) + (!isEmptySpec(spc) ? {"state_uninitialized", "state_finalized"} : {});   
+  = lookupStateLabels(spc); // + (!isEmptySpec(spc) ? {"state_uninitialized", "state_finalized"} : {});   
 
 str getStateLabel(Spec spc, rebel::lang::SpecSyntax::State state)
   = "state_<getLowerCaseSpecName(spc)>_<toLowerCase("<state>")>";

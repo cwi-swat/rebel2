@@ -1,30 +1,113 @@
-module analysis::Normalizer
+module rebel::checker::Normalizer
 
 import rebel::lang::Syntax;
 import rebel::lang::TypeChecker;
+import rebel::lang::DependencyAnalyzer;
+import rebel::lang::Parser;
+
 import util::PathUtil;
 
 import ParseTree;
 import List;
 import Set;
 import String;
-import IO;
+import IO; 
+import ValueIO;
 import Location;
+import util::Maybe;
 
-loc normalize(Module m, TModel origTm) {
+alias NormalizedResult = tuple[Module normMod, TModel normTm, Graph[RebelDependency] normDepGraph];
+
+NormalizedResult loadNormalizedModules(Module m, PathConfig pcfg, PathConfig normPcfg) {
+  Maybe[loc] normModLoc = lookupNormalizedModule(m.\module.name, normPcfg);
+  
+  if (just(loc nmf) := normModLoc) {
+    Module normMod = parseModule(nmf);
+    Graph[RebelDependency] normDepGraph = calculateDependencies(normMod, normPcfg);
+    
+    if (just(TModel ntm) := getTModel(normMod, normDepGraph)) {
+      return <normMod, ntm, normDepGraph>;
+    } else {
+      throw "Could not load normalized TModel for `<m.\module.name>`";
+    }
+  } else {
+    return normalizeAndCheck(m, pcfg, normPcfg);
+  }    
+}
+
+NormalizedResult normalizeAndCheck(Module root, PathConfig pcfg, PathConfig normPcfg, bool refreshTModel = false, bool saveNormalizedModules = true) 
+  = normalizeAndCheck(root, calculateDependencies(root, pcfg), pcfg, normPcfg, refreshTModel = refreshTModel, saveNormalizedModules = saveNormalizedModules);
+
+NormalizedResult normalizeAndCheck(Module root, Graph[RebelDependency] depGraph, PathConfig pcfg, PathConfig normPcfg, bool refreshTModel = false, bool saveNormalizedModules = true) {
+  println("Normalizing `<root.\module.name>`");
+  if (/unresolvedModule(_) := depGraph<0> + depGraph<1>) {
+    println("Unable to normalize module `<root.\module.name>` since not all dependencies can be resolved");
+    return;
+  } 
+  
+  TModel tm;
+  if (!refreshTModel && just(TModel ltm) := getTModel(root, depGraph)) {
+    println("Using earlier save type information for `<root.\module.name>`");
+    tm = ltm;
+  } else {
+    TypeCheckerResult tr = checkModule(root, depGraph, pcfg, saveTModels = true);
+    tm = tr.tm;
+    depGraph = tr.depGraph; //calculateDependencies(root, pcfg);
+  }    
+  
+  // all modules should be resolved and tmodels should be created
+  if (/resolvedOnlyModule(_,_) := depGraph<0> + depGraph<1>) {
+    throw "Not all modules could be typed checked";
+  }
+  
+  list[RebelDependency] todo = [d | d <- order(depGraph), d.m != root];
+  
+  while (todo != []) {
+    RebelDependency cur = todo[-1];
+    todo -= cur;
+    
+    if (resolvedAndCheckedModule(Module curMod, TModel curTm, curTs) := cur) {
+      Maybe[loc] prevNorm = lookupNormalizedModule(curMod.\module.name, pcfg);
+      
+      if (nothing() := prevNorm || (just(nf) := prevNorm && lastModified(nf) < curTs)) {
+        println("Start normalization of `<curMod.\module.name>`");
+        normalize(curMod, curTm, pcfg);
+      }
+    } else {
+      throw "Unable to normalize module?!?";
+    }
+  }
+  
+  // Type check the normalized module as well
+  loc normModFile = normalize(root, tm, pcfg);
+  
+  Module normMod = parseModule(normModFile);
+  TypeCheckerResult tr = checkModule(normMod, calculateDependencies(normMod, normPcfg), normPcfg);
+  
+  return <normMod, tr.tm, tr.depGraph>;    
+}
+
+private Maybe[loc] lookupNormalizedModule(QualifiedName name, PathConfig pcfg) = lookupFile(name, "rebel", pcfg.normalized);
+private Maybe[loc] lookupModule(QualifiedName name, PathConfig pcfg) = lookupFile(name, "rebel", pcfg.srcs);
+
+loc normalize(Module m, TModel origTm, PathConfig pcfg) {
   m = normalizeEventVariantSyncs(m, origTm);
 
   m = visit(m) {
     case (Part)`<Spec spc>` => (Part)`<Spec nSpc>` when Spec nSpc := normalize(spc, origTm)
   }
   
-  loc normPath = addModuleToBase(project(m@\loc.top) + "bin/normalized/", m);
+  
+  return saveNormalizedModule(m, pcfg);
+}
 
-  makeDirRecursively(normPath.parent); 
+loc saveNormalizedModule(Module norm, PathConfig pcfg) {
+  loc normFile = (pcfg.normalized + replaceAll("<norm.\module.name>", "::", "/"))[extension = "rebel"];
 
-  writeFile(normPath[extension = "rebel"], m);
+  makeDirRecursively(normFile.parent);
+  writeFile(normFile, norm);
 
-  return normPath[extension = "rebel"];
+  return normFile;
 }
 
 Spec normalize(Spec spc, TModel origTm) {

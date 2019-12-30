@@ -15,7 +15,7 @@ spec PingPong
     post: this.times' = this.times - 1;
     
   states:
-    (*) -> ping: start;
+    (*) -> ping: start; 
     ping -> pong: hit, unhit;
     pong -> ping: hit, unhit;
         

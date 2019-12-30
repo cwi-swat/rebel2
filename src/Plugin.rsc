@@ -3,22 +3,24 @@ module Plugin
 import rebel::lang::Syntax;
 import rebel::lang::Parser;
 import rebel::lang::TypeChecker;
+import rebel::lang::DependencyAnalyzer;
 
-import analysis::allealle::Rebel2Alle;
-
+import rebel::checker::Normalizer;
+import rebel::checker::Rebel2Alle;
+ 
 import util::IDE;
 import util::HtmlDisplay;
-import util::Prompt;
-import util::Maybe;
+import util::Prompt; 
+import util::Maybe;  
 
 import salix::App;
 import vis::statemachine::StateMachineVis;
 
 import ParseTree;
 import Location;
-import util::PathUtil;
+import util::PathUtil; 
 
-import IO;
+import IO; 
 
 void main() {
   str REBEL2_LANGUAGE = "Rebel2 Language";
@@ -63,17 +65,45 @@ set[Contribution] getRebelContributions() {
       alert("Unable to start visualisation server, no port available");
     }            
   }
+
+  TModel checkModule(Module m) {
+    PathConfig pcfg = defaultPathConfig(m@\loc.top);
+            
+    Graph[RebelDependency] depGraph = calculateDependencies(m, pcfg);
+    TypeCheckerResult tr = checkModule(m, depGraph, pcfg, saveTModels = true);
+    
+    return tr.tm;
+  }
+  
+  void buildModule(Module m) {
+    PathConfig pcfg = defaultPathConfig(m@\loc.top);
+    PathConfig normPcfg = normalizerPathConfig(m@\loc.top);
+            
+    Graph[RebelDependency] depGraph = calculateDependencies(m, pcfg);
+    if (/unresolvedModule(QualifiedName qfn) := depGraph) {
+      println("`<qfn>` could not be resolved yet, stopped the building process");
+      return;
+    }
+    
+    NormalizedResult nr = normalizeAndCheck(m, depGraph, pcfg, normPcfg);
+    translateSnippets(nr.normMod, nr.normDepGraph, normPcfg);    
+  }
   
   return {
     annotator(Module (Module m) {
       loc proj = project(m@\loc.top);
-      
-      TModel tm = rebelTModelFromTree(m, debug=false, pathConf = pathConfig(srcs = [ proj + "src", proj + "examples"]));
 
+      TModel tm = checkModule(m);
+      
       annotatedMod = m[@messages= {*tm.messages}];
       annotatedMod = annotatedMod[@hyperlinks=tm.useDef];
       
       return annotatedMod;
+    }),
+    builder(set[Message] (Module m) {
+      buildModule(m);
+      
+      return {};
     }),
     syntaxProperties(#start[Module]),
     popup(

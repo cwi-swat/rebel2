@@ -23,12 +23,12 @@ spec Process
         
   states:
     notElected -> notElected: send, received::lower, received::higher; 
-    notElected -> elected: received::elected;
-    
+    notElected -> elected: received::elected; 
+     
 fact UniqueIds
-  = always forall p1,p2: Process | 
+  = always forall p1,p2: Process |  
     ((p1 is initialized && p2 is initialized && p1.pid = p2.pid) => p1 = p2); 
-
+ 
 fact PositiveIds
   = always forall p: Process | (p is initialized => p.pid > 0);
 

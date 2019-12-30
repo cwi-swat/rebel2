@@ -26,17 +26,17 @@ spec Guest
     pre: card is initialized;
     post: this.card' = card; 
   
-  event enterRoom(r: Room)
-    pre: this.card.check(r);
+  event enterRoom(r: Room)   
+    pre: this.card.check(r);  
       
-  states:
+  states:  
     (*) -> checkedin: checkin;
     checkedin -> checkedin: enterRoom;
-
-spec Room
-  key: Key;
+ 
+spec Room  
+  key: Key;  
   
-  event create(initialKey: Key) 
+  event create(initialKey: Key)    
     post: this.key' = initialKey; 
     
   internal event update(oldKey: Key, newKey: Key) 
@@ -48,7 +48,7 @@ spec Room
   
   states:
     (*) -> created: create;
-    created -> created: update, check;
+    created -> created: update, check;   
   
 spec FrontDesk
   issued: set Key;
@@ -70,7 +70,7 @@ spec FrontDesk
     open -> open: checkin;    
     
 config EmptyHotel
-  = k1,k2,k3: Key, g1,g2: Guest, ca1,ca2: Card, r1: Room, fd: FrontDesk;
+  = k1,k2,k3: Key, g1,g2: Guest is uninitialized, ca1,ca2: Card is uninitialized, r1: Room is uninitialized, fd: FrontDesk is uninitialized;
   
 assert NoIntruder
   = eventually exists g1:Guest | next exists g2: Guest |

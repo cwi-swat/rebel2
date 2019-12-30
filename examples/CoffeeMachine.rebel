@@ -17,7 +17,7 @@ spec CoffeeMachine
   event selectNormal()
     post: this.amountNeeded' = 100;
     
-  event selectLatte() 
+  event selectLatte()  
     post: this.amountNeeded' = 150;
        
   event pay(amount: Integer)
@@ -42,7 +42,7 @@ spec CoffeeMachine
       serve -> waiting: empty;
     }
     
-    active -> (*): powerOff;
+    active -> (*): powerOff;  
     (*) -> waiting: powerOn;  
 
 config InitialMachine = cm: CoffeeMachine;

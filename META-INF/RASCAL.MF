@@ -3,7 +3,7 @@ Source: src
 Main-Module: Plugin
 Main-Function: main
 Project-Name: rebel2
-Require-Libraries: |lib://allealle|, |lib://typepal|, |lib://salix|
+Require-Libraries: |lib://allealle|, |lib://typepal|, |lib://salix|, |lib://rascal_eclipse|
 Courses: courses
 
  

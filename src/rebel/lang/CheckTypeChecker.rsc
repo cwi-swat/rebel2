@@ -104,6 +104,11 @@ void collect(current:(Formula)`always <Formula form>`, Collector c) {
   collect(form, c);  
 }
 
+void collect(current:(Formula)`always-last <Formula form>`, Collector c) {
+  c.fact(current, boolType());
+  collect(form, c);  
+}
+
 void collect(current:(Formula)`next <Formula form>`, Collector c) {
   c.fact(current, boolType());
   collect(form, c);  

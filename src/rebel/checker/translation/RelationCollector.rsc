@@ -1,4 +1,4 @@
-module analysis::allealle::RelationCollector
+module rebel::checker::translation::RelationCollector
 
 import rebel::lang::TypeChecker;
 import rebel::lang::Syntax; 
@@ -28,7 +28,7 @@ AnalysisContext nextStepRel(AnalysisContext old) = actx(old.lookup, old.add, old
 
 AnalysisContext nextCurAndStepRel(AnalysisContext old) = actx(old.lookup, old.add, getNextCurRel(old.curRel), getNextStepRel(old.stepRel), old.tm, old.specs, old.emptySpecs, old.addCurRelScoped, old.lookupCurRelScoped);
 
-RelMapping constructRelMapping(set[Module] mods, TModel tm) {
+RelMapping constructRelMapping(Module m, TModel tm, set[Module] allMods) {
   RelMapping mapping = ();
   void addRel(loc l, RelExpr r) { mapping[l] = r; }
   RelExpr lookupRel(loc l) = mapping[l] when l in mapping;
@@ -39,24 +39,22 @@ RelMapping constructRelMapping(set[Module] mods, TModel tm) {
   str lookupCurRelScoped(loc l) = curRelScoped[l] when l in curRelScoped;
   default str lookupCurRelScoped(loc l) { throw "No current relation stored for expression at <l>"; }
   
-  map[loc,Spec] specs = (s@\loc : s | Module m <- mods, /Spec s <- m.parts); 
-  set[str] emptySpecs = findEmptySpecs(mods);
+  map[loc,Spec] specs = (s@\loc : s | Module mm <- allMods, /Spec s <- mm.parts); 
+  set[str] emptySpecs = findEmptySpecs(allMods);
   
   AnalysisContext ctx = actx(lookupRel, addRel, defaultCurRel(), defaultStepRel(), tm, specs, emptySpecs, addCurRelScoped, lookupCurRelScoped);
   
-  for (Module m <- mods) {
-    // First do all the events in the specification
-    for (/Spec s <- m.parts, /Event ev <- s.events) {
-      analyse(ev, "<s.name>", ctx);    
-    }
-    
-    for (/Fact f <- m.parts) {
-      analyse(f,ctx);
-    }
-    
-    for (/Assert a <- m.parts) {
-      analyse(a,ctx);
-    }
+  // First do all the events in the specification
+  for (/Spec s <- m.parts, /Event ev <- s.events) {
+    analyse(ev, "<s.name>", ctx);    
+  }
+  
+  for (/Fact f <- m.parts) {
+    analyse(f,ctx);
+  }
+  
+  for (/Assert a <- m.parts) {
+    analyse(a,ctx);
   }
   
   return mapping; 
@@ -136,6 +134,7 @@ void analyse((Formula)`noOp(<Expr expr>)`, AnalysisContext ctx) { analyse(expr,c
 //From Check Syntax
 void analyse((Formula)`eventually <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurAndStepRel(ctx));
 void analyse((Formula)`always <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurAndStepRel(ctx));
+void analyse((Formula)`always-last <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurAndStepRel(ctx));
 void analyse((Formula)`next <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurAndStepRel(ctx));
 void analyse((Formula)`first <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurRel(ctx));
 
@@ -306,7 +305,8 @@ private str getSpecName(loc l, AnalysisContext ctx) {
   } else if (d.scope in ctx.specs) {
     return "<ctx.specs[d.scope].name>";
   } else {
-    throw "Unable to determine spec for `<d.name>` at <l>"; 
+    println("Something is wrong: <d>");
+    throw "Unable to determine spec for `<d.id>` at <l>"; 
   }
 }
 

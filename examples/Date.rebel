@@ -7,16 +7,16 @@ spec Date [NOW*]
   
   event create(year: Integer, month: Integer, day: Integer) 
     post: this.year' = year, this.month' = month, this.day' = day;
-  
+   
   event after(other: Date) 
     pre: other is initialized;
     variant years
       pre: this.year > other.year;
     
-    variant month
+    variant month 
       pre: this.year = other.year, this.month > other.month;
     
-    variant day
+    variant day  
       pre: this.year = other.year, this.month = other.month, this.day > other.day;
       
   states:
