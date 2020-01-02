@@ -38,11 +38,11 @@ spec Room
   
   event create(initialKey: Key)    
     post: this.key' = initialKey; 
-    
+     
   internal event update(oldKey: Key, newKey: Key) 
     pre: this.key = oldKey;
     post: this.key' = newKey;  
-  
+   
   internal event check(key: Key) 
     pre: this.key = key;
   
@@ -53,18 +53,18 @@ spec Room
 spec FrontDesk
   issued: set Key;
     
-  event initialize()
-    post: this.issued' = {};
+  event initialize() 
+    post: this.issued' = {};   
     
   event checkin(fst: Key, snd: Key, c: Card, r: Room, g: Guest)
-    pre:  
-      g.checkin(c),
-      r.check(fst), 
-      c.equal(fst,snd), 
+    pre:   
+      g.checkin(c),  
+      r.check(fst),  
+      c.equal(fst,snd),   
       snd notin this.issued;
     post: 
       this.issued' = this.issued + snd;
-   
+    
   states:
     (*) -> open: initialize;
     open -> open: checkin;    

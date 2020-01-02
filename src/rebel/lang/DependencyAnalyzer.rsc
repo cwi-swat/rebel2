@@ -46,7 +46,6 @@ RebelDependency buildDependency(Module m, PathConfig pcfg)
 private Graph[RebelDependency] calculateDependencies(RebelDependency cur, PathConfig pcfg, Maybe[RebelDependency] (QualifiedName) done, void (RebelDependency) addToDone) {
   addToDone(cur);
   
-  
   Graph[RebelDependency] sub = {};
   // add self-dependency   
   sub += <cur,cur>;
@@ -59,10 +58,6 @@ private Graph[RebelDependency] calculateDependencies(RebelDependency cur, PathCo
       Module n = parseModule(impLoc);
       
       RebelDependency other = buildDependency(n, pcfg);
-      //(just(loc tmLoc) := lookupTModel(n.\module.name, pcfg))
-      //  ? resolvedAndCheckedModule(n, readBinaryValueFile(#TModel, tmLoc), lastModified(tmLoc)) 
-      //  : resolvedOnlyModule(n, lastModified(n@\loc.top))
-      //  ;     
 
       sub += calculateDependencies(other, pcfg, done, addToDone);
       sub += <cur, other>;

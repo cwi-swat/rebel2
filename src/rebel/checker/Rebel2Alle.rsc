@@ -36,8 +36,6 @@ import String;
 import util::Maybe;
 import util::Benchmark;
 
-alias AlleAlleSnippet = tuple[rel[str,str] typeCons, rel[str,str] fieldMultiplicityCons, rel[str,str] paramMultiplicityCons, rel[str,str] eventPred, map[str,str] transPred, map[str,str] facts, map[str,str] asserts];
-
 AlleAlleSnippet emptySnippet() = <{}, {}, {}, {}, (), (), ()>;
 AlleAlleSnippet merge(AlleAlleSnippet new, AlleAlleSnippet mergeTo) {
   mergeTo.typeCons += new.typeCons;

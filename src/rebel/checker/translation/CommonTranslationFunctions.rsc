@@ -26,6 +26,8 @@ data State
   | noState()
   ;
 
+alias AlleAlleSnippet = tuple[rel[str,str] typeCons, rel[str,str] fieldMultiplicityCons, rel[str,str] paramMultiplicityCons, rel[str,str] eventPred, map[str,str] transPred, map[str,str] facts, map[str,str] asserts];
+
 //@memo
 str getLowerCaseSpecName(Spec spc) = toLowerCase("<spc.name>");
 

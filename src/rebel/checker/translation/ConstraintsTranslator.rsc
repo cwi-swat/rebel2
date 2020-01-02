@@ -127,8 +127,6 @@ private str helperPredicates()
   
 private bool hasTransitions(Spec s) = /Transition _ := s.states;
 
-//alias AlleAlleSnippet = tuple[rel[str,str] typeCons, rel[str,str] fieldMultiplicityCons, rel[str,str] paramMultiplicityCons, rel[str,str] eventPred, map[str,str] transPred, map[str,str] facts, map[str,str] asserts];
-
 private str translateEventPredicates(AlleAlleSnippet snippets) 
   = "<for (str spc <- snippets.eventPred<0>) {>// Event predicates for `<spc>`
     '<for (str ep <- snippets.eventPred[spc]) {><ep>

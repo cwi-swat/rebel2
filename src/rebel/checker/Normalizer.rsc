@@ -20,8 +20,9 @@ alias NormalizedResult = tuple[Module normMod, TModel normTm, Graph[RebelDepende
 
 NormalizedResult loadNormalizedModules(Module m, PathConfig pcfg, PathConfig normPcfg) {
   Maybe[loc] normModLoc = lookupNormalizedModule(m.\module.name, normPcfg);
+  Maybe[loc] normTModelLoc = lookupNormalizedTModel(m.\module.name, normPcfg);
   
-  if (just(loc nmf) := normModLoc) {
+  if (just(loc nmf) := normModLoc, just(loc ntm) := normTModelLoc, lastModified(ntm) >= lastModified(nmf)) {
     Module normMod = parseModule(nmf);
     Graph[RebelDependency] normDepGraph = calculateDependencies(normMod, normPcfg);
     
@@ -46,13 +47,15 @@ NormalizedResult normalizeAndCheck(Module root, Graph[RebelDependency] depGraph,
   } 
   
   TModel tm;
-  if (!refreshTModel && just(TModel ltm) := getTModel(root, depGraph)) {
+  
+  if (!refreshTModel, just(TModel ltm) := getTModel(root, depGraph)) {
     println("Using earlier save type information for `<root.\module.name>`");
     tm = ltm;
   } else {
+    println("Recalculating type information for `<root.\module.name>`");
     TypeCheckerResult tr = checkModule(root, depGraph, pcfg, saveTModels = true);
     tm = tr.tm;
-    depGraph = tr.depGraph; //calculateDependencies(root, pcfg);
+    depGraph = tr.depGraph; 
   }    
   
   // all modules should be resolved and tmodels should be created
@@ -60,34 +63,45 @@ NormalizedResult normalizeAndCheck(Module root, Graph[RebelDependency] depGraph,
     throw "Not all modules could be typed checked";
   }
   
-  list[RebelDependency] todo = [d | d <- order(depGraph), d.m != root];
+  list[RebelDependency] todo = [d | d <- order(depGraph)];
   
   while (todo != []) {
     RebelDependency cur = todo[-1];
     todo -= cur;
     
     if (resolvedAndCheckedModule(Module curMod, TModel curTm, curTs) := cur) {
-      Maybe[loc] prevNorm = lookupNormalizedModule(curMod.\module.name, pcfg);
-      
-      if (nothing() := prevNorm || (just(nf) := prevNorm && lastModified(nf) < curTs)) {
+      Maybe[loc] prevNormLoc = lookupNormalizedModule(curMod.\module.name, pcfg);
+      Maybe[loc] prevNormTMLoc = lookupNormalizedTModel(curMod.\module.name, pcfg);
+            
+      if (nothing() := prevNormLoc || 
+        (just(nmf) := prevNormLoc && just(ntm) := prevNormTMLoc && (lastModified(ntm) < curTs || lastModified(ntm) < lastModified(nfm)))) {
         println("Start normalization of `<curMod.\module.name>`");
-        normalize(curMod, curTm, pcfg);
+
+        Module normMod = parseModule(normalize(curMod, curTm, pcfg));
+        Graph[RebelDependency] normDepGraph = calculateDependencies(normMod, normPcfg);
+        checkModule(normMod, normDepGraph, normPcfg);
       }
     } else {
       throw "Unable to normalize module?!?";
     }
   }
   
-  // Type check the normalized module as well
-  loc normModFile = normalize(root, tm, pcfg);
+  // All dependencies (including root) have been normalized, create the result 
+  if (just(loc nfl) := lookupNormalizedModule(root.\module.name, normPcfg)) {
+    Module normMod = parseModule(nfl);
+    Graph[RebelDependency] normDepGraph = calculateDependencies(normMod, normPcfg);
+    TypeCheckerResult tr = checkModule(normMod, normDepGraph, normPcfg);
   
-  Module normMod = parseModule(normModFile);
-  TypeCheckerResult tr = checkModule(normMod, calculateDependencies(normMod, normPcfg), normPcfg);
-  
-  return <normMod, tr.tm, tr.depGraph>;    
+    return <normMod, tr.tm, tr.depGraph>;
+  } else {
+    // Should never happen
+    throw "Unable to load normalized module `<root.\module.name>` (should not happen)";
+  }    
 }
 
 private Maybe[loc] lookupNormalizedModule(QualifiedName name, PathConfig pcfg) = lookupFile(name, "rebel", pcfg.normalized);
+private Maybe[loc] lookupNormalizedTModel(QualifiedName name, PathConfig pcfg) = lookupFile(name, "tm", pcfg.normalized);
+
 private Maybe[loc] lookupModule(QualifiedName name, PathConfig pcfg) = lookupFile(name, "rebel", pcfg.srcs);
 
 loc normalize(Module m, TModel origTm, PathConfig pcfg) {

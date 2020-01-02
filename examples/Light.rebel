@@ -21,4 +21,4 @@ config OneLight = l1: Light;
   
 assert CanBeTurnedOnAndOff = eventually exists l: Light | next switchOff on l;
     
-check CanBeTurnedOnAndOff from OneLight in max 4 steps;
+check CanBeTurnedOnAndOff from OneLight in max 4 steps; 

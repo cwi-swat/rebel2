@@ -19,13 +19,13 @@ spec PingPong
     ping -> pong: hit, unhit;
     pong -> ping: hit, unhit;
         
-config OneMachine = p: PingPong;    
-config TwoMachines = p1,p2: PingPong;
+config OneMachine = p: PingPong is uninitialized;    
+config TwoMachines = p1,p2: PingPong is uninitialized;
      
 assert HitTwoAndFourTimes = eventually exists p1,p2: PingPong | p1 != p2 && p1.times = 4 && p2.times = 2;
 
 assert CantHaveNegativeTimes = eventually exists p: PingPong | p.times < 0;
 
-check HitTwoAndFourTimes from TwoMachines in max 15 steps;
+check HitTwoAndFourTimes from TwoMachines in max 15 steps; 
 
 check CantHaveNegativeTimes from OneMachine in max 15 steps;

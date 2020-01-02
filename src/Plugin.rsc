@@ -40,7 +40,7 @@ set[Contribution] getRebelContributions() {
   void runCheck(Module m, loc selection) {
     if (/Check chk <- m.parts, isContainedIn(selection, chk@\loc)) {
       println("Running check");
-      performCheck(chk, m);  
+      performCheck(chk, m, defaultPathConfig(m@\loc.top), normalizerPathConfig(m@\loc.top));  
     } 
   }
   
@@ -70,7 +70,7 @@ set[Contribution] getRebelContributions() {
     PathConfig pcfg = defaultPathConfig(m@\loc.top);
             
     Graph[RebelDependency] depGraph = calculateDependencies(m, pcfg);
-    TypeCheckerResult tr = checkModule(m, depGraph, pcfg, saveTModels = true);
+    TypeCheckerResult tr = checkModule(m, depGraph, pcfg, saveTModels = true, refreshRoot = true);
     
     return tr.tm;
   }
