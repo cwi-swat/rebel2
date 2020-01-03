@@ -197,7 +197,7 @@ private str buildFieldTuples(Spec spc, Field f, Config cfg) {
   }
   
   list[str] upperBound = [];  
-  for (str inst <- lookupInstances(spc, cfg.instances<0,1>), int i <- [(lowerBound == [] ? 1 : 2)..cfg.numberOfTransitions+1]) {
+  for (str inst <- lookupInstances(spc, cfg.instances<0,1>), int i <- [1..cfg.numberOfTransitions+1]) {
     if (isPrim(f.tipe, cfg.tm)) {
       upperBound += "\<c<i>,<inst>,?\>";
     } else if (isSetOfInt(f.tipe, cfg.tm)) {

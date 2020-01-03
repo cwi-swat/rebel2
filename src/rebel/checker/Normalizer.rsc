@@ -20,18 +20,19 @@ alias NormalizedResult = tuple[Module normMod, TModel normTm, Graph[RebelDepende
 
 NormalizedResult loadNormalizedModules(Module m, PathConfig pcfg, PathConfig normPcfg) {
   Maybe[loc] normModLoc = lookupNormalizedModule(m.\module.name, normPcfg);
-  Maybe[loc] normTModelLoc = lookupNormalizedTModel(m.\module.name, normPcfg);
   
-  if (just(loc nmf) := normModLoc, just(loc ntm) := normTModelLoc, lastModified(ntm) >= lastModified(nmf)) {
+  if (just(loc nmf) := normModLoc) {
     Module normMod = parseModule(nmf);
     Graph[RebelDependency] normDepGraph = calculateDependencies(normMod, normPcfg);
     
-    if (just(TModel ntm) := getTModel(normMod, normDepGraph)) {
+    if (/resolvedOnlyModule(_,_) !:= normDepGraph, just(TModel ntm) := getTModel(normMod, normDepGraph)) {
       return <normMod, ntm, normDepGraph>;
     } else {
-      throw "Could not load normalized TModel for `<m.\module.name>`";
+      // Normalized but the TModel of the normalized file is stale
+      return normalizeAndCheck(m, pcfg, normPcfg);
     }
   } else {
+    // Not yet normalized
     return normalizeAndCheck(m, pcfg, normPcfg);
   }    
 }
@@ -71,10 +72,8 @@ NormalizedResult normalizeAndCheck(Module root, Graph[RebelDependency] depGraph,
     
     if (resolvedAndCheckedModule(Module curMod, TModel curTm, curTs) := cur) {
       Maybe[loc] prevNormLoc = lookupNormalizedModule(curMod.\module.name, pcfg);
-      Maybe[loc] prevNormTMLoc = lookupNormalizedTModel(curMod.\module.name, pcfg);
-            
-      if (nothing() := prevNormLoc || 
-        (just(nmf) := prevNormLoc && just(ntm) := prevNormTMLoc && (lastModified(ntm) < curTs || lastModified(ntm) < lastModified(nfm)))) {
+
+      if (nothing() := prevNormLoc || (just(nmf) := prevNormLoc && lastModified(nmf) < curTs)) {
         println("Start normalization of `<curMod.\module.name>`");
 
         Module normMod = parseModule(normalize(curMod, curTm, pcfg));
@@ -100,8 +99,6 @@ NormalizedResult normalizeAndCheck(Module root, Graph[RebelDependency] depGraph,
 }
 
 private Maybe[loc] lookupNormalizedModule(QualifiedName name, PathConfig pcfg) = lookupFile(name, "rebel", pcfg.normalized);
-private Maybe[loc] lookupNormalizedTModel(QualifiedName name, PathConfig pcfg) = lookupFile(name, "tm", pcfg.normalized);
-
 private Maybe[loc] lookupModule(QualifiedName name, PathConfig pcfg) = lookupFile(name, "rebel", pcfg.srcs);
 
 loc normalize(Module m, TModel origTm, PathConfig pcfg) {
@@ -110,7 +107,6 @@ loc normalize(Module m, TModel origTm, PathConfig pcfg) {
   m = visit(m) {
     case (Part)`<Spec spc>` => (Part)`<Spec nSpc>` when Spec nSpc := normalize(spc, origTm)
   }
-  
   
   return saveNormalizedModule(m, pcfg);
 }
@@ -176,7 +172,10 @@ list[Event] addFrameConditions(set[str] fields, list[Event] events) {
   list[Event] framedEvents = [];
 
   for (e <- events) {
-     e.body.post = addFrameConditions(fields, e.body.post, "<e.name>");
+     if (/(Modifier)`init` !:= e.modifiers, /(Modifier)`final` !:= e.modifiers) {
+      e.body.post = addFrameConditions(fields, e.body.post, "<e.name>");
+     }
+     
      framedEvents += e;
   }
   
@@ -184,30 +183,7 @@ list[Event] addFrameConditions(set[str] fields, list[Event] events) {
 }
 
 list[Event] normalizeEvents(list[Event] events, TModel origTm) {
-  //set[Define] variants = {d | Define d <- origTm.definitions<1>, d.idRole == eventVariantId()};
-  //set[Define] findVariants(loc eventRef) = {v | v <- variants, isContainedIn(v.defined, eventDef)}
-  //  when {loc eventDef} := origTm.useDef[eventRef]; 
-  //    
-  //Formula buildSyncDisj(orig:(Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, set[Define] variants) 
-  //  = buildFormDisj([(Formula)`<Expr spc>.<Id varId>(<{Expr ","}* params>)` | Define var <- variants, Id varId := [Id]"<event>__<var.id>"]); 
-  //
-  //Formula buildFormDisj(list[Formula] terms) = [Formula]"(<intercalate(" || ", terms)>)"; 
-  
   list[Event] checkForVariantDefs(Event e) = [normalizeVariant(ev, e) | EventVariant ev <- e.body.variants];
-   
-  //Event checkForVariantSyncs(Event e) 
-  //  = visit(e) {
-  //      case orig:(Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)` => buildSyncDisj(orig, vars) 
-  //        when set[Define] vars := findVariants(event@\loc), vars != {} 
-  //    };  
-  //
-  //for (Event e <- events) {
-  //  Event changed = checkForVariantSyncs(e);
-  //  if (changed != e) {
-  //    events -= e;
-  //    events += changed;        
-  //  }
-  //}
 
   for (Event e <- events) {
     list[Event] varEvents = checkForVariantDefs(e);

@@ -35,8 +35,8 @@ fact PositiveIds
 fact InitialToSendIsZero
   = first forall p: Process | p.toSend = 0; 
     
-fact Progress
-  = forall p:Process | eventually next send on p;
+//fact Progress
+//  = forall p:Process | eventually next send on p;
       
 // ---------------------------
     

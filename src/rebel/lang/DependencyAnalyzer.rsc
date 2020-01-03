@@ -31,14 +31,11 @@ Graph[RebelDependency] calculateDependencies(Module m, PathConfig pcfg) {
   
   Graph[RebelDependency] deps = calculateDependencies(buildDependency(m, pcfg), pcfg, isDone, addToDone);
   
-  println("Resolved dependencies: <intercalate(", ", [d.m.\module.name | d <- (deps<0> + deps<1>), d has m])>");
-  println("Unresolved dependencies: <intercalate(", ", ["<fqn>" | unresolvedModule(QualifiedName fqn) <- (deps<0> + deps<1>)])>");
-  
   return deps;
 }
 
 RebelDependency buildDependency(Module m, PathConfig pcfg) 
-  = (just(loc tmLoc) := lookupTModel(m.\module.name, pcfg))
+  = (just(loc tmLoc) := lookupTModel(m.\module.name, pcfg) && lastModified(tmLoc) >= lastModified(m@\loc.top))
   ? resolvedAndCheckedModule(m, readBinaryValueFile(#TModel, tmLoc), lastModified(tmLoc)) 
   : resolvedOnlyModule(m, lastModified(m@\loc.top))
   ;  
@@ -68,41 +65,6 @@ private Graph[RebelDependency] calculateDependencies(RebelDependency cur, PathCo
   }
   
   return sub;
-}
-
-set[Module] findDirtyModules(Module root, Graph[RebelDependency] depGraph) {
-  set[Module] dirty = {root};
-  
-  list[RebelDependency] todo = [d | d <- order(depGraph), unresolvedModule(QualifiedName fqn) !:= d];
-    
-  void checkParents(RebelDependency dep, datetime newest) {
-    if (dep notin todo) {
-      return; // already checked it
-    }
-    
-    todo -= dep;
-    
-    if ((resolvedAndCheckedModule(Module m, TModel tm, datetime timestamp) := dep && timestamp < newest) ||
-        (resolvedOnlyModule(Module m, datetime timestamp) := dep)) {
-      dirty += m;
-      newest = now();
-    }
-    
-    for (set[RebelDependency] parents := predecessors(depGraph, dep), parent <- parents) {
-      checkParents(parent, newest);
-    }
-  }
-  
-  while (todo != []) {
-    println("Todo: <["<m.m.\module.name>" | m <- todo]>");
-    
-    RebelDependency current = todo[-1];
-    println("Checking module: <current.m.\module.name>, timestamp = <current.timestamp>");
-    checkParents(current, current.timestamp);
-  }  
-  
-  println("Found dirty modules from <root.\module.name>: <intercalate(", ", ["<m.\module.name>" | m <- dirty])>");  
-  return dirty;   
 }
 
 Maybe[TModel] getTModel(Module m, Graph[RebelDependency] depGraph) {

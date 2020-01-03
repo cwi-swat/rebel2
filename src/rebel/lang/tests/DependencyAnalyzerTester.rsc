@@ -19,8 +19,3 @@ Graph[RebelDependency] calc(loc modul) {
   
   return calculateDependencies(parseModule(modul), pcfg);
 }
-
-void findDirtyModules(loc modul) {
-  dg = calc(modul);
-  set[Module] dirtyMods = findDirtyModules(parseModule(modul), dg);
-}

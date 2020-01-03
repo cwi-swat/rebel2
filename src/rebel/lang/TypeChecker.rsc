@@ -27,7 +27,7 @@ TypeCheckerResult checkModule(Module root, Graph[RebelDependency] depGraph, Path
   }
   
   list[RebelDependency] todo = [d | d <- order(depGraph), unresolvedModule(QualifiedName fqn) !:= d];
-  
+   
   bool shouldRefresh(datetime timestamp, datetime newest, Module m) 
     = (m == root) 
     ? (refreshRoot || (timestamp < newest)) 
@@ -38,13 +38,12 @@ TypeCheckerResult checkModule(Module root, Graph[RebelDependency] depGraph, Path
     if (dep notin todo) {
       return; // already checked it
     }
-    
+
     todo -= dep;
     
     if ((resolvedAndCheckedModule(Module m, TModel tm, datetime timestamp) := dep && shouldRefresh(timestamp, newest, m)) ||
         resolvedOnlyModule(Module m, datetime timestamp) := dep) {
       // need to check the dependency
-      println("Other timestamp was: <timestamp>, newest timestamp was <newest>");
       newest = now();
       TModel newTM = rebelTModelFromModule(m, subgraph(dep,depGraph), pcfg, saveTModels = saveTModels, debug = debug);
       
@@ -57,7 +56,7 @@ TypeCheckerResult checkModule(Module root, Graph[RebelDependency] depGraph, Path
       check(parent, newest);
     }
   }
-  
+    
   while (todo != []) {
     RebelDependency current = todo[-1];
     check(current, lastModified(current.m@\loc.top));
@@ -95,7 +94,7 @@ private TModel rebelTModelFromModule(Module root, Graph[RebelDependency] depGrap
   TModel model = newSolver(root, c.run()).run();
 
   if (saveTModels) { 
-    println("Saving TModel for `<root.\module.name>`");
+    println("Saving new TModel for `<root.\module.name>`");
     saveModule(root,model,pcfg);
   }
   

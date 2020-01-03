@@ -1,48 +1,114 @@
 // Static configuration of state machines
 // Define the specs that can take place in the transition system
-Process (spec:id) = {<process>}
+Account (spec:id) = {<account>}
+Money (spec:id) = {<money>}
+Date (spec:id) = {<date>}
+IBAN (spec:id) = {<iban>}
+Currency (spec:id) = {<currency>}
 
 // Define all possible states for all machines
-State (state:id) = {<state_uninitialized>,<state_finalized>,<state_process_notelected>,<state_process_elected>}
-initialized (state:id) = {<state_process_notelected>,<state_process_elected>}
+State (state:id) = {<state_uninitialized>,<state_finalized>,<state_account_waitingforactivation>,<state_account_archive>,<state_account_block>,<state_account_open>,<state_money_created>,<state_date_created>}
+initialized (state:id) = {<state_account_waitingforactivation>,<state_account_archive>,<state_account_block>,<state_account_open>,<state_money_created>,<state_date_created>}
 finalized (state:id) = {<state_finalized>}
 uninitialized (state:id) = {<state_uninitialized>}
-StateProcessNotElected (state:id) = {<state_process_notelected>}
-StateProcessElected (state:id) = {<state_process_elected>}
+StateAccountArchive (state:id) = {<state_account_archive>}
+StateAccountWaitingForActivation (state:id) = {<state_account_waitingforactivation>}
+StateAccountBlock (state:id) = {<state_account_block>}
+StateAccountOpen (state:id) = {<state_account_open>}
+
+StateMoneyCreated (state:id) = {<state_money_created>}
+
+StateDateCreated (state:id) = {<state_date_created>}
+
+
 
 
 // Define which transitions are allowed (in the form of `from a state` -> ` via an event` -> `to a state`
-allowedTransitions (from:id, to:id, event:id) = {<state_process_notelected,state_process_notelected,event_process_received__lower>,<state_process_notelected,state_process_notelected,event_process_send>,<state_process_notelected,state_process_elected,event_process_received__elected>,<state_process_notelected,state_process_notelected,event_process_received__higher>}
+allowedTransitions (from:id, to:id, event:id) = {<state_uninitialized,state_account_waitingforactivation,event_account_created>,<state_account_open,state_account_open,event_account_withdrawed>,<state_account_open,state_account_open,event_account_interestpayed>,<state_account_open,state_account_open,event_account_deposited>,<state_account_open,state_account_archive,event_account_closed>,<state_account_waitingforactivation,state_account_open,event_account_deposited>,<state_account_archive,state_finalized,event_account_removed>,<state_account_block,state_account_open,event_account_unblocked>,<state_account_open,state_account_block,event_account_blocked>,<state_money_created,state_money_created,event_money_equal>,<state_money_created,state_money_created,event_money_lt>,<state_money_created,state_money_created,event_money_gt>,<state_money_created,state_money_created,event_money_addinterest>,<state_money_created,state_money_created,event_money_gte>,<state_money_created,state_money_created,event_money_empty>,<state_money_created,state_money_created,event_money_positive>,<state_money_created,state_money_created,event_money_minifgte>,<state_money_created,state_money_created,event_money_plus>,<state_money_created,state_money_created,event_money_lte>,<state_money_created,state_money_created,event_money_zero>,<state_money_created,state_money_created,event_money_negative>,<state_date_created,state_date_created,event_date_same>,<state_date_created,state_date_created,event_date_empty>,<state_date_created,state_date_created,event_date_after>,<state_date_created,state_date_created,event_date_yearsafter>}
 // Define each event as single relation so that the events can be used as variables in the constraints 
-EventProcessReceived__higher (event:id) = {<event_process_received__higher>}
-EventProcessSend (event:id) = {<event_process_send>}
-EventProcessReceived__elected (event:id) = {<event_process_received__elected>}
-EventProcess__frame (event:id) = {<event_process___frame>}
-EventProcessReceived__lower (event:id) = {<event_process_received__lower>}
+EventMoneyGt (event:id) = {<event_money_gt>}
+EventMoneyNegative (event:id) = {<event_money_negative>}
+EventMoneyPlus (event:id) = {<event_money_plus>}
+EventAccountClosed (event:id) = {<event_account_closed>}
+EventDate__frame (event:id) = {<event_date___frame>}
+EventMoneyEmpty (event:id) = {<event_money_empty>}
+EventMoneyAddInterest (event:id) = {<event_money_addinterest>}
+EventMoney__frame (event:id) = {<event_money___frame>}
+EventMoneyEqual (event:id) = {<event_money_equal>}
+EventMoneyLte (event:id) = {<event_money_lte>}
+EventMoneyGte (event:id) = {<event_money_gte>}
+EventDateEmpty (event:id) = {<event_date_empty>}
+EventDateAfter__years (event:id) = {<event_date_after__years>}
+EventDateYearsAfter (event:id) = {<event_date_yearsafter>}
+EventDateSame (event:id) = {<event_date_same>}
+EventDateAfter__day (event:id) = {<event_date_after__day>}
+EventDateAfter__month (event:id) = {<event_date_after__month>}
+EventMoneyLt (event:id) = {<event_money_lt>}
+EventMoneyZero (event:id) = {<event_money_zero>}
+EventAccountWithdrawed (event:id) = {<event_account_withdrawed>}
+EventMoneyMinIfGte (event:id) = {<event_money_minifgte>}
+EventMoneyPositive (event:id) = {<event_money_positive>}
+EventAccountInterestPayed (event:id) = {<event_account_interestpayed>}
+EventAccountBlocked (event:id) = {<event_account_blocked>}
+EventAccountUnblocked (event:id) = {<event_account_unblocked>}
+EventAccountCreated (event:id) = {<event_account_created>}
+EventAccountDeposited (event:id) = {<event_account_deposited>}
+EventAccount__frame (event:id) = {<event_account___frame>}
+EventAccountRemoved (event:id) = {<event_account_removed>}
 
+__IntConst_0 (const_0: int) = {<0>}
+__IntConst_100 (const_100: int) = {<100>}
+__IntConst_5 (const_5: int) = {<5>}
 
 
 // Dynamic configuration of state machines
-Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>}
-order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>,<c6,c7>}
+Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>}
+order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>}
 first (config:id) = {<c1>}
-last (config:id) <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>}
+last (config:id) <= {<c1>,<c2>,<c3>,<c4>,<c5>}
 back (config:id) = {}
 loop (cur:id, nxt:id) = {}
 
-Instance (spec:id, instance:id) = {<process,p2>,<process,p3>,<process,p1>}
-instanceInState (config:id, instance:id, state:id) >={<c1,p2,state_process_notelected>,<c1,p3,state_process_notelected>,<c1,p1,state_process_notelected>}<= {<c1,p1,state_process_elected>,<c1,p1,state_process_notelected>,<c1,p2,state_process_elected>,<c1,p2,state_process_notelected>,<c1,p3,state_process_elected>,<c1,p3,state_process_notelected>,<c2,p1,state_process_elected>,<c2,p1,state_process_notelected>,<c2,p2,state_process_elected>,<c2,p2,state_process_notelected>,<c2,p3,state_process_elected>,<c2,p3,state_process_notelected>,<c3,p1,state_process_elected>,<c3,p1,state_process_notelected>,<c3,p2,state_process_elected>,<c3,p2,state_process_notelected>,<c3,p3,state_process_elected>,<c3,p3,state_process_notelected>,<c4,p1,state_process_elected>,<c4,p1,state_process_notelected>,<c4,p2,state_process_elected>,<c4,p2,state_process_notelected>,<c4,p3,state_process_elected>,<c4,p3,state_process_notelected>,<c5,p1,state_process_elected>,<c5,p1,state_process_notelected>,<c5,p2,state_process_elected>,<c5,p2,state_process_notelected>,<c5,p3,state_process_elected>,<c5,p3,state_process_notelected>,<c6,p1,state_process_elected>,<c6,p1,state_process_notelected>,<c6,p2,state_process_elected>,<c6,p2,state_process_notelected>,<c6,p3,state_process_elected>,<c6,p3,state_process_notelected>,<c7,p1,state_process_elected>,<c7,p1,state_process_notelected>,<c7,p2,state_process_elected>,<c7,p2,state_process_notelected>,<c7,p3,state_process_elected>,<c7,p3,state_process_notelected>}
-raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_process_send,p1>,<c2,c3,event_process_send,p1>,<c3,c4,event_process_send,p1>,<c4,c5,event_process_send,p1>,<c5,c6,event_process_send,p1>,<c6,c7,event_process_send,p1>,<c1,c2,event_process_send,p2>,<c2,c3,event_process_send,p2>,<c3,c4,event_process_send,p2>,<c4,c5,event_process_send,p2>,<c5,c6,event_process_send,p2>,<c6,c7,event_process_send,p2>,<c1,c2,event_process_send,p3>,<c2,c3,event_process_send,p3>,<c3,c4,event_process_send,p3>,<c4,c5,event_process_send,p3>,<c5,c6,event_process_send,p3>,<c6,c7,event_process_send,p3>}
-changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,p1>,<c1,c2,p2>,<c1,c2,p3>,<c2,c3,p1>,<c2,c3,p2>,<c2,c3,p3>,<c3,c4,p1>,<c3,c4,p2>,<c3,c4,p3>,<c4,c5,p1>,<c4,c5,p2>,<c4,c5,p3>,<c5,c6,p1>,<c5,c6,p2>,<c5,c6,p3>,<c6,c7,p1>,<c6,c7,p2>,<c6,c7,p3>}
+Instance (spec:id, instance:id) = {<iban,iban1>,<currency,USD>,<date,NOW>,<date,d1>,<currency,EUR>,<money,m1>,<date,d2>,<account,ac1>}
+instanceInState (config:id, instance:id, state:id) >={<c1,ac1,state_uninitialized>}<= {<c1,ac1,state_account_archive>,<c1,ac1,state_account_open>,<c1,ac1,state_account_waitingforactivation>,<c1,ac1,state_finalized>,<c1,ac1,state_account_block>,<c1,ac1,state_uninitialized>,<c1,m1,state_money_created>,<c1,d1,state_date_created>,<c1,d2,state_date_created>,<c1,NOW,state_date_created>,<c2,ac1,state_account_archive>,<c2,ac1,state_account_open>,<c2,ac1,state_account_waitingforactivation>,<c2,ac1,state_finalized>,<c2,ac1,state_account_block>,<c2,ac1,state_uninitialized>,<c2,m1,state_money_created>,<c2,d1,state_date_created>,<c2,d2,state_date_created>,<c2,NOW,state_date_created>,<c3,ac1,state_account_archive>,<c3,ac1,state_account_open>,<c3,ac1,state_account_waitingforactivation>,<c3,ac1,state_finalized>,<c3,ac1,state_account_block>,<c3,ac1,state_uninitialized>,<c3,m1,state_money_created>,<c3,d1,state_date_created>,<c3,d2,state_date_created>,<c3,NOW,state_date_created>,<c4,ac1,state_account_archive>,<c4,ac1,state_account_open>,<c4,ac1,state_account_waitingforactivation>,<c4,ac1,state_finalized>,<c4,ac1,state_account_block>,<c4,ac1,state_uninitialized>,<c4,m1,state_money_created>,<c4,d1,state_date_created>,<c4,d2,state_date_created>,<c4,NOW,state_date_created>,<c5,ac1,state_account_archive>,<c5,ac1,state_account_open>,<c5,ac1,state_account_waitingforactivation>,<c5,ac1,state_finalized>,<c5,ac1,state_account_block>,<c5,ac1,state_uninitialized>,<c5,m1,state_money_created>,<c5,d1,state_date_created>,<c5,d2,state_date_created>,<c5,NOW,state_date_created>}
+raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_account_withdrawed,ac1>,<c1,c2,event_account_closed,ac1>,<c1,c2,event_account_removed,ac1>,<c1,c2,event_account_created,ac1>,<c1,c2,event_account_blocked,ac1>,<c1,c2,event_account_unblocked,ac1>,<c1,c2,event_account_deposited,ac1>,<c1,c2,event_account_interestpayed,ac1>,<c2,c3,event_account_withdrawed,ac1>,<c2,c3,event_account_closed,ac1>,<c2,c3,event_account_removed,ac1>,<c2,c3,event_account_created,ac1>,<c2,c3,event_account_blocked,ac1>,<c2,c3,event_account_unblocked,ac1>,<c2,c3,event_account_deposited,ac1>,<c2,c3,event_account_interestpayed,ac1>,<c3,c4,event_account_withdrawed,ac1>,<c3,c4,event_account_closed,ac1>,<c3,c4,event_account_removed,ac1>,<c3,c4,event_account_created,ac1>,<c3,c4,event_account_blocked,ac1>,<c3,c4,event_account_unblocked,ac1>,<c3,c4,event_account_deposited,ac1>,<c3,c4,event_account_interestpayed,ac1>,<c4,c5,event_account_withdrawed,ac1>,<c4,c5,event_account_closed,ac1>,<c4,c5,event_account_removed,ac1>,<c4,c5,event_account_created,ac1>,<c4,c5,event_account_blocked,ac1>,<c4,c5,event_account_unblocked,ac1>,<c4,c5,event_account_deposited,ac1>,<c4,c5,event_account_interestpayed,ac1>,<c1,c2,event_money_empty,m1>,<c2,c3,event_money_empty,m1>,<c3,c4,event_money_empty,m1>,<c4,c5,event_money_empty,m1>,<c1,c2,event_date_empty,d1>,<c2,c3,event_date_empty,d1>,<c3,c4,event_date_empty,d1>,<c4,c5,event_date_empty,d1>,<c1,c2,event_date_empty,d2>,<c2,c3,event_date_empty,d2>,<c3,c4,event_date_empty,d2>,<c4,c5,event_date_empty,d2>,<c1,c2,event_date_empty,NOW>,<c2,c3,event_date_empty,NOW>,<c3,c4,event_date_empty,NOW>,<c4,c5,event_date_empty,NOW>}
+changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,ac1>,<c1,c2,m1>,<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c2,c3,ac1>,<c2,c3,m1>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c3,c4,ac1>,<c3,c4,m1>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c4,c5,ac1>,<c4,c5,m1>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>}
 
-ProcessPid (config:id, instance:id, pid:int) <= {<c1,p1,?>,<c2,p1,?>,<c3,p1,?>,<c4,p1,?>,<c5,p1,?>,<c6,p1,?>,<c7,p1,?>,<c1,p2,?>,<c2,p2,?>,<c3,p2,?>,<c4,p2,?>,<c5,p2,?>,<c6,p2,?>,<c7,p2,?>,<c1,p3,?>,<c2,p3,?>,<c3,p3,?>,<c4,p3,?>,<c5,p3,?>,<c6,p3,?>,<c7,p3,?>}
-ProcessToSend (config:id, instance:id, toSend:int) <= {<c1,p1,?>,<c2,p1,?>,<c3,p1,?>,<c4,p1,?>,<c5,p1,?>,<c6,p1,?>,<c7,p1,?>,<c1,p2,?>,<c2,p2,?>,<c3,p2,?>,<c4,p2,?>,<c5,p2,?>,<c6,p2,?>,<c7,p2,?>,<c1,p3,?>,<c2,p3,?>,<c3,p3,?>,<c4,p3,?>,<c5,p3,?>,<c6,p3,?>,<c7,p3,?>}
-ProcessSucc (config:id, instance:id, succ:id) >= {<c1,p3,p1>,<c1,p1,p2>,<c1,p2,p3>} <= {<c2,p1,p1>,<c2,p1,p2>,<c2,p1,p3>,<c3,p1,p1>,<c3,p1,p2>,<c3,p1,p3>,<c4,p1,p1>,<c4,p1,p2>,<c4,p1,p3>,<c5,p1,p1>,<c5,p1,p2>,<c5,p1,p3>,<c6,p1,p1>,<c6,p1,p2>,<c6,p1,p3>,<c7,p1,p1>,<c7,p1,p2>,<c7,p1,p3>,<c2,p2,p1>,<c2,p2,p2>,<c2,p2,p3>,<c3,p2,p1>,<c3,p2,p2>,<c3,p2,p3>,<c4,p2,p1>,<c4,p2,p2>,<c4,p2,p3>,<c5,p2,p1>,<c5,p2,p2>,<c5,p2,p3>,<c6,p2,p1>,<c6,p2,p2>,<c6,p2,p3>,<c7,p2,p1>,<c7,p2,p2>,<c7,p2,p3>,<c2,p3,p1>,<c2,p3,p2>,<c2,p3,p3>,<c3,p3,p1>,<c3,p3,p2>,<c3,p3,p3>,<c4,p3,p1>,<c4,p3,p2>,<c4,p3,p3>,<c5,p3,p1>,<c5,p3,p2>,<c5,p3,p3>,<c6,p3,p1>,<c6,p3,p2>,<c6,p3,p3>,<c7,p3,p1>,<c7,p3,p2>,<c7,p3,p3>}
+AccountNr (config:id, instance:id, nr:id) <= {<c1,ac1,iban1>,<c2,ac1,iban1>,<c3,ac1,iban1>,<c4,ac1,iban1>,<c5,ac1,iban1>}
+AccountBalance (config:id, instance:id, balance:id) <= {<c1,ac1,m1>,<c2,ac1,m1>,<c3,ac1,m1>,<c4,ac1,m1>,<c5,ac1,m1>}
+AccountOpenedOn (config:id, instance:id, openedOn:id) <= {<c1,ac1,d1>,<c1,ac1,d2>,<c1,ac1,NOW>,<c2,ac1,d1>,<c2,ac1,d2>,<c2,ac1,NOW>,<c3,ac1,d1>,<c3,ac1,d2>,<c3,ac1,NOW>,<c4,ac1,d1>,<c4,ac1,d2>,<c4,ac1,NOW>,<c5,ac1,d1>,<c5,ac1,d2>,<c5,ac1,NOW>}
+AccountClosedOn (config:id, instance:id, closedOn:id) <= {<c1,ac1,d1>,<c1,ac1,d2>,<c1,ac1,NOW>,<c2,ac1,d1>,<c2,ac1,d2>,<c2,ac1,NOW>,<c3,ac1,d1>,<c3,ac1,d2>,<c3,ac1,NOW>,<c4,ac1,d1>,<c4,ac1,d2>,<c4,ac1,NOW>,<c5,ac1,d1>,<c5,ac1,d2>,<c5,ac1,NOW>}
+MoneyAmount (config:id, instance:id, amount:int) <= {<c1,m1,?>,<c2,m1,?>,<c3,m1,?>,<c4,m1,?>,<c5,m1,?>}
+MoneyCurrency (config:id, instance:id, currency:id) <= {<c1,m1,EUR>,<c1,m1,USD>,<c2,m1,EUR>,<c2,m1,USD>,<c3,m1,EUR>,<c3,m1,USD>,<c4,m1,EUR>,<c4,m1,USD>,<c5,m1,EUR>,<c5,m1,USD>}
+DateYear (config:id, instance:id, year:int) <= {<c1,d1,?>,<c2,d1,?>,<c3,d1,?>,<c4,d1,?>,<c5,d1,?>,<c1,d2,?>,<c2,d2,?>,<c3,d2,?>,<c4,d2,?>,<c5,d2,?>,<c1,NOW,?>,<c2,NOW,?>,<c3,NOW,?>,<c4,NOW,?>,<c5,NOW,?>}
+DateMonth (config:id, instance:id, month:int) <= {<c1,d1,?>,<c2,d1,?>,<c3,d1,?>,<c4,d1,?>,<c5,d1,?>,<c1,d2,?>,<c2,d2,?>,<c3,d2,?>,<c4,d2,?>,<c5,d2,?>,<c1,NOW,?>,<c2,NOW,?>,<c3,NOW,?>,<c4,NOW,?>,<c5,NOW,?>}
+DateDay (config:id, instance:id, day:int) <= {<c1,d1,?>,<c2,d1,?>,<c3,d1,?>,<c4,d1,?>,<c5,d1,?>,<c1,d2,?>,<c2,d2,?>,<c3,d2,?>,<c4,d2,?>,<c5,d2,?>,<c1,NOW,?>,<c2,NOW,?>,<c3,NOW,?>,<c4,NOW,?>,<c5,NOW,?>}
 
+Date_NOW (instance:id) = {<NOW>}
+Currency_EUR (instance:id) = {<EUR>}
+Currency_USD (instance:id) = {<USD>}
 
-ParamEventProcessReceived__higherAnId (cur:id, nxt:id, anId:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>}
-ParamEventProcessReceived__lowerAnId (cur:id, nxt:id, anId:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>}
-ParamEventProcessReceived__electedAnId (cur:id, nxt:id, anId:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>}
+ParamEventAccountDepositedAmount (cur:id, nxt:id, amount:id) <= {<c1,c2,m1>,<c2,c3,m1>,<c3,c4,m1>,<c4,c5,m1>}
+ParamEventAccountClosedClosedOn (cur:id, nxt:id, closedOn:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>}
+ParamEventAccountWithdrawedAmount (cur:id, nxt:id, amount:id) <= {<c1,c2,m1>,<c2,c3,m1>,<c3,c4,m1>,<c4,c5,m1>}
+ParamEventAccountInterestPayedRate (cur:id, nxt:id, rate:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>}
+ParamEventAccountCreatedNr (cur:id, nxt:id, nr:id) <= {<c1,c2,iban1>,<c2,c3,iban1>,<c3,c4,iban1>,<c4,c5,iban1>}
+ParamEventAccountCreatedInitialDeposit (cur:id, nxt:id, initialDeposit:id) <= {<c1,c2,m1>,<c2,c3,m1>,<c3,c4,m1>,<c4,c5,m1>}
+ParamEventAccountCreatedOpenedOn (cur:id, nxt:id, openedOn:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>}
+ParamEventMoneyGtOther (cur:id, nxt:id, other:id) <= {<c1,c2,m1>,<c2,c3,m1>,<c3,c4,m1>,<c4,c5,m1>}
+ParamEventMoneyLtOther (cur:id, nxt:id, other:id) <= {<c1,c2,m1>,<c2,c3,m1>,<c3,c4,m1>,<c4,c5,m1>}
+ParamEventMoneyPlusOther (cur:id, nxt:id, other:id) <= {<c1,c2,m1>,<c2,c3,m1>,<c3,c4,m1>,<c4,c5,m1>}
+ParamEventMoneyLteOther (cur:id, nxt:id, other:id) <= {<c1,c2,m1>,<c2,c3,m1>,<c3,c4,m1>,<c4,c5,m1>}
+ParamEventMoneyAddInterestRate (cur:id, nxt:id, rate:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>}
+ParamEventMoneyGteOther (cur:id, nxt:id, other:id) <= {<c1,c2,m1>,<c2,c3,m1>,<c3,c4,m1>,<c4,c5,m1>}
+ParamEventMoneyEqualOther (cur:id, nxt:id, other:id) <= {<c1,c2,m1>,<c2,c3,m1>,<c3,c4,m1>,<c4,c5,m1>}
+ParamEventMoneyMinIfGteOther (cur:id, nxt:id, other:id) <= {<c1,c2,m1>,<c2,c3,m1>,<c3,c4,m1>,<c4,c5,m1>}
+ParamEventDateAfter__monthOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>}
+ParamEventDateAfter__dayOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>}
+ParamEventDateSameOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>}
+ParamEventDateYearsAfterOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>}
+ParamEventDateYearsAfterNrOfYears (cur:id, nxt:id, nrOfYears:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>}
+ParamEventDateAfter__yearsOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,NOW>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,NOW>}
     
 
 // Constraints for the configuration and ordering relations
@@ -56,20 +122,64 @@ instanceInState ⊆ Instance[instance] ⨯ Config ⨯ State
 changedInstance ⊆ (order) ⨯ Instance[instance]
     
 // Machine specific `type` constraints
-// For `Process`
-ProcessPid[config,instance]  ⊆ Config ⨯ (Instance ⨝ Process)[instance]
-ParamEventProcessReceived__higherAnId[cur,nxt] ⊆ order ∪ loop
-ParamEventProcessReceived__lowerAnId[cur,nxt] ⊆ order ∪ loop
-ProcessSucc  ⊆ Config ⨯ (Instance ⨝ Process)[instance] ⨯ (Instance ⨝ Process)[instance->succ]
-ProcessToSend[config,instance]  ⊆ Config ⨯ (Instance ⨝ Process)[instance]
-ParamEventProcessReceived__electedAnId[cur,nxt] ⊆ order ∪ loop
+// For `Money`
+ParamEventMoneyAddInterestRate[cur,nxt] ⊆ order ∪ loop
+ParamEventMoneyLtOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->other]
+ParamEventMoneyMinIfGteOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->other]
+MoneyCurrency  ⊆ Config ⨯ (Instance ⨝ Money)[instance] ⨯ (Instance ⨝ Currency)[instance->currency]
+ParamEventMoneyGtOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->other]
+ParamEventMoneyEqualOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->other]
+MoneyAmount[config,instance]  ⊆ Config ⨯ (Instance ⨝ Money)[instance]
+ParamEventMoneyGteOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->other]
+ParamEventMoneyLteOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->other]
+ParamEventMoneyPlusOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->other]
+// For `Account`
+AccountClosedOn  ⊆ Config ⨯ (Instance ⨝ Account)[instance] ⨯ (Instance ⨝ Date)[instance->closedOn]
+ParamEventAccountInterestPayedRate[cur,nxt] ⊆ order ∪ loop
+ParamEventAccountDepositedAmount ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->amount]
+ParamEventAccountClosedClosedOn ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->closedOn]
+ParamEventAccountCreatedInitialDeposit ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->initialDeposit]
+ParamEventAccountWithdrawedAmount ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->amount]
+AccountOpenedOn  ⊆ Config ⨯ (Instance ⨝ Account)[instance] ⨯ (Instance ⨝ Date)[instance->openedOn]
+ParamEventAccountCreatedNr ⊆ (order ∪ loop) ⨯ (Instance ⨝ IBAN)[instance->nr]
+ParamEventAccountCreatedOpenedOn ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->openedOn]
+AccountBalance  ⊆ Config ⨯ (Instance ⨝ Account)[instance] ⨯ (Instance ⨝ Money)[instance->balance]
+AccountNr  ⊆ Config ⨯ (Instance ⨝ Account)[instance] ⨯ (Instance ⨝ IBAN)[instance->nr]
+// For `Date`
+ParamEventDateYearsAfterNrOfYears[cur,nxt] ⊆ order ∪ loop
+ParamEventDateAfter__monthOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->other]
+ParamEventDateAfter__dayOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->other]
+DateMonth[config,instance]  ⊆ Config ⨯ (Instance ⨝ Date)[instance]
+ParamEventDateAfter__yearsOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->other]
+DateDay[config,instance]  ⊆ Config ⨯ (Instance ⨝ Date)[instance]
+DateYear[config,instance]  ⊆ Config ⨯ (Instance ⨝ Date)[instance]
+ParamEventDateSameOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->other]
+ParamEventDateYearsAfterOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->other]
 
 
 // Specific per event: parameter multiplicity constraints
 ∀ step ∈ (order ∪ loop) ⨝ raisedEvent | (
-  (some (step ⨝ EventProcessReceived__higher) ⇔ one (step ⨝ ParamEventProcessReceived__higherAnId)) ∧
-  (some (step ⨝ EventProcessReceived__lower) ⇔ one (step ⨝ ParamEventProcessReceived__lowerAnId)) ∧
-  (some (step ⨝ EventProcessReceived__elected) ⇔ one (step ⨝ ParamEventProcessReceived__electedAnId))
+  (some (step ⨝ EventMoneyAddInterest) ⇔ one (step ⨝ ParamEventMoneyAddInterestRate)) ∧
+  (some (step ⨝ EventMoneyLte) ⇔ one (step ⨝ ParamEventMoneyLteOther)) ∧
+  (some (step ⨝ EventDateYearsAfter) ⇔ one (step ⨝ ParamEventDateYearsAfterOther)) ∧
+  (some (step ⨝ EventMoneyEqual) ⇔ one (step ⨝ ParamEventMoneyEqualOther)) ∧
+  (some (step ⨝ EventDateSame) ⇔ one (step ⨝ ParamEventDateSameOther)) ∧
+  (some (step ⨝ EventMoneyGt) ⇔ one (step ⨝ ParamEventMoneyGtOther)) ∧
+  (some (step ⨝ EventMoneyMinIfGte) ⇔ one (step ⨝ ParamEventMoneyMinIfGteOther)) ∧
+  (some (step ⨝ EventMoneyPlus) ⇔ one (step ⨝ ParamEventMoneyPlusOther)) ∧
+  (some (step ⨝ EventMoneyLt) ⇔ one (step ⨝ ParamEventMoneyLtOther)) ∧
+  (some (step ⨝ EventAccountInterestPayed) ⇔ one (step ⨝ ParamEventAccountInterestPayedRate)) ∧
+  (some (step ⨝ EventDateAfter__years) ⇔ one (step ⨝ ParamEventDateAfter__yearsOther)) ∧
+  (some (step ⨝ EventMoneyGte) ⇔ one (step ⨝ ParamEventMoneyGteOther)) ∧
+  (some (step ⨝ EventAccountCreated) ⇔ one (step ⨝ ParamEventAccountCreatedOpenedOn)) ∧
+  (some (step ⨝ EventAccountCreated) ⇔ one (step ⨝ ParamEventAccountCreatedNr)) ∧
+  (some (step ⨝ EventAccountClosed) ⇔ one (step ⨝ ParamEventAccountClosedClosedOn)) ∧
+  (some (step ⨝ EventAccountDeposited) ⇔ one (step ⨝ ParamEventAccountDepositedAmount)) ∧
+  (some (step ⨝ EventDateAfter__day) ⇔ one (step ⨝ ParamEventDateAfter__dayOther)) ∧
+  (some (step ⨝ EventDateYearsAfter) ⇔ one (step ⨝ ParamEventDateYearsAfterNrOfYears)) ∧
+  (some (step ⨝ EventAccountCreated) ⇔ one (step ⨝ ParamEventAccountCreatedInitialDeposit)) ∧
+  (some (step ⨝ EventDateAfter__month) ⇔ one (step ⨝ ParamEventDateAfter__monthOther)) ∧
+  (some (step ⨝ EventAccountWithdrawed) ⇔ one (step ⨝ ParamEventAccountWithdrawedAmount))
 )
 // Generic: All configurations are reachable
 ∀ c ∈ Config ∖ first | c ⊆ (first[config as cur] ⨝ ^<cur,nxt>order)[nxt -> config]
@@ -78,14 +188,26 @@ ParamEventProcessReceived__electedAnId[cur,nxt] ⊆ order ∪ loop
 ∀ o ∈ order | one o ⨝ raisedEvent
 
 // Specif: In every configuration all machines have a state IFF its a machine which is not empty
-∀ c ∈ Config, inst ∈ Instance | one instanceInState ⨝ c ⨝ inst
+∀ c ∈ Config, inst ∈ (Instance ∖ ((IBAN ∪ Currency) ⨝ Instance)) | one instanceInState ⨝ c ⨝ inst
 
 // Specific per machine: In every configuration iff a machine is in an initialized state then it must have values
-// for `Process`
-∀ c ∈ Config, inst ∈ (Instance ⨝ Process)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one ProcessSucc ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Process)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one ProcessToSend ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Process)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one ProcessPid ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Process)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no ProcessSucc ⨝ c ⨝ inst)
+// for `Money`
+∀ c ∈ Config, inst ∈ (Instance ⨝ Money)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one MoneyCurrency ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Money)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no MoneyCurrency ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Money)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one MoneyAmount ⨝ c ⨝ inst)
+// for `Account`
+∀ c ∈ Config, inst ∈ (Instance ⨝ Account)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no AccountBalance ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Account)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one AccountOpenedOn ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Account)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one AccountClosedOn ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Account)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no AccountNr ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Account)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no AccountOpenedOn ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Account)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no AccountClosedOn ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Account)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one AccountBalance ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Account)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one AccountNr ⨝ c ⨝ inst)
+// for `Date`
+∀ c ∈ Config, inst ∈ (Instance ⨝ Date)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one DateDay ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Date)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one DateMonth ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Date)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one DateYear ⨝ c ⨝ inst)
 
 // Generic: Transitions are only allowed between if an event is specified between two states
 ∀ o ∈ (order) ⨝ raisedEvent | (o[cur as config] ⨝ instanceInState)[state->from] ⨯ (o[nxt as config] ⨝ instanceInState)[state->to] ⨯ o[event] ⊆ allowedTransitions
@@ -98,7 +220,7 @@ pred notInChangeSet[step: (cur:id, nxt:id), instances: (instance:id)]
   = no instances ∩ (changedInstance ⨝ step)[instance]
 
 pred changeSetCanContain[step: (cur:id, nxt:id), instances: (instance:id)]
-  = (changedInstance ⨝ step)[instance] ⊆ instances 
+  = (changedInstance ⨝ step)[instance] ⊆ instances ∪ Date_NOW
 
 // Generic predicates
 pred forceState[curState: (state:id), nxtState: (state:id), raisedEvent: (event:id)]
@@ -107,121 +229,604 @@ pred forceState[curState: (state:id), nxtState: (state:id), raisedEvent: (event:
 pred inState[config: (config:id), instance: (instance:id), state: (state:id)]
   = ((instance ⨯ config) ⨝ instanceInState)[state] ⊆ state
 
-// Event predicates for `Process`
-pred eventProcessReceived__lower[step:(cur:id, nxt:id), process: (instance:id), anId: (anId:int)]
+// Event predicates for `Money`
+pred eventMoneyEqual[step:(cur:id, nxt:id), money: (instance:id), other: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ process)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ process)[state] |
+        curState = (instanceInState ⨝ cur ⨝ money)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
     ( 
       // Preconditions 
-      (some (anId[anId as param_1_anId] ⨯ (process ⨝ (ProcessPid ⨝ cur))[pid][pid as cur_pid]) where (param_1_anId < cur_pid))  ∧ 
+      (money ⨝ (MoneyCurrency ⨝ cur))[currency] = (other ⨝ (MoneyCurrency ⨝ cur))[currency] ∧
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (other ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount]) where (cur_amount = param_1_amount))  ∧ 
       // Postconditions
-      (some ((process ⨝ (ProcessPid ⨝ nxt))[pid][pid as nxt_pid] ⨯ (process ⨝ (ProcessPid ⨝ cur))[pid][pid as cur_pid]) where (nxt_pid = cur_pid)) ∧
-      (some ((process ⨝ (ProcessToSend ⨝ nxt))[toSend][toSend as nxt_toSend] ⨯ (process ⨝ (ProcessToSend ⨝ cur))[toSend][toSend as cur_toSend]) where (nxt_toSend = cur_toSend)) ∧
-      (process ⨝ (ProcessSucc ⨝ nxt))[succ] = (process ⨝ (ProcessSucc ⨝ cur))[succ]  ∧ 
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
+      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventProcessReceived__lower] ∧
+      forceState[curState, nxtState, EventMoneyEqual] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, process]
+      inChangeSet[step, money]
     )
 
-pred eventProcessSend[step:(cur:id, nxt:id), process: (instance:id)]
+pred eventMoneyMinIfGte[step:(cur:id, nxt:id), money: (instance:id), other: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ process)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ process)[state] |
+        curState = (instanceInState ⨝ cur ⨝ money)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
     ( 
       // Preconditions 
-      (((((some ((process ⨝ (ProcessToSend ⨝ cur))[toSend][toSend as cur_toSend] ⨯ (process ⨝ (ProcessPid ⨝ cur))[pid][pid as cur_pid]) where (cur_pid > cur_toSend))) ⇒ ((eventProcessReceived__elected[step, (process ⨝ (ProcessSucc ⨝ cur))[succ][succ as instance], (process ⨝ (ProcessPid ⨝ cur))[pid][pid as anId]] ∨ (eventProcessReceived__higher[step, (process ⨝ (ProcessSucc ⨝ cur))[succ][succ as instance], (process ⨝ (ProcessPid ⨝ cur))[pid][pid as anId]] ∨ eventProcessReceived__lower[step, (process ⨝ (ProcessSucc ⨝ cur))[succ][succ as instance], (process ⨝ (ProcessPid ⨝ cur))[pid][pid as anId]]))))) ∧ ((¬ ((((some ((process ⨝ (ProcessToSend ⨝ cur))[toSend][toSend as cur_toSend] ⨯ (process ⨝ (ProcessPid ⨝ cur))[pid][pid as cur_pid]) where (cur_pid > cur_toSend))))) ⇒ ((eventProcessReceived__elected[step, (process ⨝ (ProcessSucc ⨝ cur))[succ][succ as instance], (process ⨝ (ProcessToSend ⨝ cur))[toSend][toSend as anId]] ∨ (eventProcessReceived__higher[step, (process ⨝ (ProcessSucc ⨝ cur))[succ][succ as instance], (process ⨝ (ProcessToSend ⨝ cur))[toSend][toSend as anId]] ∨ eventProcessReceived__lower[step, (process ⨝ (ProcessSucc ⨝ cur))[succ][succ as instance], (process ⨝ (ProcessToSend ⨝ cur))[toSend][toSend as anId]]))))))  ∧ 
+      (money ⨝ (MoneyCurrency ⨝ cur))[currency] = (other ⨝ (MoneyCurrency ⨝ cur))[currency] ∧
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (other ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount]) where (cur_amount >= param_1_amount))  ∧ 
       // Postconditions
-      (some ((process ⨝ (ProcessPid ⨝ nxt))[pid][pid as nxt_pid] ⨯ (process ⨝ (ProcessPid ⨝ cur))[pid][pid as cur_pid]) where (nxt_pid = cur_pid)) ∧
-      (some ((process ⨝ (ProcessToSend ⨝ nxt))[toSend][toSend as nxt_toSend] ⨯ (process ⨝ (ProcessToSend ⨝ cur))[toSend][toSend as cur_toSend]) where (nxt_toSend = cur_toSend)) ∧
-      (process ⨝ (ProcessSucc ⨝ nxt))[succ] = (process ⨝ (ProcessSucc ⨝ cur))[succ]  ∧ 
+      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency] ∧
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (other ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_2_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount - param_2_amount))  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventProcessSend] ∧
+      forceState[curState, nxtState, EventMoneyMinIfGte] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, process]
+      inChangeSet[step, money]
     )
 
-pred eventProcessReceived__higher[step:(cur:id, nxt:id), process: (instance:id), anId: (anId:int)]
+pred frameMoney[step: (cur:id, nxt:id), money: (instance:id)] 
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ process)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ process)[state] |
-    ( 
-      // Preconditions 
-      (some (anId[anId as param_1_anId] ⨯ (process ⨝ (ProcessPid ⨝ cur))[pid][pid as cur_pid]) where (cur_pid < param_1_anId))  ∧ 
-      // Postconditions
-      (some ((process ⨝ (ProcessPid ⨝ nxt))[pid][pid as nxt_pid] ⨯ (process ⨝ (ProcessPid ⨝ cur))[pid][pid as cur_pid]) where (nxt_pid = cur_pid)) ∧
-      (process ⨝ (ProcessSucc ⨝ nxt))[succ] = (process ⨝ (ProcessSucc ⨝ cur))[succ] ∧
-      (some ((process ⨝ (ProcessToSend ⨝ nxt))[toSend][toSend as nxt_toSend] ⨯ anId[anId as param_2_anId]) where (nxt_toSend = param_2_anId))  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventProcessReceived__higher] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, process]
-    )
-
-pred frameProcess[step: (cur:id, nxt:id), process: (instance:id)] 
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ process)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ process)[state] | (
+        curState = (instanceInState ⨝ cur ⨝ money)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] | (
     nxtState = curState ∧
     (
       curState ⊆ uninitialized ∨ 
       (// Postconditions
-       (some ((process ⨝ (ProcessPid ⨝ nxt))[pid][pid as nxt_pid] ⨯ (process ⨝ (ProcessPid ⨝ cur))[pid][pid as cur_pid]) where (nxt_pid = cur_pid)) ∧
-       (some ((process ⨝ (ProcessToSend ⨝ nxt))[toSend][toSend as nxt_toSend] ⨯ (process ⨝ (ProcessToSend ⨝ cur))[toSend][toSend as cur_toSend]) where (nxt_toSend = cur_toSend)) ∧
-       (process ⨝ (ProcessSucc ⨝ nxt))[succ] = (process ⨝ (ProcessSucc ⨝ cur))[succ])
+       (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
+       (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency])
     )
   )
 
-pred eventProcessReceived__elected[step:(cur:id, nxt:id), process: (instance:id), anId: (anId:int)]
+pred eventMoneyEmpty[step:(cur:id, nxt:id), money: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ process)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ process)[state] |
+        curState = (instanceInState ⨝ cur ⨝ money)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
+    ( 
+       
+      // Postconditions
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
+      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventMoneyEmpty] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, money]
+    )
+
+pred eventMoneyGt[step:(cur:id, nxt:id), money: (instance:id), other: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ money)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
     ( 
       // Preconditions 
-      (some (anId[anId as param_1_anId] ⨯ (process ⨝ (ProcessPid ⨝ cur))[pid][pid as cur_pid]) where (cur_pid = param_1_anId))  ∧ 
+      (money ⨝ (MoneyCurrency ⨝ cur))[currency] = (other ⨝ (MoneyCurrency ⨝ cur))[currency] ∧
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (other ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount]) where (cur_amount > param_1_amount))  ∧ 
       // Postconditions
-      (some ((process ⨝ (ProcessPid ⨝ nxt))[pid][pid as nxt_pid] ⨯ (process ⨝ (ProcessPid ⨝ cur))[pid][pid as cur_pid]) where (nxt_pid = cur_pid)) ∧
-      (some ((process ⨝ (ProcessToSend ⨝ nxt))[toSend][toSend as nxt_toSend] ⨯ (process ⨝ (ProcessToSend ⨝ cur))[toSend][toSend as cur_toSend]) where (nxt_toSend = cur_toSend)) ∧
-      (process ⨝ (ProcessSucc ⨝ nxt))[succ] = (process ⨝ (ProcessSucc ⨝ cur))[succ]  ∧ 
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
+      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventProcessReceived__elected] ∧
+      forceState[curState, nxtState, EventMoneyGt] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, process]
+      inChangeSet[step, money]
+    )
+
+pred eventMoneyAddInterest[step:(cur:id, nxt:id), money: (instance:id), rate: (rate:int)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ money)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
+    ( 
+       
+      // Postconditions
+      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency] ∧
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ rate[rate as param_1_rate] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount + ((cur_amount * param_1_rate) / 100)))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventMoneyAddInterest] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, money]
+    )
+
+pred eventMoneyLt[step:(cur:id, nxt:id), money: (instance:id), other: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ money)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
+    ( 
+      // Preconditions 
+      (money ⨝ (MoneyCurrency ⨝ cur))[currency] = (other ⨝ (MoneyCurrency ⨝ cur))[currency] ∧
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (other ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount]) where (cur_amount < param_1_amount))  ∧ 
+      // Postconditions
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
+      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventMoneyLt] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, money]
+    )
+
+pred eventMoneyZero[step:(cur:id, nxt:id), money: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ money)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
+    ( 
+      // Preconditions 
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount]) where (cur_amount = 0))  ∧ 
+      // Postconditions
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
+      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventMoneyZero] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, money]
+    )
+
+pred eventMoneyNegative[step:(cur:id, nxt:id), money: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ money)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
+    ( 
+      // Preconditions 
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount]) where (cur_amount < 0))  ∧ 
+      // Postconditions
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
+      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventMoneyNegative] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, money]
+    )
+
+pred eventMoneyGte[step:(cur:id, nxt:id), money: (instance:id), other: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ money)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
+    ( 
+      // Preconditions 
+      (money ⨝ (MoneyCurrency ⨝ cur))[currency] = (other ⨝ (MoneyCurrency ⨝ cur))[currency] ∧
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (other ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount]) where (cur_amount >= param_1_amount))  ∧ 
+      // Postconditions
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
+      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventMoneyGte] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, money]
+    )
+
+pred eventMoneyPlus[step:(cur:id, nxt:id), money: (instance:id), other: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ money)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
+    ( 
+      // Preconditions 
+      (money ⨝ (MoneyCurrency ⨝ cur))[currency] = (other ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
+      // Postconditions
+      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency] ∧
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (other ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount + param_1_amount))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventMoneyPlus] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, money]
+    )
+
+pred eventMoneyLte[step:(cur:id, nxt:id), money: (instance:id), other: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ money)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
+    ( 
+      // Preconditions 
+      (money ⨝ (MoneyCurrency ⨝ cur))[currency] = (other ⨝ (MoneyCurrency ⨝ cur))[currency] ∧
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (other ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount]) where (cur_amount <= param_1_amount))  ∧ 
+      // Postconditions
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
+      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventMoneyLte] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, money]
+    )
+
+pred eventMoneyPositive[step:(cur:id, nxt:id), money: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ money)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
+    ( 
+      // Preconditions 
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount]) where (cur_amount >= 0))  ∧ 
+      // Postconditions
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
+      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventMoneyPositive] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, money]
+    )
+
+// Event predicates for `Account`
+pred eventAccountWithdrawed[step:(cur:id, nxt:id), account: (instance:id), amount: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ account)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] |
+    ( 
+      // Preconditions 
+      (some ((amount ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount]) where (param_1_amount > 0)) ∧
+      eventMoneyMinIfGte[step, (account ⨝ (AccountBalance ⨝ cur))[balance][balance as instance], amount]  ∧ 
+      // Postconditions
+      (account ⨝ (AccountBalance ⨝ nxt))[balance] = (account ⨝ (AccountBalance ⨝ cur))[balance] ∧
+      (account ⨝ (AccountClosedOn ⨝ nxt))[closedOn] = (account ⨝ (AccountClosedOn ⨝ cur))[closedOn] ∧
+      (account ⨝ (AccountOpenedOn ⨝ nxt))[openedOn] = (account ⨝ (AccountOpenedOn ⨝ cur))[openedOn] ∧
+      (account ⨝ (AccountNr ⨝ nxt))[nr] = (account ⨝ (AccountNr ⨝ cur))[nr]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventAccountWithdrawed] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, account]
+    )
+
+pred eventAccountDeposited[step:(cur:id, nxt:id), account: (instance:id), amount: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ account)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] |
+    ( 
+      // Preconditions 
+      (some ((amount ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount]) where (param_1_amount > 0)) ∧
+      eventMoneyPlus[step, (account ⨝ (AccountBalance ⨝ cur))[balance][balance as instance], amount]  ∧ 
+      // Postconditions
+      (account ⨝ (AccountBalance ⨝ nxt))[balance] = (account ⨝ (AccountBalance ⨝ cur))[balance] ∧
+      (account ⨝ (AccountClosedOn ⨝ nxt))[closedOn] = (account ⨝ (AccountClosedOn ⨝ cur))[closedOn] ∧
+      (account ⨝ (AccountOpenedOn ⨝ nxt))[openedOn] = (account ⨝ (AccountOpenedOn ⨝ cur))[openedOn] ∧
+      (account ⨝ (AccountNr ⨝ nxt))[nr] = (account ⨝ (AccountNr ⨝ cur))[nr]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventAccountDeposited] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, account]
+    )
+
+pred frameAccount[step: (cur:id, nxt:id), account: (instance:id)] 
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ account)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] | (
+    nxtState = curState ∧
+    (
+      curState ⊆ uninitialized ∨ 
+      (// Postconditions
+       (account ⨝ (AccountNr ⨝ nxt))[nr] = (account ⨝ (AccountNr ⨝ cur))[nr] ∧
+       (account ⨝ (AccountBalance ⨝ nxt))[balance] = (account ⨝ (AccountBalance ⨝ cur))[balance] ∧
+       (account ⨝ (AccountOpenedOn ⨝ nxt))[openedOn] = (account ⨝ (AccountOpenedOn ⨝ cur))[openedOn] ∧
+       (account ⨝ (AccountClosedOn ⨝ nxt))[closedOn] = (account ⨝ (AccountClosedOn ⨝ cur))[closedOn])
+    )
+  )
+
+pred eventAccountBlocked[step:(cur:id, nxt:id), account: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ account)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] |
+    ( 
+       
+      // Postconditions
+      (account ⨝ (AccountBalance ⨝ nxt))[balance] = (account ⨝ (AccountBalance ⨝ cur))[balance] ∧
+      (account ⨝ (AccountClosedOn ⨝ nxt))[closedOn] = (account ⨝ (AccountClosedOn ⨝ cur))[closedOn] ∧
+      (account ⨝ (AccountOpenedOn ⨝ nxt))[openedOn] = (account ⨝ (AccountOpenedOn ⨝ cur))[openedOn] ∧
+      (account ⨝ (AccountNr ⨝ nxt))[nr] = (account ⨝ (AccountNr ⨝ cur))[nr]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventAccountBlocked] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, account]
+    )
+
+pred eventAccountClosed[step:(cur:id, nxt:id), account: (instance:id), closedOn: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ account)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] |
+    ( 
+      // Preconditions 
+      eventMoneyZero[step, (account ⨝ (AccountBalance ⨝ cur))[balance][balance as instance]] ∧
+      eventDateSame[step, closedOn, Date_NOW]  ∧ 
+      // Postconditions
+      (account ⨝ (AccountBalance ⨝ nxt))[balance] = (account ⨝ (AccountBalance ⨝ cur))[balance] ∧
+      (account ⨝ (AccountOpenedOn ⨝ nxt))[openedOn] = (account ⨝ (AccountOpenedOn ⨝ cur))[openedOn] ∧
+      (account ⨝ (AccountNr ⨝ nxt))[nr] = (account ⨝ (AccountNr ⨝ cur))[nr] ∧
+      (account ⨝ (AccountClosedOn ⨝ nxt))[closedOn] = closedOn[instance as closedOn]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventAccountClosed] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, account]
+    )
+
+pred eventAccountRemoved[step:(cur:id, nxt:id), account: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ account)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] |
+    ( 
+      // Preconditions 
+      eventDateYearsAfter[step, (account ⨝ (AccountClosedOn ⨝ cur))[closedOn][closedOn as instance], Date_NOW, __IntConst_5[const_5->nrOfYears]]  ∧ 
+       
+      // Generic event conditions
+      forceState[curState, nxtState, EventAccountRemoved] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, account]
+    )
+
+pred eventAccountInterestPayed[step:(cur:id, nxt:id), account: (instance:id), rate: (rate:int)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ account)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] |
+    ( 
+      // Preconditions 
+      (some (rate[rate as param_1_rate]) where (param_1_rate > 0)) ∧
+      eventMoneyAddInterest[step, (account ⨝ (AccountBalance ⨝ cur))[balance][balance as instance], rate]  ∧ 
+      // Postconditions
+      (account ⨝ (AccountBalance ⨝ nxt))[balance] = (account ⨝ (AccountBalance ⨝ cur))[balance] ∧
+      (account ⨝ (AccountClosedOn ⨝ nxt))[closedOn] = (account ⨝ (AccountClosedOn ⨝ cur))[closedOn] ∧
+      (account ⨝ (AccountOpenedOn ⨝ nxt))[openedOn] = (account ⨝ (AccountOpenedOn ⨝ cur))[openedOn] ∧
+      (account ⨝ (AccountNr ⨝ nxt))[nr] = (account ⨝ (AccountNr ⨝ cur))[nr]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventAccountInterestPayed] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, account]
+    )
+
+pred eventAccountCreated[step:(cur:id, nxt:id), account: (instance:id), nr: (instance:id), initialDeposit: (instance:id), openedOn: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ account)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] |
+    ( 
+      // Preconditions 
+      (some ((initialDeposit ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount]) where (param_1_amount > 0)) ∧
+      (initialDeposit ⨝ (MoneyCurrency ⨝ cur))[currency] = Currency_EUR[instance as currency] ∧
+      eventDateSame[step, openedOn, Date_NOW]  ∧ 
+      // Postconditions
+      (account ⨝ (AccountNr ⨝ nxt))[nr] = nr[instance as nr] ∧
+      (account ⨝ (AccountBalance ⨝ nxt))[balance] = initialDeposit[instance as balance] ∧
+      (account ⨝ (AccountOpenedOn ⨝ nxt))[openedOn] = openedOn[instance as openedOn]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventAccountCreated] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, account]
+    )
+
+pred eventAccountUnblocked[step:(cur:id, nxt:id), account: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ account)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] |
+    ( 
+       
+      // Postconditions
+      (account ⨝ (AccountBalance ⨝ nxt))[balance] = (account ⨝ (AccountBalance ⨝ cur))[balance] ∧
+      (account ⨝ (AccountClosedOn ⨝ nxt))[closedOn] = (account ⨝ (AccountClosedOn ⨝ cur))[closedOn] ∧
+      (account ⨝ (AccountOpenedOn ⨝ nxt))[openedOn] = (account ⨝ (AccountOpenedOn ⨝ cur))[openedOn] ∧
+      (account ⨝ (AccountNr ⨝ nxt))[nr] = (account ⨝ (AccountNr ⨝ cur))[nr]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventAccountUnblocked] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, account]
+    )
+
+// Event predicates for `Date`
+pred eventDateAfter__day[step:(cur:id, nxt:id), date: (instance:id), other: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ date)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+    ( 
+      // Preconditions 
+      (some ((other ⨝ (DateDay ⨝ cur))[day][day as param_1_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (cur_day > param_1_day)) ∧
+      (some ((other ⨝ (DateMonth ⨝ cur))[month][month as param_2_month] ⨯ (date ⨝ (DateMonth ⨝ cur))[month][month as cur_month]) where (cur_month = param_2_month)) ∧
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (other ⨝ (DateYear ⨝ cur))[year][year as param_3_year]) where (cur_year = param_3_year))  ∧ 
+      // Postconditions
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
+      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
+      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDateAfter__day] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, date]
+    )
+
+pred eventDateYearsAfter[step:(cur:id, nxt:id), date: (instance:id), other: (instance:id), nrOfYears: (nrOfYears:int)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ date)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+    ( 
+      // Preconditions 
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ nrOfYears[nrOfYears as param_2_nrOfYears] ⨯ (other ⨝ (DateYear ⨝ cur))[year][year as param_1_year]) where (cur_year = param_1_year - param_2_nrOfYears))  ∧ 
+      // Postconditions
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
+      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
+      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDateYearsAfter] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, date]
+    )
+
+pred eventDateSame[step:(cur:id, nxt:id), date: (instance:id), other: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ date)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+    ( 
+      // Preconditions 
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (other ⨝ (DateYear ⨝ cur))[year][year as param_1_year]) where (param_1_year = cur_year)) ∧
+      (some ((other ⨝ (DateMonth ⨝ cur))[month][month as param_2_month] ⨯ (date ⨝ (DateMonth ⨝ cur))[month][month as cur_month]) where (param_2_month = cur_month)) ∧
+      (some ((other ⨝ (DateDay ⨝ cur))[day][day as param_3_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (param_3_day = cur_day))  ∧ 
+      // Postconditions
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
+      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
+      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDateSame] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, date]
+    )
+
+pred frameDate[step: (cur:id, nxt:id), date: (instance:id)] 
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ date)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] | (
+    nxtState = curState ∧
+    (
+      curState ⊆ uninitialized ∨ 
+      (// Postconditions
+       (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
+       (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month)) ∧
+       (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)))
+    )
+  )
+
+pred eventDateAfter__month[step:(cur:id, nxt:id), date: (instance:id), other: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ date)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+    ( 
+      // Preconditions 
+      (some ((other ⨝ (DateMonth ⨝ cur))[month][month as param_1_month] ⨯ (date ⨝ (DateMonth ⨝ cur))[month][month as cur_month]) where (cur_month > param_1_month)) ∧
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (other ⨝ (DateYear ⨝ cur))[year][year as param_2_year]) where (cur_year = param_2_year))  ∧ 
+      // Postconditions
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
+      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
+      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDateAfter__month] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, date]
+    )
+
+pred eventDateEmpty[step:(cur:id, nxt:id), date: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ date)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+    ( 
+       
+      // Postconditions
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
+      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
+      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDateEmpty] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, date]
+    )
+
+pred eventDateAfter__years[step:(cur:id, nxt:id), date: (instance:id), other: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ date)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+    ( 
+      // Preconditions 
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (other ⨝ (DateYear ⨝ cur))[year][year as param_1_year]) where (cur_year > param_1_year))  ∧ 
+      // Postconditions
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
+      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
+      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDateAfter__years] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, date]
     )
 
 
-// Transition function for `Process`
-pred possibleTransitionsProcess[step: (cur:id, nxt:id)] 
-  = ∀ inst ∈ (Instance ⨝ Process)[instance] |
+// Transition function for `Money`
+pred possibleTransitionsMoney[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ Money)[instance] |
     (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
-      (eventProcessSend[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventProcessSend ∧
-      let cur = step[cur->config], process = inst, process = (process ⨝ (ProcessSucc ⨝ cur))[succ][succ as instance] | changeSetCanContain[step, inst ∪ process])
+      (eventMoneyEmpty[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventMoneyEmpty ∧
+      changeSetCanContain[step, inst])
     ))
     ∧
-    (notInChangeSet[step, inst] ⇒ frameProcess[step, inst])
+    (notInChangeSet[step, inst] ⇒ frameMoney[step, inst])
+
+// Transition function for `Account`
+pred possibleTransitionsAccount[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ Account)[instance] |
+    (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
+      (eventAccountDeposited[step,inst,(step ⨝ ParamEventAccountDepositedAmount)[amount->instance]] ∧
+      (step ⨝ raisedEvent)[event] = EventAccountDeposited ∧
+      let cur = step[cur->config], account = inst, account = (account ⨝ (AccountBalance ⨝ cur))[balance][balance as instance] | changeSetCanContain[step, inst ∪ account])
+      ∨
+      (eventAccountUnblocked[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventAccountUnblocked ∧
+      changeSetCanContain[step, inst])
+      ∨
+      (eventAccountBlocked[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventAccountBlocked ∧
+      changeSetCanContain[step, inst])
+      ∨
+      (eventAccountClosed[step,inst,(step ⨝ ParamEventAccountClosedClosedOn)[closedOn->instance]] ∧
+      (step ⨝ raisedEvent)[event] = EventAccountClosed ∧
+      let cur = step[cur->config], account = inst, account = (account ⨝ (AccountBalance ⨝ cur))[balance][balance as instance], closedOn = (ParamEventAccountClosedClosedOn ⨝ step)[closedOn -> instance] | changeSetCanContain[step, inst ∪ closedOn ∪ account])
+      ∨
+      (eventAccountRemoved[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventAccountRemoved ∧
+      let cur = step[cur->config], account = inst, account = (account ⨝ (AccountClosedOn ⨝ cur))[closedOn][closedOn as instance] | changeSetCanContain[step, inst ∪ account])
+      ∨
+      (eventAccountWithdrawed[step,inst,(step ⨝ ParamEventAccountWithdrawedAmount)[amount->instance]] ∧
+      (step ⨝ raisedEvent)[event] = EventAccountWithdrawed ∧
+      let cur = step[cur->config], account = inst, account = (account ⨝ (AccountBalance ⨝ cur))[balance][balance as instance] | changeSetCanContain[step, inst ∪ account])
+      ∨
+      (eventAccountInterestPayed[step,inst,(step ⨝ ParamEventAccountInterestPayedRate)[rate]] ∧
+      (step ⨝ raisedEvent)[event] = EventAccountInterestPayed ∧
+      let cur = step[cur->config], account = inst, account = (account ⨝ (AccountBalance ⨝ cur))[balance][balance as instance] | changeSetCanContain[step, inst ∪ account])
+      ∨
+      (eventAccountCreated[step,inst,(step ⨝ ParamEventAccountCreatedNr)[nr->instance],(step ⨝ ParamEventAccountCreatedInitialDeposit)[initialDeposit->instance],(step ⨝ ParamEventAccountCreatedOpenedOn)[openedOn->instance]] ∧
+      (step ⨝ raisedEvent)[event] = EventAccountCreated ∧
+      let cur = step[cur->config], openedOn = (ParamEventAccountCreatedOpenedOn ⨝ step)[openedOn -> instance] | changeSetCanContain[step, inst ∪ openedOn])
+    ))
+    ∧
+    (notInChangeSet[step, inst] ⇒ frameAccount[step, inst])
+
+// Transition function for `Date`
+pred possibleTransitionsDate[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ Date)[instance] |
+    (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
+      (eventDateEmpty[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventDateEmpty ∧
+      changeSetCanContain[step, inst])
+    ))
+    ∧
+    (notInChangeSet[step, inst] ⇒ frameDate[step, inst])
 
 
 // Transition function
-∀ step ∈ order| possibleTransitionsProcess[step]
+∀ step ∈ order| possibleTransitionsAccount[step] ∧ possibleTransitionsMoney[step] ∧ possibleTransitionsDate[step]
 
 
-// Fact `UniqueIds`
-∀ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∀ p1 ∈ (Instance ⨝ Process)[instance],p2 ∈ (Instance ⨝ Process)[instance] | ((((inState[cur_1, p1, initialized] ∧ (inState[cur_1, p2, initialized] ∧ (some ((p2 ⨝ (ProcessPid ⨝ cur_1))[pid][pid as p2_pid] ⨯ (p1 ⨝ (ProcessPid ⨝ cur_1))[pid][pid as p1_pid]) where (p1_pid = p2_pid))))) ⇒ p1 = p2)))
-// Fact `Progress`
-(∀ p ∈ (Instance ⨝ Process)[instance] | ∃ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | let step_2 = ((order ∪ loop) ⨝ cur_1[config as cur]), cur_2 = step_2[nxt->config] | (EventProcessSend ⊆ (raisedEvent ⨝ step_2 ⨝ p)[event]))
-// Fact `InitialToSendIsZero`
-let cur_1 = first | (∀ p ∈ (Instance ⨝ Process)[instance] | (some ((p ⨝ (ProcessToSend ⨝ cur_1))[toSend][toSend as p_toSend]) where (p_toSend = 0)))
-// Fact `PositiveIds`
-∀ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∀ p ∈ (Instance ⨝ Process)[instance] | ((inState[cur_1, p, initialized] ⇒ (some ((p ⨝ (ProcessPid ⨝ cur_1))[pid][pid as p_pid]) where (p_pid > 0)))))
+// Fact `NowAlwaysExists`
+∀ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (inState[cur_1, Date_NOW, initialized])
+// Fact `AllAccountsHaveUniqueIBANs`
+∀ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∀ ac1 ∈ (Instance ⨝ Account)[instance],ac2 ∈ (Instance ⨝ Account)[instance] | (((inState[cur_1, ac1, initialized] ∧ (inState[cur_1, ac2, initialized] ∧ (ac1 ⨝ (AccountNr ⨝ cur_1))[nr] = (ac2 ⨝ (AccountNr ⨝ cur_1))[nr])) ⇒ ac1 = ac2)))
+// Fact `FiniteMoney`
+∀ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∀ m ∈ (Instance ⨝ Money)[instance] | ((some ((m ⨝ (MoneyAmount ⨝ cur_1))[amount][amount as m_amount]) where (m_amount > (- 1000000000))) ∧ (some ((m ⨝ (MoneyAmount ⨝ cur_1))[amount][amount as m_amount]) where (m_amount < 1000000000))))
+// Fact `CorrectDate`
+∀ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∀ d ∈ (Instance ⨝ Date)[instance] | ((inState[cur_1, d, initialized] ⇒ (((some ((d ⨝ (DateYear ⨝ cur_1))[year][year as d_year]) where (d_year >= 1900)) ∧ ((some ((d ⨝ (DateYear ⨝ cur_1))[year][year as d_year]) where (d_year <= 2200)) ∧ ((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month > 0)) ∧ ((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month < 13)) ∧ ((some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day > 0)) ∧ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 1)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 1)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 2)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 30)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 2)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 3)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 3)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 4)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 31)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 4)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 5)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 5)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 6)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 31)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 6)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 7)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 7)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 8)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 8)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 9)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 31)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 9)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 10)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 10)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 11)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 31)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 11)))) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32))))))))))))))))))))))))))))))))))))))))))))
+// Fact `TimeAlwaysMovesForward`
+∀ cur_1 ∈ Config ∖ last | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∃ d1 ∈ Date_NOW | let step_2 = ((order ∪ loop) ⨝ cur_1[config as cur]), cur_2 = step_2[nxt->config] | (∃ d2 ∈ Date_NOW | (((some ((d2 ⨝ (DateYear ⨝ cur_2))[year][year as d2_year] ⨯ (d1 ⨝ (DateYear ⨝ cur_1))[year][year as d1_year]) where (d2_year > d1_year)) ∨ ((((some ((d2 ⨝ (DateYear ⨝ cur_2))[year][year as d2_year] ⨯ (d1 ⨝ (DateYear ⨝ cur_1))[year][year as d1_year]) where (d2_year = d1_year)) ∧ (some ((d2 ⨝ (DateMonth ⨝ cur_2))[month][month as d2_month] ⨯ (d1 ⨝ (DateMonth ⨝ cur_1))[month][month as d1_month]) where (d2_month > d1_month)))) ∨ (((some ((d2 ⨝ (DateYear ⨝ cur_2))[year][year as d2_year] ⨯ (d1 ⨝ (DateYear ⨝ cur_1))[year][year as d1_year]) where (d2_year = d1_year)) ∧ ((some ((d2 ⨝ (DateMonth ⨝ cur_2))[month][month as d2_month] ⨯ (d1 ⨝ (DateMonth ⨝ cur_1))[month][month as d1_month]) where (d2_month = d1_month)) ∧ (some ((d2 ⨝ (DateDay ⨝ cur_2))[day][day as d2_day] ⨯ (d1 ⨝ (DateDay ⨝ cur_1))[day][day as d1_day]) where (d2_day > d1_day))))))))))
 
-// Assert `EventuallyOneIsElected`
-∃ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∃ p ∈ (Instance ⨝ Process)[instance] | inState[cur_1, p, StateProcessElected])
+// Assert `CanBeOverdrawn`
+∃ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∃ ac ∈ (Instance ⨝ Account)[instance] | eventMoneyNegative[step_1, (ac ⨝ (AccountBalance ⨝ cur_1))[balance][balance as instance]])
 // Minimize the number of steps by minimizing the number of Configurations
 objectives: minimize Config[count()]

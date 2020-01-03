@@ -1,0 +1,61 @@
+module account::Account
+   
+import account::Money 
+import account::Date
+import account::IBAN
+ 
+spec Account
+  nr: IBAN,
+  balance: Money,  
+  openedOn: Date,
+  closedOn: Date;
+  
+  init event created(nr: IBAN, initialDeposit: Money, openedOn: Date)
+    pre: initialDeposit.amount > 0, initialDeposit.currency = Currency[EUR], openedOn.same(Date[NOW]);
+    post: this.nr' = nr, this.balance' = initialDeposit, this.openedOn' = openedOn;
+  
+  event deposited(amount: Money)
+    pre: amount.amount > 0, this.balance.plus(amount); 
+  
+  event withdrawed(amount: Money) 
+    pre: amount.amount > 0, this.balance.minIfGte(amount);
+    
+  event interestPayed(rate: Integer) 
+    pre: rate > 0, this.balance.addInterest(rate);
+    
+  event blocked() 
+  event unblocked()  
+
+  event closed(closedOn: Date)
+    pre: this.balance.zero(), closedOn.same(Date[NOW]); 
+    post: this.closedOn' = closedOn;
+  
+  final event removed() 
+    pre: this.closedOn.yearsAfter(Date[NOW], 5);
+    
+  states:
+    (*) -> waitingForActivation: created; 
+    waitingForActivation -> open: deposited;  
+    open -> open: deposited, withdrawed, interestPayed; 
+    open -> block: blocked;
+    block -> open: unblocked; 
+    open -> archive: closed; 
+    archive -> (*): removed; 
+
+fact AllAccountsHaveUniqueIBANs = always forall ac1,ac2: Account | (ac1 is initialized && ac2 is initialized && ac1.nr = ac2.nr => ac1 = ac2);
+ 
+config SomeAccount = ac1: Account is uninitialized, iban1: IBAN, m1: Money, d1,d2: Date;
+ 
+assert CanBeOpened = eventually exists ac:Account | ac is open; 
+assert CanDeposit = eventually exists ac:Account | deposited on ac;
+assert CanWithdraw = eventually exists ac:Account | withdrawed on ac;
+assert CanBeRemoved = eventually exists ac:Account | ac is finalized;
+  
+assert CanBeOverdrawn = eventually exists ac:Account | ac.balance.negative();  
+  
+check CanBeOpened from SomeAccount in max 2 steps;          
+check CanDeposit from SomeAccount in max 3 steps;         
+check CanWithdraw from SomeAccount in max 4 steps;      
+check CanBeRemoved from SomeAccount in max 6 steps;    
+
+check CanBeOverdrawn from SomeAccount in max 4 steps;

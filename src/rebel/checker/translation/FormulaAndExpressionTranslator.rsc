@@ -48,9 +48,12 @@ str translate((Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, Context ct
 str translate((Formula)`<Expr lhs> is <Id state>`, Context ctx) {
   str specOfLhs = getSpecTypeName(lhs, ctx.tm);
   str specRel = ctx.rm[lhs@\loc].relExpr; 
-  str stateRel = "<state>" == "initialized" ?
-    "initialized" :
-    "State<capitalize(specOfLhs)><capitalize("<state>")>";
+
+  str stateRel = "State<capitalize(specOfLhs)><capitalize("<state>")>";
+  switch ("<state>") {
+    case "initialized": stateRel = "initialized";
+    case "finalized" : stateRel = "finalized";
+  };
     
   return "inState[<ctx.curRel>, <specRel><maybeRename(getFieldName(lhs,ctx), "instance")>, <stateRel>]";    
 }  
@@ -68,7 +71,7 @@ str translate((Formula)`always <Formula f>`, Context ctx) {
 }
 
 str translate((Formula)`always-last <Formula f>`, Context ctx) {
-  str configRel = (ctx.curRel == defaultCurRel()) ? "Config - last" : "(<ctx.curRel>[config as cur] ⨝ *\<cur,nxt\>order)[nxt-\>config] - last";
+  str configRel = (ctx.curRel == defaultCurRel()) ? "Config ∖ last" : "(<ctx.curRel>[config as cur] ⨝ *\<cur,nxt\>order)[nxt-\>config] ∖ last";
   ctx = nextCurAndStepRel(ctx);
   return "∀ <ctx.curRel> ∈ <configRel> | let <ctx.stepRel> = <ctx.curRel>[config as cur] ⨝ (order ∪ loop) | <translate(f, ctx)>";
 }
@@ -195,7 +198,7 @@ default str translateRelExpr(Expr e, Context ctx) { throw "Can not translate exp
 alias AttRes = tuple[set[str] rels, str constraint];
  
 AttRes translateAttrExpr((Expr)`(<Expr e>)`, Context ctx) {
-  AttRes r = translateAttExpr(e, ctx);   
+  AttRes r = translateAttrExpr(e, ctx);   
   return <r.rels, "(<r.constraint>)">;
 } 
 

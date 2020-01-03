@@ -3,22 +3,28 @@ module Light
 spec Light
   switch: Boolean;
   
-  event switchOn() 
+  init event switchOn() 
     post: this.switch' = Boolean[TRUE]; 
    
   event switchOff() 
     pre: this.switch = Boolean[TRUE]; 
     post: this.switch' = Boolean[FALSE];
         
+  final event brokenBulb()      
+        
   states:      
     (*) -> lightOn: switchOn;   
     lightOn -> lightOff: switchOff;    
     lightOff -> lightOn: switchOn;
+    lightOff -> (*): brokenBulb;
         
 spec Boolean [TRUE,FALSE]      
        
-config OneLight = l1: Light;
+config OneLight = l1: Light is uninitialized;
   
 assert CanBeTurnedOnAndOff = eventually exists l: Light | next switchOff on l;
-    
+assert BulbCanBreak = eventually exists l: Light | l is finalized;
+     
 check CanBeTurnedOnAndOff from OneLight in max 4 steps; 
+
+check BulbCanBreak from OneLight in max 4 steps;

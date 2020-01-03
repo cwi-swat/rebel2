@@ -75,7 +75,7 @@ config EmptyHotel
 assert NoIntruder
   = eventually exists g1:Guest | next exists g2: Guest |
       g1 != g2 && 
-      (enterRoom on g1 && 
+      next (enterRoom on g1 && 
         next (enterRoom on g2 && 
           next enterRoom on g1)); 
       

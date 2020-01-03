@@ -19,7 +19,7 @@ import analysis::graphs::Graph;
 
 map[str,str] constructTransitionFunctions(set[Spec] specsToTranslate, RelMapping rm, TModel tm, set[Spec] allSpecs) {
   Graph[SyncedWith] syncDep = buildSyncGraph(specsToTranslate, tm, allSpecs);
-  return ("<s.name>" : constructTransitionFunction(s, syncDep, allSpecs, rm, tm) | Spec s <- specsToTranslate);
+  return ("<s.name>" : constructTransitionFunction(s, syncDep, allSpecs, rm, tm) | Spec s <- specsToTranslate, !isEmptySpec(s));
 }
 
 str constructTransitionFunction(Spec spc, Graph[SyncedWith] syncDep, set[Spec] allSpecs, RelMapping rm, TModel tm) {

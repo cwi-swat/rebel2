@@ -24,6 +24,8 @@ Config buildConfig(str checkName, set[Module] mods, TModel tm) {
     
     return config(instances, initialValues, facts, tm, searchDepth, finiteTrace = !infiniteTrace);
    }
+   
+   throw "Unable to find check with name `<checkName>`";
 }
 
 str config2Str(Config cfg) 

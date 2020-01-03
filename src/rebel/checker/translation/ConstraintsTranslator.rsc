@@ -93,7 +93,7 @@ private str nonEmptyMachineInstances(set[Spec] spcs) {
   if (emptyMachines == []) {
     return "Instance";
   } else {
-    return "(Instance ∖ ((<intercalate("+", emptyMachines)>) ⨝ Instance))";
+    return "(Instance ∖ ((<intercalate(" ∪ ", emptyMachines)>) ⨝ Instance))";
   }
 }   
    

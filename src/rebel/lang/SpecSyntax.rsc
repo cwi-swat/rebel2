@@ -34,11 +34,12 @@ syntax Constraint
   ;
   
 syntax Event
-  = Modifier? modi "event" Id name "(" {FormalParam ","}* params ")" EventBody body 
+  = Modifier* modifiers "event" Id name "(" {FormalParam ","}* params ")" EventBody body 
   ;
 
 syntax Modifier
   = "init"
+  | "final"
   | "internal"
   ;
   
@@ -84,7 +85,7 @@ syntax State
   | "(*)"
   ;
   
-syntax TransEvent
+syntax TransEvent 
   = Id event \ "empty"
   | Id event "::" Id variant
   | "empty"
@@ -101,6 +102,7 @@ keyword Keywords = "spec"
                  | "pre" 
                  | "post"
                  | "init"
+                 | "final"
                  | "states"
                  | "enum"
                  | "variant"

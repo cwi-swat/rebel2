@@ -1,15 +1,14 @@
-module Date
-
+module account::Date
+ 
 spec Date [NOW*]
   year: Integer,
   month: Integer,
   day: Integer;
   
-  event create(year: Integer, month: Integer, day: Integer) 
-    post: this.year' = year, this.month' = month, this.day' = day;
+  //event create(year: Integer, month: Integer, day: Integer) 
+  //  post: this.year' = year, this.month' = month, this.day' = day;
    
-  event after(other: Date) 
-    pre: other is initialized;
+  internal event after(other: Date) 
     variant years
       pre: this.year > other.year;
     
@@ -18,10 +17,16 @@ spec Date [NOW*]
     
     variant day  
       pre: this.year = other.year, this.month = other.month, this.day > other.day;
-      
+  
+  internal event yearsAfter(other: Date, nrOfYears: Integer) 
+    pre: this.year = other.year - nrOfYears;
+  
+  internal event same(other: Date)
+     pre: other.year = this.year, other.month = this.month, other.day = this.day;
+     
   states:
-    (*) -> created: create;
-    created -> created: after::years;
+    //(*) -> created: create;
+    created -> created: empty, same, after, yearsAfter;
     
 fact CorrectDate
   = always forall d:Date | (d is initialized => (
@@ -42,7 +47,7 @@ fact CorrectDate
       d.day < 32)); 
 
 fact TimeAlwaysMovesForward
-  = always exists d1: Date[NOW] | next exists d2: Date[NOW] | ( 
+  = always-last exists d1: Date[NOW] | next exists d2: Date[NOW] | ( 
       d2.year > d1.year || 
       (d2.year = d1.year && d2.month > d1.month) || 
       (d2.year = d1.year && d2.month = d1.month && d2.day > d1.day)
@@ -52,9 +57,7 @@ fact NowAlwaysExists = always (Date[NOW] is initialized);
 
 assert SomeInitializedDate = eventually exists d: Date | d != Date[NOW] && d is initialized;
 
-//assert OneDateIsAfterAnother = eventually exists d1,d2:Date | d1 != d2 && next after::years on d1;
-
-config SomeDates = d1,d2,d3: Date;
-
-check SomeInitializedDate from SomeDates in max 3 steps;
+config SomeDates = d1: Date with year = 2020;
+ 
+check SomeInitializedDate from SomeDates in max 1 steps;
       

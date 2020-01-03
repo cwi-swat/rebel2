@@ -63,7 +63,7 @@ RelMapping constructRelMapping(Module m, TModel tm, set[Module] allMods) {
 private set[str] findEmptySpecs(set[Module] mods) = {"<s.name>" | Module m <- mods, /Spec s <- m.parts, isEmptySpec(s)};
 private bool isEmptySpec(Spec spc) = /Field _ !:= spc.fields && /Transition _ !:= spc.states;
 
-void analyse(current:(Event)`<Modifier? modi> event <Id name>(<{FormalParam ","}* params>) <EventBody body>`, str specName, AnalysisContext ctx) {
+void analyse(current:(Event)`<Modifier* _> event <Id name>(<{FormalParam ","}* params>) <EventBody body>`, str specName, AnalysisContext ctx) {
   // Add relations for parameters
   for (FormalParam p <- params) {
     str fldName = isPrim(p.name@\loc,ctx) ? "<p.name>" : "instance"; 

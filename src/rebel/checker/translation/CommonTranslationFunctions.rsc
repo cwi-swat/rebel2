@@ -81,7 +81,9 @@ AType getType(Type t, TModel tm) = tm.facts[t@\loc] when t@\loc in tm.facts;
 default AType getType(Type t, TModel tm) { throw "No type info available for `<t>`"; }
 
 IdRole getIdRole(expr:(Expr)`<Id id>`, TModel tm) = tm.definitions[def].idRole when {loc def} := tm.useDef[id@\loc];
-IdRole getIdRole(expr:(Expr)`this.<Id id>`, TModel tm) = tm.definitions[def].idRole when {loc def} := tm.useDef[id@\loc];
+//IdRole getIdRole(expr:(Expr)`this.<Id id>`, TModel tm) = tm.definitions[def].idRole when {loc def} := tm.useDef[id@\loc];
+//IdRole getIdRole(expr:(Expr)`this.<Id id>'`, TModel tm) = tm.definitions[def].idRole when {loc def} := tm.useDef[expr@\loc];
+IdRole getIdRole((Expr)`<Expr expr>.<Id id>`, TModel tm) = tm.definitions[def].idRole when {loc def} := tm.useDef[id@\loc];
 
 default IdRole getIdRole(Expr expr, TModel tm) { throw "Role of identifier `<expr>` can not be found in type model"; }
 
@@ -199,4 +201,4 @@ bool isPrim(AType _) = false;
 bool isInternalEvent(TransEvent te, Spec s) = isInternalEvent(lookupEventByName("<te>", s), s);
 default bool isInternalEvent(TransEvent te, Spec s) { throw "Unable to find event with name `<te>` in `<s.name>`"; }  
 
-bool isInternalEvent(Event e) = /(Modifier)`internal` := e.modi;
+bool isInternalEvent(Event e) = /(Modifier)`internal` := e.modifiers;
