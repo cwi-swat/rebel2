@@ -54,13 +54,15 @@ syntax Expr
   | non-assoc Expr lhs "/" Expr rhs
   > assoc Expr lhs "+" Expr rhs
   | non-assoc Expr lhs "-" Expr rhs
+  | non-assoc Expr lhs "%" Expr rhs
   > "{" Decl d "|" Formula form "}"
   ; 
   
 syntax Lit
   = Int
   | StringConstant
-  | setLit: "{" {Expr ","}* elems "}" 
+  | setLit: "{" {Expr ","}* elems "}"   
+  | "none"
   ;
 
 syntax Type
@@ -98,5 +100,6 @@ keyword Keywords = "module"
                  | "if"
                  | "then"
                  | "else"
+                 | "none"
                  ;
  

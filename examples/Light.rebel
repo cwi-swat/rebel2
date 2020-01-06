@@ -14,7 +14,7 @@ spec Light
         
   states:      
     (*) -> lightOn: switchOn;   
-    lightOn -> lightOff: switchOff;    
+    lightOn -> lightOff: switchOff;     
     lightOff -> lightOn: switchOn;
     lightOff -> (*): brokenBulb;
         

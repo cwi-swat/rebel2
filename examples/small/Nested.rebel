@@ -1,0 +1,34 @@
+module small::Nested
+
+spec Person
+  address: Address;
+  
+  init event create(address: Address) 
+    pre: address is initialized;
+    post: this.address' = address;
+  
+  event even() 
+    pre: this.address.nr % 2 = 0;
+    post: this.address.nr' = this.address.nr + 0;
+    
+  states:
+    (*) -> created: create;
+    created -> created: even;  
+    
+spec Address
+  nr: Integer;
+  
+  init event create(nr: Integer)
+    post: this.nr' = nr;
+   
+  states:
+    (*) -> created: create;  
+    
+
+config OneOfAll = p: Person is uninitialized, a: Address is uninitialized;
+
+assert CanInitialize = eventually exists p: Person | p is initialized;
+assert EvenAddress = eventually exists p: Person | even on p;
+
+check CanInitialize from OneOfAll in max 2 steps;   
+check EvenAddress from OneOfAll in max 3 steps;

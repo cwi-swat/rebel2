@@ -44,7 +44,7 @@ spec Account
 
 fact AllAccountsHaveUniqueIBANs = always forall ac1,ac2: Account | (ac1 is initialized && ac2 is initialized && ac1.nr = ac2.nr => ac1 = ac2);
  
-config SomeAccount = ac1: Account is uninitialized, iban1: IBAN, m1: Money, d1,d2: Date;
+config SomeAccount = ac: Account is uninitialized, iban: IBAN, m: Money, d1,d2: Date;
  
 assert CanBeOpened = eventually exists ac:Account | ac is open; 
 assert CanDeposit = eventually exists ac:Account | deposited on ac;

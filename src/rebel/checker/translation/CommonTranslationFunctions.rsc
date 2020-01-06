@@ -80,15 +80,17 @@ default AType getType(FormalParam p, TModel tm) { throw "No type info available 
 AType getType(Type t, TModel tm) = tm.facts[t@\loc] when t@\loc in tm.facts;
 default AType getType(Type t, TModel tm) { throw "No type info available for `<t>`"; }
 
-IdRole getIdRole(expr:(Expr)`<Id id>`, TModel tm) = tm.definitions[def].idRole when {loc def} := tm.useDef[id@\loc];
-//IdRole getIdRole(expr:(Expr)`this.<Id id>`, TModel tm) = tm.definitions[def].idRole when {loc def} := tm.useDef[id@\loc];
-//IdRole getIdRole(expr:(Expr)`this.<Id id>'`, TModel tm) = tm.definitions[def].idRole when {loc def} := tm.useDef[expr@\loc];
-IdRole getIdRole((Expr)`<Expr expr>.<Id id>`, TModel tm) = tm.definitions[def].idRole when {loc def} := tm.useDef[id@\loc];
-
-default IdRole getIdRole(Expr expr, TModel tm) { throw "Role of identifier `<expr>` can not be found in type model"; }
+IdRole getIdRole(Expr expr, TModel tm) {
+  switch (expr) {
+    case (Expr)`<Id id>`: return getIdRole(id@\loc, tm);
+    case (Expr)`<Expr expr>.<Id id>`: return getIdRole(id@\loc, tm);
+  }
+  
+  throw "No fetch of Id role defined for `<expr>`";
+}
 
 IdRole getIdRole(loc expr, TModel tm) = tm.definitions[def].idRole when {loc def} := tm.useDef[expr];
-default IdRole getIdRole(Expr expr, TModel tm) { throw "Role can not be found for expression at `<expr>`"; }
+default IdRole getIdRole(loc expr, TModel tm) { throw "Role can not be found for expression at `<expr>`"; }
 
 bool isParam(Expr expr, TModel tm) 
   = getIdRole(expr,tm) == paramId();

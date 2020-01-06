@@ -202,21 +202,28 @@ AttRes translateAttrExpr((Expr)`(<Expr e>)`, Context ctx) {
   return <r.rels, "(<r.constraint>)">;
 } 
 
+Context replaceCurRel(Context old, str newCurRel) = ctx(old.rm, old.tm, old.allSpecs, "nxt", old.stepRel, old.nxtParamPrefix);
+
+AttRes translateAttrExpr((Expr)`<Expr e>'`, Context ctx) {
+  AttRes r = translateAttrExpr(e, replaceCurRel(ctx, "nxt"));   
+  return <r.rels, "<r.constraint>">;
+} 
+
 AttRes translateAttrExpr(current:(Expr)`<Id id>`, Context ctx) {
  str fld = "<ctx.nxtParamPrefix()>_<id>";
  str r = "<ctx.rm[current@\loc].relExpr><renameIfNecessary(current, fld, ctx)>";
  return <{r}, fld>;
 }
 
-AttRes translateAttrExpr(current:(Expr)`this.<Id id>`, Context ctx) {
- str r = "<ctx.rm[current@\loc].relExpr><renameIfNecessary(current, "cur_<id>", ctx)>";
- return <{r}, "cur_<id>">;
-}
+//AttRes translateAttrExpr(current:(Expr)`this.<Id id>`, Context ctx) {
+// str r = "<ctx.rm[current@\loc].relExpr><renameIfNecessary(current, "<ctx.curRel>_<id>", ctx)>";
+// return <{r}, "<ctx.curRel>_<id>">;
+//}
 
-AttRes translateAttrExpr(current:(Expr)`this.<Id id>'`, Context ctx) {
- str r = "<ctx.rm[current@\loc].relExpr><renameIfNecessary(current, "nxt_<id>", ctx)>";
- return <{r}, "nxt_<id>">;
-}
+//AttRes translateAttrExpr(current:(Expr)`this.<Id id>'`, Context ctx) {
+// str r = "<ctx.rm[current@\loc].relExpr><renameIfNecessary(current, "nxt_<id>", ctx)>";
+// return <{r}, "nxt_<id>">;
+//}
 
 AttRes translateAttrExpr(current:(Expr)`<Expr spc>[<Id inst>].<Id fld>`, Context ctx) {
  str r = "<ctx.rm[current@\loc].relExpr><renameIfNecessary(current, "const_<id>", ctx)>";
@@ -226,9 +233,10 @@ AttRes translateAttrExpr(current:(Expr)`<Expr spc>[<Id inst>].<Id fld>`, Context
 AttRes translateAttrExpr(current:(Expr)`<Expr expr>.<Id fld>`, Context ctx) {
   str r = ctx.rm[current@\loc].relExpr;
 
-  IdRole role = getIdRole(expr@\loc,ctx.tm);
-  str newFld = "";
+  IdRole role = getIdRole(expr,ctx.tm);
+  str newFld = "<fld>";
   switch (role) {
+    case fieldId(): newFld = "<ctx.curRel>_<fld>";
     case paramId(): newFld = "<ctx.nxtParamPrefix()>_<fld>";
     case quantVarId(): newFld = "<expr>_<fld>";
   }
@@ -253,6 +261,7 @@ AttRes translateAttrExpr((Expr)`<Expr lhs> * <Expr rhs>`, Context ctx) = transla
 AttRes translateAttrExpr((Expr)`<Expr lhs> / <Expr rhs>`, Context ctx) = translateBinAttrExpr(lhs, rhs, "/", ctx);
 AttRes translateAttrExpr((Expr)`<Expr lhs> + <Expr rhs>`, Context ctx) = translateBinAttrExpr(lhs, rhs, "+", ctx);
 AttRes translateAttrExpr((Expr)`<Expr lhs> - <Expr rhs>`, Context ctx) = translateBinAttrExpr(lhs, rhs, "-", ctx);
+AttRes translateAttrExpr((Expr)`<Expr lhs> % <Expr rhs>`, Context ctx) = translateBinAttrExpr(lhs, rhs, "%", ctx);
 
 AttRes translateAttrExpr((Expr)`<Lit l>`, Context ctx) = <{}, translateLit(l)>;
 

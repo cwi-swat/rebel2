@@ -44,7 +44,7 @@ spec CoffeeMachine
     
     active -> (*): powerOff;  
     (*) -> waiting: powerOn;  
-
+ 
 config InitialMachine = cm: CoffeeMachine is uninitialized;
   
 assert MachineIsServing = eventually exists m: CoffeeMachine | m is serve;  

@@ -102,6 +102,7 @@ private str buildConstantRels(set[Spec] spcs) {
       case (Lit)`<Int i>`:            constRels += "__IntConst_<i> (const_<i>: int) = {\<<i>\>}";
       case (Lit)`<StringConstant s>`: constRels += "__StrConst_<unquote(s)> (const_<unquote(s)>: str) = {\<<s>\>}";
       case (Lit)`{}`:                 constRels += "__EMPTY (instance:id) = {}"; 
+      case (Lit)`none`:               constRels += "__EMPTY (instance:id) = {}";
     }
   }
   

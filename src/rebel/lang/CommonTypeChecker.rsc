@@ -219,10 +219,6 @@ private void collectIntEq(Collector c, Formula f, Expr lhs, Expr rhs, str explai
 private void collectEq(Collector c, Formula f, Expr lhs, Expr rhs, str explain) {
   c.calculate(explain, f, [lhs,rhs], 
     AType (Solver s) {
-      switch({s.getType(lhs), s.getType(rhs)}) {
-        case {specType(str name), specInstanceType(name)}: return boolType();
-      }
-      
       s.requireSubType(lhs, rhs, error(f, "Expressions are not type compatible, found %t and %t", lhs, rhs));
       return boolType();
     });
@@ -319,25 +315,17 @@ void collect(current: (Expr)`<Expr lhs> - <Expr rhs>`, Collector c) {
   collect(lhs, rhs, c);
 }
 
-void collect(current: (Expr)`<Expr lhs> * <Expr rhs>`, Collector c) {
-  c.calculate("multiplication", current, [lhs, rhs],
-    AType (Solver s) {
-      switch({s.getType(lhs), s.getType(rhs)}){
-        case {intType()}: return intType();
-        default:
-          s.report(error(current, "`*` not defined for %t and %t", lhs, rhs));
-      }
-    });  
-  collect(lhs, rhs, c);
-}
+void collect(current: (Expr)`<Expr lhs> * <Expr rhs>`, Collector c)  = collectIntOp(lhs, rhs, current, "*", "multiplication", c);
+void collect(current: (Expr)`<Expr lhs> / <Expr rhs>`, Collector c) = collectIntOp(lhs, rhs, current, "/", "division", c);
+void collect(current: (Expr)`<Expr lhs> % <Expr rhs>`, Collector c) = collectIntOp(lhs, rhs, current, "%", "remainder", c);
 
-void collect(current: (Expr)`<Expr lhs> / <Expr rhs>`, Collector c) {
-  c.calculate("devision", current, [lhs, rhs],
+void collectIntOp(Expr lhs, Expr rhs, Expr complete, str op, str description, Collector c) {
+  c.calculate(description, complete, [lhs, rhs],
     AType (Solver s) {
       switch({s.getType(lhs), s.getType(rhs)}){
         case {intType()}: return intType();
         default:
-          s.report(error(current, "`/` not defined for %t and %t", lhs, rhs));
+          s.report(error(complete, "`<op>` not defined for %t and %t", lhs, rhs));
       }
     });  
     
@@ -385,6 +373,10 @@ void collect(current: (Lit)`<Int i>`, Collector c) {
 
 void collect(current: (Lit)`<StringConstant s>`, Collector c) {
   c.fact(current, stringType());
+}
+
+void collect(current: (Lit)`none`, Collector c) {
+  c.fact(current, optionalType(voidType()));
 }
 
 void collect(current: (Lit)`{<{Expr ","}* elems>}`, Collector c) {
@@ -445,5 +437,12 @@ bool subtype(AType a, a) = true;
 bool subtype(setType(voidType()), setType(_)) = true;
 bool subtype(setType(_), setType(voidType())) = true;
 bool subtype(setType(AType a), setType(AType b)) = subtype(a,b);
+
+bool subtype(optionalType(voidType()), optionalType(_)) = true;
+bool subtype(optionalType(_), optionalType(voidType())) = true;
+bool subtype(optionalType(AType a), optionalType(AType b)) = subtype(a,b);
+
+bool subtype(specType(str a), specInstanceType(str b)) = a == b;
+bool subtype(specInstanceType(str b), specType(str a)) = a == b;
 
 default bool subtype(AType a, AType b) = false; 

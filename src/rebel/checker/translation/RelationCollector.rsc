@@ -192,7 +192,7 @@ void analyse(current:(Expr)`<Expr expr>.<Id fld>`, AnalysisContext ctx) {
   RelExpr exprRel  = ctx.lookup(expr@\loc);
   RelExpr fieldRel = ctx.lookup(fld@\loc);
   
-  ctx.add(current@\loc, <"(<exprRel.relExpr> ⨝ <fieldRel.relExpr>)[<fld>]", ("<fld>":type2Dom(getType(fld@\loc,ctx)))>);
+  ctx.add(current@\loc, <"(<exprRel.relExpr><renameIfNeeded(getFieldName(exprRel),"instance")> ⨝ <fieldRel.relExpr>)[<fld>]", ("<fld>":type2Dom(getType(fld@\loc,ctx)))>);
 }
 
 void analyse(current:(Expr)`<Expr spc>[<Id fld>]`, AnalysisContext ctx) {
@@ -245,18 +245,15 @@ void analyse(current:(Expr)`<Expr lhs> - <Expr rhs>`, AnalysisContext ctx) {
   }  
 }
 
-void analyse(current:(Expr)`<Expr lhs> * <Expr rhs>`, AnalysisContext ctx) {
-  analyse(lhs,ctx); 
-  analyse(rhs,ctx);
-  
-  ctx.add(current@\loc, ctx.lookup(lhs@\loc));  
-}
+void analyse(current:(Expr)`<Expr lhs> * <Expr rhs>`, AnalysisContext ctx) = analyseBinOp(lhs,rhs,current@\loc,ctx);
+void analyse(current:(Expr)`<Expr lhs> / <Expr rhs>`, AnalysisContext ctx) = analyseBinOp(lhs,rhs,current@\loc,ctx);
+void analyse(current:(Expr)`<Expr lhs> % <Expr rhs>`, AnalysisContext ctx) = analyseBinOp(lhs,rhs,current@\loc,ctx);
 
-void analyse(current:(Expr)`<Expr lhs> / <Expr rhs>`, AnalysisContext ctx) {
+void analyseBinOp(Expr lhs, Expr rhs, loc complete, AnalysisContext ctx) {  
   analyse(lhs,ctx); 
   analyse(rhs,ctx);
   
-  ctx.add(current@\loc, ctx.lookup(lhs@\loc));  
+  ctx.add(complete, ctx.lookup(lhs@\loc));  
 }
 
 void analyse(current:(Expr)`{<Decl d> | <Formula f>}`, AnalysisContext ctx) {
@@ -283,6 +280,10 @@ void analyse(current:(Lit)`this`, AnalysisContext ctx) {
 
 void analyse(current:(Lit)`<Int i>`, AnalysisContext ctx) {
   ctx.add(current@\loc, <"__IntConst_<i>", ("const_<i>":intDom())>); 
+}
+
+void analyse(current:(Lit)`none`, AnalysisContext ctx) {
+  ctx.add(current@\loc, <"__EMPTY", ("instance":idDom())>); 
 }
 
 void analyse(current:(Lit)`<StringConstant s>`, AnalysisContext ctx) {

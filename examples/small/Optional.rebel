@@ -1,0 +1,23 @@
+module small::Optional
+
+spec Person
+  name: String,
+  age: set PersonAge;
+  
+  init event create(name: String, age: PersonAge) 
+    pre: name != "";
+    post: this.name' = name, age in this.age';
+     
+  states:
+    (*) -> created: create;
+       
+spec PersonAge
+  val: Integer;
+  
+fact PersonAgeHasValue = always forall p:PersonAge | p.val != 0;  
+    
+config Basic = p: Person is uninitialized, pa: PersonAge;
+
+assert CanCreatePerson = eventually exists p:Person | p is initialized;
+
+check CanCreatePerson from Basic in max 1 steps;   
