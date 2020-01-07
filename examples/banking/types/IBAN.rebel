@@ -1,0 +1,5 @@
+module banking::types::IBAN
+
+spec IBAN
+
+//fact UniqueIBANs = always forall ib1,ib2: IBAN | ib1 

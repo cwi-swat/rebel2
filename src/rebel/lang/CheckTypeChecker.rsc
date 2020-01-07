@@ -32,10 +32,6 @@ void collect(current: (Part)`<Assert a>`, Collector c) {
   collect(a, c);
 }  
 
-void collect(current: (Part)`<Fact fct>`, Collector c) {
-  collect(fct, c);
-}  
-
 void collect(current: (Part)`<Check chk>`, Collector c) {
   collect(chk, c);
 }  
@@ -48,7 +44,7 @@ void collect(current: (Config)`config <Id name> = <{InstanceSetup ","}+ instance
   c.leaveScope(current);  
 }
 
-void collect(current: (InstanceSetup)`<{Id ","}+ labels>: <Type spc> <InState? inState> <WithAssignments? assignments>`, Collector c) {
+void collect(current: (InstanceSetup)`<{Id ","}+ labels>: <Type spc> <Abstracts? abstracts> <InState? inState> <WithAssignments? assignments>`, Collector c) {
   for (l <- labels) {
     c.define("<l>", instanceId(), l, defType(spc));
   }
@@ -64,7 +60,13 @@ void collect(current: (InstanceSetup)`<{Id ","}+ labels>: <Type spc> <InState? i
     collect(val, c);    
   }
   
+  collect(abstracts, c);
+  
   collect(spc, c); 
+}
+
+void collect(current:(Abstracts)`abstracts <Type concrete>`, Collector c) {
+  collect(concrete, c);
 }
 
 void collect(current: (InstanceSetup)`<Id label> <WithAssignments assignments>`, Collector c) {
@@ -80,14 +82,6 @@ void collect(current: (InstanceSetup)`<Id label> <WithAssignments assignments>`,
 
 void collect(current:(Assert)`assert <Id name> = <Formula form>;`, Collector c) {
   c.define("<name>", assertId(), current, defType(assertType()));
-  
-  c.enterScope(current); 
-    collect(form, c);
-  c.leaveScope(current);    
-}
-
-void collect(current:(Fact)`fact <Id name> = <Formula form>;`, Collector c) {
-  c.define("<name>", factId(), current, defType(factType()));
   
   c.enterScope(current); 
     collect(form, c);

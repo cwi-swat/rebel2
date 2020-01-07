@@ -26,7 +26,7 @@ data State
   | noState()
   ;
 
-alias AlleAlleSnippet = tuple[rel[str,str] typeCons, rel[str,str] fieldMultiplicityCons, rel[str,str] paramMultiplicityCons, rel[str,str] eventPred, map[str,str] transPred, map[str,str] facts, map[str,str] asserts];
+alias AlleAlleSnippet = tuple[rel[str,str] typeCons, rel[str,str] fieldMultiplicityCons, rel[str,str] paramMultiplicityCons, rel[str,str] eventPred, map[str,str] transPred, rel[str,str] facts, map[str,str] asserts];
 
 //@memo
 str getLowerCaseSpecName(Spec spc) = toLowerCase("<spc.name>");
@@ -82,6 +82,7 @@ default AType getType(Type t, TModel tm) { throw "No type info available for `<t
 
 IdRole getIdRole(Expr expr, TModel tm) {
   switch (expr) {
+    case c:(Expr)`this`: return getIdRole(c@\loc, tm);
     case (Expr)`<Id id>`: return getIdRole(id@\loc, tm);
     case (Expr)`<Expr expr>.<Id id>`: return getIdRole(id@\loc, tm);
   }

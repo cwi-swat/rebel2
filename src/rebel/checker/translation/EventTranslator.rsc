@@ -34,9 +34,9 @@ str constructTransitionFunction(Spec spc, Graph[SyncedWith] syncDep, set[Spec] a
   }
    
   str buildTransCond(Event e) {
-    int lastParam = 0;
-    str nxtParam() { lastParam += 1; return "param_<lastParam>"; }
-    Context ctx = ctx(rm, tm, allSpecs, defaultCurRel(), defaultStepRel(), nxtParam);
+    int lastUnique = 0;
+    int nxtUnique() { lastUnique += 1; return lastUnique; }
+    Context ctx = ctx(rm, tm, allSpecs, defaultCurRel(), defaultStepRel(), nxtUnique);
 
     tuple[set[str] names, list[str] syncs] lets = syncedInstanceRels(spc, e, "inst", syncDep, top(), ctx);
     lets.names += {"inst"};
@@ -83,7 +83,7 @@ lrel[str fieldName, str relName] findRootRel(Expr exp, str instRel, Spec spc, Ev
   switch(role) {
     case fieldId(): {
       lrel[str,str] result = [<getLowerCaseSpecName(spc), instRel>];
-      result += <getLowerCaseSpecName(spc), "<ctx.rm[exp@\loc].relExpr><renameIfNecessary(exp, "instance", ctx)>">;
+      result += <"<getLowerCaseSpecName(spc)>_<replaceAll("<exp>",".","_")>", "<ctx.rm[exp@\loc].relExpr><renameIfNecessary(exp, "instance", ctx)>">;
       return result;  
     }
     case paramId(): { 
@@ -164,21 +164,23 @@ rel[str,str] translateEventsToPreds(set[Spec] spcsToTrans, RelMapping rm, TModel
 private bool isFrameEvent(Event e) = "<e.name>" == "__frame";
 
 str translateEventToPred(Spec spc, Event event, str instanceRel, RelMapping rm, TModel tm, set[Spec] allSpecs) {
-  int lastParam = 0;
-  str nxtParam() { lastParam += 1; return "param_<lastParam>"; }
+  int lastUnique = 0;
+  int nxtUnique() { lastUnique += 1; return lastUnique; }
+  Context ctx = ctx(rm, tm, allSpecs, defaultCurRel(), defaultStepRel(), nxtUnique);
 
   list[str] letRels = buildLetVars(spc, event, instanceRel);
   list[str] paramVars = ["step:(cur:id, nxt:id)", "<getLowerCaseSpecName(spc)>: (instance:id)"] + buildParamVars(event, tm);
   
   return "pred event<getCapitalizedSpecName(spc)><getCapitalizedEventName(event)>[<intercalate(", ", paramVars)>]
          '  = let <intercalate(",\n", letRels)> |
-         '    <translateEventBody(spc, event, ctx(rm, tm, allSpecs, defaultCurRel(), defaultStepRel(), nxtParam))>
+         '    <translateEventBody(spc, event, ctx)>
          '";
 }
 
 str translateFrameEvent(Spec spc, Event frameEvent, str instRel, RelMapping rm, TModel tm, set[Spec] allSpecs) {
-  int lastParam = 0;
-  str nxtParam() { lastParam += 1; return "param_<lastParam>"; }
+  int lastUnique = 0;
+  int nxtUnique() { lastUnique += 1; return lastUnique; }
+  Context ctx = ctx(rm, tm, allSpecs, defaultCurRel(), defaultStepRel(), nxtUnique);
 
   list[str] letRels = buildLetVars(spc, frameEvent, instRel);
 
@@ -187,7 +189,7 @@ str translateFrameEvent(Spec spc, Event frameEvent, str instRel, RelMapping rm, 
          '    nxtState = curState <if (/Field f := spc.fields) {>∧
          '    (
          '      curState ⊆ uninitialized ∨ 
-         '      (<translatePost(frameEvent, ctx(rm, tm, allSpecs, defaultCurRel(), defaultStepRel(), nxtParam))>)
+         '      (<translatePost(frameEvent, ctx)>)
          '    )<}>
          '  )
          '";

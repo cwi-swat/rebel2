@@ -47,12 +47,10 @@ spec EndPoint
     pre: this.receive.read(checksum);
     post: this.lastReceivedValue' = checksum;
   
-  //event empty()
+  fact InitialChannelsAreEmpty = first forall c:Channel | c.checksum = Bit[EMPTY];
   
   states:
     active -> active: sending::readNok, sending::readOk, reading, empty;
-
-fact InitialChannelsAreEmpty = first forall c:Channel | c.checksum = Bit[EMPTY];
     
 //fact Progress = 
 //  always exists p: EndPoint | (p.lastSendValue = 0 || p.lastSendValue = 1) && next sending on p;       

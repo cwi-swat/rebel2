@@ -45,14 +45,16 @@ RelMapping constructRelMapping(Module m, TModel tm, set[Module] allMods) {
   AnalysisContext ctx = actx(lookupRel, addRel, defaultCurRel(), defaultStepRel(), tm, specs, emptySpecs, addCurRelScoped, lookupCurRelScoped);
   
   // First do all the events in the specification
-  for (/Spec s <- m.parts, /Event ev <- s.events) {
-    analyse(ev, "<s.name>", ctx);    
+  for (/Spec s <- m.parts) {
+    for (Event ev <- s.events) {
+      analyse(ev, "<s.name>", ctx);
+    }
+    
+    for (Fact f <- s.facts) {
+      analyse(f,ctx);
+    }        
   }
-  
-  for (/Fact f <- m.parts) {
-    analyse(f,ctx);
-  }
-  
+    
   for (/Assert a <- m.parts) {
     analyse(a,ctx);
   }

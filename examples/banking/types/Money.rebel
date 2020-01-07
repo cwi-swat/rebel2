@@ -1,4 +1,4 @@
-module account::Money
+module banking::types::Money
 
 spec Money
   amount: Integer,

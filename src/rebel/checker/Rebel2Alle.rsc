@@ -13,6 +13,7 @@ import rebel::checker::translation::CommonTranslationFunctions;
 import rebel::checker::translation::ConfigTranslator;
 import rebel::checker::translation::SyncedEventGraphBuilder;
 import rebel::checker::translation::RelationCollector;
+import rebel::checker::translation::ConfigAbstractionNormalizer;
 import rebel::checker::RebelTrace;
 import rebel::checker::Normalizer;
 
@@ -36,7 +37,7 @@ import String;
 import util::Maybe;
 import util::Benchmark;
 
-AlleAlleSnippet emptySnippet() = <{}, {}, {}, {}, (), (), ()>;
+AlleAlleSnippet emptySnippet() = <{}, {}, {}, {}, (), {}, ()>;
 AlleAlleSnippet merge(AlleAlleSnippet new, AlleAlleSnippet mergeTo) {
   mergeTo.typeCons += new.typeCons;
   mergeTo.fieldMultiplicityCons += new.fieldMultiplicityCons;
@@ -76,6 +77,8 @@ void performCheck(str check, Module m, PathConfig pcfg, PathConfig normPcfg) {
       allSnippets = merge(snip, allSnippets);
     }  
   }    
+  
+  //allMods = filterAbstractions(check, allMods, nr.normTm, nr.normDepGraph);
   
   Config cfg = buildConfig(check, allMods, nr.normTm);
   str alleSpec = translateSpecs(cfg, check, allMods, allSnippets);
@@ -198,18 +201,18 @@ tuple[rel[str,str] typeCons, rel[str,str] multCons] eventParamTypeAndMultiplicit
   return <typeCons, multCons>;
 }
    
-map[str,str] translateFacts(Module m, RelMapping rm, TModel tm, set[Spec] allSpecs) {
-  int lastParam = 0;
-  str nxtParam() { lastParam += 1; return "param_<lastParam>"; }
-  Context ctx = ctx(rm, tm, allSpecs, defaultCurRel(), defaultStepRel(), nxtParam);
+rel[str,str] translateFacts(Module m, RelMapping rm, TModel tm, set[Spec] allSpecs) {
+  int lastUnique = 0;
+  int nxtUnique() { lastUnique += 1; return lastUnique; }
+  Context ctx = ctx(rm, tm, allSpecs, defaultCurRel(), defaultStepRel(), nxtUnique);
 
-  return ("<f.name>" : translate(f.form, ctx) | /Fact f <- m.parts);
+  return {<"<s.name>", translate(f.form, ctx)> | /Spec s <- m.parts, Fact f <- s.facts};
 }
 
 map[str,str] translateAsserts(Module m, RelMapping rm, TModel tm, set[Spec] allSpecs) {
-  int lastParam = 0;
-  str nxtParam() { lastParam += 1; return "param_<lastParam>"; }
-  Context ctx = ctx(rm, tm, allSpecs, defaultCurRel(), defaultStepRel(), nxtParam);
+  int lastUnique = 0;
+  int nxtUnique() { lastUnique += 1; return lastUnique; }
+  Context ctx = ctx(rm, tm, allSpecs, defaultCurRel(), defaultStepRel(), nxtUnique);
   
   return ("<as.name>" : translate(as.form, ctx) | /Assert as <- m.parts);
 }   
@@ -237,9 +240,9 @@ str translateSpecs(Config cfg, str check, set[Module] normalizedMods, AlleAlleSn
 }  
 
 str translateFacts(AlleAlleSnippet snippets) 
-  = "<for (str name <- snippets.facts) {>// Fact `<name>`
-    '<snippets.facts[name]>
-    '<}>";
+  = "<for (str spc <- snippets.facts<0>) {>// Fact from `<spc>`
+    '<for (str fact <- snippets.facts[spc]) {><fact>
+    '<}><}>";
 
 str translateAssert(str check, AlleAlleSnippet snippets) {
   for (str name <- snippets.asserts, name == check) {

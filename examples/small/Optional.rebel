@@ -2,22 +2,30 @@ module small::Optional
 
 spec Person
   name: String,
-  age: set PersonAge;
+  agee: PersonAge;
   
-  init event create(name: String, age: PersonAge) 
-    pre: name != "";
-    post: this.name' = name, age in this.age';
+  init event create(name: String, agee: PersonAge) 
+    pre: agee is initialized;
+    post: this.agee' = agee, this.name' = name;
+
+  fact AlwaysAtLeastOneAdult = always exists p: Person | (p is initialized => p.agee.value > 17); 
      
   states:
     (*) -> created: create;
-       
+        
 spec PersonAge
-  val: Integer;
+  value: Integer;
   
-fact PersonAgeHasValue = always forall p:PersonAge | p.val != 0;  
-    
-config Basic = p: Person is uninitialized, pa: PersonAge;
+  init event create(value: Integer)
+    post: this.value' = value;
+  
+  states:
+    (*) -> created: create;
+  
+config Basic = p1,p2:Person is uninitialized, pa1,pa2: PersonAge is uninitialized;
 
-assert CanCreatePerson = eventually exists p:Person | p is initialized;
+assert CanCreatePerson = eventually exists p1,p2:Person | p1 is initialized && p2 is initialized && p1.agee.value != p2.agee.value && p1.agee.value < 18;
+assert CanCreatePersonAge = eventually exists pa:PersonAge | pa is initialized;
 
-check CanCreatePerson from Basic in max 1 steps;   
+check CanCreatePerson from Basic in max 4 steps;    
+check CanCreatePersonAge from Basic in max 1 steps;

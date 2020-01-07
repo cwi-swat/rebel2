@@ -6,7 +6,7 @@ syntax Part
   = Spec spc
   ;
 
-syntax Spec = "spec" Id name Instances? instances Fields? fields Constraints? constraints Event* events States? states;
+syntax Spec = "spec" Id name Instances? instances Fields? fields Constraints? constraints Event* events Fact* facts States? states;
 
 syntax Instances
   = "[" {Instance ","}+ instances "]"
@@ -66,6 +66,8 @@ syntax EventVariant
 syntax EventVariantBody
   = Pre? pre Post? post
   ; 
+
+syntax Fact = "fact" Id name "=" Formula form ";";
   
 syntax States
   = "states" ":" Transition* trans

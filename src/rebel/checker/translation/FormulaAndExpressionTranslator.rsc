@@ -13,11 +13,11 @@ import Map;
 import ParseTree;
 import util::Maybe;
 
-data Context = ctx(RelMapping rm, TModel tm, set[Spec] allSpecs, str curRel, str stepRel, str () nxtParamPrefix);
+data Context = ctx(RelMapping rm, TModel tm, set[Spec] allSpecs, str curRel, str stepRel, int () nxtUniquePrefix);
 
-Context nextCurRel(Context old) = ctx(old.rm, old.tm, old.allSpecs, getNextCurRel(old.curRel), old.stepRel, old.nxtParamPrefix);
-Context nextStepRel(Context old) = ctx(old.rm, old.tm, old.allSpecs, old.curRel, getNextStepRel(old.stepRel), old.nxtParamPrefix);
-Context nextCurAndStepRel(Context old) = ctx(old.rm, old.tm, old.allSpecs, getNextCurRel(old.curRel), getNextStepRel(old.stepRel), old.nxtParamPrefix);
+Context nextCurRel(Context old) = ctx(old.rm, old.tm, old.allSpecs, getNextCurRel(old.curRel), old.stepRel, old.nxtUniquePrefix);
+Context nextStepRel(Context old) = ctx(old.rm, old.tm, old.allSpecs, old.curRel, getNextStepRel(old.stepRel), old.nxtUniquePrefix);
+Context nextCurAndStepRel(Context old) = ctx(old.rm, old.tm, old.allSpecs, getNextCurRel(old.curRel), getNextStepRel(old.stepRel), old.nxtUniquePrefix);
 
 str translate((Formula)`(<Formula f>)`, Context ctx) = "(<translate(f,ctx)>)";
 str translate((Formula)`!<Formula f>`, Context ctx) = "¬ (<translate(f,ctx)>)";
@@ -202,7 +202,7 @@ AttRes translateAttrExpr((Expr)`(<Expr e>)`, Context ctx) {
   return <r.rels, "(<r.constraint>)">;
 } 
 
-Context replaceCurRel(Context old, str newCurRel) = ctx(old.rm, old.tm, old.allSpecs, "nxt", old.stepRel, old.nxtParamPrefix);
+Context replaceCurRel(Context old, str newCurRel) = ctx(old.rm, old.tm, old.allSpecs, "nxt", old.stepRel, old.nxtUniquePrefix);
 
 AttRes translateAttrExpr((Expr)`<Expr e>'`, Context ctx) {
   AttRes r = translateAttrExpr(e, replaceCurRel(ctx, "nxt"));   
@@ -210,24 +210,19 @@ AttRes translateAttrExpr((Expr)`<Expr e>'`, Context ctx) {
 } 
 
 AttRes translateAttrExpr(current:(Expr)`<Id id>`, Context ctx) {
- str fld = "<ctx.nxtParamPrefix()>_<id>";
+ str fld = "param_<ctx.nxtUniquePrefix()>_<id>";
  str r = "<ctx.rm[current@\loc].relExpr><renameIfNecessary(current, fld, ctx)>";
  return <{r}, fld>;
 }
 
-//AttRes translateAttrExpr(current:(Expr)`this.<Id id>`, Context ctx) {
-// str r = "<ctx.rm[current@\loc].relExpr><renameIfNecessary(current, "<ctx.curRel>_<id>", ctx)>";
-// return <{r}, "<ctx.curRel>_<id>">;
-//}
-
-//AttRes translateAttrExpr(current:(Expr)`this.<Id id>'`, Context ctx) {
-// str r = "<ctx.rm[current@\loc].relExpr><renameIfNecessary(current, "nxt_<id>", ctx)>";
-// return <{r}, "nxt_<id>">;
-//}
+AttRes translateAttrExpr(current:(Expr)`this.<Id id>`, Context ctx) {
+ str r = "<ctx.rm[current@\loc].relExpr><renameIfNecessary(current, "<ctx.curRel>_<id>", ctx)>";
+ return <{r}, "<ctx.curRel>_<id>">;
+}
 
 AttRes translateAttrExpr(current:(Expr)`<Expr spc>[<Id inst>].<Id fld>`, Context ctx) {
- str r = "<ctx.rm[current@\loc].relExpr><renameIfNecessary(current, "const_<id>", ctx)>";
- return <{r}, "const_<id>">;
+ str r = "<ctx.rm[current@\loc].relExpr><renameIfNecessary(current, "<inst>_<fld>", ctx)>";
+ return <{r}, "<inst>_<fld>">;
 }
 
 AttRes translateAttrExpr(current:(Expr)`<Expr expr>.<Id fld>`, Context ctx) {
@@ -236,8 +231,8 @@ AttRes translateAttrExpr(current:(Expr)`<Expr expr>.<Id fld>`, Context ctx) {
   IdRole role = getIdRole(expr,ctx.tm);
   str newFld = "<fld>";
   switch (role) {
-    case fieldId(): newFld = "<ctx.curRel>_<fld>";
-    case paramId(): newFld = "<ctx.nxtParamPrefix()>_<fld>";
+    case fieldId(): newFld = "<ctx.curRel>_<ctx.nxtUniquePrefix()>_<fld>";
+    case paramId(): newFld = "param_<ctx.nxtUniquePrefix()>_<fld>";
     case quantVarId(): newFld = "<expr>_<fld>";
   }
   

@@ -20,24 +20,24 @@ spec Process
     pre: if (this.pid > this.toSend) 
            then this.succ.received(this.pid) 
            else this.succ.received(this.toSend); 
+
+  fact UniqueIds
+    = always forall p1,p2: Process |  
+      ((p1 is initialized && p2 is initialized && p1.pid = p2.pid) => p1 = p2); 
+   
+  fact PositiveIds
+    = always forall p: Process | (p is initialized => p.pid > 0);
+  
+  fact InitialToSendIsZero
+    = first forall p: Process | p.toSend = 0; 
+    
+  fact Progress
+    = forall p:Process | eventually next send on p;
         
   states:
     notElected -> notElected: send, received::lower, received::higher; 
     notElected -> elected: received::elected; 
-     
-fact UniqueIds
-  = always forall p1,p2: Process |  
-    ((p1 is initialized && p2 is initialized && p1.pid = p2.pid) => p1 = p2); 
- 
-fact PositiveIds
-  = always forall p: Process | (p is initialized => p.pid > 0);
-
-fact InitialToSendIsZero
-  = first forall p: Process | p.toSend = 0; 
-    
-fact Progress
-  = forall p:Process | eventually next send on p;
-      
+           
 // ---------------------------
     
 config RingOfThree

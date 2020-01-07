@@ -26,7 +26,7 @@ Maybe[AType] getCurrentSpecType(Collector c) {
   return nothing();
 } 
  
-void collect(current: (Spec)`spec <Id name> <Instances? instances> <Fields? fields> <Constraints? constraints> <Event* events> <States? states>`, Collector c) {
+void collect(current: (Spec)`spec <Id name> <Instances? instances> <Fields? fields> <Constraints? constraints> <Event* events> <Fact* facts> <States? states>`, Collector c) {
   c.define("<name>", specId(), current, defType(specType("<name>")));
   
   c.enterScope(current); 
@@ -46,13 +46,23 @@ void collect(current: (Spec)`spec <Id name> <Instances? instances> <Fields? fiel
       collectStates(sts,c);
       collect(sts.trans, c);
     }
-  
+
+    collect(facts, c);
+        
   c.leaveScope(current);
 }
 
 void collect(current: (Field)`<Id name> : <Type tipe>`, Collector c) {
   c.define("<name>", fieldId(), name, defType(tipe));
   collect(tipe, c);
+}
+
+void collect(current:(Fact)`fact <Id name> = <Formula form>;`, Collector c) {
+  c.define("<name>", factId(), current, defType(factType()));
+  
+  c.enterScope(current); 
+    collect(form, c);
+  c.leaveScope(current);    
 }
 
 void collectStates(States sts, Collector c) {

@@ -127,6 +127,7 @@ Spec normalize(Spec spc, TModel origTm) {
   normEvents = addEmptyTransitionIfNecessary(spc, normEvents);
   normEvents = normalizeEvents(normEvents, origTm);
   normEvents = addFrameConditions(fields, normEvents);
+  
   if (fields != {} || /Transition _ := spc.states){
     normEvents += createFrameEvent(spc);
   }

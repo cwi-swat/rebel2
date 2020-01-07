@@ -7,15 +7,16 @@ syntax Part
   = Config cfg
   | Assert asrt
   | Check chk
-  | Fact fct
   ;
   
 syntax Config = "config" Id name "=" {InstanceSetup ","}+ instances ";";
 
 syntax InstanceSetup 
-  = {Id ","}+ labels ":" Type spec InState? inState WithAssignments? assignments
+  = {Id ","}+ labels ":" Type spec Abstracts? abstracts InState? inState WithAssignments? assignments
   | Id label WithAssignments assignments
   ;
+
+syntax Abstracts = "abstracts" Type concrete;
 
 syntax InState = "is" State state;
 
@@ -24,10 +25,8 @@ syntax WithAssignments = "with" {Assignment ","}+ assignments;
 syntax Assignment
   = Id fieldName "=" Expr val
   ;
-
+  
 syntax Assert = "assert" Id name "=" Formula form ";";
-
-syntax Fact = "fact" Id name "=" Formula form ";";
 
 syntax Formula 
   = non-assoc "if" Formula cond "then" Formula then "else" Formula else

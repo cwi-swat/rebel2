@@ -2,6 +2,7 @@ module rebel::checker::translation::ConfigTranslator
 
 import rebel::lang::Syntax;
 import rebel::lang::TypeChecker;
+import rebel::lang::DependencyAnalyzer;
 import rebel::checker::translation::RelationCollector;
 import rebel::checker::translation::CommonTranslationFunctions;
 
@@ -50,13 +51,21 @@ rebel::lang::Syntax::Config findReferencedConfig(loc ref, set[Module] mods, TMod
 set[Fact] gatherFacts(set[Module] mods) = {f | Module m <- mods, /Fact f <- m.parts}; 
 
 rel[Spec spc, str instance, State initialState] buildInstances(rebel::lang::Syntax::Config cfg, set[Module] mods, TModel tm) {
-  rel[Spec,str,State] instances = {<s,"<instance>",noState()> | Module m <- mods, /Spec s <- m.parts, /Id instance <- s.instances};
-  
+  rel[Spec,str,State] instances = {};
+
   visit (cfg) {
-    case (InstanceSetup)`<{Id ","}+ labels> : <Type spec> <InState? inState> <WithAssignments? assignments>` : {
+    case (InstanceSetup)`<{Id ","}+ labels> : <Type spec> <Abstracts? abstracts> <InState? inState> <WithAssignments? assignments>` : {
       Spec s = lookupSpecByRef(spec@\loc, mods, tm);
       
-      //State st = uninitialized();
+      if (/Abstracts abs := abstracts) {
+        // Concrete spec is overridden by abstraction. Load abstraction and replace concrete spec by abstraction 
+        Spec concreteSpec = lookupSpecByRef(abs.concrete@\loc, mods, tm);
+        //s = visit(s) {
+        //  case 
+        //}
+      }
+      
+      
       State st = noState();
       if (/InState ist := inState) {
         if ("<ist.state>" == "uninitialized") {
@@ -70,6 +79,8 @@ rel[Spec spc, str instance, State initialState] buildInstances(rebel::lang::Synt
     }    
   }
   
+  instances += {<s,"<instance>",noState()> | Module m <- mods, /Spec s <- m.parts, /Id instance <- s.instances};
+
   return instances;
 } 
 
@@ -77,7 +88,7 @@ rel[Spec spc, str instance, str field, str val] buildInitialValues(rebel::lang::
   rel[Spec,str,str,str] initialValues = {};
   
   visit (cfg) {
-    case (InstanceSetup)`<{Id ","}+ labels> : <Type spec> <InState? _> <WithAssignments assignments>` : {
+    case (InstanceSetup)`<{Id ","}+ labels> : <Type spec> <Abstracts? _> <InState? _> <WithAssignments assignments>` : {
       Spec s = lookupSpecByRef(spec@\loc, mods, tm);
       initialValues += {<s, "<label>", field, v> | <str field, str v> <- buildAssignments(assignments), Id label <- labels};           
     }
