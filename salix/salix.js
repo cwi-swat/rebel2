@@ -52,6 +52,7 @@ function Salix(aRootId, host) {
 	function doSome() {
 		if (!renderRequested) {
 			while (queue.length > 0) {
+			    document.body.style.cursor = 'progress';
 				var event = queue.shift();
 				if (isStale(event)) {
 					console.log('Stale event');
@@ -61,6 +62,7 @@ function Salix(aRootId, host) {
 				$.get(makeURL('msg'), event.message, step).fail(function () {
 					renderRequested = false;
 					window.requestAnimationFrame(doSome);
+					document.body.style.cursor = 'auto';
 				}); 
 				break; // process one event at a time
 			}
@@ -75,6 +77,7 @@ function Salix(aRootId, host) {
 		// .always on the get request doesn't work....
 		renderRequested = false;
 		window.requestAnimationFrame(doSome);
+		document.body.style.cursor = 'auto';
 	}
 	
 	function render(patch) {
@@ -243,9 +246,7 @@ function Salix(aRootId, host) {
 	}
 	
 	function appender(dom) {
-		return function (kid) { 
-			dom.appendChild(kid); 
-		};
+		return function (kid) { dom.appendChild(kid); };
 	}
 	
 	function patchDOM(dom, tree, attach) {

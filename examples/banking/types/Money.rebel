@@ -31,21 +31,21 @@ spec Money
   internal event minIfGte(other: Money)
     pre: this.currency = other.currency, this.amount >= other.amount;
     post: this.amount' = this.amount - other.amount;  
-
+ 
   internal event plus(other: Money)
     pre: this.currency = other.currency;
     post: this.amount' = this.amount + other.amount;  
 
-  internal event addInterest(rate: Integer)
+  internal event addInterest(rate: Integer) 
     post: this.amount' = this.amount + ((this.amount * rate) / 100);
-    
-  states: 
-    created -> created: gt, gte, lt, lte, minIfGte, plus, equal, zero, addInterest, positive, negative, empty;
-    
-spec Currency [EUR,USD]
 
-fact FiniteMoney = always forall m: Money | m.amount > -1000000000 && m.amount < 1000000000;
-  
+  fact FiniteMoney = always forall m: Money | m.amount > -1000000000 && m.amount < 1000000000;
+      
+  states:   
+    created -> created: gt, gte, lt, lte, minIfGte, plus, equal, zero, addInterest, positive, negative;
+    
+spec Currency [EUR,USD] 
+    
 config SomeMoney = m1,m2: Money with amount = 100;
 
 assert SomeMoneyIsMoreThanOther = eventually exists m1,m2:Money | m1.gt(m2);

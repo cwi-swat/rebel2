@@ -39,7 +39,8 @@ private str configurationConstraints(bool finiteTrace)
     'order ⊆ Config[config as cur] ⨯ Config[config as nxt]
     'last = Config ∖ order[cur-\>config]  // There is only one last configuration
     '<if (!finiteTrace) {>back ⊆ Config 
-    'lone back   
+    'lone back 
+    'some loop  
     'loop ⊆ last[config as cur] ⨯ back[config as nxt] // Loop contains at most one tuple going back from the last configuration to the<}> 
     '";
 

@@ -1,131 +1,69 @@
 // Static configuration of state machines
 // Define the specs that can take place in the transition system
-Date (spec:id) = {<date>}
-Money (spec:id) = {<money>}
-Currency (spec:id) = {<currency>}
-Account (spec:id) = {<account>}
-Transaction (spec:id) = {<transaction>}
+CoffeeType (spec:id) = {<coffeetype>}
+CoffeeMachine (spec:id) = {<coffeemachine>}
 
 // Define all possible states for all machines
-State (state:id) = {<state_uninitialized>,<state_finalized>,<state_date_created>,<state_money_created>,<state_account_opened>,<state_transaction_archived>,<state_transaction_created>,<state_transaction_booked>}
-initialized (state:id) = {<state_date_created>,<state_money_created>,<state_account_opened>,<state_transaction_archived>,<state_transaction_created>,<state_transaction_booked>}
+State (state:id) = {<state_uninitialized>,<state_finalized>,<state_coffeemachine_waiting>,<state_coffeemachine_serve>,<state_coffeemachine_acceptingpayment>}
+initialized (state:id) = {<state_coffeemachine_waiting>,<state_coffeemachine_serve>,<state_coffeemachine_acceptingpayment>}
 finalized (state:id) = {<state_finalized>}
 uninitialized (state:id) = {<state_uninitialized>}
-StateDateCreated (state:id) = {<state_date_created>}
 
-StateMoneyCreated (state:id) = {<state_money_created>}
-
-
-StateAccountOpened (state:id) = {<state_account_opened>}
-
-StateTransactionCreated (state:id) = {<state_transaction_created>}
-StateTransactionBooked (state:id) = {<state_transaction_booked>}
-StateTransactionArchived (state:id) = {<state_transaction_archived>}
+StateCoffeeMachineServe (state:id) = {<state_coffeemachine_serve>}
+StateCoffeeMachineWaiting (state:id) = {<state_coffeemachine_waiting>}
+StateCoffeeMachineAcceptingPayment (state:id) = {<state_coffeemachine_acceptingpayment>}
 
 
 // Define which transitions are allowed (in the form of `from a state` -> ` via an event` -> `to a state`
-allowedTransitions (from:id, to:id, event:id) = {<state_date_created,state_date_created,event_date_same>,<state_date_created,state_date_created,event_date_empty>,<state_date_created,state_date_created,event_date_after>,<state_date_created,state_date_created,event_date_yearsafter>,<state_money_created,state_money_created,event_money_equal>,<state_money_created,state_money_created,event_money_lt>,<state_money_created,state_money_created,event_money_gt>,<state_money_created,state_money_created,event_money_addinterest>,<state_money_created,state_money_created,event_money_gte>,<state_money_created,state_money_created,event_money_empty>,<state_money_created,state_money_created,event_money_positive>,<state_money_created,state_money_created,event_money_minifgte>,<state_money_created,state_money_created,event_money_plus>,<state_money_created,state_money_created,event_money_lte>,<state_money_created,state_money_created,event_money_zero>,<state_money_created,state_money_created,event_money_negative>,<state_account_opened,state_account_opened,event_account_deposit>,<state_account_opened,state_account_opened,event_account_withdraw>,<state_uninitialized,state_account_opened,event_account_empty>,<state_uninitialized,state_transaction_created,event_transaction_create>,<state_transaction_booked,state_transaction_archived,event_transaction_archive>,<state_transaction_created,state_transaction_booked,event_transaction_book>}
+allowedTransitions (from:id, to:id, event:id) = {<state_coffeemachine_waiting,state_coffeemachine_acceptingpayment,event_coffeemachine_select__espresso>,<state_coffeemachine_acceptingpayment,state_coffeemachine_serve,event_coffeemachine_pay__amountmet>,<state_coffeemachine_waiting,state_coffeemachine_acceptingpayment,event_coffeemachine_select__latte>,<state_coffeemachine_waiting,state_coffeemachine_acceptingpayment,event_coffeemachine_select__americano>,<state_coffeemachine_waiting,state_finalized,event_coffeemachine_poweroff>,<state_coffeemachine_serve,state_finalized,event_coffeemachine_poweroff>,<state_coffeemachine_serve,state_coffeemachine_waiting,event_coffeemachine_empty>,<state_coffeemachine_acceptingpayment,state_coffeemachine_acceptingpayment,event_coffeemachine_pay__amountnotmet>,<state_coffeemachine_acceptingpayment,state_coffeemachine_waiting,event_coffeemachine_cancel>,<state_uninitialized,state_coffeemachine_waiting,event_coffeemachine_poweron>,<state_coffeemachine_waiting,state_coffeemachine_acceptingpayment,event_coffeemachine_select__normal>,<state_coffeemachine_acceptingpayment,state_finalized,event_coffeemachine_poweroff>}
 // Define each event as single relation so that the events can be used as variables in the constraints 
-EventMoneyGt (event:id) = {<event_money_gt>}
-EventMoneyNegative (event:id) = {<event_money_negative>}
-EventDate__frame (event:id) = {<event_date___frame>}
-EventMoneyEmpty (event:id) = {<event_money_empty>}
-EventMoneyAddInterest (event:id) = {<event_money_addinterest>}
-EventMoney__frame (event:id) = {<event_money___frame>}
-EventMoneyEqual (event:id) = {<event_money_equal>}
-EventMoneyLte (event:id) = {<event_money_lte>}
-EventMoneyGte (event:id) = {<event_money_gte>}
-EventDateEmpty (event:id) = {<event_date_empty>}
-EventDateAfter__years (event:id) = {<event_date_after__years>}
-EventDateYearsAfter (event:id) = {<event_date_yearsafter>}
-EventDateSame (event:id) = {<event_date_same>}
-EventDateAfter__day (event:id) = {<event_date_after__day>}
-EventDateAfter__month (event:id) = {<event_date_after__month>}
-EventMoneyLt (event:id) = {<event_money_lt>}
-EventMoneyZero (event:id) = {<event_money_zero>}
-EventTransactionBook (event:id) = {<event_transaction_book>}
-EventMoneyMinIfGte (event:id) = {<event_money_minifgte>}
-EventMoneyPositive (event:id) = {<event_money_positive>}
-EventMoneyPlus (event:id) = {<event_money_plus>}
-EventAccountWithdraw (event:id) = {<event_account_withdraw>}
-EventAccountDeposit (event:id) = {<event_account_deposit>}
-EventAccount__frame (event:id) = {<event_account___frame>}
-EventAccountEmpty (event:id) = {<event_account_empty>}
-EventTransactionCreate (event:id) = {<event_transaction_create>}
-EventTransactionArchive (event:id) = {<event_transaction_archive>}
-EventTransaction__frame (event:id) = {<event_transaction___frame>}
+EventCoffeeMachineSelect__normal (event:id) = {<event_coffeemachine_select__normal>}
+EventCoffeeMachineSelect__espresso (event:id) = {<event_coffeemachine_select__espresso>}
+EventCoffeeMachinePay__amountMet (event:id) = {<event_coffeemachine_pay__amountmet>}
+EventCoffeeMachine__frame (event:id) = {<event_coffeemachine___frame>}
+EventCoffeeMachinePay__amountNotMet (event:id) = {<event_coffeemachine_pay__amountnotmet>}
+EventCoffeeMachineSelect__latte (event:id) = {<event_coffeemachine_select__latte>}
+EventCoffeeMachineSelect__americano (event:id) = {<event_coffeemachine_select__americano>}
+EventCoffeeMachineEmpty (event:id) = {<event_coffeemachine_empty>}
+EventCoffeeMachinePowerOn (event:id) = {<event_coffeemachine_poweron>}
+EventCoffeeMachinePowerOff (event:id) = {<event_coffeemachine_poweroff>}
+EventCoffeeMachineCancel (event:id) = {<event_coffeemachine_cancel>}
 
-__IntConst_1900 (const_1900: int) = {<1900>}
-__IntConst_6 (const_6: int) = {<6>}
-__IntConst_7 (const_7: int) = {<7>}
-__IntConst_8 (const_8: int) = {<8>}
-__IntConst_9 (const_9: int) = {<9>}
-__IntConst_13 (const_13: int) = {<13>}
+__IntConst_150 (const_150: int) = {<150>}
+__IntConst_130 (const_130: int) = {<130>}
+__IntConst_120 (const_120: int) = {<120>}
 __IntConst_0 (const_0: int) = {<0>}
-__IntConst_1 (const_1: int) = {<1>}
-__IntConst_100 (const_100: int) = {<100>}
-__IntConst_2200 (const_2200: int) = {<2200>}
-__IntConst_2 (const_2: int) = {<2>}
-__IntConst_11 (const_11: int) = {<11>}
-__IntConst_32 (const_32: int) = {<32>}
 __IntConst_10 (const_10: int) = {<10>}
-__IntConst_3 (const_3: int) = {<3>}
-__IntConst_1000000000 (const_1000000000: int) = {<1000000000>}
-__IntConst_4 (const_4: int) = {<4>}
-__IntConst_31 (const_31: int) = {<31>}
-__IntConst_30 (const_30: int) = {<30>}
+__IntConst_20 (const_20: int) = {<20>}
 __IntConst_5 (const_5: int) = {<5>}
+__IntConst_95 (const_95: int) = {<95>}
+__IntConst_50 (const_50: int) = {<50>}
 
 
 // Dynamic configuration of state machines
-Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>}
-order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>}
+Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>,<c9>,<c10>,<c11>}
+order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>,<c6,c7>,<c7,c8>,<c8,c9>,<c9,c10>,<c10,c11>}
 first (config:id) = {<c1>}
-last (config:id) <= {<c1>,<c2>,<c3>,<c4>}
+last (config:id) <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>,<c9>,<c10>,<c11>}
 back (config:id) = {}
 loop (cur:id, nxt:id) = {}
 
-Instance (spec:id, instance:id) = {<currency,USD>,<transaction,t>,<date,d1>,<date,NOW>,<account,ac2>,<currency,EUR>,<money,m1>,<account,ac1>}
-instanceInState (config:id, instance:id, state:id) >={<c1,t,state_uninitialized>}<= {<c1,m1,state_money_created>,<c1,t,state_uninitialized>,<c1,t,state_transaction_archived>,<c1,t,state_transaction_booked>,<c1,t,state_transaction_created>,<c1,d1,state_date_created>,<c1,NOW,state_date_created>,<c1,ac1,state_account_opened>,<c1,ac1,state_uninitialized>,<c1,ac2,state_account_opened>,<c1,ac2,state_uninitialized>,<c2,m1,state_money_created>,<c2,t,state_uninitialized>,<c2,t,state_transaction_archived>,<c2,t,state_transaction_booked>,<c2,t,state_transaction_created>,<c2,d1,state_date_created>,<c2,NOW,state_date_created>,<c2,ac1,state_account_opened>,<c2,ac1,state_uninitialized>,<c2,ac2,state_account_opened>,<c2,ac2,state_uninitialized>,<c3,m1,state_money_created>,<c3,t,state_uninitialized>,<c3,t,state_transaction_archived>,<c3,t,state_transaction_booked>,<c3,t,state_transaction_created>,<c3,d1,state_date_created>,<c3,NOW,state_date_created>,<c3,ac1,state_account_opened>,<c3,ac1,state_uninitialized>,<c3,ac2,state_account_opened>,<c3,ac2,state_uninitialized>,<c4,m1,state_money_created>,<c4,t,state_uninitialized>,<c4,t,state_transaction_archived>,<c4,t,state_transaction_booked>,<c4,t,state_transaction_created>,<c4,d1,state_date_created>,<c4,NOW,state_date_created>,<c4,ac1,state_account_opened>,<c4,ac1,state_uninitialized>,<c4,ac2,state_account_opened>,<c4,ac2,state_uninitialized>}
-raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_money_empty,m1>,<c2,c3,event_money_empty,m1>,<c3,c4,event_money_empty,m1>,<c1,c2,event_transaction_create,t>,<c1,c2,event_transaction_book,t>,<c1,c2,event_transaction_archive,t>,<c2,c3,event_transaction_create,t>,<c2,c3,event_transaction_book,t>,<c2,c3,event_transaction_archive,t>,<c3,c4,event_transaction_create,t>,<c3,c4,event_transaction_book,t>,<c3,c4,event_transaction_archive,t>,<c1,c2,event_date_empty,d1>,<c2,c3,event_date_empty,d1>,<c3,c4,event_date_empty,d1>,<c1,c2,event_date_empty,NOW>,<c2,c3,event_date_empty,NOW>,<c3,c4,event_date_empty,NOW>,<c1,c2,event_account_empty,ac1>,<c2,c3,event_account_empty,ac1>,<c3,c4,event_account_empty,ac1>,<c1,c2,event_account_empty,ac2>,<c2,c3,event_account_empty,ac2>,<c3,c4,event_account_empty,ac2>}
-changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,d1>,<c1,c2,NOW>,<c1,c2,m1>,<c1,c2,ac1>,<c1,c2,ac2>,<c1,c2,t>,<c2,c3,d1>,<c2,c3,NOW>,<c2,c3,m1>,<c2,c3,ac1>,<c2,c3,ac2>,<c2,c3,t>,<c3,c4,d1>,<c3,c4,NOW>,<c3,c4,m1>,<c3,c4,ac1>,<c3,c4,ac2>,<c3,c4,t>}
+Instance (spec:id, instance:id) = {<coffeetype,AMERICANO>,<coffeemachine,cm>,<coffeetype,NORMAL>,<coffeetype,NONE>,<coffeetype,ESPRESSO>,<coffeetype,LATTE>}
+instanceInState (config:id, instance:id, state:id) >={<c1,cm,state_uninitialized>}<= {<c1,cm,state_uninitialized>,<c1,cm,state_finalized>,<c1,cm,state_coffeemachine_waiting>,<c1,cm,state_coffeemachine_serve>,<c1,cm,state_coffeemachine_acceptingpayment>,<c2,cm,state_uninitialized>,<c2,cm,state_finalized>,<c2,cm,state_coffeemachine_waiting>,<c2,cm,state_coffeemachine_serve>,<c2,cm,state_coffeemachine_acceptingpayment>,<c3,cm,state_uninitialized>,<c3,cm,state_finalized>,<c3,cm,state_coffeemachine_waiting>,<c3,cm,state_coffeemachine_serve>,<c3,cm,state_coffeemachine_acceptingpayment>,<c4,cm,state_uninitialized>,<c4,cm,state_finalized>,<c4,cm,state_coffeemachine_waiting>,<c4,cm,state_coffeemachine_serve>,<c4,cm,state_coffeemachine_acceptingpayment>,<c5,cm,state_uninitialized>,<c5,cm,state_finalized>,<c5,cm,state_coffeemachine_waiting>,<c5,cm,state_coffeemachine_serve>,<c5,cm,state_coffeemachine_acceptingpayment>,<c6,cm,state_uninitialized>,<c6,cm,state_finalized>,<c6,cm,state_coffeemachine_waiting>,<c6,cm,state_coffeemachine_serve>,<c6,cm,state_coffeemachine_acceptingpayment>,<c7,cm,state_uninitialized>,<c7,cm,state_finalized>,<c7,cm,state_coffeemachine_waiting>,<c7,cm,state_coffeemachine_serve>,<c7,cm,state_coffeemachine_acceptingpayment>,<c8,cm,state_uninitialized>,<c8,cm,state_finalized>,<c8,cm,state_coffeemachine_waiting>,<c8,cm,state_coffeemachine_serve>,<c8,cm,state_coffeemachine_acceptingpayment>,<c9,cm,state_uninitialized>,<c9,cm,state_finalized>,<c9,cm,state_coffeemachine_waiting>,<c9,cm,state_coffeemachine_serve>,<c9,cm,state_coffeemachine_acceptingpayment>,<c10,cm,state_uninitialized>,<c10,cm,state_finalized>,<c10,cm,state_coffeemachine_waiting>,<c10,cm,state_coffeemachine_serve>,<c10,cm,state_coffeemachine_acceptingpayment>,<c11,cm,state_uninitialized>,<c11,cm,state_finalized>,<c11,cm,state_coffeemachine_waiting>,<c11,cm,state_coffeemachine_serve>,<c11,cm,state_coffeemachine_acceptingpayment>}
+raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_coffeemachine_pay__amountnotmet,cm>,<c1,c2,event_coffeemachine_cancel,cm>,<c1,c2,event_coffeemachine_empty,cm>,<c1,c2,event_coffeemachine_pay__amountmet,cm>,<c1,c2,event_coffeemachine_select__americano,cm>,<c1,c2,event_coffeemachine_select__latte,cm>,<c1,c2,event_coffeemachine_select__normal,cm>,<c1,c2,event_coffeemachine_poweroff,cm>,<c1,c2,event_coffeemachine_poweron,cm>,<c1,c2,event_coffeemachine_select__espresso,cm>,<c2,c3,event_coffeemachine_pay__amountnotmet,cm>,<c2,c3,event_coffeemachine_cancel,cm>,<c2,c3,event_coffeemachine_empty,cm>,<c2,c3,event_coffeemachine_pay__amountmet,cm>,<c2,c3,event_coffeemachine_select__americano,cm>,<c2,c3,event_coffeemachine_select__latte,cm>,<c2,c3,event_coffeemachine_select__normal,cm>,<c2,c3,event_coffeemachine_poweroff,cm>,<c2,c3,event_coffeemachine_poweron,cm>,<c2,c3,event_coffeemachine_select__espresso,cm>,<c3,c4,event_coffeemachine_pay__amountnotmet,cm>,<c3,c4,event_coffeemachine_cancel,cm>,<c3,c4,event_coffeemachine_empty,cm>,<c3,c4,event_coffeemachine_pay__amountmet,cm>,<c3,c4,event_coffeemachine_select__americano,cm>,<c3,c4,event_coffeemachine_select__latte,cm>,<c3,c4,event_coffeemachine_select__normal,cm>,<c3,c4,event_coffeemachine_poweroff,cm>,<c3,c4,event_coffeemachine_poweron,cm>,<c3,c4,event_coffeemachine_select__espresso,cm>,<c4,c5,event_coffeemachine_pay__amountnotmet,cm>,<c4,c5,event_coffeemachine_cancel,cm>,<c4,c5,event_coffeemachine_empty,cm>,<c4,c5,event_coffeemachine_pay__amountmet,cm>,<c4,c5,event_coffeemachine_select__americano,cm>,<c4,c5,event_coffeemachine_select__latte,cm>,<c4,c5,event_coffeemachine_select__normal,cm>,<c4,c5,event_coffeemachine_poweroff,cm>,<c4,c5,event_coffeemachine_poweron,cm>,<c4,c5,event_coffeemachine_select__espresso,cm>,<c5,c6,event_coffeemachine_pay__amountnotmet,cm>,<c5,c6,event_coffeemachine_cancel,cm>,<c5,c6,event_coffeemachine_empty,cm>,<c5,c6,event_coffeemachine_pay__amountmet,cm>,<c5,c6,event_coffeemachine_select__americano,cm>,<c5,c6,event_coffeemachine_select__latte,cm>,<c5,c6,event_coffeemachine_select__normal,cm>,<c5,c6,event_coffeemachine_poweroff,cm>,<c5,c6,event_coffeemachine_poweron,cm>,<c5,c6,event_coffeemachine_select__espresso,cm>,<c6,c7,event_coffeemachine_pay__amountnotmet,cm>,<c6,c7,event_coffeemachine_cancel,cm>,<c6,c7,event_coffeemachine_empty,cm>,<c6,c7,event_coffeemachine_pay__amountmet,cm>,<c6,c7,event_coffeemachine_select__americano,cm>,<c6,c7,event_coffeemachine_select__latte,cm>,<c6,c7,event_coffeemachine_select__normal,cm>,<c6,c7,event_coffeemachine_poweroff,cm>,<c6,c7,event_coffeemachine_poweron,cm>,<c6,c7,event_coffeemachine_select__espresso,cm>,<c7,c8,event_coffeemachine_pay__amountnotmet,cm>,<c7,c8,event_coffeemachine_cancel,cm>,<c7,c8,event_coffeemachine_empty,cm>,<c7,c8,event_coffeemachine_pay__amountmet,cm>,<c7,c8,event_coffeemachine_select__americano,cm>,<c7,c8,event_coffeemachine_select__latte,cm>,<c7,c8,event_coffeemachine_select__normal,cm>,<c7,c8,event_coffeemachine_poweroff,cm>,<c7,c8,event_coffeemachine_poweron,cm>,<c7,c8,event_coffeemachine_select__espresso,cm>,<c8,c9,event_coffeemachine_pay__amountnotmet,cm>,<c8,c9,event_coffeemachine_cancel,cm>,<c8,c9,event_coffeemachine_empty,cm>,<c8,c9,event_coffeemachine_pay__amountmet,cm>,<c8,c9,event_coffeemachine_select__americano,cm>,<c8,c9,event_coffeemachine_select__latte,cm>,<c8,c9,event_coffeemachine_select__normal,cm>,<c8,c9,event_coffeemachine_poweroff,cm>,<c8,c9,event_coffeemachine_poweron,cm>,<c8,c9,event_coffeemachine_select__espresso,cm>,<c9,c10,event_coffeemachine_pay__amountnotmet,cm>,<c9,c10,event_coffeemachine_cancel,cm>,<c9,c10,event_coffeemachine_empty,cm>,<c9,c10,event_coffeemachine_pay__amountmet,cm>,<c9,c10,event_coffeemachine_select__americano,cm>,<c9,c10,event_coffeemachine_select__latte,cm>,<c9,c10,event_coffeemachine_select__normal,cm>,<c9,c10,event_coffeemachine_poweroff,cm>,<c9,c10,event_coffeemachine_poweron,cm>,<c9,c10,event_coffeemachine_select__espresso,cm>,<c10,c11,event_coffeemachine_pay__amountnotmet,cm>,<c10,c11,event_coffeemachine_cancel,cm>,<c10,c11,event_coffeemachine_empty,cm>,<c10,c11,event_coffeemachine_pay__amountmet,cm>,<c10,c11,event_coffeemachine_select__americano,cm>,<c10,c11,event_coffeemachine_select__latte,cm>,<c10,c11,event_coffeemachine_select__normal,cm>,<c10,c11,event_coffeemachine_poweroff,cm>,<c10,c11,event_coffeemachine_poweron,cm>,<c10,c11,event_coffeemachine_select__espresso,cm>}
+changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,cm>,<c2,c3,cm>,<c3,c4,cm>,<c4,c5,cm>,<c5,c6,cm>,<c6,c7,cm>,<c7,c8,cm>,<c8,c9,cm>,<c9,c10,cm>,<c10,c11,cm>}
 
-DateYear (config:id, instance:id, year:int) <= {<c1,d1,?>,<c2,d1,?>,<c3,d1,?>,<c4,d1,?>,<c1,NOW,?>,<c2,NOW,?>,<c3,NOW,?>,<c4,NOW,?>}
-DateMonth (config:id, instance:id, month:int) <= {<c1,d1,?>,<c2,d1,?>,<c3,d1,?>,<c4,d1,?>,<c1,NOW,?>,<c2,NOW,?>,<c3,NOW,?>,<c4,NOW,?>}
-DateDay (config:id, instance:id, day:int) <= {<c1,d1,?>,<c2,d1,?>,<c3,d1,?>,<c4,d1,?>,<c1,NOW,?>,<c2,NOW,?>,<c3,NOW,?>,<c4,NOW,?>}
-MoneyAmount (config:id, instance:id, amount:int) <= {<c1,m1,?>,<c2,m1,?>,<c3,m1,?>,<c4,m1,?>}
-MoneyCurrency (config:id, instance:id, currency:id) <= {<c1,m1,EUR>,<c1,m1,USD>,<c2,m1,EUR>,<c2,m1,USD>,<c3,m1,EUR>,<c3,m1,USD>,<c4,m1,EUR>,<c4,m1,USD>}
-AccountAmount (config:id, instance:id, amount:int) <= {<c1,ac1,?>,<c2,ac1,?>,<c3,ac1,?>,<c4,ac1,?>,<c1,ac2,?>,<c2,ac2,?>,<c3,ac2,?>,<c4,ac2,?>}
-AccountCurrency (config:id, instance:id, currency:id) <= {<c1,ac1,EUR>,<c1,ac1,USD>,<c2,ac1,EUR>,<c2,ac1,USD>,<c3,ac1,EUR>,<c3,ac1,USD>,<c4,ac1,EUR>,<c4,ac1,USD>,<c1,ac2,EUR>,<c1,ac2,USD>,<c2,ac2,EUR>,<c2,ac2,USD>,<c3,ac2,EUR>,<c3,ac2,USD>,<c4,ac2,EUR>,<c4,ac2,USD>}
-TransactionFrom (config:id, instance:id, from:id) <= {<c1,t,ac1>,<c1,t,ac2>,<c2,t,ac1>,<c2,t,ac2>,<c3,t,ac1>,<c3,t,ac2>,<c4,t,ac1>,<c4,t,ac2>}
-TransactionTo (config:id, instance:id, to:id) <= {<c1,t,ac1>,<c1,t,ac2>,<c2,t,ac1>,<c2,t,ac2>,<c3,t,ac1>,<c3,t,ac2>,<c4,t,ac1>,<c4,t,ac2>}
-TransactionAmount (config:id, instance:id, amount:id) <= {<c1,t,m1>,<c2,t,m1>,<c3,t,m1>,<c4,t,m1>}
-TransactionBookOn (config:id, instance:id, bookOn:id) <= {<c1,t,d1>,<c1,t,NOW>,<c2,t,d1>,<c2,t,NOW>,<c3,t,d1>,<c3,t,NOW>,<c4,t,d1>,<c4,t,NOW>}
+CoffeeMachineSelected (config:id, instance:id, selected:id) <= {<c1,cm,NORMAL>,<c1,cm,AMERICANO>,<c1,cm,LATTE>,<c1,cm,NONE>,<c1,cm,ESPRESSO>,<c2,cm,NORMAL>,<c2,cm,AMERICANO>,<c2,cm,LATTE>,<c2,cm,NONE>,<c2,cm,ESPRESSO>,<c3,cm,NORMAL>,<c3,cm,AMERICANO>,<c3,cm,LATTE>,<c3,cm,NONE>,<c3,cm,ESPRESSO>,<c4,cm,NORMAL>,<c4,cm,AMERICANO>,<c4,cm,LATTE>,<c4,cm,NONE>,<c4,cm,ESPRESSO>,<c5,cm,NORMAL>,<c5,cm,AMERICANO>,<c5,cm,LATTE>,<c5,cm,NONE>,<c5,cm,ESPRESSO>,<c6,cm,NORMAL>,<c6,cm,AMERICANO>,<c6,cm,LATTE>,<c6,cm,NONE>,<c6,cm,ESPRESSO>,<c7,cm,NORMAL>,<c7,cm,AMERICANO>,<c7,cm,LATTE>,<c7,cm,NONE>,<c7,cm,ESPRESSO>,<c8,cm,NORMAL>,<c8,cm,AMERICANO>,<c8,cm,LATTE>,<c8,cm,NONE>,<c8,cm,ESPRESSO>,<c9,cm,NORMAL>,<c9,cm,AMERICANO>,<c9,cm,LATTE>,<c9,cm,NONE>,<c9,cm,ESPRESSO>,<c10,cm,NORMAL>,<c10,cm,AMERICANO>,<c10,cm,LATTE>,<c10,cm,NONE>,<c10,cm,ESPRESSO>,<c11,cm,NORMAL>,<c11,cm,AMERICANO>,<c11,cm,LATTE>,<c11,cm,NONE>,<c11,cm,ESPRESSO>}
+CoffeeMachineAmountNeeded (config:id, instance:id, amountNeeded:int) <= {<c1,cm,?>,<c2,cm,?>,<c3,cm,?>,<c4,cm,?>,<c5,cm,?>,<c6,cm,?>,<c7,cm,?>,<c8,cm,?>,<c9,cm,?>,<c10,cm,?>,<c11,cm,?>}
 
-Date_NOW (instance:id) = {<NOW>}
-Currency_EUR (instance:id) = {<EUR>}
-Currency_USD (instance:id) = {<USD>}
+CoffeeType_NONE (instance:id) = {<NONE>}
+CoffeeType_NORMAL (instance:id) = {<NORMAL>}
+CoffeeType_ESPRESSO (instance:id) = {<ESPRESSO>}
+CoffeeType_AMERICANO (instance:id) = {<AMERICANO>}
+CoffeeType_LATTE (instance:id) = {<LATTE>}
 
-ParamEventDateAfter__monthOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,NOW>}
-ParamEventDateSameOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,NOW>}
-ParamEventDateAfter__dayOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,NOW>}
-ParamEventDateYearsAfterOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,NOW>}
-ParamEventDateYearsAfterNrOfYears (cur:id, nxt:id, nrOfYears:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>}
-ParamEventDateAfter__yearsOther (cur:id, nxt:id, other:id) <= {<c1,c2,d1>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,NOW>}
-ParamEventMoneyGtOther (cur:id, nxt:id, other:id) <= {<c1,c2,m1>,<c2,c3,m1>,<c3,c4,m1>}
-ParamEventMoneyLtOther (cur:id, nxt:id, other:id) <= {<c1,c2,m1>,<c2,c3,m1>,<c3,c4,m1>}
-ParamEventMoneyPlusOther (cur:id, nxt:id, other:id) <= {<c1,c2,m1>,<c2,c3,m1>,<c3,c4,m1>}
-ParamEventMoneyLteOther (cur:id, nxt:id, other:id) <= {<c1,c2,m1>,<c2,c3,m1>,<c3,c4,m1>}
-ParamEventMoneyAddInterestRate (cur:id, nxt:id, rate:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>}
-ParamEventMoneyGteOther (cur:id, nxt:id, other:id) <= {<c1,c2,m1>,<c2,c3,m1>,<c3,c4,m1>}
-ParamEventMoneyEqualOther (cur:id, nxt:id, other:id) <= {<c1,c2,m1>,<c2,c3,m1>,<c3,c4,m1>}
-ParamEventMoneyMinIfGteOther (cur:id, nxt:id, other:id) <= {<c1,c2,m1>,<c2,c3,m1>,<c3,c4,m1>}
-ParamEventAccountWithdrawAmount (cur:id, nxt:id, amount:id) <= {<c1,c2,m1>,<c2,c3,m1>,<c3,c4,m1>}
-ParamEventAccountDepositAmount (cur:id, nxt:id, amount:id) <= {<c1,c2,m1>,<c2,c3,m1>,<c3,c4,m1>}
-ParamEventTransactionCreateFrom (cur:id, nxt:id, from:id) <= {<c1,c2,ac1>,<c1,c2,ac2>,<c2,c3,ac1>,<c2,c3,ac2>,<c3,c4,ac1>,<c3,c4,ac2>}
-ParamEventTransactionCreateTo (cur:id, nxt:id, to:id) <= {<c1,c2,ac1>,<c1,c2,ac2>,<c2,c3,ac1>,<c2,c3,ac2>,<c3,c4,ac1>,<c3,c4,ac2>}
-ParamEventTransactionCreateAmount (cur:id, nxt:id, amount:id) <= {<c1,c2,m1>,<c2,c3,m1>,<c3,c4,m1>}
-ParamEventTransactionCreateBookOn (cur:id, nxt:id, bookOn:id) <= {<c1,c2,d1>,<c1,c2,NOW>,<c2,c3,d1>,<c2,c3,NOW>,<c3,c4,d1>,<c3,c4,NOW>}
+ParamEventCoffeeMachinePay__amountMetAmount (cur:id, nxt:id, amount:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>,<c7,c8,?>,<c8,c9,?>,<c9,c10,?>,<c10,c11,?>}
+ParamEventCoffeeMachinePay__amountNotMetAmount (cur:id, nxt:id, amount:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>,<c7,c8,?>,<c8,c9,?>,<c9,c10,?>,<c10,c11,?>}
     
 
 // Constraints for the configuration and ordering relations
@@ -139,65 +77,17 @@ instanceInState ⊆ Instance[instance] ⨯ Config ⨯ State
 changedInstance ⊆ (order) ⨯ Instance[instance]
     
 // Machine specific `type` constraints
-// For `Money`
-ParamEventMoneyAddInterestRate[cur,nxt] ⊆ order ∪ loop
-ParamEventMoneyLtOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->other]
-ParamEventMoneyMinIfGteOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->other]
-MoneyCurrency  ⊆ Config ⨯ (Instance ⨝ Money)[instance] ⨯ (Instance ⨝ Currency)[instance->currency]
-ParamEventMoneyGtOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->other]
-ParamEventMoneyEqualOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->other]
-MoneyAmount[config,instance]  ⊆ Config ⨯ (Instance ⨝ Money)[instance]
-ParamEventMoneyGteOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->other]
-ParamEventMoneyLteOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->other]
-ParamEventMoneyPlusOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->other]
-// For `Account`
-ParamEventAccountDepositAmount ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->amount]
-AccountAmount[config,instance]  ⊆ Config ⨯ (Instance ⨝ Account)[instance]
-AccountCurrency  ⊆ Config ⨯ (Instance ⨝ Account)[instance] ⨯ (Instance ⨝ Currency)[instance->currency]
-ParamEventAccountWithdrawAmount ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->amount]
-// For `Date`
-ParamEventDateYearsAfterNrOfYears[cur,nxt] ⊆ order ∪ loop
-ParamEventDateAfter__monthOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->other]
-ParamEventDateAfter__dayOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->other]
-DateMonth[config,instance]  ⊆ Config ⨯ (Instance ⨝ Date)[instance]
-ParamEventDateAfter__yearsOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->other]
-DateDay[config,instance]  ⊆ Config ⨯ (Instance ⨝ Date)[instance]
-DateYear[config,instance]  ⊆ Config ⨯ (Instance ⨝ Date)[instance]
-ParamEventDateSameOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->other]
-ParamEventDateYearsAfterOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->other]
-// For `Transaction`
-TransactionBookOn  ⊆ Config ⨯ (Instance ⨝ Transaction)[instance] ⨯ (Instance ⨝ Date)[instance->bookOn]
-TransactionAmount  ⊆ Config ⨯ (Instance ⨝ Transaction)[instance] ⨯ (Instance ⨝ Money)[instance->amount]
-ParamEventTransactionCreateBookOn ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->bookOn]
-ParamEventTransactionCreateFrom ⊆ (order ∪ loop) ⨯ (Instance ⨝ Account)[instance->from]
-ParamEventTransactionCreateTo ⊆ (order ∪ loop) ⨯ (Instance ⨝ Account)[instance->to]
-TransactionFrom  ⊆ Config ⨯ (Instance ⨝ Transaction)[instance] ⨯ (Instance ⨝ Account)[instance->from]
-TransactionTo  ⊆ Config ⨯ (Instance ⨝ Transaction)[instance] ⨯ (Instance ⨝ Account)[instance->to]
-ParamEventTransactionCreateAmount ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->amount]
+// For `CoffeeMachine`
+CoffeeMachineAmountNeeded[config,instance]  ⊆ Config ⨯ (Instance ⨝ CoffeeMachine)[instance]
+CoffeeMachineSelected  ⊆ Config ⨯ (Instance ⨝ CoffeeMachine)[instance] ⨯ (Instance ⨝ CoffeeType)[instance->selected]
+ParamEventCoffeeMachinePay__amountMetAmount[cur,nxt] ⊆ order ∪ loop
+ParamEventCoffeeMachinePay__amountNotMetAmount[cur,nxt] ⊆ order ∪ loop
 
 
 // Specific per event: parameter multiplicity constraints
 ∀ step ∈ (order ∪ loop) ⨝ raisedEvent | (
-  (some (step ⨝ EventMoneyAddInterest) ⇔ one (step ⨝ ParamEventMoneyAddInterestRate)) ∧
-  (some (step ⨝ EventMoneyLte) ⇔ one (step ⨝ ParamEventMoneyLteOther)) ∧
-  (some (step ⨝ EventTransactionCreate) ⇔ one (step ⨝ ParamEventTransactionCreateBookOn)) ∧
-  (some (step ⨝ EventDateYearsAfter) ⇔ one (step ⨝ ParamEventDateYearsAfterOther)) ∧
-  (some (step ⨝ EventMoneyEqual) ⇔ one (step ⨝ ParamEventMoneyEqualOther)) ∧
-  (some (step ⨝ EventDateSame) ⇔ one (step ⨝ ParamEventDateSameOther)) ∧
-  (some (step ⨝ EventTransactionCreate) ⇔ one (step ⨝ ParamEventTransactionCreateAmount)) ∧
-  (some (step ⨝ EventAccountWithdraw) ⇔ one (step ⨝ ParamEventAccountWithdrawAmount)) ∧
-  (some (step ⨝ EventMoneyGt) ⇔ one (step ⨝ ParamEventMoneyGtOther)) ∧
-  (some (step ⨝ EventMoneyMinIfGte) ⇔ one (step ⨝ ParamEventMoneyMinIfGteOther)) ∧
-  (some (step ⨝ EventMoneyPlus) ⇔ one (step ⨝ ParamEventMoneyPlusOther)) ∧
-  (some (step ⨝ EventMoneyLt) ⇔ one (step ⨝ ParamEventMoneyLtOther)) ∧
-  (some (step ⨝ EventDateAfter__years) ⇔ one (step ⨝ ParamEventDateAfter__yearsOther)) ∧
-  (some (step ⨝ EventMoneyGte) ⇔ one (step ⨝ ParamEventMoneyGteOther)) ∧
-  (some (step ⨝ EventAccountDeposit) ⇔ one (step ⨝ ParamEventAccountDepositAmount)) ∧
-  (some (step ⨝ EventTransactionCreate) ⇔ one (step ⨝ ParamEventTransactionCreateFrom)) ∧
-  (some (step ⨝ EventDateAfter__day) ⇔ one (step ⨝ ParamEventDateAfter__dayOther)) ∧
-  (some (step ⨝ EventDateYearsAfter) ⇔ one (step ⨝ ParamEventDateYearsAfterNrOfYears)) ∧
-  (some (step ⨝ EventDateAfter__month) ⇔ one (step ⨝ ParamEventDateAfter__monthOther)) ∧
-  (some (step ⨝ EventTransactionCreate) ⇔ one (step ⨝ ParamEventTransactionCreateTo))
+  (some (step ⨝ EventCoffeeMachinePay__amountNotMet) ⇔ one (step ⨝ ParamEventCoffeeMachinePay__amountNotMetAmount)) ∧
+  (some (step ⨝ EventCoffeeMachinePay__amountMet) ⇔ one (step ⨝ ParamEventCoffeeMachinePay__amountMetAmount))
 )
 // Generic: All configurations are reachable
 ∀ c ∈ Config ∖ first | c ⊆ (first[config as cur] ⨝ ^<cur,nxt>order)[nxt -> config]
@@ -206,30 +96,13 @@ ParamEventTransactionCreateAmount ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[
 ∀ o ∈ order | one o ⨝ raisedEvent
 
 // Specif: In every configuration all machines have a state IFF its a machine which is not empty
-∀ c ∈ Config, inst ∈ (Instance ∖ ((Currency) ⨝ Instance)) | one instanceInState ⨝ c ⨝ inst
+∀ c ∈ Config, inst ∈ (Instance ∖ ((CoffeeType) ⨝ Instance)) | one instanceInState ⨝ c ⨝ inst
 
 // Specific per machine: In every configuration iff a machine is in an initialized state then it must have values
-// for `Money`
-∀ c ∈ Config, inst ∈ (Instance ⨝ Money)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one MoneyCurrency ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Money)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no MoneyCurrency ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Money)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one MoneyAmount ⨝ c ⨝ inst)
-// for `Account`
-∀ c ∈ Config, inst ∈ (Instance ⨝ Account)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no AccountCurrency ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Account)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one AccountAmount ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Account)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one AccountCurrency ⨝ c ⨝ inst)
-// for `Date`
-∀ c ∈ Config, inst ∈ (Instance ⨝ Date)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one DateDay ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Date)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one DateMonth ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Date)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one DateYear ⨝ c ⨝ inst)
-// for `Transaction`
-∀ c ∈ Config, inst ∈ (Instance ⨝ Transaction)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no TransactionFrom ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Transaction)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one TransactionAmount ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Transaction)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one TransactionTo ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Transaction)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no TransactionAmount ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Transaction)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no TransactionTo ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Transaction)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one TransactionBookOn ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Transaction)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one TransactionFrom ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ Transaction)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no TransactionBookOn ⨝ c ⨝ inst)
+// for `CoffeeMachine`
+∀ c ∈ Config, inst ∈ (Instance ⨝ CoffeeMachine)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one CoffeeMachineSelected ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ CoffeeMachine)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no CoffeeMachineSelected ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ CoffeeMachine)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one CoffeeMachineAmountNeeded ⨝ c ⨝ inst)
 
 // Generic: Transitions are only allowed between if an event is specified between two states
 ∀ o ∈ (order) ⨝ raisedEvent | (o[cur as config] ⨝ instanceInState)[state->from] ⨯ (o[nxt as config] ⨝ instanceInState)[state->to] ⨯ o[event] ⊆ allowedTransitions
@@ -242,7 +115,7 @@ pred notInChangeSet[step: (cur:id, nxt:id), instances: (instance:id)]
   = no instances ∩ (changedInstance ⨝ step)[instance]
 
 pred changeSetCanContain[step: (cur:id, nxt:id), instances: (instance:id)]
-  = (changedInstance ⨝ step)[instance] ⊆ instances ∪ Date_NOW
+  = (changedInstance ⨝ step)[instance] ⊆ instances 
 
 // Generic predicates
 pred forceState[curState: (state:id), nxtState: (state:id), raisedEvent: (event:id)]
@@ -251,570 +124,240 @@ pred forceState[curState: (state:id), nxtState: (state:id), raisedEvent: (event:
 pred inState[config: (config:id), instance: (instance:id), state: (state:id)]
   = ((instance ⨯ config) ⨝ instanceInState)[state] ⊆ state
 
-// Event predicates for `Money`
-pred eventMoneyEqual[step:(cur:id, nxt:id), money: (instance:id), other: (instance:id)]
+// Event predicates for `CoffeeMachine`
+pred frameCoffeeMachine[step: (cur:id, nxt:id), coffeemachine: (instance:id)] 
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ money)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
-    ( 
-      // Preconditions 
-      (money ⨝ (MoneyCurrency ⨝ cur))[currency] = (other ⨝ (MoneyCurrency ⨝ cur))[currency] ∧
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (other ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount]) where (cur_amount = param_1_amount))  ∧ 
-      // Postconditions
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
-      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventMoneyEqual] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, money]
-    )
-
-pred eventMoneyMinIfGte[step:(cur:id, nxt:id), money: (instance:id), other: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ money)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
-    ( 
-      // Preconditions 
-      (money ⨝ (MoneyCurrency ⨝ cur))[currency] = (other ⨝ (MoneyCurrency ⨝ cur))[currency] ∧
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (other ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount]) where (cur_amount >= param_1_amount))  ∧ 
-      // Postconditions
-      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency] ∧
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (other ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_2_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount - param_2_amount))  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventMoneyMinIfGte] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, money]
-    )
-
-pred frameMoney[step: (cur:id, nxt:id), money: (instance:id)] 
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ money)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] | (
+        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] | (
     nxtState = curState ∧
     (
       curState ⊆ uninitialized ∨ 
       (// Postconditions
-       (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
-       (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency])
+       (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = (coffeemachine ⨝ (CoffeeMachineSelected ⨝ cur))[selected] ∧
+       (some ((coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded] ⨯ (coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ cur))[amountNeeded][amountNeeded as cur_amountNeeded]) where (nxt_amountNeeded = cur_amountNeeded)))
     )
   )
 
-pred eventMoneyEmpty[step:(cur:id, nxt:id), money: (instance:id)]
+pred eventCoffeeMachinePowerOff[step:(cur:id, nxt:id), coffeemachine: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ money)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
+        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] |
     ( 
        
       // Postconditions
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
-      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
+      (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = (coffeemachine ⨝ (CoffeeMachineSelected ⨝ cur))[selected] ∧
+      (some ((coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded] ⨯ (coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ cur))[amountNeeded][amountNeeded as cur_amountNeeded]) where (nxt_amountNeeded = cur_amountNeeded))  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventMoneyEmpty] ∧
+      forceState[curState, nxtState, EventCoffeeMachinePowerOff] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, money]
+      inChangeSet[step, coffeemachine]
     )
 
-pred eventMoneyGt[step:(cur:id, nxt:id), money: (instance:id), other: (instance:id)]
+pred eventCoffeeMachineCancel[step:(cur:id, nxt:id), coffeemachine: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ money)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
-    ( 
-      // Preconditions 
-      (money ⨝ (MoneyCurrency ⨝ cur))[currency] = (other ⨝ (MoneyCurrency ⨝ cur))[currency] ∧
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (other ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount]) where (cur_amount > param_1_amount))  ∧ 
-      // Postconditions
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
-      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventMoneyGt] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, money]
-    )
-
-pred eventMoneyAddInterest[step:(cur:id, nxt:id), money: (instance:id), rate: (rate:int)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ money)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
+        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] |
     ( 
        
       // Postconditions
-      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency] ∧
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ rate[rate as param_1_rate] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount + ((cur_amount * param_1_rate) / 100)))  ∧ 
+      (some ((coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded]) where (nxt_amountNeeded = 0)) ∧
+      (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = CoffeeType_NONE[instance as selected]  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventMoneyAddInterest] ∧
+      forceState[curState, nxtState, EventCoffeeMachineCancel] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, money]
+      inChangeSet[step, coffeemachine]
     )
 
-pred eventMoneyLt[step:(cur:id, nxt:id), money: (instance:id), other: (instance:id)]
+pred eventCoffeeMachinePowerOn[step:(cur:id, nxt:id), coffeemachine: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ money)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
-    ( 
-      // Preconditions 
-      (money ⨝ (MoneyCurrency ⨝ cur))[currency] = (other ⨝ (MoneyCurrency ⨝ cur))[currency] ∧
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (other ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount]) where (cur_amount < param_1_amount))  ∧ 
-      // Postconditions
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
-      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventMoneyLt] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, money]
-    )
-
-pred eventMoneyZero[step:(cur:id, nxt:id), money: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ money)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
-    ( 
-      // Preconditions 
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount]) where (cur_amount = 0))  ∧ 
-      // Postconditions
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
-      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventMoneyZero] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, money]
-    )
-
-pred eventMoneyNegative[step:(cur:id, nxt:id), money: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ money)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
-    ( 
-      // Preconditions 
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount]) where (cur_amount < 0))  ∧ 
-      // Postconditions
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
-      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventMoneyNegative] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, money]
-    )
-
-pred eventMoneyGte[step:(cur:id, nxt:id), money: (instance:id), other: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ money)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
-    ( 
-      // Preconditions 
-      (money ⨝ (MoneyCurrency ⨝ cur))[currency] = (other ⨝ (MoneyCurrency ⨝ cur))[currency] ∧
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (other ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount]) where (cur_amount >= param_1_amount))  ∧ 
-      // Postconditions
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
-      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventMoneyGte] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, money]
-    )
-
-pred eventMoneyPlus[step:(cur:id, nxt:id), money: (instance:id), other: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ money)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
-    ( 
-      // Preconditions 
-      (money ⨝ (MoneyCurrency ⨝ cur))[currency] = (other ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
-      // Postconditions
-      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency] ∧
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (other ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount + param_1_amount))  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventMoneyPlus] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, money]
-    )
-
-pred eventMoneyLte[step:(cur:id, nxt:id), money: (instance:id), other: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ money)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
-    ( 
-      // Preconditions 
-      (money ⨝ (MoneyCurrency ⨝ cur))[currency] = (other ⨝ (MoneyCurrency ⨝ cur))[currency] ∧
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (other ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount]) where (cur_amount <= param_1_amount))  ∧ 
-      // Postconditions
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
-      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventMoneyLte] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, money]
-    )
-
-pred eventMoneyPositive[step:(cur:id, nxt:id), money: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ money)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
-    ( 
-      // Preconditions 
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount]) where (cur_amount >= 0))  ∧ 
-      // Postconditions
-      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
-      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventMoneyPositive] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, money]
-    )
-
-// Event predicates for `Account`
-pred eventAccountEmpty[step:(cur:id, nxt:id), account: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ account)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] |
+        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] |
     ( 
        
       // Postconditions
-      (some ((account ⨝ (AccountAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (account ⨝ (AccountAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
-      (account ⨝ (AccountCurrency ⨝ nxt))[currency] = (account ⨝ (AccountCurrency ⨝ cur))[currency]  ∧ 
+      (some ((coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded]) where (nxt_amountNeeded = 0)) ∧
+      (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = CoffeeType_NONE[instance as selected]  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventAccountEmpty] ∧
+      forceState[curState, nxtState, EventCoffeeMachinePowerOn] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, account]
+      inChangeSet[step, coffeemachine]
     )
 
-pred eventAccountWithdraw[step:(cur:id, nxt:id), account: (instance:id), amount: (instance:id)]
+pred eventCoffeeMachineSelect__normal[step:(cur:id, nxt:id), coffeemachine: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ account)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] |
-    ( 
-      // Preconditions 
-      (amount ⨝ (MoneyCurrency ⨝ cur))[currency] = (account ⨝ (AccountCurrency ⨝ cur))[currency]  ∧ 
-      // Postconditions
-      (account ⨝ (AccountCurrency ⨝ nxt))[currency] = (account ⨝ (AccountCurrency ⨝ cur))[currency] ∧
-      (some ((account ⨝ (AccountAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (account ⨝ (AccountAmount ⨝ nxt))[amount][amount as nxt_amount] ⨯ (amount ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount]) where (nxt_amount = cur_amount - param_1_amount))  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventAccountWithdraw] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, account]
-    )
-
-pred eventAccountDeposit[step:(cur:id, nxt:id), account: (instance:id), amount: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ account)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] |
-    ( 
-      // Preconditions 
-      (amount ⨝ (MoneyCurrency ⨝ cur))[currency] = (account ⨝ (AccountCurrency ⨝ cur))[currency]  ∧ 
-      // Postconditions
-      (account ⨝ (AccountCurrency ⨝ nxt))[currency] = (account ⨝ (AccountCurrency ⨝ cur))[currency] ∧
-      (some ((account ⨝ (AccountAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (account ⨝ (AccountAmount ⨝ nxt))[amount][amount as nxt_amount] ⨯ (amount ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount]) where (nxt_amount = cur_amount + param_1_amount))  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventAccountDeposit] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, account]
-    )
-
-pred frameAccount[step: (cur:id, nxt:id), account: (instance:id)] 
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ account)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] | (
-    nxtState = curState ∧
-    (
-      curState ⊆ uninitialized ∨ 
-      (// Postconditions
-       (some ((account ⨝ (AccountAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (account ⨝ (AccountAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
-       (account ⨝ (AccountCurrency ⨝ nxt))[currency] = (account ⨝ (AccountCurrency ⨝ cur))[currency])
-    )
-  )
-
-// Event predicates for `Date`
-pred eventDateAfter__day[step:(cur:id, nxt:id), date: (instance:id), other: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ date)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
-    ( 
-      // Preconditions 
-      (some ((other ⨝ (DateDay ⨝ cur))[day][day as param_1_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (cur_day > param_1_day)) ∧
-      (some ((other ⨝ (DateMonth ⨝ cur))[month][month as param_2_month] ⨯ (date ⨝ (DateMonth ⨝ cur))[month][month as cur_month]) where (cur_month = param_2_month)) ∧
-      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (other ⨝ (DateYear ⨝ cur))[year][year as param_3_year]) where (cur_year = param_3_year))  ∧ 
-      // Postconditions
-      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
-      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
-      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventDateAfter__day] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, date]
-    )
-
-pred eventDateYearsAfter[step:(cur:id, nxt:id), date: (instance:id), other: (instance:id), nrOfYears: (nrOfYears:int)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ date)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
-    ( 
-      // Preconditions 
-      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ nrOfYears[nrOfYears as param_2_nrOfYears] ⨯ (other ⨝ (DateYear ⨝ cur))[year][year as param_1_year]) where (cur_year = param_1_year - param_2_nrOfYears))  ∧ 
-      // Postconditions
-      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
-      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
-      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventDateYearsAfter] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, date]
-    )
-
-pred eventDateSame[step:(cur:id, nxt:id), date: (instance:id), other: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ date)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
-    ( 
-      // Preconditions 
-      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (other ⨝ (DateYear ⨝ cur))[year][year as param_1_year]) where (param_1_year = cur_year)) ∧
-      (some ((other ⨝ (DateMonth ⨝ cur))[month][month as param_2_month] ⨯ (date ⨝ (DateMonth ⨝ cur))[month][month as cur_month]) where (param_2_month = cur_month)) ∧
-      (some ((other ⨝ (DateDay ⨝ cur))[day][day as param_3_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (param_3_day = cur_day))  ∧ 
-      // Postconditions
-      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
-      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
-      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventDateSame] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, date]
-    )
-
-pred frameDate[step: (cur:id, nxt:id), date: (instance:id)] 
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ date)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] | (
-    nxtState = curState ∧
-    (
-      curState ⊆ uninitialized ∨ 
-      (// Postconditions
-       (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
-       (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month)) ∧
-       (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)))
-    )
-  )
-
-pred eventDateAfter__month[step:(cur:id, nxt:id), date: (instance:id), other: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ date)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
-    ( 
-      // Preconditions 
-      (some ((other ⨝ (DateMonth ⨝ cur))[month][month as param_1_month] ⨯ (date ⨝ (DateMonth ⨝ cur))[month][month as cur_month]) where (cur_month > param_1_month)) ∧
-      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (other ⨝ (DateYear ⨝ cur))[year][year as param_2_year]) where (cur_year = param_2_year))  ∧ 
-      // Postconditions
-      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
-      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
-      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventDateAfter__month] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, date]
-    )
-
-pred eventDateEmpty[step:(cur:id, nxt:id), date: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ date)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] |
     ( 
        
       // Postconditions
-      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
-      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
-      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = CoffeeType_NORMAL[instance as selected] ∧
+      (some ((coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded]) where (nxt_amountNeeded = 95))  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventDateEmpty] ∧
+      forceState[curState, nxtState, EventCoffeeMachineSelect__normal] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, date]
+      inChangeSet[step, coffeemachine]
     )
 
-pred eventDateAfter__years[step:(cur:id, nxt:id), date: (instance:id), other: (instance:id)]
+pred eventCoffeeMachinePay__amountNotMet[step:(cur:id, nxt:id), coffeemachine: (instance:id), amount: (amount:int)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ date)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] |
     ( 
       // Preconditions 
-      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (other ⨝ (DateYear ⨝ cur))[year][year as param_1_year]) where (cur_year > param_1_year))  ∧ 
+      (some (amount[amount as param_1_amount] ⨯ (coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ cur))[amountNeeded][amountNeeded as cur_amountNeeded]) where (cur_amountNeeded - param_1_amount > 0)) ∧
+      (((some (amount[amount as param_2_amount]) where (param_2_amount = 5)) ∨ ((some (amount[amount as param_3_amount]) where (param_3_amount = 10)) ∨ ((some (amount[amount as param_4_amount]) where (param_4_amount = 20)) ∨ (some (amount[amount as param_5_amount]) where (param_5_amount = 50))))))  ∧ 
       // Postconditions
-      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
-      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
-      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = (coffeemachine ⨝ (CoffeeMachineSelected ⨝ cur))[selected] ∧
+      (some (amount[amount as param_6_amount] ⨯ (coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded] ⨯ (coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ cur))[amountNeeded][amountNeeded as cur_amountNeeded]) where (nxt_amountNeeded = cur_amountNeeded - param_6_amount))  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventDateAfter__years] ∧
+      forceState[curState, nxtState, EventCoffeeMachinePay__amountNotMet] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, date]
+      inChangeSet[step, coffeemachine]
     )
 
-// Event predicates for `Transaction`
-pred eventTransactionBook[step:(cur:id, nxt:id), transaction: (instance:id)]
+pred eventCoffeeMachinePay__amountMet[step:(cur:id, nxt:id), coffeemachine: (instance:id), amount: (amount:int)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ transaction)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ transaction)[state] |
+        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] |
     ( 
       // Preconditions 
-      eventDateSame[step, (transaction ⨝ (TransactionBookOn ⨝ cur))[bookOn][bookOn as instance], Date_NOW] ∧
-      eventAccountWithdraw[step, (transaction ⨝ (TransactionFrom ⨝ cur))[from][from as instance], (transaction ⨝ (TransactionAmount ⨝ cur))[amount][amount as instance]] ∧
-      eventAccountDeposit[step, (transaction ⨝ (TransactionTo ⨝ cur))[to][to as instance], (transaction ⨝ (TransactionAmount ⨝ cur))[amount][amount as instance]]  ∧ 
+      (some (amount[amount as param_1_amount] ⨯ (coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ cur))[amountNeeded][amountNeeded as cur_amountNeeded]) where (cur_amountNeeded - param_1_amount = 0)) ∧
+      (((some (amount[amount as param_2_amount]) where (param_2_amount = 5)) ∨ ((some (amount[amount as param_3_amount]) where (param_3_amount = 10)) ∨ ((some (amount[amount as param_4_amount]) where (param_4_amount = 20)) ∨ (some (amount[amount as param_5_amount]) where (param_5_amount = 50))))))  ∧ 
       // Postconditions
-      (transaction ⨝ (TransactionTo ⨝ nxt))[to] = (transaction ⨝ (TransactionTo ⨝ cur))[to] ∧
-      (transaction ⨝ (TransactionAmount ⨝ nxt))[amount] = (transaction ⨝ (TransactionAmount ⨝ cur))[amount] ∧
-      (transaction ⨝ (TransactionFrom ⨝ nxt))[from] = (transaction ⨝ (TransactionFrom ⨝ cur))[from] ∧
-      (transaction ⨝ (TransactionBookOn ⨝ nxt))[bookOn] = (transaction ⨝ (TransactionBookOn ⨝ cur))[bookOn]  ∧ 
+      (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = CoffeeType_NONE[instance as selected] ∧
+      (some (amount[amount as param_6_amount] ⨯ (coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded] ⨯ (coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ cur))[amountNeeded][amountNeeded as cur_amountNeeded]) where (nxt_amountNeeded = cur_amountNeeded - param_6_amount))  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventTransactionBook] ∧
+      forceState[curState, nxtState, EventCoffeeMachinePay__amountMet] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, transaction]
+      inChangeSet[step, coffeemachine]
     )
 
-pred frameTransaction[step: (cur:id, nxt:id), transaction: (instance:id)] 
+pred eventCoffeeMachineSelect__latte[step:(cur:id, nxt:id), coffeemachine: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ transaction)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ transaction)[state] | (
-    nxtState = curState ∧
-    (
-      curState ⊆ uninitialized ∨ 
-      (// Postconditions
-       (transaction ⨝ (TransactionFrom ⨝ nxt))[from] = (transaction ⨝ (TransactionFrom ⨝ cur))[from] ∧
-       (transaction ⨝ (TransactionTo ⨝ nxt))[to] = (transaction ⨝ (TransactionTo ⨝ cur))[to] ∧
-       (transaction ⨝ (TransactionAmount ⨝ nxt))[amount] = (transaction ⨝ (TransactionAmount ⨝ cur))[amount] ∧
-       (transaction ⨝ (TransactionBookOn ⨝ nxt))[bookOn] = (transaction ⨝ (TransactionBookOn ⨝ cur))[bookOn])
-    )
-  )
-
-pred eventTransactionCreate[step:(cur:id, nxt:id), transaction: (instance:id), from: (instance:id), to: (instance:id), amount: (instance:id), bookOn: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ transaction)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ transaction)[state] |
+        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] |
     ( 
-      // Preconditions 
-      inState[cur, from, initialized] ∧
-      inState[cur, to, initialized] ∧
-      from != to ∧
-      (amount ⨝ (MoneyCurrency ⨝ cur))[currency] = Currency_EUR[instance as currency] ∧
-      (some ((amount ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount]) where (param_1_amount > 0))  ∧ 
+       
       // Postconditions
-      (transaction ⨝ (TransactionFrom ⨝ nxt))[from] = from[instance as from] ∧
-      (transaction ⨝ (TransactionTo ⨝ nxt))[to] = to[instance as to] ∧
-      (transaction ⨝ (TransactionAmount ⨝ nxt))[amount] = amount[instance as amount] ∧
-      (transaction ⨝ (TransactionBookOn ⨝ nxt))[bookOn] = bookOn[instance as bookOn]  ∧ 
+      (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = CoffeeType_LATTE[instance as selected] ∧
+      (some ((coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded]) where (nxt_amountNeeded = 150))  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventTransactionCreate] ∧
+      forceState[curState, nxtState, EventCoffeeMachineSelect__latte] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, transaction]
+      inChangeSet[step, coffeemachine]
     )
 
-pred eventTransactionArchive[step:(cur:id, nxt:id), transaction: (instance:id)]
+pred eventCoffeeMachineSelect__americano[step:(cur:id, nxt:id), coffeemachine: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ transaction)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ transaction)[state] |
+        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] |
     ( 
-      // Preconditions 
-      (some ((Date_NOW ⨝ (DateYear ⨝ cur))[year][year as NOW_year] ⨯ ((transaction ⨝ (TransactionBookOn ⨝ cur))[bookOn][bookOn as instance] ⨝ (DateYear ⨝ cur))[year][year as cur_1_year]) where (cur_1_year + 5 <= NOW_year))  ∧ 
+       
       // Postconditions
-      (transaction ⨝ (TransactionTo ⨝ nxt))[to] = (transaction ⨝ (TransactionTo ⨝ cur))[to] ∧
-      (transaction ⨝ (TransactionAmount ⨝ nxt))[amount] = (transaction ⨝ (TransactionAmount ⨝ cur))[amount] ∧
-      (transaction ⨝ (TransactionFrom ⨝ nxt))[from] = (transaction ⨝ (TransactionFrom ⨝ cur))[from] ∧
-      (transaction ⨝ (TransactionBookOn ⨝ nxt))[bookOn] = (transaction ⨝ (TransactionBookOn ⨝ cur))[bookOn]  ∧ 
+      (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = CoffeeType_AMERICANO[instance as selected] ∧
+      (some ((coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded]) where (nxt_amountNeeded = 130))  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventTransactionArchive] ∧
+      forceState[curState, nxtState, EventCoffeeMachineSelect__americano] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, transaction]
+      inChangeSet[step, coffeemachine]
+    )
+
+pred eventCoffeeMachineSelect__espresso[step:(cur:id, nxt:id), coffeemachine: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] |
+    ( 
+       
+      // Postconditions
+      (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = CoffeeType_ESPRESSO[instance as selected] ∧
+      (some ((coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded]) where (nxt_amountNeeded = 120))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventCoffeeMachineSelect__espresso] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, coffeemachine]
+    )
+
+pred eventCoffeeMachineEmpty[step:(cur:id, nxt:id), coffeemachine: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] |
+    ( 
+       
+      // Postconditions
+      (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = (coffeemachine ⨝ (CoffeeMachineSelected ⨝ cur))[selected] ∧
+      (some ((coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded] ⨯ (coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ cur))[amountNeeded][amountNeeded as cur_amountNeeded]) where (nxt_amountNeeded = cur_amountNeeded))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventCoffeeMachineEmpty] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, coffeemachine]
     )
 
 
-// Transition function for `Money`
-pred possibleTransitionsMoney[step: (cur:id, nxt:id)] 
-  = ∀ inst ∈ (Instance ⨝ Money)[instance] |
+// Transition function for `CoffeeMachine`
+pred possibleTransitionsCoffeeMachine[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ CoffeeMachine)[instance] |
     (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
-      (eventMoneyEmpty[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventMoneyEmpty ∧
-      changeSetCanContain[step, inst])
-    ))
-    ∧
-    (notInChangeSet[step, inst] ⇒ frameMoney[step, inst])
-
-// Transition function for `Account`
-pred possibleTransitionsAccount[step: (cur:id, nxt:id)] 
-  = ∀ inst ∈ (Instance ⨝ Account)[instance] |
-    (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
-      (eventAccountEmpty[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventAccountEmpty ∧
-      changeSetCanContain[step, inst])
-    ))
-    ∧
-    (notInChangeSet[step, inst] ⇒ frameAccount[step, inst])
-
-// Transition function for `Date`
-pred possibleTransitionsDate[step: (cur:id, nxt:id)] 
-  = ∀ inst ∈ (Instance ⨝ Date)[instance] |
-    (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
-      (eventDateEmpty[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventDateEmpty ∧
-      changeSetCanContain[step, inst])
-    ))
-    ∧
-    (notInChangeSet[step, inst] ⇒ frameDate[step, inst])
-
-// Transition function for `Transaction`
-pred possibleTransitionsTransaction[step: (cur:id, nxt:id)] 
-  = ∀ inst ∈ (Instance ⨝ Transaction)[instance] |
-    (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
-      (eventTransactionCreate[step,inst,(step ⨝ ParamEventTransactionCreateFrom)[from->instance],(step ⨝ ParamEventTransactionCreateTo)[to->instance],(step ⨝ ParamEventTransactionCreateAmount)[amount->instance],(step ⨝ ParamEventTransactionCreateBookOn)[bookOn->instance]] ∧
-      (step ⨝ raisedEvent)[event] = EventTransactionCreate ∧
+      (eventCoffeeMachineSelect__americano[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventCoffeeMachineSelect__americano ∧
       changeSetCanContain[step, inst])
       ∨
-      (eventTransactionArchive[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventTransactionArchive ∧
+      (eventCoffeeMachinePowerOff[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventCoffeeMachinePowerOff ∧
       changeSetCanContain[step, inst])
       ∨
-      (eventTransactionBook[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventTransactionBook ∧
-      let cur = step[cur->config], transaction = inst, transaction_this_bookOn = (transaction ⨝ (TransactionBookOn ⨝ cur))[bookOn][bookOn as instance], transaction_this_from = (transaction ⨝ (TransactionFrom ⨝ cur))[from][from as instance], transaction_this_to = (transaction ⨝ (TransactionTo ⨝ cur))[to][to as instance] | changeSetCanContain[step, inst ∪ transaction_this_bookOn ∪ transaction_this_from ∪ transaction_this_to ∪ transaction])
+      (eventCoffeeMachinePay__amountMet[step,inst,(step ⨝ ParamEventCoffeeMachinePay__amountMetAmount)[amount]] ∧
+      (step ⨝ raisedEvent)[event] = EventCoffeeMachinePay__amountMet ∧
+      changeSetCanContain[step, inst])
+      ∨
+      (eventCoffeeMachineSelect__normal[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventCoffeeMachineSelect__normal ∧
+      changeSetCanContain[step, inst])
+      ∨
+      (eventCoffeeMachineSelect__espresso[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventCoffeeMachineSelect__espresso ∧
+      changeSetCanContain[step, inst])
+      ∨
+      (eventCoffeeMachinePowerOn[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventCoffeeMachinePowerOn ∧
+      changeSetCanContain[step, inst])
+      ∨
+      (eventCoffeeMachineCancel[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventCoffeeMachineCancel ∧
+      changeSetCanContain[step, inst])
+      ∨
+      (eventCoffeeMachineSelect__latte[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventCoffeeMachineSelect__latte ∧
+      changeSetCanContain[step, inst])
+      ∨
+      (eventCoffeeMachinePay__amountNotMet[step,inst,(step ⨝ ParamEventCoffeeMachinePay__amountNotMetAmount)[amount]] ∧
+      (step ⨝ raisedEvent)[event] = EventCoffeeMachinePay__amountNotMet ∧
+      changeSetCanContain[step, inst])
+      ∨
+      (eventCoffeeMachineEmpty[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventCoffeeMachineEmpty ∧
+      changeSetCanContain[step, inst])
     ))
     ∧
-    (notInChangeSet[step, inst] ⇒ frameTransaction[step, inst])
+    (notInChangeSet[step, inst] ⇒ frameCoffeeMachine[step, inst])
 
 
 // Transition function
-∀ step ∈ order| possibleTransitionsDate[step] ∧ possibleTransitionsMoney[step] ∧ possibleTransitionsAccount[step] ∧ possibleTransitionsTransaction[step]
+∀ step ∈ order| possibleTransitionsCoffeeMachine[step]
 
 
-// Fact from `Account`
-∀ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∀ ac ∈ (Instance ⨝ Account)[instance] | (some ((ac ⨝ (AccountAmount ⨝ cur_1))[amount][amount as ac_amount]) where (ac_amount >= 0)))
-// Fact from `Date`
-∀ cur_1 ∈ Config ∖ last | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∃ d1 ∈ Date_NOW | let step_2 = ((order ∪ loop) ⨝ cur_1[config as cur]), cur_2 = step_2[nxt->config] | (∃ d2 ∈ Date_NOW | (((some ((d2 ⨝ (DateYear ⨝ cur_2))[year][year as d2_year] ⨯ (d1 ⨝ (DateYear ⨝ cur_1))[year][year as d1_year]) where (d2_year > d1_year)) ∨ ((((some ((d2 ⨝ (DateYear ⨝ cur_2))[year][year as d2_year] ⨯ (d1 ⨝ (DateYear ⨝ cur_1))[year][year as d1_year]) where (d2_year = d1_year)) ∧ (some ((d2 ⨝ (DateMonth ⨝ cur_2))[month][month as d2_month] ⨯ (d1 ⨝ (DateMonth ⨝ cur_1))[month][month as d1_month]) where (d2_month > d1_month)))) ∨ (((some ((d2 ⨝ (DateYear ⨝ cur_2))[year][year as d2_year] ⨯ (d1 ⨝ (DateYear ⨝ cur_1))[year][year as d1_year]) where (d2_year = d1_year)) ∧ ((some ((d2 ⨝ (DateMonth ⨝ cur_2))[month][month as d2_month] ⨯ (d1 ⨝ (DateMonth ⨝ cur_1))[month][month as d1_month]) where (d2_month = d1_month)) ∧ (some ((d2 ⨝ (DateDay ⨝ cur_2))[day][day as d2_day] ⨯ (d1 ⨝ (DateDay ⨝ cur_1))[day][day as d1_day]) where (d2_day > d1_day))))))))))
-∀ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (inState[cur_1, Date_NOW, initialized])
-∀ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∀ d ∈ (Instance ⨝ Date)[instance] | ((inState[cur_1, d, initialized] ⇒ (((some ((d ⨝ (DateYear ⨝ cur_1))[year][year as d_year]) where (d_year >= 1900)) ∧ ((some ((d ⨝ (DateYear ⨝ cur_1))[year][year as d_year]) where (d_year <= 2200)) ∧ ((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month > 0)) ∧ ((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month < 13)) ∧ ((some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day > 0)) ∧ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 1)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 1)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 2)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 30)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 2)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 3)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 3)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 4)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 31)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 4)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 5)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 5)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 6)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 31)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 6)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 7)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 7)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 8)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 8)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 9)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 31)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 9)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 10)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 10)))) ⇒ ((((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 11)) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 31)))) ∧ ((¬ (((some ((d ⨝ (DateMonth ⨝ cur_1))[month][month as d_month]) where (d_month = 11)))) ⇒ (some ((d ⨝ (DateDay ⨝ cur_1))[day][day as d_day]) where (d_day < 32))))))))))))))))))))))))))))))))))))))))))))
-// Fact from `Currency`
-∀ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∀ m ∈ (Instance ⨝ Money)[instance] | ((some ((m ⨝ (MoneyAmount ⨝ cur_1))[amount][amount as m_amount]) where (m_amount > (- 1000000000))) ∧ (some ((m ⨝ (MoneyAmount ⨝ cur_1))[amount][amount as m_amount]) where (m_amount < 1000000000))))
 
-// Assert `CanArchiveTransaction`
-∃ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∃ t ∈ (Instance ⨝ Transaction)[instance] | inState[cur_1, t, StateTransactionArchived])
+// Assert `CanServeNormalCoffee`
+∃ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∃ m ∈ (Instance ⨝ CoffeeMachine)[instance] | ((m ⨝ (CoffeeMachineSelected ⨝ cur_1))[selected] = CoffeeType_NORMAL[instance as selected] ∧ ∃ cur_2 ∈ (cur_1[config as cur] ⨝ *<cur,nxt>(order ∪ loop))[nxt->config] | let step_2 = cur_2[config as cur] ⨝ (order ∪ loop) | inState[cur_2, m, StateCoffeeMachineServe]))
 // Minimize the number of steps by minimizing the number of Configurations
 objectives: minimize Config[count()]

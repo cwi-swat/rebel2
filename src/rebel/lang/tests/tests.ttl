@@ -54,3 +54,25 @@ test SetOfFollowers [[
   spec Follower
     event hit()
 ]]
+
+test SimpleCorrectConfig [[
+  module Account
+  
+  spec Money
+  
+  spec Account
+    balance: Money;
+  
+  config Simple = ac: Account, m: Money;
+]]
+
+test SimpleWrongConfig [[
+  module Account
+  
+  spec Money
+  
+  spec Account
+    balance: Money;
+  
+  config Simple = ac: Account;
+]] expect {"Specification `Money` is referenced by specifications but no instance is declared in the configuration"}

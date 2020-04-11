@@ -1,0 +1,25 @@
+module Counter
+
+spec Counter
+  i: Integer;
+  
+  init event create()
+    post: this.i' = 0;
+  
+  event inc()
+    post: this.i' = this.i + 1;
+    
+  event dec()
+    pre: this.i > 3;
+    post: this.i' = this.i - 1;
+  
+  states:
+    (*) -> active: create;
+    active -> active: inc; //,dec;
+  
+assert EventuallyHigherThan3 = eventually always exists c:Counter | c.i > 3;
+//assert EventuallyHigherThan3 = eventually (exists c:Counter | c.i > 3 && eventually exists c2:Counter | c2.i < 4) ;
+
+config Simple = c: Counter is uninitialized;
+
+check EventuallyHigherThan3 from Simple in max 6 steps with infinite trace;  

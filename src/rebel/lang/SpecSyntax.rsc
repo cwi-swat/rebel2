@@ -108,5 +108,6 @@ keyword Keywords = "spec"
                  | "states"
                  | "enum"
                  | "variant"
+                 | "noOp"
                  ;
  

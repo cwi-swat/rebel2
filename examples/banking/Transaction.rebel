@@ -1,7 +1,7 @@
 module banking::Transaction
 
-//import banking::Account
-//import banking::types::IBAN
+import banking::Account
+import banking::types::IBAN
 
 import banking::types::Money
 import banking::types::Date
@@ -31,19 +31,19 @@ spec Transaction
       this.from.withdraw(this.amount),
       this.to.deposit(this.amount);  
    
-  event archive()
+  final event archive()
     pre: this.bookOn.year + 5 <= Date[NOW].year;
        
    states:
     (*) -> created: create;
     created -> booked: book;
-    booked -> archived: archive;
+    booked -> (*): archive;
  
-spec Account // == SimpleAccount
+spec SimpleAccount
   amount: Integer,
   currency: Currency;
   
-  internal event withdraw(amount: Money)
+  internal event withdraw(amount: Money) 
     pre: amount.currency = this.currency;
     post: this.amount' = this.amount - amount.amount;
     
@@ -51,19 +51,26 @@ spec Account // == SimpleAccount
     pre: amount.currency = this.currency;
     post: this.amount' = this.amount + amount.amount;
     
-  fact NoOverdraw = always forall ac:Account | ac.amount >= 0;
+  fact NoOverdraw = always forall ac:SimpleAccount | ac.amount >= 0;
   
   states:
     (*) -> opened: empty;
     opened -> opened: withdraw, deposit;
+    //notOpened -> notOpened: empty;
 
-config Basic = t: Transaction is uninitialized, ac1,ac2: Account, m1: Money, d1: Date; // abstracts Account;
+
+config Basic = t: Transaction is uninitialized, ac1,ac2: SimpleAccount abstracts Account, m1: Money, d1: Date; // abstracts Account;
 //config Basic = t: Transaction is uninitialized, ac1,ac2: Account, m1,m2,m3: Money, d1,d2,d3: Date, iban1,iban2: IBAN;
  
+  
 assert CanCreateTransaction = eventually exists t:Transaction | t is initialized;
 assert CanBookTransaction = eventually exists t:Transaction | t is booked;
-assert CanArchiveTransaction = eventually exists t:Transaction | t is archived;
- 
+assert CanArchiveTransaction = eventually exists t:Transaction | t is finalized;
+
+assert TransactionThatCanNotBeBooked = always exists t:Transaction | !(t is booked);
+
 check CanCreateTransaction from Basic in max 1 steps;
 check CanBookTransaction from Basic in max 2 steps;
 check CanArchiveTransaction from Basic in max 3 steps;
+
+check TransactionThatCanNotBeBooked from Basic in max 4 steps with infinite trace;

@@ -45,9 +45,9 @@ AbstractionResult filterAbstractions(str check, set[Module] allMods, TModel tm, 
     allMods = visit(allMods) {
       case rebel::lang::Syntax::Config c => filteredCfg when c == cfg
     };
+
+    // Only keep those specs that are reachable from the root module
     
-    printSpcDepGraph(spcDepGraph);
-            
     return <filteredCfg, allMods, {f,t | <f,t> <- spcDepGraph}>;
   }
   

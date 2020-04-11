@@ -1,4 +1,4 @@
-module vis::statemachine::salix::StateMachineCat
+module rebel::vis::salix::StateMachineCat
 
 import salix::Core;
 import salix::HTML;

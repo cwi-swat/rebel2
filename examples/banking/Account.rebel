@@ -15,17 +15,18 @@ spec Account
     post: this.nr' = nr, this.balance' = initialDeposit, this.openedOn' = openedOn;
   
   event deposit(amount: Money)
-    pre: amount.amount > 0, this.balance.plus(amount); 
+    pre:amount.amount > 0, this.balance.plus(amount);  
+    //post: this.balance.amount' = this.balance.amount + amount.amount;
   
   event withdraw(amount: Money) 
     pre: amount.amount > 0, this.balance.minIfGte(amount);
     
-  event payInterest(rate: Integer) 
-    pre: rate > 0, this.balance.addInterest(rate);
+  event payInterest(rate: Integer)  
+    pre: this.balance.addInterest(rate); 
     
   event blocked() 
   event unblocked()  
- 
+  
   event close(closedOn: Date)
     pre: this.balance.zero(), closedOn.same(Date[NOW]);
     post: this.closedOn' = closedOn;
@@ -35,24 +36,24 @@ spec Account
     
   fact AllAccountsHaveUniqueIBANs = always forall ac1,ac2: Account | (ac1 is initialized && ac2 is initialized && ac1.nr = ac2.nr => ac1 = ac2);
   
-  states:
-    (*) -> waitingForActivation: create; 
+  states:  
+    //(*) -> open: create;  
+    (*) -> waitingForActivation: create;  
     waitingForActivation -> open: deposit;  
     open -> open: deposit, withdraw, payInterest; 
-    open -> block: blocked;
+    open -> block: blocked;  
     block -> open: unblocked; 
-    open -> archive: close; 
-    archive -> (*): removed; 
-
+    open -> archive: close;  
+    archive -> (*): removed;  
   
-config SomeAccount = ac: Account is uninitialized, iban: IBAN, m: Money, d1,d2: Date;
+config SomeAccount = ac: Account is uninitialized, iban1: IBAN, m1: Money, d1: Date;
  
 assert CanBeOpened = eventually exists ac:Account | ac is open; 
 assert CanDeposit = eventually exists ac:Account | deposit on ac;
 assert CanWithdraw = eventually exists ac:Account | withdraw on ac;
 assert CanBeRemoved = eventually exists ac:Account | ac is finalized;
   
-assert CanBeOverdrawn = eventually exists ac:Account | ac.balance.negative();  
+assert CanBeOverdrawn = eventually exists ac:Account | ac.balance.amount < 0;  
   
 check CanBeOpened from SomeAccount in max 2 steps;          
 check CanDeposit from SomeAccount in max 3 steps;         

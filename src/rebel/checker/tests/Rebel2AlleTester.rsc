@@ -15,7 +15,7 @@ void checkAllInDir(loc base) {
   
 }
 
-void translatePingPong(str check)         = performCheck(check, parseModule(|project://rebel2/examples/PingPong.rebel|));
+void checkPingPong(str check)         = runCheck(check, |project://rebel2/examples/PingPong.rebel|);
 void translateCoffeeMachine()             = performCheck("MachineIsServing", parseModule(|project://rebel2/examples/CoffeeMachine.rebel|));
 void translateLeaderAndFollower(str check) = performCheck(check, parseModule(|project://rebel2/examples/sync/double/Leader.rebel|));
 void translateMultiFollower(str check)    = performCheck(check, parseModule(|project://rebel2/examples/sync/multi/Leader.rebel|));
@@ -57,9 +57,5 @@ void runCheck(str check, loc rebelFile) {
 }
 
 void runCleanCheck(str check, loc rebelFile) {
-  
-}
-
-private void deleteEarlierBuildFiles(loc rebelFile) {
   
 }

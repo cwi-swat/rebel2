@@ -7,27 +7,29 @@ spec Card
   second: Key;
   
   event create(fst: Key, snd: Key) 
+    pre: fst != snd;
     post: this.frst' = fst, this.second' = snd;
   
   internal event equal(fst: Key, snd: Key)
     pre: this.frst = fst, this.second = snd;
     
-  internal event check(r: Room) 
-    pre: r.check(this.second) || r.update(this.frst, this.second);  
+  //internal event check(r: Room) 
+  //  pre: r.check(this.second) || r.update(this.frst, this.second);  
     
   states:
     (*) -> created: create;
-    created -> created: equal, check;
+    created -> created: equal; //, check;
   
 spec Guest
-  card: Card;
+  card: Card,
+  room: Room;
  
-  internal event checkin(card: Card)
-    pre: card is initialized;
-    post: this.card' = card; 
+  internal event checkin(card: Card, room: Room)
+    pre: card is initialized, room is initialized, card.frst = room.key;
+    post: this.card' = card, this.room' = room; 
   
-  event enterRoom(r: Room)   
-    pre: this.card.check(r);  
+  event enterRoom()   
+    pre: this.room.enterRoom(this.card);  
       
   states:  
     (*) -> checkedin: checkin;
@@ -39,16 +41,23 @@ spec Room
   event create(initialKey: Key)    
     post: this.key' = initialKey; 
      
-  internal event update(oldKey: Key, newKey: Key) 
-    pre: this.key = oldKey;
-    post: this.key' = newKey;  
+  //internal event update(oldKey: Key, newKey: Key) 
+  //  pre: this.key = oldKey;
+  //  post: this.key' = newKey;  
    
-  internal event check(key: Key) 
-    pre: this.key = key;
+  internal event enterRoom(card: Card) 
+    variant normal
+      pre: this.key = card.second;
+    
+    variant update
+      pre: this.key = card.frst;
+      post: this.key' = card.second;
+    
+    //pre: this.key = key;
   
   states:
     (*) -> created: create;
-    created -> created: update, check;   
+    created -> created: enterRoom::normal, enterRoom::update;   
   
 spec FrontDesk
   issued: set Key;
@@ -56,14 +65,13 @@ spec FrontDesk
   event initialize() 
     post: this.issued' = {};   
     
-  event checkin(fst: Key, snd: Key, c: Card, r: Room, g: Guest)
+  event checkin(card: Card, room: Room, guest: Guest)
     pre:   
-      g.checkin(c),  
-      r.check(fst),  
-      c.equal(fst,snd),   
-      snd notin this.issued;
+      guest.checkin(card, room),  
+      //room.check(card.frst),  
+      card.second notin this.issued;
     post: 
-      this.issued' = this.issued + snd;
+      this.issued' = this.issued + card.second;
     
   states:
     (*) -> open: initialize;
@@ -71,6 +79,9 @@ spec FrontDesk
     
 config EmptyHotel
   = k1,k2,k3: Key, g1,g2: Guest is uninitialized, ca1,ca2: Card is uninitialized, r1: Room is uninitialized, fd: FrontDesk is uninitialized;
+
+assert CanEnterRoom
+  = eventually exists g:Guest | enterRoom on g;
   
 assert NoIntruder 
   = eventually exists g1:Guest | next exists g2: Guest |
@@ -80,3 +91,4 @@ assert NoIntruder
           next enterRoom on g1)); 
       
 check NoIntruder from EmptyHotel in max 10 steps;
+check CanEnterRoom from EmptyHotel in max 10 steps;

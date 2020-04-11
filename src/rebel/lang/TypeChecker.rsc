@@ -6,6 +6,7 @@ extend rebel::lang::CheckTypeChecker;
 
 import rebel::lang::DependencyAnalyzer;
 import rebel::lang::Syntax;
+import rebel::lang::WellFormednessChecker;
 
 import util::PathUtil;
 
@@ -14,6 +15,7 @@ extend analysis::typepal::TypePal;
 import List;
 import IO;
 import ValueIO;
+import String;
 
 import DateTime;
 import util::Maybe;
@@ -23,7 +25,7 @@ alias TypeCheckerResult = tuple[TModel tm, Graph[RebelDependency] depGraph];
 TypeCheckerResult checkModule(Module root, Graph[RebelDependency] depGraph, PathConfig pcfg, bool saveTModels = true, bool refreshRoot = false, bool debug = false) {
   // If the models should not be saved, just create the (transitive) tmodel
   if (!saveTModels) {
-    return rebelTModelFromModule(root, depGraph, pcfg, saveTModels = false, debug = debug);   
+    return <rebelTModelFromModule(root, depGraph, pcfg, saveTModels = false, debug = debug), depGraph>;   
   }
   
   list[RebelDependency] todo = [d | d <- order(depGraph), unresolvedModule(QualifiedName fqn) !:= d];
@@ -73,12 +75,12 @@ private Graph[RebelDependency] subgraph(RebelDependency from, Graph[RebelDepende
 
 private TModel rebelTModelFromModule(Module root, Graph[RebelDependency] depGraph, PathConfig pcfg, bool saveTModels = false, bool debug = false){
   c = newCollector("collectAndSolve", root, config = tconfig(getTypeNamesAndRole = rebelTypeNamesAndRole,
-                                                           isSubType = subtype,
-                                                           verbose=debug, 
-                                                           logTModel = debug, 
-                                                           logAttempts = debug, 
-                                                           logSolverIterations= debug, 
-                                                           logSolverSteps = debug));  
+                                                             isSubType = subtype,
+                                                             verbose=debug, 
+                                                             logTModel = debug, 
+                                                             logAttempts = debug, 
+                                                             logSolverIterations= debug, 
+                                                             logSolverSteps = debug));  
 
   collect(root, c);
 
@@ -90,9 +92,9 @@ private TModel rebelTModelFromModule(Module root, Graph[RebelDependency] depGrap
   }
 
   
-  //handleImports(c, root, depGraph);
   TModel model = newSolver(root, c.run()).run();
-
+  model = checkWellFormedness(root, model); 
+  
   if (saveTModels) { 
     println("Saving new TModel for `<root.\module.name>`");
     saveModule(root,model,pcfg);

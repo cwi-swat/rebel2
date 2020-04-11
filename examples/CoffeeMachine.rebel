@@ -1,24 +1,26 @@
 module CoffeeMachine
 
 spec CoffeeMachine
+  selected: CoffeeType,
   amountNeeded: Integer;
    
   event powerOn() 
-    post: this.amountNeeded' = 0;
+    post: this.amountNeeded' = 0, this.selected' = CoffeeType[NONE];
     
   event powerOff()
   
-  event selectAmericano()
-    post: this.amountNeeded' = 130;
+  event select()
+    variant americano
+      post: this.amountNeeded' = 130, this.selected' = CoffeeType[AMERICANO];
     
-  event selectEspresso()
-    post: this.amountNeeded' = 120;
+    variant espresso
+      post: this.amountNeeded' = 120, this.selected' = CoffeeType[ESPRESSO];
     
-  event selectNormal()
-    post: this.amountNeeded' = 100;
+    variant normal
+      post: this.amountNeeded' = 95, this.selected' = CoffeeType[NORMAL];
     
-  event selectLatte()  
-    post: this.amountNeeded' = 150;
+    variant latte  
+      post: this.amountNeeded' = 150, this.selected' = CoffeeType[LATTE];
        
   event pay(amount: Integer)
     pre: (amount = 5 || amount = 10 || amount = 20 || amount = 50);
@@ -29,13 +31,14 @@ spec CoffeeMachine
       
     variant amountMet
       pre: this.amountNeeded - amount = 0;
+      post: this.selected' = CoffeeType[NONE];
                  
   event cancel() 
-    post: this.amountNeeded' = 0;
+    post: this.amountNeeded' = 0, this.selected' = CoffeeType[NONE];
 
   states:
     active {
-      waiting -> acceptingPayment: selectAmericano, selectEspresso, selectNormal, selectLatte;
+      waiting -> acceptingPayment: select::americano, select::espresso, select::normal, select::latte;
       acceptingPayment -> serve: pay::amountMet;
       acceptingPayment -> acceptingPayment: pay::amountNotMet;
       acceptingPayment -> waiting: cancel;
@@ -44,11 +47,17 @@ spec CoffeeMachine
     
     active -> (*): powerOff;  
     (*) -> waiting: powerOn;  
+
+spec CoffeeType[NONE,NORMAL,ESPRESSO,AMERICANO,LATTE]
  
 config InitialMachine = cm: CoffeeMachine is uninitialized;
   
 assert MachineIsServing = eventually exists m: CoffeeMachine | m is serve;  
 check MachineIsServing from InitialMachine in max 10 steps;
+
+assert CanServeNormalCoffee 
+  = eventually exists m: CoffeeMachine | m.selected = CoffeeType[NORMAL] && eventually m is serve;
+check CanServeNormalCoffee from InitialMachine in max 10 steps;
   
 assert MachineWillNeverServe = always exists m: CoffeeMachine | !(m is serve);    
 check MachineWillNeverServe from InitialMachine in max 5 steps with infinite trace;

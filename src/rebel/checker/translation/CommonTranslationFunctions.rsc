@@ -205,3 +205,4 @@ bool isInternalEvent(TransEvent te, Spec s) = isInternalEvent(lookupEventByName(
 default bool isInternalEvent(TransEvent te, Spec s) { throw "Unable to find event with name `<te>` in `<s.name>`"; }  
 
 bool isInternalEvent(Event e) = /(Modifier)`internal` := e.modifiers;
+

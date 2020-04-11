@@ -4,7 +4,7 @@ import rebel::lang::Syntax;
 import rebel::lang::Parser;
 import rebel::lang::TypeChecker;
 import rebel::lang::DependencyAnalyzer;
-
+ 
 import rebel::checker::translation::RelationsTranslator;
 import rebel::checker::translation::ConstraintsTranslator;
 import rebel::checker::translation::EventTranslator;
@@ -16,7 +16,7 @@ import rebel::checker::translation::RelationCollector;
 import rebel::checker::translation::ConfigAbstractionNormalizer;
 import rebel::checker::RebelTrace;
 import rebel::checker::Normalizer;
-
+ 
 import util::PathUtil;
 
 import ModelFinder;              // From AlleAlle
@@ -50,12 +50,14 @@ AlleAlleSnippet merge(AlleAlleSnippet new, AlleAlleSnippet mergeTo) {
   return mergeTo;
 }
 
-void performCheck(Check chk, Module m, PathConfig pcfg, PathConfig normPcfg) = performCheck("<chk.name>", m, pcfg, normPcfg);
+Trace performCheck(Check chk, Module m, PathConfig pcfg, PathConfig normPcfg) = performCheck("<chk.name>", m, pcfg, normPcfg);
 
-void performCheck(str check, Module m, PathConfig pcfg, PathConfig normPcfg) {
+Trace performCheck(str check, Module m, PathConfig pcfg, PathConfig normPcfg) {
+  Graph[RebelDependency] deps = calculateDependencies(m, pcfg);
+  
   NormalizedResult nr  = loadNormalizedModules(m, pcfg, normPcfg);
   
-  set[Module] allMods = {m | /Module m := nr.normDepGraph};
+  set[Module] allMods = {m | /Module m := nr.normDepGraph}; 
   list[RebelDependency] todo = order(nr.normDepGraph);
   
   AlleAlleSnippet allSnippets = emptySnippet();
@@ -83,13 +85,26 @@ void performCheck(str check, Module m, PathConfig pcfg, PathConfig normPcfg) {
   Config cfg = buildConfig(check, allMods, nr.normTm);
   str alleSpec = translateSpecs(cfg, check, allMods, allSnippets);
    
-  ModelFinderResult mfr = checkInitialSolution(implodeProblem(alleSpec));
+  ModelFinderResult mfr = checkInitialSolution(implodeProblem(alleSpec), timeOutInMs = 30 * 1000);
 
   if (sat(Model currentModel, Model (Domain) nextModel, void () stop) := mfr) {
     stop();
-    Trace trace = buildTrace(currentModel, allMods, cfg.instances<0,1>, nr.normTm, cfg.finiteTrace);
+
+    set[Module] mods = {m | /Module m := deps};
+    
+    Spec findSpec(Spec normSpec) = s when /Spec s := mods, "<s.name>" == "<normSpec.name>"; 
+    rel[Spec spc, str instance] instances = {<findSpec(ns),inst> | <ns,inst> <- cfg.instances<0,1>}; 
+
+    Trace trace = buildTrace(currentModel, mods, instances, cfg.finiteTrace);
+    //Trace trace = buildTrace(currentModel, allMods, cfg.instances<0,1>, nr.normTm, cfg.finiteTrace);
     println(trace2Str(trace));
-  }  
+    
+    return trace;
+  } else if (timeout() := mfr) {
+    return noTrace(solverTimeout());
+  } else if (unsat(_) := mfr) {
+    return noTrace(noSolutionFound());
+  }
 }
 
 void translateSnippets(Module normalizedMod, Graph[RebelDependency] normDepGraph, PathConfig normPcfg) {

@@ -1,8 +1,8 @@
 module rebel::checker::RebelTrace
-
-import rebel::lang::Syntax;
-import rebel::lang::Parser;
-import rebel::lang::TypeChecker;
+ 
+import rebel::lang::Syntax; 
+//import rebel::lang::Parser;
+//import rebel::lang::TypeChecker;
 
 import rebel::checker::translation::CommonTranslationFunctions;
 
@@ -12,16 +12,21 @@ import smtlogic::Core;           // From AlleAlle
 import smtlogic::Ints;           // From AlleAlle
 import smtlogic::Strings;        // From AlleAlle
 
-import IO;  
+import IO;   
 import Set;
-import String;
-import util::Maybe;
-import util::Benchmark;
+import String; 
+import List;
 
 data Trace
   = step(Configuration conf, RaisedEvent re, Trace next)
   | goal(Configuration conf)
   | goalInfiniteTrace(Configuration conf, RaisedEvent re, int backTo)
+  | noTrace(Reason reason)
+  ;
+
+data Reason
+  = solverTimeout()
+  | noSolutionFound()
   ;
 
 data Configuration 
@@ -33,14 +38,15 @@ data RaisedEvent
   | raisedEventVariant(Spec spc, Event event, str eventName, str variant, str instance, rel[str param, str val] arguments, set[str] affectedInstances)
   ;
 
-Trace buildTrace(Model alleModel, set[Module] mods, rel[Spec spc, str instance] instances, TModel tm, bool finiteTrace) {
+Trace buildTrace(Model alleModel, set[Module] mods, rel[Spec spc, str instance] instances, bool finiteTrace) {
   set[Spec] specs = {s | Module m <- mods, /Spec s <- m.parts};
   
   int nrOfConfigs = getNrOfConfigs(alleModel); 
+  println("Nr of configs: <nrOfConfigs>");
 
-  Trace buildTrace(int stepNr) = step(getConfiguration(stepNr, specs, instances, alleModel, tm), getRaisedEvent(stepNr, specs, instances, alleModel, tm), buildTrace(stepNr + 1)) when stepNr < nrOfConfigs;
-  default Trace buildTrace(int stepNr) = goal(getConfiguration(stepNr, specs, instances, alleModel, tm)) when finiteTrace;
-  default Trace buildTrace(int stepNr) = goalInfiniteTrace(getConfiguration(stepNr, specs, instances, alleModel, tm), getRaisedEvent(stepNr, specs, instances, alleModel, tm), getBackTo(alleModel)) when !finiteTrace; 
+  Trace buildTrace(int stepNr) = step(getConfiguration(stepNr, specs, instances, alleModel), getRaisedEvent(stepNr, specs, instances, alleModel), buildTrace(stepNr + 1)) when stepNr < nrOfConfigs;
+  default Trace buildTrace(int stepNr) = goal(getConfiguration(stepNr, specs, instances, alleModel)) when finiteTrace;
+  default Trace buildTrace(int stepNr) = goalInfiniteTrace(getConfiguration(stepNr, specs, instances, alleModel), getRaisedEvent(stepNr, specs, instances, alleModel), getBackTo(alleModel)) when !finiteTrace; 
 
   return buildTrace(1);   
 }
@@ -68,27 +74,29 @@ int getNumber(varTuple([idAttribute(str _, str id)], str _), str prefix) = getNu
 
 int getNumber(str idVal, str prefix) = toInt(replaceFirst(idVal, prefix, ""));
 
-Configuration getConfiguration(int step, set[Spec] specs, rel[Spec spc, str instance] instances, Model alleModel, TModel tm) {
+Configuration getConfiguration(int step, set[Spec] specs, rel[Spec spc, str instance] instances, Model alleModel) {
   rel[Spec,str,State] states = {};
   rel[Spec,str,str,str] values = {};
   
   for (s <- specs, !isEmptySpec(s)) {
-    states += getStateInConfig(step, s, instances[s], alleModel, tm);
-    values += getValuesInConfig(step, s, instances[s], alleModel, tm);
+    states += getStateInConfig(step, s, instances[s], alleModel);
+    values += getValuesInConfig(step, s, instances[s], alleModel);
   }
   
   return config(states, values);
 }
 
 ModelRelation findRelation(Model m, str name) {
-  for (r:mRelation(name,  _, list[ModelTuple] _) <- m.relations) {
+  str lcName = toLowerCase(name);
+  
+  for (r:mRelation(str relName,  _, list[ModelTuple] _) <- m.relations, toLowerCase(relName) == lcName) {
     return r;
   }
   
   throw "Unable to find relation with name `<name>` in found AlleAlle model";
 }
 
-rel[Spec spc, str instance, State state] getStateInConfig(int step, Spec spc, set[str] instances, Model alleModel, TModel tm) {
+rel[Spec spc, str instance, State state] getStateInConfig(int step, Spec spc, set[str] instances, Model alleModel) {
   rel[Spec,str,State] instanceStates = {};
   
   ModelRelation r = findRelation(alleModel, "instanceInState");
@@ -134,7 +142,7 @@ str findAssignedValue(ModelTuple t, str field) {
   }
 }
 
-rel[Spec spc, str instance, str field, str val] getValuesInConfig(int step, Spec spc, set[str instance] instances, Model alleModel, TModel tm) {
+rel[Spec spc, str instance, str field, str val] getValuesInConfig(int step, Spec spc, set[str instance] instances, Model alleModel) {
   rel[Spec,str,str,str] values = {};
     
   list[str] getValues(ModelRelation r, str inst, str field) {
@@ -158,7 +166,7 @@ rel[Spec spc, str instance, str field, str val] getValuesInConfig(int step, Spec
   return values;
 }
 
-RaisedEvent getRaisedEvent(int step, set[Spec] specs, rel[Spec spc, str instance] instances, Model alleModel, TModel tm) {
+RaisedEvent getRaisedEvent(int step, set[Spec] specs, rel[Spec spc, str instance] instances, Model alleModel) {
   ModelRelation r = findRelation(alleModel, "raisedEvent");
 
   tuple[str,str] findInstanceAndEvent() {
@@ -174,7 +182,15 @@ RaisedEvent getRaisedEvent(int step, set[Spec] specs, rel[Spec spc, str instance
       Spec spc <- specs,
       "<spc.name>" == "<normalizedSpc.name>";
   
-  Event findEvent(Spec spc, str eventName) = e when /Event e := spc.events, "<toLowerCase("<e.name>")>" == eventName;
+  Event findEvent(Spec spc, str eventName) = e 
+    when /Event e := spc.events, 
+         "<toLowerCase("<e.name>")>" == eventName;
+  
+  Event findEvent(Spec spc, "empty") = (Event)`event empty()`;
+  
+  default Event findEvent(Spec spc, str eventName) { 
+    throw "Unable to find event `<eventName>`;"; 
+  }
 
   str getValue(ModelRelation r, str param) {
     for (t <- r.tuples) {
@@ -186,14 +202,30 @@ RaisedEvent getRaisedEvent(int step, set[Spec] specs, rel[Spec spc, str instance
     throw "Unable to find value for param `<param>` in step <step>";
   }
 
-  tuple[str instance, str event] ie = findInstanceAndEvent();   
+  tuple[str event,str variant] parseEventName(str rawEvent, str spcName) {
+    if (/^event_<s:.*>_<eventName:.*>__<variant:.*>$/ := rawEvent, s == spcName) {
+      return <eventName, variant>;
+    } else if (/^event_<s:.*>_<eventName:.*>$/ := rawEvent, s == spcName) {
+      return <eventName, "">;
+    } else {
+      throw "Unable to parse event name `<rawEvent>`";
+    }
+  }
+
+  tuple[str instance, str event] ie = findInstanceAndEvent();
+      
   Spec spc = findSpec(ie.instance);
-  Event ev = findEvent(spc, replaceAll(ie.event, "event_<toLowerCase("<spc.name>")>_", ""));
+  tuple[str eventName, str variant] en = parseEventName(ie.event, toLowerCase("<spc.name>"));
+  str getAlleEventName() = en.variant != "" ? "<en.eventName>__<en.variant>" : en.eventName; 
+
+  println(en);
+  
+  Event ev = findEvent(spc, en.eventName);
 
   rel[str param, str val] args = {};
 
   for (FormalParam p <- ev.params) {
-    ModelRelation op = findRelation(alleModel, "ParamEvent<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)><getCapitalizedParamName(p)>");
+    ModelRelation op = findRelation(alleModel, "ParamEvent<getCapitalizedSpecName(spc)><getAlleEventName()><getCapitalizedParamName(p)>");
     
     for (str val := getValue(op, "<p.name>")) {
       args += <"<p.name>", val>;
@@ -203,8 +235,8 @@ RaisedEvent getRaisedEvent(int step, set[Spec] specs, rel[Spec spc, str instance
   ModelRelation ai = findRelation(alleModel, "changedInstance");
   set[str] affectedInstances = {instance | t <- ai.tuples, /idAttribute("cur", "c<step>") := t.attributes, str instance := findAssignedValue(t, "instance")};
 
-  if (/^<evName:.*>__<varName:.*>$/ := "<ev.name>") {
-    return raisedEventVariant(spc, ev, evName, varName, ie.instance, args, affectedInstances);  
+  if (en.variant != "") {
+    return raisedEventVariant(spc, ev, en.eventName, en.variant, ie.instance, args, affectedInstances);  
   } else {
     return raisedEvent(spc, ev, ie.instance, args, affectedInstances);
   }
