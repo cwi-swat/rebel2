@@ -357,7 +357,7 @@ pred possibleTransitionsCoffeeMachine[step: (cur:id, nxt:id)]
 
 
 
-// Assert `CanServeNormalCoffee`
-∃ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∃ m ∈ (Instance ⨝ CoffeeMachine)[instance] | ((m ⨝ (CoffeeMachineSelected ⨝ cur_1))[selected] = CoffeeType_NORMAL[instance as selected] ∧ ∃ cur_2 ∈ (cur_1[config as cur] ⨝ *<cur,nxt>(order ∪ loop))[nxt->config] | let step_2 = cur_2[config as cur] ⨝ (order ∪ loop) | inState[cur_2, m, StateCoffeeMachineServe]))
+// Assert `MachineIsServing`
+∃ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∃ m ∈ (Instance ⨝ CoffeeMachine)[instance] | inState[cur_1, m, StateCoffeeMachineServe])
 // Minimize the number of steps by minimizing the number of Configurations
 objectives: minimize Config[count()]

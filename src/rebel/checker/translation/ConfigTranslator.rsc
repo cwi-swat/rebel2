@@ -15,7 +15,7 @@ Config buildConfig(str checkName, set[Module] mods, TModel tm) {
   if (Module m <- mods, 
     /chk:(Check)`check <Id name> from <Id cfg> in <SearchDepth depth> <Objectives? _>;` <- m.parts, "<name>" == checkName) {
     rebel::lang::Syntax::Config c = findReferencedConfig(cfg@\loc, mods, tm);
-    
+     
     rel[Spec,str,State] instances = buildInstances(c, mods, tm);
     rel[Spec,str,str,str] initialValues = buildInitialValues(c, mods, tm);
     int searchDepth = buildSearchDepth(depth);  
@@ -51,20 +51,12 @@ rebel::lang::Syntax::Config findReferencedConfig(loc ref, set[Module] mods, TMod
 set[Fact] gatherFacts(set[Module] mods) = {f | Module m <- mods, /Fact f <- m.parts}; 
 
 rel[Spec spc, str instance, State initialState] buildInstances(rebel::lang::Syntax::Config cfg, set[Module] mods, TModel tm) {
+//rel[Spec spc, str instance, State initialState] buildInstances(rebel::lang::Syntax::Config cfg, set[Spec] specs) {
   rel[Spec,str,State] instances = {};
 
   visit (cfg) {
-    case (InstanceSetup)`<{Id ","}+ labels> : <Type spec> <Abstracts? abstracts> <InState? inState> <WithAssignments? assignments>` : {
+    case (InstanceSetup)`<{Id ","}+ labels> : <Type spec> <InState? inState> <WithAssignments? assignments>` : {
       Spec s = lookupSpecByRef(spec@\loc, mods, tm);
-      
-      if (/Abstracts abs := abstracts) {
-        // Concrete spec is overridden by abstraction. Load abstraction and replace concrete spec by abstraction 
-        Spec concreteSpec = lookupSpecByRef(abs.concrete@\loc, mods, tm);
-        //s = visit(s) {
-        //  case 
-        //}
-      }
-      
       
       State st = noState();
       if (/InState ist := inState) {
@@ -79,6 +71,7 @@ rel[Spec spc, str instance, State initialState] buildInstances(rebel::lang::Synt
     }    
   }
   
+  // Add the 'enumeration instances'
   instances += {<s,"<instance>",noState()> | Module m <- mods, /Spec s <- m.parts, /Id instance <- s.instances};
 
   return instances;
@@ -118,13 +111,21 @@ rel[str field, str val] buildAssignments(WithAssignments assignments) {
   return vals;
 }
 
-Spec lookupSpecByType(specType(str name), set[Module] mods, TModel tm) {
-  for (Module m <- mods, /Spec s <- m.parts, "<s.name>" == name) {
+Spec lookupSpecByType(specType(str name), set[Spec] specs) {
+  for (Spec s <- specs, "<s.name>" == name) {
     return s;
   }  
 
   throw "Unable to find referenced Spec with name `<name>`";
 }
+
+Spec lookupSpecByRef(loc specRef, set[Module] mods, TModel tm) {
+  for (Module m <- mods, /Spec s <- m.parts, {s@\loc} == tm.useDef[specRef]) {
+    return s;
+  } 
+  
+  throw "Unable to find referenced Spec at `<specRef>`";
+} 
 
 Spec lookupSpecByRef(loc specRef, set[Module] mods, TModel tm) {
   for (Module m <- mods, /Spec s <- m.parts, {s@\loc} == tm.useDef[specRef]) {

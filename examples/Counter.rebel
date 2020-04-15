@@ -15,7 +15,7 @@ spec Counter
   
   states:
     (*) -> active: create;
-    active -> active: inc; //,dec;
+    active -> active: inc,dec;
   
 assert EventuallyHigherThan3 = eventually always exists c:Counter | c.i > 3;
 //assert EventuallyHigherThan3 = eventually (exists c:Counter | c.i > 3 && eventually exists c2:Counter | c2.i < 4) ;

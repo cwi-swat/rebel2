@@ -34,7 +34,7 @@ import IO;
 import ValueIO;
 import Set;
 import String;
-import util::Maybe;
+import util::Maybe; 
 import util::Benchmark;
 
 AlleAlleSnippet emptySnippet() = <{}, {}, {}, {}, (), {}, ()>;
@@ -56,8 +56,9 @@ Trace performCheck(str check, Module m, PathConfig pcfg, PathConfig normPcfg) {
   Graph[RebelDependency] deps = calculateDependencies(m, pcfg);
   
   NormalizedResult nr  = loadNormalizedModules(m, pcfg, normPcfg);
-  
   set[Module] allMods = {m | /Module m := nr.normDepGraph}; 
+
+  //rebel::lang::Syntax::Config cfg = findReferencedConfig(check, 
   list[RebelDependency] todo = order(nr.normDepGraph);
   
   AlleAlleSnippet allSnippets = emptySnippet();
@@ -79,14 +80,14 @@ Trace performCheck(str check, Module m, PathConfig pcfg, PathConfig normPcfg) {
       allSnippets = merge(snip, allSnippets);
     }  
   }    
-  
+   
   //allMods = filterAbstractions(check, allMods, nr.normTm, nr.normDepGraph);
   
   Config cfg = buildConfig(check, allMods, nr.normTm);
-  str alleSpec = translateSpecs(cfg, check, allMods, allSnippets);
+  str alleSpec = translateSpecs(cfg, check, allSnippets);
    
   ModelFinderResult mfr = checkInitialSolution(implodeProblem(alleSpec), timeOutInMs = 30 * 1000);
-
+ 
   if (sat(Model currentModel, Model (Domain) nextModel, void () stop) := mfr) {
     stop();
 
@@ -104,6 +105,19 @@ Trace performCheck(str check, Module m, PathConfig pcfg, PathConfig normPcfg) {
     return noTrace(solverTimeout());
   } else if (unsat(_) := mfr) {
     return noTrace(noSolutionFound());
+  } else if (trivialSat(Model model) := mfr) {
+    set[Module] mods = {m | /Module m := deps};
+    
+    Spec findSpec(Spec normSpec) = s when /Spec s := mods, "<s.name>" == "<normSpec.name>"; 
+    rel[Spec spc, str instance] instances = {<findSpec(ns),inst> | <ns,inst> <- cfg.instances<0,1>}; 
+
+    Trace trace = buildTrace(currentModel, mods, instances, cfg.finiteTrace);
+    println(trace2Str(trace));
+
+  } else if (trivialUnsat() := mfr) {
+    return noTrace(noSolutionFound());
+  } else {
+    throw "Unable to handle response from model finder"; 
   }
 }
 
@@ -142,6 +156,24 @@ private Maybe[loc] loadSnippet(Module m) {
   }
 }
 
+private rebel::lang::Syntax::Check findCheckByName(str name, set[Module] mods) = chk
+  when Module m <- mods, 
+      /chk:(Check)`check <Id name> from <Id cfg> in <SearchDepth depth> <Objectives? _>;` <- m.parts, 
+      "<name>" == name;
+
+private default rebel::lang::Syntax::Check findCheckByName(str name, set[Module] mods) {
+  throw "Unable to find Check with name `<name>`";
+}
+  
+private rebel::lang::Syntax::Config findReferencedConfig(loc ref, set[Module] mods, TModel tm) = cfg
+  when Module m <- mods,
+      /rebel::lang::Syntax::Config cfg <- m.parts, 
+      {cfg@\loc} == t.useDef[ref];
+
+private default rebel::lang::Syntax::Config findReferencedConfig(loc ref, set[Module] mods, TModel tm) { 
+  throw "Unable to find definition of Config referenced at `<ref>`";
+}
+
 private AlleAlleSnippet translateSnippet(Module normMod, TModel normTm, set[Module] allMods) {
   RelMapping rm = constructRelMapping(normMod, normTm, allMods);
   
@@ -173,7 +205,7 @@ rel[str,str] machineFieldTypeConstraints(set[Spec] spcs, TModel tm) {
   } 
   
   return typeCons;  
-}
+} 
        
 rel[str,str] machineOnlyHasValuesWhenInitialized(set[Spec] spcs, TModel tm) {
   rel[str,str] cons = {};
@@ -218,7 +250,7 @@ tuple[rel[str,str] typeCons, rel[str,str] multCons] eventParamTypeAndMultiplicit
    
 rel[str,str] translateFacts(Module m, RelMapping rm, TModel tm, set[Spec] allSpecs) {
   int lastUnique = 0;
-  int nxtUnique() { lastUnique += 1; return lastUnique; }
+  int nxtUnique() { return lastUnique += 1;}
   Context ctx = ctx(rm, tm, allSpecs, defaultCurRel(), defaultStepRel(), nxtUnique);
 
   return {<"<s.name>", translate(f.form, ctx)> | /Spec s <- m.parts, Fact f <- s.facts};
@@ -233,7 +265,7 @@ map[str,str] translateAsserts(Module m, RelMapping rm, TModel tm, set[Spec] allS
 }   
 
   
-str translateSpecs(Config cfg, str check, set[Module] normalizedMods, AlleAlleSnippet allSnippets, bool debug = true) {
+str translateSpecs(Config cfg, str check, AlleAlleSnippet allSnippets, bool debug = true) {
   set[Spec] normalizedSpecs = {inst.spc | inst <- cfg.instances};
 
   print("Translating Rebel to AlleAlle ...");

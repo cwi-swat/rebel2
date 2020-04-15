@@ -9,16 +9,14 @@ import rebel::lang::Syntax;
 import rebel::lang::WellFormednessChecker;
 
 import util::PathUtil;
-
+ 
 extend analysis::typepal::TypePal;
 
-import List;
 import IO;
 import ValueIO;
 import String;
 
 import DateTime;
-import util::Maybe;
 
 alias TypeCheckerResult = tuple[TModel tm, Graph[RebelDependency] depGraph];
 

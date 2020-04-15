@@ -60,7 +60,7 @@ set[Contribution] getRebelContributions() {
     PathConfig pcfg = defaultPathConfig(m@\loc.top);
             
     Graph[RebelDependency] depGraph = calculateDependencies(m, pcfg);
-    TypeCheckerResult tr = checkModule(m, depGraph, pcfg, saveTModels = true, refreshRoot = true, debug=true);
+    TypeCheckerResult tr = checkModule(m, depGraph, pcfg, saveTModels = true, refreshRoot = true, debug = false);
     
     return tr.tm;
   }

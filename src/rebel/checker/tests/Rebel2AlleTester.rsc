@@ -15,10 +15,10 @@ void checkAllInDir(loc base) {
   
 }
 
-void checkPingPong(str check)         = runCheck(check, |project://rebel2/examples/PingPong.rebel|);
-void translateCoffeeMachine()             = performCheck("MachineIsServing", parseModule(|project://rebel2/examples/CoffeeMachine.rebel|));
-void translateLeaderAndFollower(str check) = performCheck(check, parseModule(|project://rebel2/examples/sync/double/Leader.rebel|));
-void translateMultiFollower(str check)    = performCheck(check, parseModule(|project://rebel2/examples/sync/multi/Leader.rebel|));
+void checkPingPong(str check)             = runCheck(check, |project://rebel2/examples/PingPong.rebel|);
+void translateCoffeeMachine()             = runCheck("MachineIsServing", parseModule(|project://rebel2/examples/CoffeeMachine.rebel|));
+void translateLeaderAndFollower(str check) = runCheck(check, parseModule(|project://rebel2/examples/sync/double/Leader.rebel|));
+void translateMultiFollower(str check)    = runCheck(check, parseModule(|project://rebel2/examples/sync/multi/Leader.rebel|));
 void translateHotel()                     = performCheck("NoIntruder", parseModule(|project://rebel2/examples/Hotel.rebel|));
 void translateRopeBridge()                = performCheck("EverybodyCrossedInTheLeastTime", parseModule(|project://rebel2/examples/RopeBridge.rebel|));
 void translateLeaderElection(str check)   = performCheck(check, parseModule(|project://rebel2/examples/RingLeaderElection.rebel|));  

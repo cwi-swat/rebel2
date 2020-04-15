@@ -7,11 +7,12 @@ import rebel::lang::DependencyAnalyzer;
 import rebel::checker::translation::CommonTranslationFunctions;
 
 import IO;
-import Set;
+import ParseTree;
+import analysis::graph::Graph;
 
-alias AbstractionResult = tuple[rebel::lang::Syntax::Config cfg, set[Module] mods, set[Spec] spcs]; 
+alias AbstractionResult = tuple[Config cfg, set[Spec] spcs]; 
 
-AbstractionResult filterAbstractions(str check, set[Module] allMods, TModel tm, Graph[RebelDependency] depGraph) {
+AbstractionResult filterAbstractions(str config, set[Module] allMods, TModel tm) {
   Graph[Spec] spcDepGraph = extractSpecDependencyGraph(allMods, tm);
 
   bool replace(Type abstractSpcType, Type concreteSpcType) {
@@ -20,7 +21,9 @@ AbstractionResult filterAbstractions(str check, set[Module] allMods, TModel tm, 
     
     Spec filteredSpc = visit(abstractSpc) {
       case Type t => concreteSpcType when "<t>" == "<abstractSpcType>"
+      case Expr e => [Expr]"<concreteSpcType>" when "<e>" == "<abstractSpcType>"
     }; 
+    
     filteredSpc.name = concreteSpc.name;
     
     allMods = visit(allMods) {
@@ -29,14 +32,17 @@ AbstractionResult filterAbstractions(str check, set[Module] allMods, TModel tm, 
     
     spcDepGraph += {<f,abstractSpc> | <f,t> <- spcDepGraph, t == concreteSpc};
     spcDepGraph = {<f,t> | <Spec f, Spec t> <- spcDepGraph, f != concreteSpc, t != concreteSpc};
+  
+    // Check whether some specs have become `detatched`. If so, remove them.
+    components = connectedComponents(spcDepGraph);
+    for (set[Spec] component <- components, /abstractSpc !:= component) {
+      spcDepGraph -= {<f,t> | <f,t> <- spcDepGraph, f in component || t in component};
+    }
     
     return true;
   }  
   
-  if (Module m <- allMods, /(Check)`check <Id name> from <Id config> in <SearchDepth depth> <Objectives? _>;` <- m.parts, "<name>" == check) {
-    println("Config found");
-    rebel::lang::Syntax::Config cfg = findReferencedConfig(config@\loc, allMods, tm);
-    
+  if (Module m <- allMods, /rebel::lang::Syntax::Config cfg <- m.parts, "<cfg.name>" == config) {
     rebel::lang::Syntax::Config filteredCfg = visit (cfg) {
       case (InstanceSetup)`<{Id ","}+ labels> : <Type abstractSpc> abstracts <Type concreteSpc> <InState? inState> <WithAssignments? assignments>` =>
         (InstanceSetup)`<{Id ","}+ labels> : <Type concreteSpc> <InState? inState> <WithAssignments? assignments>` when replace(abstractSpc, concreteSpc)
@@ -47,19 +53,10 @@ AbstractionResult filterAbstractions(str check, set[Module] allMods, TModel tm, 
     };
 
     // Only keep those specs that are reachable from the root module
-    
-    return <filteredCfg, allMods, {f,t | <f,t> <- spcDepGraph}>;
+    return <filteredCfg, {f,t | <f,t> <- spcDepGraph}>;
   }
   
   throw "Unable to find Config";
-}
-
-private rebel::lang::Syntax::Config findReferencedConfig(loc ref, set[Module] mods, TModel tm) {
-  for (Module m <- mods, /rebel::lang::Syntax::Config cfg <- m.parts, {cfg@\loc} == tm.useDef[ref]) {
-    return cfg;
-  }
-  
-  throw "Unable to find definition of Config referenced at `<ref>`";
 }
 
 private Spec lookupSpecByRef(loc specRef, set[Module] mods, TModel tm) {

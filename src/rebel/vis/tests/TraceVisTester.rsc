@@ -20,6 +20,7 @@ App[TraceVisModel] visLightCheck() = visTrace("BulbCanBreak", |project://rebel2/
 App[TraceVisModel] visAccountCheck() = visTrace("CanBeOverdrawn", |project://rebel2/examples/banking/Account.rebel|);
 App[TraceVisModel] visDoctorCheck() = visTrace("DoctorCanGoOffCall", |project://rebel2/examples/local/doctor/protocol/Doctor.rebel|);
 App[TraceVisModel] visPaperTransactionCheck() = visTrace("TransactionCanGetStuck", |project://rebel2/examples/local/paper/Transaction.rebel|);
+App[TraceVisModel] visPaperAccountCheck() = visTrace("CanOverdrawAccount", |project://rebel2/examples/local/paper/Account.rebel|);
 
 App[TraceVisModel] visTrace(str check, loc rebelFile) {
   Module m = parseModule(rebelFile);
