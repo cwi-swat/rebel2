@@ -1,7 +1,6 @@
 module rebel::checker::translation::EventTranslator
 
 import rebel::checker::translation::CommonTranslationFunctions;
-import rebel::checker::translation::SyncedEventGraphBuilder;
 import rebel::checker::translation::RelationCollector;
 import rebel::checker::translation::FormulaAndExpressionTranslator;
 
@@ -9,20 +8,18 @@ import rebel::lang::Syntax;
 import rebel::lang::TypeChecker;
 
 import String;
-import IO;
 import Set;
 import List;
-import Map;
 import ParseTree;
-import util::Maybe;
 import analysis::graphs::Graph;
 
-map[str,str] constructTransitionFunctions(set[Spec] specsToTranslate, RelMapping rm, TModel tm, set[Spec] allSpecs) {
-  Graph[SyncedWith] syncDep = buildSyncGraph(specsToTranslate, tm, allSpecs);
-  return ("<s.name>" : constructTransitionFunction(s, syncDep, allSpecs, rm, tm) | Spec s <- specsToTranslate, !isEmptySpec(s));
+str constructTransitionFunctions(set[Spec] spcs, RelMapping rm, TModel tm) {
+  Graph[SyncedWith] syncDep = buildSyncGraph(spcs, tm);
+  return "<for (Spec s <- spcs, !isEmptySpec(s)) {>// Transition function for <s.name>
+         '<constructTransitionFunction(s, syncDep, spcs, rm, tm)><}>";
 }
 
-str constructTransitionFunction(Spec spc, Graph[SyncedWith] syncDep, set[Spec] allSpecs, RelMapping rm, TModel tm) {
+str constructTransitionFunction(Spec spc, Graph[SyncedWith] syncDep, set[Spec] spcs, RelMapping rm, TModel tm) {
   list[str] getEventParams(Event e) { 
     list[str] actuals = ["step", "inst"];
     
@@ -36,7 +33,7 @@ str constructTransitionFunction(Spec spc, Graph[SyncedWith] syncDep, set[Spec] a
   str buildTransCond(Event e) {
     int lastUnique = 0;
     int nxtUnique() { lastUnique += 1; return lastUnique; }
-    Context ctx = ctx(rm, tm, allSpecs, defaultCurRel(), defaultStepRel(), nxtUnique);
+    Context ctx = ctx(rm, tm, spcs, defaultCurRel(), defaultStepRel(), nxtUnique);
 
     tuple[set[str] names, list[str] syncs] lets = syncedInstanceRels(spc, e, "inst", syncDep, top(), ctx);
     lets.names += {"inst"};
@@ -102,7 +99,8 @@ lrel[str fieldName, str relName] findRootRel(Expr exp, str instRel, Spec spc, Ev
         return findRootRel(d.expr, instRel, spc, evnt, scp, ctx);
       }
     }
-  } 
+    default: throw "Unknown role `<role>`";
+  }
 }
 
 private tuple[set[str],list[str]] syncedInstanceRels(Spec s, Event e, str instRel, Graph[SyncedWith] syncDep, SyncScope scp, Context c) {
@@ -132,13 +130,13 @@ private tuple[set[str],list[str]] syncedInstanceRels(Spec s, Event e, str instRe
 
 alias SyncedWith = tuple[Spec s, Event e];
 
-private Graph[SyncedWith] buildSyncGraph(set[Spec] spcsToTranslate, TModel tm, set[Spec] allSpecs) {
-  Spec findSpecByName(str name) = s when Spec s <- allSpecs, "<s.name>" == name;
+private Graph[SyncedWith] buildSyncGraph(set[Spec] spcs, TModel tm) {
+  Spec findSpecByName(str name) = s when Spec s <- spcs, "<s.name>" == name;
   Event findEventByName(str name, Spec s) = e when Event e <- s.events, "<e.name>" == name;
 
   Graph[SyncedWith] syncDep = {};
    
-  for (Spec s <- spcsToTranslate, Event e <- s.events, /(Formula)`<Expr exp>.<Id ev>(<{Expr ","}* args>)` := e.body, specType(str spcName) := getType(exp,tm)) {
+  for (Spec s <- spcs, Event e <- s.events, /(Formula)`<Expr exp>.<Id ev>(<{Expr ","}* args>)` := e.body, specType(str spcName) := getType(exp,tm)) {
     Spec otherSpec = findSpecByName(spcName);
     Event otherEvent = findEventByName("<ev>", otherSpec);
     
@@ -151,11 +149,16 @@ private Graph[SyncedWith] buildSyncGraph(set[Spec] spcsToTranslate, TModel tm, s
 private str toStr(tuple[SyncedWith from, SyncedWith to] n) = "<toStr(from)> -\> <toStr(to)>";
 private str toStr(SyncedWith sw) = "<sw.s.name>.<sw.e.name>";
 
-rel[str,str] translateEventsToPreds(set[Spec] spcsToTrans, RelMapping rm, TModel tm, set[Spec] allSpecs) {
-  rel[str,str] preds = {};
+str translateEventsToPreds(set[Spec] spcs, RelMapping rm, TModel tm) {
+  str preds = "";
   
-  for (Spec s <- spcsToTrans, Event e <- s.events) {
-     preds["<s.name>"] = isFrameEvent(e) ? translateFrameEvent(s, e, getLowerCaseSpecName(s), rm, tm, allSpecs) : translateEventToPred(s, e, getLowerCaseSpecName(s), rm, tm, allSpecs);   
+  for (Spec s <- spcs) {
+    preds += "// Event predicates for <s.name>\n";
+    
+    for (Event e <- s.events) {
+      preds += isFrameEvent(e) ? translateFrameEvent(s, e, getLowerCaseSpecName(s), rm, tm, spcs) : translateEventToPred(s, e, getLowerCaseSpecName(s), rm, tm, spcs);
+      preds += "\n";
+    }   
   }
   
   return preds;

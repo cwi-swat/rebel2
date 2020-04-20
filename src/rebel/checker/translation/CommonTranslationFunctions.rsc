@@ -9,15 +9,6 @@ import String;
 import Node;
 import IO;
 
-data Config = config(rel[Spec spc, str instance, State initialState] instances, 
-                     rel[Spec spc, str instance, str field, str val] initialValues, 
-                     set[Fact] facts, 
-                     TModel tm,
-                     int numberOfTransitions,
-                     bool finiteTrace = true,
-                     int maxSizeIntegerSets = 5,
-                     int maxSizeStringSets = 5);
-
 data State 
   = uninitialized()
   | finalized()
@@ -186,7 +177,7 @@ bool isSetOfPrim(Type tipe, TModel tm) = isSetOfInt(tipe, tm) || isSetOfString(t
 private bool isSetOfType(Type tipe, AType elemType, TModel tm) { 
   if (tipe@\loc notin tm.facts) {
     throw "No type information found for `<tipe>`";
-  }
+  } 
   
   return setType(elemType) := tm.facts[tipe@\loc];
 }
@@ -199,7 +190,7 @@ default bool isPrim(Expr expr, TModel tm) { throw "No type information found for
 
 bool isPrim(intType()) = true;
 bool isPrim(stringType()) = true;
-bool isPrim(AType _) = false; 
+default bool isPrim(AType _) = false; 
 
 bool isInternalEvent(TransEvent te, Spec s) = isInternalEvent(lookupEventByName("<te>", s), s);
 default bool isInternalEvent(TransEvent te, Spec s) { throw "Unable to find event with name `<te>` in `<s.name>`"; }  

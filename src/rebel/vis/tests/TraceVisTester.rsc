@@ -2,8 +2,10 @@ module rebel::vis::tests::TraceVisTester
 
 import rebel::vis::TraceVis;
 
-import rebel::checker::Rebel2Alle;
-import rebel::checker::RebelTrace;
+import rebel::checker::tests::ModelCheckerTester;
+
+import rebel::checker::RebelToAlleTranslator;
+import rebel::checker::Trace;
 import rebel::lang::Syntax;
 import rebel::lang::Parser;
 
@@ -19,16 +21,13 @@ App[TraceVisModel] visRingLeaderElectionCheck() = visTrace("EventuallyOneIsElect
 App[TraceVisModel] visLightCheck() = visTrace("BulbCanBreak", |project://rebel2/examples/Light.rebel|);
 App[TraceVisModel] visAccountCheck() = visTrace("CanBeOverdrawn", |project://rebel2/examples/banking/Account.rebel|);
 App[TraceVisModel] visDoctorCheck() = visTrace("DoctorCanGoOffCall", |project://rebel2/examples/local/doctor/protocol/Doctor.rebel|);
-App[TraceVisModel] visPaperTransactionCheck() = visTrace("TransactionCanGetStuck", |project://rebel2/examples/local/paper/Transaction.rebel|);
+
+App[TraceVisModel] visPaperTransactionGetStuckCheck() = visTrace("TransactionCanGetStuck", |project://rebel2/examples/local/paper/Transaction.rebel|);
+App[TraceVisModel] visPaperTransactionCanBookCheck() = visTrace("CanBookATransaction", |project://rebel2/examples/local/paper/Transaction.rebel|);
+
 App[TraceVisModel] visPaperAccountCheck() = visTrace("CanOverdrawAccount", |project://rebel2/examples/local/paper/Account.rebel|);
 
 App[TraceVisModel] visTrace(str check, loc rebelFile) {
-  Module m = parseModule(rebelFile);
-
-  PathConfig pcfg = defaultPathConfig(m@\loc.top);
-  PathConfig normPcfg = normalizerPathConfig(m@\loc.top);
-
-  Trace t = performCheck(check, m, pcfg, normPcfg);
-  
+  Trace t = testPerformCheck(check, rebelFile);
   return createTraceVis(check, t);
 }

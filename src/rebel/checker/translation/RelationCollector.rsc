@@ -28,7 +28,7 @@ AnalysisContext nextStepRel(AnalysisContext old) = actx(old.lookup, old.add, old
 
 AnalysisContext nextCurAndStepRel(AnalysisContext old) = actx(old.lookup, old.add, getNextCurRel(old.curRel), getNextStepRel(old.stepRel), old.tm, old.specs, old.emptySpecs, old.addCurRelScoped, old.lookupCurRelScoped);
 
-RelMapping constructRelMapping(Module m, TModel tm, set[Module] allMods) {
+RelMapping constructRelMapping(Module m, TModel tm) {
   RelMapping mapping = ();
   void addRel(loc l, RelExpr r) { mapping[l] = r; }
   RelExpr lookupRel(loc l) = mapping[l] when l in mapping;
@@ -39,8 +39,8 @@ RelMapping constructRelMapping(Module m, TModel tm, set[Module] allMods) {
   str lookupCurRelScoped(loc l) = curRelScoped[l] when l in curRelScoped;
   default str lookupCurRelScoped(loc l) { throw "No current relation stored for expression at <l>"; }
   
-  map[loc,Spec] specs = (s@\loc : s | Module mm <- allMods, /Spec s <- mm.parts); 
-  set[str] emptySpecs = findEmptySpecs(allMods);
+  map[loc,Spec] specs = (s@\loc : s | /Spec s <- m.parts); 
+  set[str] emptySpecs = findEmptySpecs(m);
   
   AnalysisContext ctx = actx(lookupRel, addRel, defaultCurRel(), defaultStepRel(), tm, specs, emptySpecs, addCurRelScoped, lookupCurRelScoped);
   
@@ -62,7 +62,7 @@ RelMapping constructRelMapping(Module m, TModel tm, set[Module] allMods) {
   return mapping; 
 }
 
-private set[str] findEmptySpecs(set[Module] mods) = {"<s.name>" | Module m <- mods, /Spec s <- m.parts, isEmptySpec(s)};
+private set[str] findEmptySpecs(Module m) = {"<s.name>" | /Spec s <- m.parts, isEmptySpec(s)};
 private bool isEmptySpec(Spec spc) = /Field _ !:= spc.fields && /Transition _ !:= spc.states;
 
 void analyse(current:(Event)`<Modifier* _> event <Id name>(<{FormalParam ","}* params>) <EventBody body>`, str specName, AnalysisContext ctx) {
@@ -321,11 +321,10 @@ private Define getDefinition(loc use, AnalysisContext ctx) {
   if ({loc def} := ctx.tm.useDef[use]) { 
     if (def in ctx.tm.definitions) {
       return ctx.tm.definitions[def];
-    } else {
-      throw "Unable to define role for `<def>`";
-    }
+    } 
   }
   
+  throw "Unable to define role";
 }
 
 private Maybe[Define] getDefinitionIfExists(loc use, AnalysisContext ctx) {
@@ -336,11 +335,10 @@ private Maybe[Define] getDefinitionIfExists(loc use, AnalysisContext ctx) {
   if ({loc def} := ctx.tm.useDef[use]) { 
     if (def in ctx.tm.definitions) {
       return just(ctx.tm.definitions[def]);
-    } else {
-      return nothing();
-    }
+    } 
   }
   
+  return nothing();
 }
 
 

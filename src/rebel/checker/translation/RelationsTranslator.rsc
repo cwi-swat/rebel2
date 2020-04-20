@@ -2,17 +2,18 @@ module rebel::checker::translation::RelationsTranslator
 
 import rebel::lang::Syntax;
 import rebel::lang::TypeChecker;
+
+import rebel::checker::ConfigTranslator;
 import rebel::checker::translation::CommonTranslationFunctions;
 
 import String;
 import Set;
 import List;
-import IO;
 
-str translateRelationDefinitions(Config cfg) 
+str translateRelationDefinitions(Config cfg, TModel tm) 
   = "<translateStaticPart(cfg.instances<0>)>
     '
-    '<translateDynamicPart(cfg)>
+    '<translateDynamicPart(cfg, tm)>
     ";
 
 private str translateStaticPart(set[Spec] spcs) {
@@ -26,16 +27,16 @@ private str translateStaticPart(set[Spec] spcs) {
   return def;
 }
 
-private str translateDynamicPart(Config cfg) {
+private str translateDynamicPart(Config cfg, TModel tm) {
   str def = "// Dynamic configuration of state machines
             '<buildConfigRels(cfg.numberOfTransitions, cfg.finiteTrace)>
             '<buildInstanceRel(cfg.instances)>
             '<buildInstanceInStateRel(cfg.instances, cfg.numberOfTransitions)>
             '<buildRaisedEventsRel(cfg.instances<0,1>, cfg.numberOfTransitions, cfg.finiteTrace)>
             '<buildChangedInstancesRel(cfg.instances<0,1>, cfg.numberOfTransitions, cfg.finiteTrace)>
-            '<buildStateVectors(lookupSpecs(cfg.instances), cfg)>
+            '<buildStateVectors(lookupSpecs(cfg.instances), cfg, tm)>
             '<buildEnumRels(lookupSpecs(cfg.instances))>
-            '<buildEventParamRels(lookupSpecs(cfg.instances), cfg)>"; 
+            '<buildEventParamRels(lookupSpecs(cfg.instances), cfg, tm)>"; 
 
   return def;
 }
@@ -131,27 +132,27 @@ str translateConfigState(Spec spc, uninitialized()) = "state_uninitialized";
 str translateConfigState(Spec spc, finalized())     = "state_finalized";
 str translateConfigState(Spec spc, state(str name)) = "state_<toLowerCase("<spc.name>")>_<toLowerCase("<name>")>";
 
-private str buildEventParamRels(set[Spec] specs, Config cfg) {
+private str buildEventParamRels(set[Spec] specs, Config cfg, TModel tm) {
   list[str] rels = [];
   
   for (Spec s <- specs, e <- lookupEvents(s), /FormalParam p <- e.params) {
-    rels += buildEventParamRel(s,e,p,cfg);
+    rels += buildEventParamRel(s,e,p,cfg,tm);
   }
   
   return intercalate("\n", [r | r <- rels, r != ""]);
 }
 
-private str buildEventParamRel(Spec s, Event e, FormalParam p, Config cfg) {
+private str buildEventParamRel(Spec s, Event e, FormalParam p, Config cfg, TModel tm) {
   list[str] defs = ["cur:id", "nxt:id", getParamHeaderDef(p,cfg)];
-  return "ParamEvent<getCapitalizedSpecName(s)><getCapitalizedEventName(e)><getCapitalizedParamName(p)> (<intercalate(", ", defs)>) <buildParamTuples(s,e,p,cfg)>";
+  return "ParamEvent<getCapitalizedSpecName(s)><getCapitalizedEventName(e)><getCapitalizedParamName(p)> (<intercalate(", ", defs)>) <buildParamTuples(s,e,p,cfg,tm)>";
 }  
 
-private str buildParamTuples(Spec s, Event e, FormalParam p, Config cfg) {
+private str buildParamTuples(Spec s, Event e, FormalParam p, Config cfg, TModel tm) {
   void addTuple(int i, int j) {
-    if (isPrim(p.tipe, cfg.tm)) {
+    if (isPrim(p.tipe, tm)) {
       upperBound += "\<c<i>,c<j>,?\>";
     } else {
-      for (str otherInst <- getInstancesOfType(p.tipe, cfg.instances<0,1>, cfg.tm)) {
+      for (str otherInst <- getInstancesOfType(p.tipe, cfg.instances<0,1>, tm)) {
         upperBound += "\<c<i>,c<j>,<otherInst>\>";
       }
     } 
@@ -177,21 +178,21 @@ private str buildEnumRels(set[Spec] specs) {
          '<}>";
 }
 
-private str buildStateVectors(set[Spec] specs, Config cfg) {
-  list[str] rels = [buildFieldRel(s, f, cfg) | Spec s <- specs, /Field f <- s.fields];
+private str buildStateVectors(set[Spec] specs, Config cfg, TModel tm) {
+  list[str] rels = [buildFieldRel(s, f, cfg, tm) | Spec s <- specs, /Field f <- s.fields];
   return "<for (r <- rels) {><r>
          '<}>";
 }
 
-private str buildFieldRel(Spec spc, Field f, Config cfg) {
+private str buildFieldRel(Spec spc, Field f, Config cfg, TModel tm) {
   list[str] defs = ["config:id", "instance:id", getFieldHeaderDef(f,cfg)];
-  return "<getCapitalizedSpecName(spc)><getCapitalizedFieldName(f)> (<intercalate(", ", defs)>) <buildFieldTuples(spc, f, cfg)>";
+  return "<getCapitalizedSpecName(spc)><getCapitalizedFieldName(f)> (<intercalate(", ", defs)>) <buildFieldTuples(spc, f, cfg, tm)>";
 }
 
 private str getFieldHeaderDef(Field f, Config cfg) = "<f.name>:<convertType(f.tipe)>"; 
 private str getParamHeaderDef(FormalParam p, Config cfg) = "<p.name>:<convertType(p.tipe)>"; 
 
-private str buildFieldTuples(Spec spc, Field f, Config cfg) {
+private str buildFieldTuples(Spec spc, Field f, Config cfg, TModel tm) {
   list[str] lowerBound = [];
   for (<str inst, "<f.name>", str val> <- cfg.initialValues[spc]) {
     lowerBound += "\<c1,<inst>,<val>\>";
@@ -199,18 +200,18 @@ private str buildFieldTuples(Spec spc, Field f, Config cfg) {
   
   list[str] upperBound = [];  
   for (str inst <- lookupInstances(spc, cfg.instances<0,1>), int i <- [1..cfg.numberOfTransitions+1]) {
-    if (isPrim(f.tipe, cfg.tm)) {
+    if (isPrim(f.tipe, tm)) {
       upperBound += "\<c<i>,<inst>,?\>";
-    } else if (isSetOfInt(f.tipe, cfg.tm)) {
+    } else if (isSetOfInt(f.tipe, tm)) {
       for (int j <- [1..cfg.maxSizeIntegerSets+1]) {
         upperBound += "\<c<i>,<inst>,<inst>_elem<j>\>";
       }
-    } else if (isSetOfString(f.tipe, cfg.tm)) {
+    } else if (isSetOfString(f.tipe, tm)) {
       for (int j <- [1..cfg.maxSizeStringSets+1]) {
         upperBound += "\<c<i>,<inst>,<inst>_elem<j>\>";
       }
     }else { // Set of other specification
-      for (str otherInst <- getInstancesOfType(f.tipe, cfg.instances<0,1>, cfg.tm)) {
+      for (str otherInst <- getInstancesOfType(f.tipe, cfg.instances<0,1>, tm)) {
         upperBound += "\<c<i>,<inst>,<otherInst>\>";
       }
     } 

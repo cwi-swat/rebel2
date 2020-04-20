@@ -12,112 +12,28 @@ import List;
 import Set;
 import String;
 import IO; 
-import ValueIO;
 import Location;
-import util::Maybe;
 
-alias NormalizedResult = tuple[Module normMod, TModel normTm, Graph[RebelDependency] normDepGraph];
+alias CheckedModule = tuple[Module m, TModel tm];
 
-NormalizedResult loadNormalizedModules(Module m, PathConfig pcfg, PathConfig normPcfg) {
-  Maybe[loc] normModLoc = lookupNormalizedModule(m.\module.name, normPcfg);
-  
-  if (just(loc nmf) := normModLoc) {
-    Module normMod = parseModule(nmf);
-    Graph[RebelDependency] normDepGraph = calculateDependencies(normMod, normPcfg);
-    
-    if (/resolvedOnlyModule(_,_) !:= normDepGraph, just(TModel ntm) := getTModel(normMod, normDepGraph)) {
-      return <normMod, ntm, normDepGraph>;
-    } else {
-      // Normalized but the TModel of the normalized file is stale
-      return normalizeAndCheck(m, pcfg, normPcfg);
-    }
-  } else {
-    // Not yet normalized
-    return normalizeAndCheck(m, pcfg, normPcfg);
-  }    
-}
+CheckedModule normalizeAndTypeCheck(Module origMod, TModel origTm, PathConfig pcfg, bool saveNormalizedMod = false) {
+  Module normMod = normalizeEventVariantSyncs(origMod, origTm);
 
-NormalizedResult normalizeAndCheck(Module root, PathConfig pcfg, PathConfig normPcfg, bool refreshTModel = false, bool saveNormalizedModules = true) 
-  = normalizeAndCheck(root, calculateDependencies(root, pcfg), pcfg, normPcfg, refreshTModel = refreshTModel, saveNormalizedModules = saveNormalizedModules);
-
-NormalizedResult normalizeAndCheck(Module root, Graph[RebelDependency] depGraph, PathConfig pcfg, PathConfig normPcfg, bool refreshTModel = false, bool saveNormalizedModules = true) {
-  println("Normalizing `<root.\module.name>`");
-  if (/unresolvedModule(_) := depGraph<0> + depGraph<1>) {
-    println("Unable to normalize module `<root.\module.name>` since not all dependencies can be resolved");
-    return;
-  } 
-  
-  TModel tm;
-  
-  if (!refreshTModel, just(TModel ltm) := getTModel(root, depGraph)) {
-    println("Using earlier save type information for `<root.\module.name>`");
-    tm = ltm;
-  } else {
-    println("Recalculating type information for `<root.\module.name>`");
-    TypeCheckerResult tr = checkModule(root, depGraph, pcfg, saveTModels = true);
-    tm = tr.tm;
-    depGraph = tr.depGraph; 
-  }    
-  
-  // all modules should be resolved and tmodels should be created
-  if (/resolvedOnlyModule(_,_) := depGraph<0> + depGraph<1>) {
-    throw "Not all modules could be typed checked";
-  }
-  
-  list[RebelDependency] todo = [d | d <- order(depGraph)];
-  
-  while (todo != []) {
-    RebelDependency cur = todo[-1];
-    todo -= cur;
-    
-    if (resolvedAndCheckedModule(Module curMod, TModel curTm, curTs) := cur) {
-      Maybe[loc] prevNormLoc = lookupNormalizedModule(curMod.\module.name, pcfg);
-
-      if (nothing() := prevNormLoc || (just(nmf) := prevNormLoc && lastModified(nmf) < curTs)) {
-        println("Start normalization of `<curMod.\module.name>`");
-
-        Module normMod = parseModule(normalize(curMod, curTm, pcfg));
-        Graph[RebelDependency] normDepGraph = calculateDependencies(normMod, normPcfg);
-        checkModule(normMod, normDepGraph, normPcfg);
-      }
-    } else {
-      throw "Unable to normalize module?!?";
-    }
-  }
-  
-  // All dependencies (including root) have been normalized, create the result 
-  if (just(loc nfl) := lookupNormalizedModule(root.\module.name, normPcfg)) {
-    Module normMod = parseModule(nfl);
-    Graph[RebelDependency] normDepGraph = calculateDependencies(normMod, normPcfg);
-    TypeCheckerResult tr = checkModule(normMod, normDepGraph, normPcfg);
-  
-    return <normMod, tr.tm, tr.depGraph>;
-  } else {
-    // Should never happen
-    throw "Unable to load normalized module `<root.\module.name>` (should not happen)";
-  }    
-}
-
-private Maybe[loc] lookupNormalizedModule(QualifiedName name, PathConfig pcfg) = lookupFile(name, "rebel", pcfg.normalized);
-private Maybe[loc] lookupModule(QualifiedName name, PathConfig pcfg) = lookupFile(name, "rebel", pcfg.srcs);
-
-loc normalize(Module m, TModel origTm, PathConfig pcfg) {
-  m = normalizeEventVariantSyncs(m, origTm);
-
-  m = visit(m) {
+  normMod = visit(normMod) {
     case (Part)`<Spec spc>` => (Part)`<Spec nSpc>` when Spec nSpc := normalize(spc, origTm)
   }
+ 
+  if (saveNormalizedMod) {
+    writeFile(addModuleToBase(pcfg.checks, normMod)[extension="norm.rebel"], normMod);
+  }
   
-  return saveNormalizedModule(m, pcfg);
-}
-
-loc saveNormalizedModule(Module norm, PathConfig pcfg) {
-  loc normFile = (pcfg.normalized + replaceAll("<norm.\module.name>", "::", "/"))[extension = "rebel"];
-
-  makeDirRecursively(normFile.parent);
-  writeFile(normFile, norm);
-
-  return normFile;
+  // TEMP / TODO: Cop-out for Type checking issues with generated code (without reparsing). Location trouble on generated nodes
+  normMod = parse(#Module, "<normMod>");
+  ////////////////
+    
+  TModel normModTm = rebelTModelFromModule(normMod, {}, pcfg, debug = false);
+  
+  return <normMod, normModTm>;
 }
 
 Spec normalize(Spec spc, TModel origTm) {
@@ -143,19 +59,19 @@ Module normalizeEventVariantSyncs(Module m, TModel origTm) {
   set[Define] findVariants(loc eventRef) = {v | v <- variants, isContainedIn(v.defined, eventDef)} when {loc eventDef} := origTm.useDef[eventRef]; 
   default set[Define] findVariants(loc eventRef) = {};  
 
-  Formula buildSyncDisj(orig:(Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, set[Define] variants) 
+  Formula buildSyncDisj((Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, set[Define] variants) 
     = buildFormDisj([(Formula)`<Expr spc>.<Id varId>(<{Expr ","}* params>)` | Define var <- variants, Id varId := [Id]"<event>__<var.id>"]); 
 
-  Formula buildRaisedDisj(orig:(Formula)`<TransEvent evnt> on <Expr spc> <WithAssignments? as>`, set[Define] variants)
+  Formula buildRaisedDisj((Formula)`<TransEvent evnt> on <Expr spc> <WithAssignments? as>`, set[Define] variants)
     = buildFormDisj([(Formula)`<TransEvent varEvnt> on <Expr spc> <WithAssignments? as>` | Define var <- variants, TransEvent varEvnt := [TransEvent]"<evnt>__<var.id>"]);
 
   Formula buildFormDisj(list[Formula] terms) = [Formula]"(<intercalate(" || ", terms)>)";
   
   return visit(m) {
-    case orig:(Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)` => buildSyncDisj(orig, vars) 
+    case orig:(Formula)`<Expr _>.<Id event>(<{Expr ","}* _>)` => buildSyncDisj(orig, vars) 
       when set[Define] vars := findVariants(event@\loc), vars != {}     
 
-    case orig:(Formula)`<TransEvent evnt> on <Expr spc> <WithAssignments? as>` => buildRaisedDisj(orig, vars) 
+    case orig:(Formula)`<TransEvent evnt> on <Expr _> <WithAssignments? _>` => buildRaisedDisj(orig, vars) 
       when set[Define] vars := findVariants(evnt@\loc), vars != {}     
 
   } 

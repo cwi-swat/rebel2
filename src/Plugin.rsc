@@ -5,14 +5,11 @@ import rebel::lang::Parser;
 import rebel::lang::TypeChecker;
 import rebel::lang::DependencyAnalyzer;
 
-import rebel::checker::Normalizer;
-import rebel::checker::Rebel2Alle;
-import rebel::checker::RebelTrace;
+import rebel::checker::ModelChecker;
+import rebel::checker::Trace;
  
 import util::IDE;
-import util::HtmlDisplay;
 import util::Prompt; 
-import util::Maybe;  
 
 import salix::App;
 import rebel::vis::ModuleVis;
@@ -38,7 +35,12 @@ set[Contribution] getRebelContributions() {
   Content runCheck(Module m, loc selection) {
     if (/Check chk <- m.parts, isContainedIn(selection, chk@\loc)) {
       println("Running check");
-      Trace t = performCheck("<chk.name>", m, defaultPathConfig(m@\loc.top), normalizerPathConfig(m@\loc.top));
+      
+      PathConfig pcfg = defaultPathConfig(m@\loc.top);
+      Graph[RebelDependency] depGraph = calculateDependencies(m, pcfg);
+      TypeCheckerResult tr = checkModule(m, depGraph, pcfg);
+      
+      Trace t = performCheck(chk, m, tr.tm, tr.depGraph, pcfg = pcfg, saveIntermediateFiles = false);
       
       switch(t) {
         case noTrace(solverTimeout()): {
@@ -65,20 +67,6 @@ set[Contribution] getRebelContributions() {
     return tr.tm;
   }
   
-  void buildModule(Module m) {
-    PathConfig pcfg = defaultPathConfig(m@\loc.top);
-    PathConfig normPcfg = normalizerPathConfig(m@\loc.top);
-            
-    Graph[RebelDependency] depGraph = calculateDependencies(m, pcfg);
-    if (/unresolvedModule(QualifiedName qfn) := depGraph) {
-      println("`<qfn>` could not be resolved yet, stopped the building process");
-      return;
-    }
-    
-    NormalizedResult nr = normalizeAndCheck(m, depGraph, pcfg, normPcfg);
-    translateSnippets(nr.normMod, nr.normDepGraph, normPcfg);    
-  }
-  
   return {
     annotator(Module (Module m) {
       loc proj = project(m@\loc.top);
@@ -89,11 +77,6 @@ set[Contribution] getRebelContributions() {
       annotatedMod = annotatedMod[@hyperlinks=tm.useDef];
       
       return annotatedMod;
-    }),
-    builder(set[Message] (Module m) {
-      buildModule(m);
-      
-      return {};
     }),
     syntaxProperties(#start[Module]),
     popup(

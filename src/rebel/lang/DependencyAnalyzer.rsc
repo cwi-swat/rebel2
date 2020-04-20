@@ -34,7 +34,9 @@ Graph[RebelDependency] calculateDependencies(Module m, PathConfig pcfg) {
   return deps;
 }
 
-RebelDependency buildDependency(Module m, PathConfig pcfg) 
+set[Module] modulesOnly(Graph[RebelDependency] deps) = {m | /Module m := deps};
+
+private RebelDependency buildDependency(Module m, PathConfig pcfg) 
   = (just(loc tmLoc) := lookupTModel(m.\module.name, pcfg) && lastModified(tmLoc) >= lastModified(m@\loc.top))
   ? resolvedAndCheckedModule(m, readBinaryValueFile(#TModel, tmLoc), lastModified(tmLoc)) 
   : resolvedOnlyModule(m, lastModified(m@\loc.top))

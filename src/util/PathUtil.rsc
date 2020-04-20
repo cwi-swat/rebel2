@@ -7,7 +7,7 @@ import util::Maybe;
 
 import rebel::lang::Syntax;
 
-data PathConfig = pathConfig(list[loc] srcs = [], loc tmodels = |unknown:///|, loc normalized = |unknown:///|);
+data PathConfig = pathConfig(list[loc] srcs = [], loc tmodels = |unknown:///|, loc normalized = |unknown:///|, loc checks = |unknown:///|);
 
 loc project(loc file) {
    assert file.scheme == "project";
@@ -21,7 +21,7 @@ PathConfig defaultPathConfig(loc file) {
   //
   //loc proj = project(file);
   loc proj = |home:///workspace/rebel2|;
-  return pathConfig(srcs = [proj + "src", proj + "examples"], tmodels = proj + "bin/tm", normalized = proj + "bin/normalized");
+  return pathConfig(srcs = [proj + "src", proj + "examples"], tmodels = proj + "bin/tm", normalized = proj + "bin/normalized", checks = proj + "/bin/checks");
 }
 
 PathConfig normalizerPathConfig(loc file) {
@@ -35,10 +35,12 @@ PathConfig normalizerPathConfig(loc file) {
 }
 
 
-loc extractBase(Module m) {
+loc extractBase(Module m) = extractBase(m.\module.name); 
+
+loc extractBase(QualifiedName modDef) {
   loc modLoc = m@\loc.top;
   
-  for (QualifiedName modDef := m.\module.name, str part <- split("::", "<modDef>")) {
+  for (str part <- split("::", "<modDef>")) {
     modLoc = modLoc.parent;
   }
   

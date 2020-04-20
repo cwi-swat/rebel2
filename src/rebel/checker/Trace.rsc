@@ -1,4 +1,4 @@
-module rebel::checker::RebelTrace
+module rebel::checker::Trace
  
 import rebel::lang::Syntax; 
 //import rebel::lang::Parser;
@@ -42,7 +42,6 @@ Trace buildTrace(Model alleModel, set[Module] mods, rel[Spec spc, str instance] 
   set[Spec] specs = {s | Module m <- mods, /Spec s <- m.parts};
   
   int nrOfConfigs = getNrOfConfigs(alleModel); 
-  println("Nr of configs: <nrOfConfigs>");
 
   Trace buildTrace(int stepNr) = step(getConfiguration(stepNr, specs, instances, alleModel), getRaisedEvent(stepNr, specs, instances, alleModel), buildTrace(stepNr + 1)) when stepNr < nrOfConfigs;
   default Trace buildTrace(int stepNr) = goal(getConfiguration(stepNr, specs, instances, alleModel)) when finiteTrace;
@@ -218,8 +217,6 @@ RaisedEvent getRaisedEvent(int step, set[Spec] specs, rel[Spec spc, str instance
   tuple[str eventName, str variant] en = parseEventName(ie.event, toLowerCase("<spc.name>"));
   str getAlleEventName() = en.variant != "" ? "<en.eventName>__<en.variant>" : en.eventName; 
 
-  println(en);
-  
   Event ev = findEvent(spc, en.eventName);
 
   rel[str param, str val] args = {};

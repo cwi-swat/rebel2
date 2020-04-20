@@ -1,111 +1,135 @@
 // Static configuration of state machines
 // Define the specs that can take place in the transition system
-CoffeeType (spec:id) = {<coffeetype>}
-CoffeeMachine (spec:id) = {<coffeemachine>}
+AccountNumber (spec:id) = {<accountnumber>}
+Account (spec:id) = {<account>}
+Transaction (spec:id) = {<transaction>}
 
 // Define all possible states for all machines
-State (state:id) = {<state_uninitialized>,<state_finalized>,<state_coffeemachine_waiting>,<state_coffeemachine_serve>,<state_coffeemachine_acceptingpayment>}
-initialized (state:id) = {<state_coffeemachine_waiting>,<state_coffeemachine_serve>,<state_coffeemachine_acceptingpayment>}
+State (state:id) = {<state_uninitialized>,<state_finalized>,<state_account_waitingforactivation>,<state_account_blocked>,<state_account_opened>,<state_transaction_created>}
+initialized (state:id) = {<state_account_waitingforactivation>,<state_account_blocked>,<state_account_opened>,<state_transaction_created>}
 finalized (state:id) = {<state_finalized>}
 uninitialized (state:id) = {<state_uninitialized>}
 
-StateCoffeeMachineServe (state:id) = {<state_coffeemachine_serve>}
-StateCoffeeMachineWaiting (state:id) = {<state_coffeemachine_waiting>}
-StateCoffeeMachineAcceptingPayment (state:id) = {<state_coffeemachine_acceptingpayment>}
+StateAccountOpened (state:id) = {<state_account_opened>}
+StateAccountBlocked (state:id) = {<state_account_blocked>}
+StateAccountWaitingForActivation (state:id) = {<state_account_waitingforactivation>}
+
+StateTransactionCreated (state:id) = {<state_transaction_created>}
 
 
 // Define which transitions are allowed (in the form of `from a state` -> ` via an event` -> `to a state`
-allowedTransitions (from:id, to:id, event:id) = {<state_coffeemachine_waiting,state_coffeemachine_acceptingpayment,event_coffeemachine_select__espresso>,<state_coffeemachine_acceptingpayment,state_coffeemachine_serve,event_coffeemachine_pay__amountmet>,<state_coffeemachine_waiting,state_coffeemachine_acceptingpayment,event_coffeemachine_select__latte>,<state_coffeemachine_waiting,state_coffeemachine_acceptingpayment,event_coffeemachine_select__americano>,<state_coffeemachine_waiting,state_finalized,event_coffeemachine_poweroff>,<state_coffeemachine_serve,state_finalized,event_coffeemachine_poweroff>,<state_coffeemachine_serve,state_coffeemachine_waiting,event_coffeemachine_empty>,<state_coffeemachine_acceptingpayment,state_coffeemachine_acceptingpayment,event_coffeemachine_pay__amountnotmet>,<state_coffeemachine_acceptingpayment,state_coffeemachine_waiting,event_coffeemachine_cancel>,<state_uninitialized,state_coffeemachine_waiting,event_coffeemachine_poweron>,<state_coffeemachine_waiting,state_coffeemachine_acceptingpayment,event_coffeemachine_select__normal>,<state_coffeemachine_acceptingpayment,state_finalized,event_coffeemachine_poweroff>}
+allowedTransitions (from:id, to:id, event:id) = {<state_account_opened,state_account_opened,event_account_deposit>,<state_account_opened,state_account_blocked,event_account_block>,<state_uninitialized,state_account_waitingforactivation,event_account_open>,<state_account_opened,state_finalized,event_account_close>,<state_account_opened,state_account_opened,event_account_withdraw>,<state_account_opened,state_account_opened,event_account_payinterest>,<state_account_blocked,state_account_opened,event_account_unblock>,<state_account_waitingforactivation,state_account_opened,event_account_deposit>,<state_account_blocked,state_finalized,event_account_forceclose>,<state_uninitialized,state_transaction_created,event_transaction_create>,<state_transaction_created,state_finalized,event_transaction_cancel>,<state_transaction_created,state_finalized,event_transaction_book>}
 // Define each event as single relation so that the events can be used as variables in the constraints 
-EventCoffeeMachineSelect__normal (event:id) = {<event_coffeemachine_select__normal>}
-EventCoffeeMachineSelect__espresso (event:id) = {<event_coffeemachine_select__espresso>}
-EventCoffeeMachinePay__amountMet (event:id) = {<event_coffeemachine_pay__amountmet>}
-EventCoffeeMachine__frame (event:id) = {<event_coffeemachine___frame>}
-EventCoffeeMachinePay__amountNotMet (event:id) = {<event_coffeemachine_pay__amountnotmet>}
-EventCoffeeMachineSelect__latte (event:id) = {<event_coffeemachine_select__latte>}
-EventCoffeeMachineSelect__americano (event:id) = {<event_coffeemachine_select__americano>}
-EventCoffeeMachineEmpty (event:id) = {<event_coffeemachine_empty>}
-EventCoffeeMachinePowerOn (event:id) = {<event_coffeemachine_poweron>}
-EventCoffeeMachinePowerOff (event:id) = {<event_coffeemachine_poweroff>}
-EventCoffeeMachineCancel (event:id) = {<event_coffeemachine_cancel>}
+EventAccountForceClose (event:id) = {<event_account_forceclose>}
+EventTransactionBook (event:id) = {<event_transaction_book>}
+EventTransactionCancel (event:id) = {<event_transaction_cancel>}
+EventAccountWithdraw (event:id) = {<event_account_withdraw>}
+EventAccountOpen (event:id) = {<event_account_open>}
+EventAccountDeposit (event:id) = {<event_account_deposit>}
+EventAccountPayInterest (event:id) = {<event_account_payinterest>}
+EventAccount__frame (event:id) = {<event_account___frame>}
+EventAccountUnblock (event:id) = {<event_account_unblock>}
+EventAccountBlock (event:id) = {<event_account_block>}
+EventAccountClose (event:id) = {<event_account_close>}
+EventTransactionCreate (event:id) = {<event_transaction_create>}
+EventTransaction__frame (event:id) = {<event_transaction___frame>}
 
-__IntConst_150 (const_150: int) = {<150>}
-__IntConst_130 (const_130: int) = {<130>}
-__IntConst_120 (const_120: int) = {<120>}
 __IntConst_0 (const_0: int) = {<0>}
-__IntConst_10 (const_10: int) = {<10>}
-__IntConst_20 (const_20: int) = {<20>}
-__IntConst_5 (const_5: int) = {<5>}
-__IntConst_95 (const_95: int) = {<95>}
-__IntConst_50 (const_50: int) = {<50>}
+__IntConst_100 (const_100: int) = {<100>}
 
 
 // Dynamic configuration of state machines
-Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>,<c9>,<c10>,<c11>}
-order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>,<c6,c7>,<c7,c8>,<c8,c9>,<c9,c10>,<c10,c11>}
+Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>}
+order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>}
 first (config:id) = {<c1>}
-last (config:id) <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>,<c9>,<c10>,<c11>}
-back (config:id) = {}
-loop (cur:id, nxt:id) = {}
+last (config:id) <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>}
+back (config:id)  <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>} 
+loop (cur:id, nxt:id)  <= {<c2,c1>,<c2,c2>,<c3,c1>,<c3,c2>,<c3,c3>,<c4,c1>,<c4,c2>,<c4,c3>,<c4,c4>,<c5,c1>,<c5,c2>,<c5,c3>,<c5,c4>,<c5,c5>,<c6,c1>,<c6,c2>,<c6,c3>,<c6,c4>,<c6,c5>,<c6,c6>} 
 
-Instance (spec:id, instance:id) = {<coffeetype,AMERICANO>,<coffeemachine,cm>,<coffeetype,NORMAL>,<coffeetype,NONE>,<coffeetype,ESPRESSO>,<coffeetype,LATTE>}
-instanceInState (config:id, instance:id, state:id) >={<c1,cm,state_uninitialized>}<= {<c1,cm,state_uninitialized>,<c1,cm,state_finalized>,<c1,cm,state_coffeemachine_waiting>,<c1,cm,state_coffeemachine_serve>,<c1,cm,state_coffeemachine_acceptingpayment>,<c2,cm,state_uninitialized>,<c2,cm,state_finalized>,<c2,cm,state_coffeemachine_waiting>,<c2,cm,state_coffeemachine_serve>,<c2,cm,state_coffeemachine_acceptingpayment>,<c3,cm,state_uninitialized>,<c3,cm,state_finalized>,<c3,cm,state_coffeemachine_waiting>,<c3,cm,state_coffeemachine_serve>,<c3,cm,state_coffeemachine_acceptingpayment>,<c4,cm,state_uninitialized>,<c4,cm,state_finalized>,<c4,cm,state_coffeemachine_waiting>,<c4,cm,state_coffeemachine_serve>,<c4,cm,state_coffeemachine_acceptingpayment>,<c5,cm,state_uninitialized>,<c5,cm,state_finalized>,<c5,cm,state_coffeemachine_waiting>,<c5,cm,state_coffeemachine_serve>,<c5,cm,state_coffeemachine_acceptingpayment>,<c6,cm,state_uninitialized>,<c6,cm,state_finalized>,<c6,cm,state_coffeemachine_waiting>,<c6,cm,state_coffeemachine_serve>,<c6,cm,state_coffeemachine_acceptingpayment>,<c7,cm,state_uninitialized>,<c7,cm,state_finalized>,<c7,cm,state_coffeemachine_waiting>,<c7,cm,state_coffeemachine_serve>,<c7,cm,state_coffeemachine_acceptingpayment>,<c8,cm,state_uninitialized>,<c8,cm,state_finalized>,<c8,cm,state_coffeemachine_waiting>,<c8,cm,state_coffeemachine_serve>,<c8,cm,state_coffeemachine_acceptingpayment>,<c9,cm,state_uninitialized>,<c9,cm,state_finalized>,<c9,cm,state_coffeemachine_waiting>,<c9,cm,state_coffeemachine_serve>,<c9,cm,state_coffeemachine_acceptingpayment>,<c10,cm,state_uninitialized>,<c10,cm,state_finalized>,<c10,cm,state_coffeemachine_waiting>,<c10,cm,state_coffeemachine_serve>,<c10,cm,state_coffeemachine_acceptingpayment>,<c11,cm,state_uninitialized>,<c11,cm,state_finalized>,<c11,cm,state_coffeemachine_waiting>,<c11,cm,state_coffeemachine_serve>,<c11,cm,state_coffeemachine_acceptingpayment>}
-raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_coffeemachine_pay__amountnotmet,cm>,<c1,c2,event_coffeemachine_cancel,cm>,<c1,c2,event_coffeemachine_empty,cm>,<c1,c2,event_coffeemachine_pay__amountmet,cm>,<c1,c2,event_coffeemachine_select__americano,cm>,<c1,c2,event_coffeemachine_select__latte,cm>,<c1,c2,event_coffeemachine_select__normal,cm>,<c1,c2,event_coffeemachine_poweroff,cm>,<c1,c2,event_coffeemachine_poweron,cm>,<c1,c2,event_coffeemachine_select__espresso,cm>,<c2,c3,event_coffeemachine_pay__amountnotmet,cm>,<c2,c3,event_coffeemachine_cancel,cm>,<c2,c3,event_coffeemachine_empty,cm>,<c2,c3,event_coffeemachine_pay__amountmet,cm>,<c2,c3,event_coffeemachine_select__americano,cm>,<c2,c3,event_coffeemachine_select__latte,cm>,<c2,c3,event_coffeemachine_select__normal,cm>,<c2,c3,event_coffeemachine_poweroff,cm>,<c2,c3,event_coffeemachine_poweron,cm>,<c2,c3,event_coffeemachine_select__espresso,cm>,<c3,c4,event_coffeemachine_pay__amountnotmet,cm>,<c3,c4,event_coffeemachine_cancel,cm>,<c3,c4,event_coffeemachine_empty,cm>,<c3,c4,event_coffeemachine_pay__amountmet,cm>,<c3,c4,event_coffeemachine_select__americano,cm>,<c3,c4,event_coffeemachine_select__latte,cm>,<c3,c4,event_coffeemachine_select__normal,cm>,<c3,c4,event_coffeemachine_poweroff,cm>,<c3,c4,event_coffeemachine_poweron,cm>,<c3,c4,event_coffeemachine_select__espresso,cm>,<c4,c5,event_coffeemachine_pay__amountnotmet,cm>,<c4,c5,event_coffeemachine_cancel,cm>,<c4,c5,event_coffeemachine_empty,cm>,<c4,c5,event_coffeemachine_pay__amountmet,cm>,<c4,c5,event_coffeemachine_select__americano,cm>,<c4,c5,event_coffeemachine_select__latte,cm>,<c4,c5,event_coffeemachine_select__normal,cm>,<c4,c5,event_coffeemachine_poweroff,cm>,<c4,c5,event_coffeemachine_poweron,cm>,<c4,c5,event_coffeemachine_select__espresso,cm>,<c5,c6,event_coffeemachine_pay__amountnotmet,cm>,<c5,c6,event_coffeemachine_cancel,cm>,<c5,c6,event_coffeemachine_empty,cm>,<c5,c6,event_coffeemachine_pay__amountmet,cm>,<c5,c6,event_coffeemachine_select__americano,cm>,<c5,c6,event_coffeemachine_select__latte,cm>,<c5,c6,event_coffeemachine_select__normal,cm>,<c5,c6,event_coffeemachine_poweroff,cm>,<c5,c6,event_coffeemachine_poweron,cm>,<c5,c6,event_coffeemachine_select__espresso,cm>,<c6,c7,event_coffeemachine_pay__amountnotmet,cm>,<c6,c7,event_coffeemachine_cancel,cm>,<c6,c7,event_coffeemachine_empty,cm>,<c6,c7,event_coffeemachine_pay__amountmet,cm>,<c6,c7,event_coffeemachine_select__americano,cm>,<c6,c7,event_coffeemachine_select__latte,cm>,<c6,c7,event_coffeemachine_select__normal,cm>,<c6,c7,event_coffeemachine_poweroff,cm>,<c6,c7,event_coffeemachine_poweron,cm>,<c6,c7,event_coffeemachine_select__espresso,cm>,<c7,c8,event_coffeemachine_pay__amountnotmet,cm>,<c7,c8,event_coffeemachine_cancel,cm>,<c7,c8,event_coffeemachine_empty,cm>,<c7,c8,event_coffeemachine_pay__amountmet,cm>,<c7,c8,event_coffeemachine_select__americano,cm>,<c7,c8,event_coffeemachine_select__latte,cm>,<c7,c8,event_coffeemachine_select__normal,cm>,<c7,c8,event_coffeemachine_poweroff,cm>,<c7,c8,event_coffeemachine_poweron,cm>,<c7,c8,event_coffeemachine_select__espresso,cm>,<c8,c9,event_coffeemachine_pay__amountnotmet,cm>,<c8,c9,event_coffeemachine_cancel,cm>,<c8,c9,event_coffeemachine_empty,cm>,<c8,c9,event_coffeemachine_pay__amountmet,cm>,<c8,c9,event_coffeemachine_select__americano,cm>,<c8,c9,event_coffeemachine_select__latte,cm>,<c8,c9,event_coffeemachine_select__normal,cm>,<c8,c9,event_coffeemachine_poweroff,cm>,<c8,c9,event_coffeemachine_poweron,cm>,<c8,c9,event_coffeemachine_select__espresso,cm>,<c9,c10,event_coffeemachine_pay__amountnotmet,cm>,<c9,c10,event_coffeemachine_cancel,cm>,<c9,c10,event_coffeemachine_empty,cm>,<c9,c10,event_coffeemachine_pay__amountmet,cm>,<c9,c10,event_coffeemachine_select__americano,cm>,<c9,c10,event_coffeemachine_select__latte,cm>,<c9,c10,event_coffeemachine_select__normal,cm>,<c9,c10,event_coffeemachine_poweroff,cm>,<c9,c10,event_coffeemachine_poweron,cm>,<c9,c10,event_coffeemachine_select__espresso,cm>,<c10,c11,event_coffeemachine_pay__amountnotmet,cm>,<c10,c11,event_coffeemachine_cancel,cm>,<c10,c11,event_coffeemachine_empty,cm>,<c10,c11,event_coffeemachine_pay__amountmet,cm>,<c10,c11,event_coffeemachine_select__americano,cm>,<c10,c11,event_coffeemachine_select__latte,cm>,<c10,c11,event_coffeemachine_select__normal,cm>,<c10,c11,event_coffeemachine_poweroff,cm>,<c10,c11,event_coffeemachine_poweron,cm>,<c10,c11,event_coffeemachine_select__espresso,cm>}
-changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,cm>,<c2,c3,cm>,<c3,c4,cm>,<c4,c5,cm>,<c5,c6,cm>,<c6,c7,cm>,<c7,c8,cm>,<c8,c9,cm>,<c9,c10,cm>,<c10,c11,cm>}
+Instance (spec:id, instance:id) = {<accountnumber,an1>,<accountnumber,an2>,<account,ac1>,<account,ac2>,<transaction,t>}
+instanceInState (config:id, instance:id, state:id) >={<c1,t,state_uninitialized>}<= {<c1,t,state_uninitialized>,<c1,t,state_finalized>,<c1,t,state_transaction_created>,<c1,ac1,state_account_opened>,<c1,ac1,state_account_blocked>,<c1,ac1,state_uninitialized>,<c1,ac1,state_account_waitingforactivation>,<c1,ac1,state_finalized>,<c1,ac2,state_account_opened>,<c1,ac2,state_account_blocked>,<c1,ac2,state_uninitialized>,<c1,ac2,state_account_waitingforactivation>,<c1,ac2,state_finalized>,<c2,t,state_uninitialized>,<c2,t,state_finalized>,<c2,t,state_transaction_created>,<c2,ac1,state_account_opened>,<c2,ac1,state_account_blocked>,<c2,ac1,state_uninitialized>,<c2,ac1,state_account_waitingforactivation>,<c2,ac1,state_finalized>,<c2,ac2,state_account_opened>,<c2,ac2,state_account_blocked>,<c2,ac2,state_uninitialized>,<c2,ac2,state_account_waitingforactivation>,<c2,ac2,state_finalized>,<c3,t,state_uninitialized>,<c3,t,state_finalized>,<c3,t,state_transaction_created>,<c3,ac1,state_account_opened>,<c3,ac1,state_account_blocked>,<c3,ac1,state_uninitialized>,<c3,ac1,state_account_waitingforactivation>,<c3,ac1,state_finalized>,<c3,ac2,state_account_opened>,<c3,ac2,state_account_blocked>,<c3,ac2,state_uninitialized>,<c3,ac2,state_account_waitingforactivation>,<c3,ac2,state_finalized>,<c4,t,state_uninitialized>,<c4,t,state_finalized>,<c4,t,state_transaction_created>,<c4,ac1,state_account_opened>,<c4,ac1,state_account_blocked>,<c4,ac1,state_uninitialized>,<c4,ac1,state_account_waitingforactivation>,<c4,ac1,state_finalized>,<c4,ac2,state_account_opened>,<c4,ac2,state_account_blocked>,<c4,ac2,state_uninitialized>,<c4,ac2,state_account_waitingforactivation>,<c4,ac2,state_finalized>,<c5,t,state_uninitialized>,<c5,t,state_finalized>,<c5,t,state_transaction_created>,<c5,ac1,state_account_opened>,<c5,ac1,state_account_blocked>,<c5,ac1,state_uninitialized>,<c5,ac1,state_account_waitingforactivation>,<c5,ac1,state_finalized>,<c5,ac2,state_account_opened>,<c5,ac2,state_account_blocked>,<c5,ac2,state_uninitialized>,<c5,ac2,state_account_waitingforactivation>,<c5,ac2,state_finalized>,<c6,t,state_uninitialized>,<c6,t,state_finalized>,<c6,t,state_transaction_created>,<c6,ac1,state_account_opened>,<c6,ac1,state_account_blocked>,<c6,ac1,state_uninitialized>,<c6,ac1,state_account_waitingforactivation>,<c6,ac1,state_finalized>,<c6,ac2,state_account_opened>,<c6,ac2,state_account_blocked>,<c6,ac2,state_uninitialized>,<c6,ac2,state_account_waitingforactivation>,<c6,ac2,state_finalized>}
+raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_transaction_cancel,t>,<c1,c2,event_transaction_create,t>,<c1,c2,event_transaction_book,t>,<c2,c3,event_transaction_cancel,t>,<c2,c3,event_transaction_create,t>,<c2,c3,event_transaction_book,t>,<c3,c4,event_transaction_cancel,t>,<c3,c4,event_transaction_create,t>,<c3,c4,event_transaction_book,t>,<c4,c5,event_transaction_cancel,t>,<c4,c5,event_transaction_create,t>,<c4,c5,event_transaction_book,t>,<c5,c6,event_transaction_cancel,t>,<c5,c6,event_transaction_create,t>,<c5,c6,event_transaction_book,t>,<c6,c6,event_transaction_cancel,t>,<c6,c6,event_transaction_create,t>,<c6,c6,event_transaction_book,t>,<c6,c5,event_transaction_cancel,t>,<c6,c5,event_transaction_create,t>,<c6,c5,event_transaction_book,t>,<c6,c4,event_transaction_cancel,t>,<c6,c4,event_transaction_create,t>,<c6,c4,event_transaction_book,t>,<c6,c3,event_transaction_cancel,t>,<c6,c3,event_transaction_create,t>,<c6,c3,event_transaction_book,t>,<c6,c2,event_transaction_cancel,t>,<c6,c2,event_transaction_create,t>,<c6,c2,event_transaction_book,t>,<c6,c1,event_transaction_cancel,t>,<c6,c1,event_transaction_create,t>,<c6,c1,event_transaction_book,t>,<c5,c5,event_transaction_cancel,t>,<c5,c5,event_transaction_create,t>,<c5,c5,event_transaction_book,t>,<c5,c4,event_transaction_cancel,t>,<c5,c4,event_transaction_create,t>,<c5,c4,event_transaction_book,t>,<c5,c3,event_transaction_cancel,t>,<c5,c3,event_transaction_create,t>,<c5,c3,event_transaction_book,t>,<c5,c2,event_transaction_cancel,t>,<c5,c2,event_transaction_create,t>,<c5,c2,event_transaction_book,t>,<c5,c1,event_transaction_cancel,t>,<c5,c1,event_transaction_create,t>,<c5,c1,event_transaction_book,t>,<c4,c4,event_transaction_cancel,t>,<c4,c4,event_transaction_create,t>,<c4,c4,event_transaction_book,t>,<c4,c3,event_transaction_cancel,t>,<c4,c3,event_transaction_create,t>,<c4,c3,event_transaction_book,t>,<c4,c2,event_transaction_cancel,t>,<c4,c2,event_transaction_create,t>,<c4,c2,event_transaction_book,t>,<c4,c1,event_transaction_cancel,t>,<c4,c1,event_transaction_create,t>,<c4,c1,event_transaction_book,t>,<c3,c3,event_transaction_cancel,t>,<c3,c3,event_transaction_create,t>,<c3,c3,event_transaction_book,t>,<c3,c2,event_transaction_cancel,t>,<c3,c2,event_transaction_create,t>,<c3,c2,event_transaction_book,t>,<c3,c1,event_transaction_cancel,t>,<c3,c1,event_transaction_create,t>,<c3,c1,event_transaction_book,t>,<c2,c2,event_transaction_cancel,t>,<c2,c2,event_transaction_create,t>,<c2,c2,event_transaction_book,t>,<c2,c1,event_transaction_cancel,t>,<c2,c1,event_transaction_create,t>,<c2,c1,event_transaction_book,t>,<c1,c1,event_transaction_cancel,t>,<c1,c1,event_transaction_create,t>,<c1,c1,event_transaction_book,t>,<c1,c2,event_account_forceclose,ac1>,<c1,c2,event_account_deposit,ac1>,<c1,c2,event_account_block,ac1>,<c1,c2,event_account_payinterest,ac1>,<c1,c2,event_account_unblock,ac1>,<c1,c2,event_account_close,ac1>,<c1,c2,event_account_open,ac1>,<c1,c2,event_account_withdraw,ac1>,<c2,c3,event_account_forceclose,ac1>,<c2,c3,event_account_deposit,ac1>,<c2,c3,event_account_block,ac1>,<c2,c3,event_account_payinterest,ac1>,<c2,c3,event_account_unblock,ac1>,<c2,c3,event_account_close,ac1>,<c2,c3,event_account_open,ac1>,<c2,c3,event_account_withdraw,ac1>,<c3,c4,event_account_forceclose,ac1>,<c3,c4,event_account_deposit,ac1>,<c3,c4,event_account_block,ac1>,<c3,c4,event_account_payinterest,ac1>,<c3,c4,event_account_unblock,ac1>,<c3,c4,event_account_close,ac1>,<c3,c4,event_account_open,ac1>,<c3,c4,event_account_withdraw,ac1>,<c4,c5,event_account_forceclose,ac1>,<c4,c5,event_account_deposit,ac1>,<c4,c5,event_account_block,ac1>,<c4,c5,event_account_payinterest,ac1>,<c4,c5,event_account_unblock,ac1>,<c4,c5,event_account_close,ac1>,<c4,c5,event_account_open,ac1>,<c4,c5,event_account_withdraw,ac1>,<c5,c6,event_account_forceclose,ac1>,<c5,c6,event_account_deposit,ac1>,<c5,c6,event_account_block,ac1>,<c5,c6,event_account_payinterest,ac1>,<c5,c6,event_account_unblock,ac1>,<c5,c6,event_account_close,ac1>,<c5,c6,event_account_open,ac1>,<c5,c6,event_account_withdraw,ac1>,<c6,c6,event_account_forceclose,ac1>,<c6,c6,event_account_deposit,ac1>,<c6,c6,event_account_block,ac1>,<c6,c6,event_account_payinterest,ac1>,<c6,c6,event_account_unblock,ac1>,<c6,c6,event_account_close,ac1>,<c6,c6,event_account_open,ac1>,<c6,c6,event_account_withdraw,ac1>,<c6,c5,event_account_forceclose,ac1>,<c6,c5,event_account_deposit,ac1>,<c6,c5,event_account_block,ac1>,<c6,c5,event_account_payinterest,ac1>,<c6,c5,event_account_unblock,ac1>,<c6,c5,event_account_close,ac1>,<c6,c5,event_account_open,ac1>,<c6,c5,event_account_withdraw,ac1>,<c6,c4,event_account_forceclose,ac1>,<c6,c4,event_account_deposit,ac1>,<c6,c4,event_account_block,ac1>,<c6,c4,event_account_payinterest,ac1>,<c6,c4,event_account_unblock,ac1>,<c6,c4,event_account_close,ac1>,<c6,c4,event_account_open,ac1>,<c6,c4,event_account_withdraw,ac1>,<c6,c3,event_account_forceclose,ac1>,<c6,c3,event_account_deposit,ac1>,<c6,c3,event_account_block,ac1>,<c6,c3,event_account_payinterest,ac1>,<c6,c3,event_account_unblock,ac1>,<c6,c3,event_account_close,ac1>,<c6,c3,event_account_open,ac1>,<c6,c3,event_account_withdraw,ac1>,<c6,c2,event_account_forceclose,ac1>,<c6,c2,event_account_deposit,ac1>,<c6,c2,event_account_block,ac1>,<c6,c2,event_account_payinterest,ac1>,<c6,c2,event_account_unblock,ac1>,<c6,c2,event_account_close,ac1>,<c6,c2,event_account_open,ac1>,<c6,c2,event_account_withdraw,ac1>,<c6,c1,event_account_forceclose,ac1>,<c6,c1,event_account_deposit,ac1>,<c6,c1,event_account_block,ac1>,<c6,c1,event_account_payinterest,ac1>,<c6,c1,event_account_unblock,ac1>,<c6,c1,event_account_close,ac1>,<c6,c1,event_account_open,ac1>,<c6,c1,event_account_withdraw,ac1>,<c5,c5,event_account_forceclose,ac1>,<c5,c5,event_account_deposit,ac1>,<c5,c5,event_account_block,ac1>,<c5,c5,event_account_payinterest,ac1>,<c5,c5,event_account_unblock,ac1>,<c5,c5,event_account_close,ac1>,<c5,c5,event_account_open,ac1>,<c5,c5,event_account_withdraw,ac1>,<c5,c4,event_account_forceclose,ac1>,<c5,c4,event_account_deposit,ac1>,<c5,c4,event_account_block,ac1>,<c5,c4,event_account_payinterest,ac1>,<c5,c4,event_account_unblock,ac1>,<c5,c4,event_account_close,ac1>,<c5,c4,event_account_open,ac1>,<c5,c4,event_account_withdraw,ac1>,<c5,c3,event_account_forceclose,ac1>,<c5,c3,event_account_deposit,ac1>,<c5,c3,event_account_block,ac1>,<c5,c3,event_account_payinterest,ac1>,<c5,c3,event_account_unblock,ac1>,<c5,c3,event_account_close,ac1>,<c5,c3,event_account_open,ac1>,<c5,c3,event_account_withdraw,ac1>,<c5,c2,event_account_forceclose,ac1>,<c5,c2,event_account_deposit,ac1>,<c5,c2,event_account_block,ac1>,<c5,c2,event_account_payinterest,ac1>,<c5,c2,event_account_unblock,ac1>,<c5,c2,event_account_close,ac1>,<c5,c2,event_account_open,ac1>,<c5,c2,event_account_withdraw,ac1>,<c5,c1,event_account_forceclose,ac1>,<c5,c1,event_account_deposit,ac1>,<c5,c1,event_account_block,ac1>,<c5,c1,event_account_payinterest,ac1>,<c5,c1,event_account_unblock,ac1>,<c5,c1,event_account_close,ac1>,<c5,c1,event_account_open,ac1>,<c5,c1,event_account_withdraw,ac1>,<c4,c4,event_account_forceclose,ac1>,<c4,c4,event_account_deposit,ac1>,<c4,c4,event_account_block,ac1>,<c4,c4,event_account_payinterest,ac1>,<c4,c4,event_account_unblock,ac1>,<c4,c4,event_account_close,ac1>,<c4,c4,event_account_open,ac1>,<c4,c4,event_account_withdraw,ac1>,<c4,c3,event_account_forceclose,ac1>,<c4,c3,event_account_deposit,ac1>,<c4,c3,event_account_block,ac1>,<c4,c3,event_account_payinterest,ac1>,<c4,c3,event_account_unblock,ac1>,<c4,c3,event_account_close,ac1>,<c4,c3,event_account_open,ac1>,<c4,c3,event_account_withdraw,ac1>,<c4,c2,event_account_forceclose,ac1>,<c4,c2,event_account_deposit,ac1>,<c4,c2,event_account_block,ac1>,<c4,c2,event_account_payinterest,ac1>,<c4,c2,event_account_unblock,ac1>,<c4,c2,event_account_close,ac1>,<c4,c2,event_account_open,ac1>,<c4,c2,event_account_withdraw,ac1>,<c4,c1,event_account_forceclose,ac1>,<c4,c1,event_account_deposit,ac1>,<c4,c1,event_account_block,ac1>,<c4,c1,event_account_payinterest,ac1>,<c4,c1,event_account_unblock,ac1>,<c4,c1,event_account_close,ac1>,<c4,c1,event_account_open,ac1>,<c4,c1,event_account_withdraw,ac1>,<c3,c3,event_account_forceclose,ac1>,<c3,c3,event_account_deposit,ac1>,<c3,c3,event_account_block,ac1>,<c3,c3,event_account_payinterest,ac1>,<c3,c3,event_account_unblock,ac1>,<c3,c3,event_account_close,ac1>,<c3,c3,event_account_open,ac1>,<c3,c3,event_account_withdraw,ac1>,<c3,c2,event_account_forceclose,ac1>,<c3,c2,event_account_deposit,ac1>,<c3,c2,event_account_block,ac1>,<c3,c2,event_account_payinterest,ac1>,<c3,c2,event_account_unblock,ac1>,<c3,c2,event_account_close,ac1>,<c3,c2,event_account_open,ac1>,<c3,c2,event_account_withdraw,ac1>,<c3,c1,event_account_forceclose,ac1>,<c3,c1,event_account_deposit,ac1>,<c3,c1,event_account_block,ac1>,<c3,c1,event_account_payinterest,ac1>,<c3,c1,event_account_unblock,ac1>,<c3,c1,event_account_close,ac1>,<c3,c1,event_account_open,ac1>,<c3,c1,event_account_withdraw,ac1>,<c2,c2,event_account_forceclose,ac1>,<c2,c2,event_account_deposit,ac1>,<c2,c2,event_account_block,ac1>,<c2,c2,event_account_payinterest,ac1>,<c2,c2,event_account_unblock,ac1>,<c2,c2,event_account_close,ac1>,<c2,c2,event_account_open,ac1>,<c2,c2,event_account_withdraw,ac1>,<c2,c1,event_account_forceclose,ac1>,<c2,c1,event_account_deposit,ac1>,<c2,c1,event_account_block,ac1>,<c2,c1,event_account_payinterest,ac1>,<c2,c1,event_account_unblock,ac1>,<c2,c1,event_account_close,ac1>,<c2,c1,event_account_open,ac1>,<c2,c1,event_account_withdraw,ac1>,<c1,c1,event_account_forceclose,ac1>,<c1,c1,event_account_deposit,ac1>,<c1,c1,event_account_block,ac1>,<c1,c1,event_account_payinterest,ac1>,<c1,c1,event_account_unblock,ac1>,<c1,c1,event_account_close,ac1>,<c1,c1,event_account_open,ac1>,<c1,c1,event_account_withdraw,ac1>,<c1,c2,event_account_forceclose,ac2>,<c1,c2,event_account_deposit,ac2>,<c1,c2,event_account_block,ac2>,<c1,c2,event_account_payinterest,ac2>,<c1,c2,event_account_unblock,ac2>,<c1,c2,event_account_close,ac2>,<c1,c2,event_account_open,ac2>,<c1,c2,event_account_withdraw,ac2>,<c2,c3,event_account_forceclose,ac2>,<c2,c3,event_account_deposit,ac2>,<c2,c3,event_account_block,ac2>,<c2,c3,event_account_payinterest,ac2>,<c2,c3,event_account_unblock,ac2>,<c2,c3,event_account_close,ac2>,<c2,c3,event_account_open,ac2>,<c2,c3,event_account_withdraw,ac2>,<c3,c4,event_account_forceclose,ac2>,<c3,c4,event_account_deposit,ac2>,<c3,c4,event_account_block,ac2>,<c3,c4,event_account_payinterest,ac2>,<c3,c4,event_account_unblock,ac2>,<c3,c4,event_account_close,ac2>,<c3,c4,event_account_open,ac2>,<c3,c4,event_account_withdraw,ac2>,<c4,c5,event_account_forceclose,ac2>,<c4,c5,event_account_deposit,ac2>,<c4,c5,event_account_block,ac2>,<c4,c5,event_account_payinterest,ac2>,<c4,c5,event_account_unblock,ac2>,<c4,c5,event_account_close,ac2>,<c4,c5,event_account_open,ac2>,<c4,c5,event_account_withdraw,ac2>,<c5,c6,event_account_forceclose,ac2>,<c5,c6,event_account_deposit,ac2>,<c5,c6,event_account_block,ac2>,<c5,c6,event_account_payinterest,ac2>,<c5,c6,event_account_unblock,ac2>,<c5,c6,event_account_close,ac2>,<c5,c6,event_account_open,ac2>,<c5,c6,event_account_withdraw,ac2>,<c6,c6,event_account_forceclose,ac2>,<c6,c6,event_account_deposit,ac2>,<c6,c6,event_account_block,ac2>,<c6,c6,event_account_payinterest,ac2>,<c6,c6,event_account_unblock,ac2>,<c6,c6,event_account_close,ac2>,<c6,c6,event_account_open,ac2>,<c6,c6,event_account_withdraw,ac2>,<c6,c5,event_account_forceclose,ac2>,<c6,c5,event_account_deposit,ac2>,<c6,c5,event_account_block,ac2>,<c6,c5,event_account_payinterest,ac2>,<c6,c5,event_account_unblock,ac2>,<c6,c5,event_account_close,ac2>,<c6,c5,event_account_open,ac2>,<c6,c5,event_account_withdraw,ac2>,<c6,c4,event_account_forceclose,ac2>,<c6,c4,event_account_deposit,ac2>,<c6,c4,event_account_block,ac2>,<c6,c4,event_account_payinterest,ac2>,<c6,c4,event_account_unblock,ac2>,<c6,c4,event_account_close,ac2>,<c6,c4,event_account_open,ac2>,<c6,c4,event_account_withdraw,ac2>,<c6,c3,event_account_forceclose,ac2>,<c6,c3,event_account_deposit,ac2>,<c6,c3,event_account_block,ac2>,<c6,c3,event_account_payinterest,ac2>,<c6,c3,event_account_unblock,ac2>,<c6,c3,event_account_close,ac2>,<c6,c3,event_account_open,ac2>,<c6,c3,event_account_withdraw,ac2>,<c6,c2,event_account_forceclose,ac2>,<c6,c2,event_account_deposit,ac2>,<c6,c2,event_account_block,ac2>,<c6,c2,event_account_payinterest,ac2>,<c6,c2,event_account_unblock,ac2>,<c6,c2,event_account_close,ac2>,<c6,c2,event_account_open,ac2>,<c6,c2,event_account_withdraw,ac2>,<c6,c1,event_account_forceclose,ac2>,<c6,c1,event_account_deposit,ac2>,<c6,c1,event_account_block,ac2>,<c6,c1,event_account_payinterest,ac2>,<c6,c1,event_account_unblock,ac2>,<c6,c1,event_account_close,ac2>,<c6,c1,event_account_open,ac2>,<c6,c1,event_account_withdraw,ac2>,<c5,c5,event_account_forceclose,ac2>,<c5,c5,event_account_deposit,ac2>,<c5,c5,event_account_block,ac2>,<c5,c5,event_account_payinterest,ac2>,<c5,c5,event_account_unblock,ac2>,<c5,c5,event_account_close,ac2>,<c5,c5,event_account_open,ac2>,<c5,c5,event_account_withdraw,ac2>,<c5,c4,event_account_forceclose,ac2>,<c5,c4,event_account_deposit,ac2>,<c5,c4,event_account_block,ac2>,<c5,c4,event_account_payinterest,ac2>,<c5,c4,event_account_unblock,ac2>,<c5,c4,event_account_close,ac2>,<c5,c4,event_account_open,ac2>,<c5,c4,event_account_withdraw,ac2>,<c5,c3,event_account_forceclose,ac2>,<c5,c3,event_account_deposit,ac2>,<c5,c3,event_account_block,ac2>,<c5,c3,event_account_payinterest,ac2>,<c5,c3,event_account_unblock,ac2>,<c5,c3,event_account_close,ac2>,<c5,c3,event_account_open,ac2>,<c5,c3,event_account_withdraw,ac2>,<c5,c2,event_account_forceclose,ac2>,<c5,c2,event_account_deposit,ac2>,<c5,c2,event_account_block,ac2>,<c5,c2,event_account_payinterest,ac2>,<c5,c2,event_account_unblock,ac2>,<c5,c2,event_account_close,ac2>,<c5,c2,event_account_open,ac2>,<c5,c2,event_account_withdraw,ac2>,<c5,c1,event_account_forceclose,ac2>,<c5,c1,event_account_deposit,ac2>,<c5,c1,event_account_block,ac2>,<c5,c1,event_account_payinterest,ac2>,<c5,c1,event_account_unblock,ac2>,<c5,c1,event_account_close,ac2>,<c5,c1,event_account_open,ac2>,<c5,c1,event_account_withdraw,ac2>,<c4,c4,event_account_forceclose,ac2>,<c4,c4,event_account_deposit,ac2>,<c4,c4,event_account_block,ac2>,<c4,c4,event_account_payinterest,ac2>,<c4,c4,event_account_unblock,ac2>,<c4,c4,event_account_close,ac2>,<c4,c4,event_account_open,ac2>,<c4,c4,event_account_withdraw,ac2>,<c4,c3,event_account_forceclose,ac2>,<c4,c3,event_account_deposit,ac2>,<c4,c3,event_account_block,ac2>,<c4,c3,event_account_payinterest,ac2>,<c4,c3,event_account_unblock,ac2>,<c4,c3,event_account_close,ac2>,<c4,c3,event_account_open,ac2>,<c4,c3,event_account_withdraw,ac2>,<c4,c2,event_account_forceclose,ac2>,<c4,c2,event_account_deposit,ac2>,<c4,c2,event_account_block,ac2>,<c4,c2,event_account_payinterest,ac2>,<c4,c2,event_account_unblock,ac2>,<c4,c2,event_account_close,ac2>,<c4,c2,event_account_open,ac2>,<c4,c2,event_account_withdraw,ac2>,<c4,c1,event_account_forceclose,ac2>,<c4,c1,event_account_deposit,ac2>,<c4,c1,event_account_block,ac2>,<c4,c1,event_account_payinterest,ac2>,<c4,c1,event_account_unblock,ac2>,<c4,c1,event_account_close,ac2>,<c4,c1,event_account_open,ac2>,<c4,c1,event_account_withdraw,ac2>,<c3,c3,event_account_forceclose,ac2>,<c3,c3,event_account_deposit,ac2>,<c3,c3,event_account_block,ac2>,<c3,c3,event_account_payinterest,ac2>,<c3,c3,event_account_unblock,ac2>,<c3,c3,event_account_close,ac2>,<c3,c3,event_account_open,ac2>,<c3,c3,event_account_withdraw,ac2>,<c3,c2,event_account_forceclose,ac2>,<c3,c2,event_account_deposit,ac2>,<c3,c2,event_account_block,ac2>,<c3,c2,event_account_payinterest,ac2>,<c3,c2,event_account_unblock,ac2>,<c3,c2,event_account_close,ac2>,<c3,c2,event_account_open,ac2>,<c3,c2,event_account_withdraw,ac2>,<c3,c1,event_account_forceclose,ac2>,<c3,c1,event_account_deposit,ac2>,<c3,c1,event_account_block,ac2>,<c3,c1,event_account_payinterest,ac2>,<c3,c1,event_account_unblock,ac2>,<c3,c1,event_account_close,ac2>,<c3,c1,event_account_open,ac2>,<c3,c1,event_account_withdraw,ac2>,<c2,c2,event_account_forceclose,ac2>,<c2,c2,event_account_deposit,ac2>,<c2,c2,event_account_block,ac2>,<c2,c2,event_account_payinterest,ac2>,<c2,c2,event_account_unblock,ac2>,<c2,c2,event_account_close,ac2>,<c2,c2,event_account_open,ac2>,<c2,c2,event_account_withdraw,ac2>,<c2,c1,event_account_forceclose,ac2>,<c2,c1,event_account_deposit,ac2>,<c2,c1,event_account_block,ac2>,<c2,c1,event_account_payinterest,ac2>,<c2,c1,event_account_unblock,ac2>,<c2,c1,event_account_close,ac2>,<c2,c1,event_account_open,ac2>,<c2,c1,event_account_withdraw,ac2>,<c1,c1,event_account_forceclose,ac2>,<c1,c1,event_account_deposit,ac2>,<c1,c1,event_account_block,ac2>,<c1,c1,event_account_payinterest,ac2>,<c1,c1,event_account_unblock,ac2>,<c1,c1,event_account_close,ac2>,<c1,c1,event_account_open,ac2>,<c1,c1,event_account_withdraw,ac2>}
+changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,ac1>,<c1,c2,ac2>,<c1,c2,t>,<c2,c3,ac1>,<c2,c3,ac2>,<c2,c3,t>,<c3,c4,ac1>,<c3,c4,ac2>,<c3,c4,t>,<c4,c5,ac1>,<c4,c5,ac2>,<c4,c5,t>,<c5,c6,ac1>,<c5,c6,ac2>,<c5,c6,t>,<c6,c6,ac1>,<c6,c6,ac2>,<c6,c6,t>,<c6,c5,ac1>,<c6,c5,ac2>,<c6,c5,t>,<c6,c4,ac1>,<c6,c4,ac2>,<c6,c4,t>,<c6,c3,ac1>,<c6,c3,ac2>,<c6,c3,t>,<c6,c2,ac1>,<c6,c2,ac2>,<c6,c2,t>,<c6,c1,ac1>,<c6,c1,ac2>,<c6,c1,t>,<c5,c5,ac1>,<c5,c5,ac2>,<c5,c5,t>,<c5,c4,ac1>,<c5,c4,ac2>,<c5,c4,t>,<c5,c3,ac1>,<c5,c3,ac2>,<c5,c3,t>,<c5,c2,ac1>,<c5,c2,ac2>,<c5,c2,t>,<c5,c1,ac1>,<c5,c1,ac2>,<c5,c1,t>,<c4,c4,ac1>,<c4,c4,ac2>,<c4,c4,t>,<c4,c3,ac1>,<c4,c3,ac2>,<c4,c3,t>,<c4,c2,ac1>,<c4,c2,ac2>,<c4,c2,t>,<c4,c1,ac1>,<c4,c1,ac2>,<c4,c1,t>,<c3,c3,ac1>,<c3,c3,ac2>,<c3,c3,t>,<c3,c2,ac1>,<c3,c2,ac2>,<c3,c2,t>,<c3,c1,ac1>,<c3,c1,ac2>,<c3,c1,t>,<c2,c2,ac1>,<c2,c2,ac2>,<c2,c2,t>,<c2,c1,ac1>,<c2,c1,ac2>,<c2,c1,t>,<c1,c1,ac1>,<c1,c1,ac2>,<c1,c1,t>}
 
-CoffeeMachineSelected (config:id, instance:id, selected:id) <= {<c1,cm,NORMAL>,<c1,cm,AMERICANO>,<c1,cm,LATTE>,<c1,cm,NONE>,<c1,cm,ESPRESSO>,<c2,cm,NORMAL>,<c2,cm,AMERICANO>,<c2,cm,LATTE>,<c2,cm,NONE>,<c2,cm,ESPRESSO>,<c3,cm,NORMAL>,<c3,cm,AMERICANO>,<c3,cm,LATTE>,<c3,cm,NONE>,<c3,cm,ESPRESSO>,<c4,cm,NORMAL>,<c4,cm,AMERICANO>,<c4,cm,LATTE>,<c4,cm,NONE>,<c4,cm,ESPRESSO>,<c5,cm,NORMAL>,<c5,cm,AMERICANO>,<c5,cm,LATTE>,<c5,cm,NONE>,<c5,cm,ESPRESSO>,<c6,cm,NORMAL>,<c6,cm,AMERICANO>,<c6,cm,LATTE>,<c6,cm,NONE>,<c6,cm,ESPRESSO>,<c7,cm,NORMAL>,<c7,cm,AMERICANO>,<c7,cm,LATTE>,<c7,cm,NONE>,<c7,cm,ESPRESSO>,<c8,cm,NORMAL>,<c8,cm,AMERICANO>,<c8,cm,LATTE>,<c8,cm,NONE>,<c8,cm,ESPRESSO>,<c9,cm,NORMAL>,<c9,cm,AMERICANO>,<c9,cm,LATTE>,<c9,cm,NONE>,<c9,cm,ESPRESSO>,<c10,cm,NORMAL>,<c10,cm,AMERICANO>,<c10,cm,LATTE>,<c10,cm,NONE>,<c10,cm,ESPRESSO>,<c11,cm,NORMAL>,<c11,cm,AMERICANO>,<c11,cm,LATTE>,<c11,cm,NONE>,<c11,cm,ESPRESSO>}
-CoffeeMachineAmountNeeded (config:id, instance:id, amountNeeded:int) <= {<c1,cm,?>,<c2,cm,?>,<c3,cm,?>,<c4,cm,?>,<c5,cm,?>,<c6,cm,?>,<c7,cm,?>,<c8,cm,?>,<c9,cm,?>,<c10,cm,?>,<c11,cm,?>}
+AccountNr (config:id, instance:id, nr:id) <= {<c1,ac1,an1>,<c1,ac1,an2>,<c2,ac1,an1>,<c2,ac1,an2>,<c3,ac1,an1>,<c3,ac1,an2>,<c4,ac1,an1>,<c4,ac1,an2>,<c5,ac1,an1>,<c5,ac1,an2>,<c6,ac1,an1>,<c6,ac1,an2>,<c1,ac2,an1>,<c1,ac2,an2>,<c2,ac2,an1>,<c2,ac2,an2>,<c3,ac2,an1>,<c3,ac2,an2>,<c4,ac2,an1>,<c4,ac2,an2>,<c5,ac2,an1>,<c5,ac2,an2>,<c6,ac2,an1>,<c6,ac2,an2>}
+AccountBalance (config:id, instance:id, balance:int) <= {<c1,ac1,?>,<c2,ac1,?>,<c3,ac1,?>,<c4,ac1,?>,<c5,ac1,?>,<c6,ac1,?>,<c1,ac2,?>,<c2,ac2,?>,<c3,ac2,?>,<c4,ac2,?>,<c5,ac2,?>,<c6,ac2,?>}
+TransactionFrom (config:id, instance:id, from:id) <= {<c1,t,ac1>,<c1,t,ac2>,<c2,t,ac1>,<c2,t,ac2>,<c3,t,ac1>,<c3,t,ac2>,<c4,t,ac1>,<c4,t,ac2>,<c5,t,ac1>,<c5,t,ac2>,<c6,t,ac1>,<c6,t,ac2>}
+TransactionTo (config:id, instance:id, to:id) <= {<c1,t,ac1>,<c1,t,ac2>,<c2,t,ac1>,<c2,t,ac2>,<c3,t,ac1>,<c3,t,ac2>,<c4,t,ac1>,<c4,t,ac2>,<c5,t,ac1>,<c5,t,ac2>,<c6,t,ac1>,<c6,t,ac2>}
+TransactionAmount (config:id, instance:id, amount:int) <= {<c1,t,?>,<c2,t,?>,<c3,t,?>,<c4,t,?>,<c5,t,?>,<c6,t,?>}
 
-CoffeeType_NONE (instance:id) = {<NONE>}
-CoffeeType_NORMAL (instance:id) = {<NORMAL>}
-CoffeeType_ESPRESSO (instance:id) = {<ESPRESSO>}
-CoffeeType_AMERICANO (instance:id) = {<AMERICANO>}
-CoffeeType_LATTE (instance:id) = {<LATTE>}
 
-ParamEventCoffeeMachinePay__amountMetAmount (cur:id, nxt:id, amount:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>,<c7,c8,?>,<c8,c9,?>,<c9,c10,?>,<c10,c11,?>}
-ParamEventCoffeeMachinePay__amountNotMetAmount (cur:id, nxt:id, amount:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c7,?>,<c7,c8,?>,<c8,c9,?>,<c9,c10,?>,<c10,c11,?>}
+ParamEventAccountPayInterestRate (cur:id, nxt:id, rate:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c6,?>,<c6,c5,?>,<c6,c4,?>,<c6,c3,?>,<c6,c2,?>,<c6,c1,?>}
+ParamEventAccountOpenNr (cur:id, nxt:id, nr:id) <= {<c1,c2,an1>,<c1,c2,an2>,<c2,c3,an1>,<c2,c3,an2>,<c3,c4,an1>,<c3,c4,an2>,<c4,c5,an1>,<c4,c5,an2>,<c5,c6,an1>,<c5,c6,an2>,<c6,c6,an1>,<c6,c6,an2>,<c6,c5,an1>,<c6,c5,an2>,<c6,c4,an1>,<c6,c4,an2>,<c6,c3,an1>,<c6,c3,an2>,<c6,c2,an1>,<c6,c2,an2>,<c6,c1,an1>,<c6,c1,an2>}
+ParamEventAccountWithdrawAmount (cur:id, nxt:id, amount:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c6,?>,<c6,c5,?>,<c6,c4,?>,<c6,c3,?>,<c6,c2,?>,<c6,c1,?>}
+ParamEventAccountDepositAmount (cur:id, nxt:id, amount:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c6,?>,<c6,c5,?>,<c6,c4,?>,<c6,c3,?>,<c6,c2,?>,<c6,c1,?>}
+ParamEventTransactionCreateFrom (cur:id, nxt:id, from:id) <= {<c1,c2,ac1>,<c1,c2,ac2>,<c2,c3,ac1>,<c2,c3,ac2>,<c3,c4,ac1>,<c3,c4,ac2>,<c4,c5,ac1>,<c4,c5,ac2>,<c5,c6,ac1>,<c5,c6,ac2>,<c6,c6,ac1>,<c6,c6,ac2>,<c6,c5,ac1>,<c6,c5,ac2>,<c6,c4,ac1>,<c6,c4,ac2>,<c6,c3,ac1>,<c6,c3,ac2>,<c6,c2,ac1>,<c6,c2,ac2>,<c6,c1,ac1>,<c6,c1,ac2>}
+ParamEventTransactionCreateTo (cur:id, nxt:id, to:id) <= {<c1,c2,ac1>,<c1,c2,ac2>,<c2,c3,ac1>,<c2,c3,ac2>,<c3,c4,ac1>,<c3,c4,ac2>,<c4,c5,ac1>,<c4,c5,ac2>,<c5,c6,ac1>,<c5,c6,ac2>,<c6,c6,ac1>,<c6,c6,ac2>,<c6,c5,ac1>,<c6,c5,ac2>,<c6,c4,ac1>,<c6,c4,ac2>,<c6,c3,ac1>,<c6,c3,ac2>,<c6,c2,ac1>,<c6,c2,ac2>,<c6,c1,ac1>,<c6,c1,ac2>}
+ParamEventTransactionCreateAmount (cur:id, nxt:id, amount:int) <= {<c1,c2,?>,<c2,c3,?>,<c3,c4,?>,<c4,c5,?>,<c5,c6,?>,<c6,c6,?>,<c6,c5,?>,<c6,c4,?>,<c6,c3,?>,<c6,c2,?>,<c6,c1,?>}
     
 
 // Constraints for the configuration and ordering relations
 order ⊆ Config[config as cur] ⨯ Config[config as nxt]
 last = Config ∖ order[cur->config]  // There is only one last configuration
- 
+back ⊆ Config 
+lone back 
+some loop  
+loop ⊆ last[config as cur] ⨯ back[config as nxt] // Loop contains at most one tuple going back from the last configuration to the 
 
 // Generic 'Type' constraints    
-raisedEvent ⊆ (order) ⨯ allowedTransitions[event] ⨯ Instance[instance]
+raisedEvent ⊆ (order ∪ loop) ⨯ allowedTransitions[event] ⨯ Instance[instance]
 instanceInState ⊆ Instance[instance] ⨯ Config ⨯ State
-changedInstance ⊆ (order) ⨯ Instance[instance]
+changedInstance ⊆ (order ∪ loop) ⨯ Instance[instance]
     
 // Machine specific `type` constraints
-// For `CoffeeMachine`
-CoffeeMachineAmountNeeded[config,instance]  ⊆ Config ⨯ (Instance ⨝ CoffeeMachine)[instance]
-CoffeeMachineSelected  ⊆ Config ⨯ (Instance ⨝ CoffeeMachine)[instance] ⨯ (Instance ⨝ CoffeeType)[instance->selected]
-ParamEventCoffeeMachinePay__amountMetAmount[cur,nxt] ⊆ order ∪ loop
-ParamEventCoffeeMachinePay__amountNotMetAmount[cur,nxt] ⊆ order ∪ loop
+// For `Account`
+ParamEventAccountOpenNr ⊆ (order ∪ loop) ⨯ (Instance ⨝ AccountNumber)[instance->nr]
+ParamEventAccountDepositAmount[cur,nxt] ⊆ order ∪ loop
+ParamEventAccountWithdrawAmount[cur,nxt] ⊆ order ∪ loop
+AccountNr  ⊆ Config ⨯ (Instance ⨝ Account)[instance] ⨯ (Instance ⨝ AccountNumber)[instance->nr]
+AccountBalance[config,instance]  ⊆ Config ⨯ (Instance ⨝ Account)[instance]
+ParamEventAccountPayInterestRate[cur,nxt] ⊆ order ∪ loop
+// For `Transaction`
+TransactionAmount[config,instance]  ⊆ Config ⨯ (Instance ⨝ Transaction)[instance]
+ParamEventTransactionCreateAmount[cur,nxt] ⊆ order ∪ loop
+ParamEventTransactionCreateFrom ⊆ (order ∪ loop) ⨯ (Instance ⨝ Account)[instance->from]
+ParamEventTransactionCreateTo ⊆ (order ∪ loop) ⨯ (Instance ⨝ Account)[instance->to]
+TransactionTo  ⊆ Config ⨯ (Instance ⨝ Transaction)[instance] ⨯ (Instance ⨝ Account)[instance->to]
+TransactionFrom  ⊆ Config ⨯ (Instance ⨝ Transaction)[instance] ⨯ (Instance ⨝ Account)[instance->from]
 
 
 // Specific per event: parameter multiplicity constraints
 ∀ step ∈ (order ∪ loop) ⨝ raisedEvent | (
-  (some (step ⨝ EventCoffeeMachinePay__amountNotMet) ⇔ one (step ⨝ ParamEventCoffeeMachinePay__amountNotMetAmount)) ∧
-  (some (step ⨝ EventCoffeeMachinePay__amountMet) ⇔ one (step ⨝ ParamEventCoffeeMachinePay__amountMetAmount))
+  (some (step ⨝ EventTransactionCreate) ⇔ one (step ⨝ ParamEventTransactionCreateAmount)) ∧
+  (some (step ⨝ EventAccountWithdraw) ⇔ one (step ⨝ ParamEventAccountWithdrawAmount)) ∧
+  (some (step ⨝ EventAccountDeposit) ⇔ one (step ⨝ ParamEventAccountDepositAmount)) ∧
+  (some (step ⨝ EventTransactionCreate) ⇔ one (step ⨝ ParamEventTransactionCreateFrom)) ∧
+  (some (step ⨝ EventAccountOpen) ⇔ one (step ⨝ ParamEventAccountOpenNr)) ∧
+  (some (step ⨝ EventAccountPayInterest) ⇔ one (step ⨝ ParamEventAccountPayInterestRate)) ∧
+  (some (step ⨝ EventTransactionCreate) ⇔ one (step ⨝ ParamEventTransactionCreateTo))
 )
 // Generic: All configurations are reachable
 ∀ c ∈ Config ∖ first | c ⊆ (first[config as cur] ⨝ ^<cur,nxt>order)[nxt -> config]
 
 // Generic: Every transition can only happen by exactly one event
-∀ o ∈ order | one o ⨝ raisedEvent
+∀ o ∈ order ∪ loop | one o ⨝ raisedEvent
 
 // Specif: In every configuration all machines have a state IFF its a machine which is not empty
-∀ c ∈ Config, inst ∈ (Instance ∖ ((CoffeeType) ⨝ Instance)) | one instanceInState ⨝ c ⨝ inst
+∀ c ∈ Config, inst ∈ (Instance ∖ ((AccountNumber) ⨝ Instance)) | one instanceInState ⨝ c ⨝ inst
 
 // Specific per machine: In every configuration iff a machine is in an initialized state then it must have values
-// for `CoffeeMachine`
-∀ c ∈ Config, inst ∈ (Instance ⨝ CoffeeMachine)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one CoffeeMachineSelected ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ CoffeeMachine)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no CoffeeMachineSelected ⨝ c ⨝ inst)
-∀ c ∈ Config, inst ∈ (Instance ⨝ CoffeeMachine)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one CoffeeMachineAmountNeeded ⨝ c ⨝ inst)
+// for `Account`
+∀ c ∈ Config, inst ∈ (Instance ⨝ Account)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one AccountBalance ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Account)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one AccountNr ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Account)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no AccountNr ⨝ c ⨝ inst)
+// for `Transaction`
+∀ c ∈ Config, inst ∈ (Instance ⨝ Transaction)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no TransactionFrom ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Transaction)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one TransactionAmount ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Transaction)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one TransactionTo ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Transaction)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no TransactionTo ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Transaction)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one TransactionFrom ⨝ c ⨝ inst)
 
 // Generic: Transitions are only allowed between if an event is specified between two states
-∀ o ∈ (order) ⨝ raisedEvent | (o[cur as config] ⨝ instanceInState)[state->from] ⨯ (o[nxt as config] ⨝ instanceInState)[state->to] ⨯ o[event] ⊆ allowedTransitions
+∀ o ∈ (order ∪ loop) ⨝ raisedEvent | (o[cur as config] ⨝ instanceInState)[state->from] ⨯ (o[nxt as config] ⨝ instanceInState)[state->to] ⨯ o[event] ⊆ allowedTransitions
 
 // Change set predicates
 pred inChangeSet[step: (cur:id, nxt:id), instances: (instance:id)]
@@ -124,240 +148,284 @@ pred forceState[curState: (state:id), nxtState: (state:id), raisedEvent: (event:
 pred inState[config: (config:id), instance: (instance:id), state: (state:id)]
   = ((instance ⨯ config) ⨝ instanceInState)[state] ⊆ state
 
-// Event predicates for `CoffeeMachine`
-pred frameCoffeeMachine[step: (cur:id, nxt:id), coffeemachine: (instance:id)] 
+// Event predicates for `Account`
+pred frameAccount[step: (cur:id, nxt:id), account: (instance:id)] 
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] | (
+        curState = (instanceInState ⨝ cur ⨝ account)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] | (
     nxtState = curState ∧
     (
       curState ⊆ uninitialized ∨ 
       (// Postconditions
-       (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = (coffeemachine ⨝ (CoffeeMachineSelected ⨝ cur))[selected] ∧
-       (some ((coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded] ⨯ (coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ cur))[amountNeeded][amountNeeded as cur_amountNeeded]) where (nxt_amountNeeded = cur_amountNeeded)))
+       (account ⨝ (AccountNr ⨝ nxt))[nr] = (account ⨝ (AccountNr ⨝ cur))[nr] ∧
+       (some ((account ⨝ (AccountBalance ⨝ nxt))[balance][balance as nxt_balance] ⨯ (account ⨝ (AccountBalance ⨝ cur))[balance][balance as cur_balance]) where (nxt_balance = cur_balance)))
     )
   )
 
-pred eventCoffeeMachinePowerOff[step:(cur:id, nxt:id), coffeemachine: (instance:id)]
+pred eventAccountClose[step:(cur:id, nxt:id), account: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] |
-    ( 
-       
-      // Postconditions
-      (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = (coffeemachine ⨝ (CoffeeMachineSelected ⨝ cur))[selected] ∧
-      (some ((coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded] ⨯ (coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ cur))[amountNeeded][amountNeeded as cur_amountNeeded]) where (nxt_amountNeeded = cur_amountNeeded))  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventCoffeeMachinePowerOff] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, coffeemachine]
-    )
-
-pred eventCoffeeMachineCancel[step:(cur:id, nxt:id), coffeemachine: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] |
-    ( 
-       
-      // Postconditions
-      (some ((coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded]) where (nxt_amountNeeded = 0)) ∧
-      (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = CoffeeType_NONE[instance as selected]  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventCoffeeMachineCancel] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, coffeemachine]
-    )
-
-pred eventCoffeeMachinePowerOn[step:(cur:id, nxt:id), coffeemachine: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] |
-    ( 
-       
-      // Postconditions
-      (some ((coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded]) where (nxt_amountNeeded = 0)) ∧
-      (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = CoffeeType_NONE[instance as selected]  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventCoffeeMachinePowerOn] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, coffeemachine]
-    )
-
-pred eventCoffeeMachineSelect__normal[step:(cur:id, nxt:id), coffeemachine: (instance:id)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] |
-    ( 
-       
-      // Postconditions
-      (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = CoffeeType_NORMAL[instance as selected] ∧
-      (some ((coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded]) where (nxt_amountNeeded = 95))  ∧ 
-      // Generic event conditions
-      forceState[curState, nxtState, EventCoffeeMachineSelect__normal] ∧
-      // Make sure this instance is in the change set
-      inChangeSet[step, coffeemachine]
-    )
-
-pred eventCoffeeMachinePay__amountNotMet[step:(cur:id, nxt:id), coffeemachine: (instance:id), amount: (amount:int)]
-  = let cur = step[cur->config],
-        nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] |
+        curState = (instanceInState ⨝ cur ⨝ account)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] |
     ( 
       // Preconditions 
-      (some (amount[amount as param_1_amount] ⨯ (coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ cur))[amountNeeded][amountNeeded as cur_amountNeeded]) where (cur_amountNeeded - param_1_amount > 0)) ∧
-      (((some (amount[amount as param_2_amount]) where (param_2_amount = 5)) ∨ ((some (amount[amount as param_3_amount]) where (param_3_amount = 10)) ∨ ((some (amount[amount as param_4_amount]) where (param_4_amount = 20)) ∨ (some (amount[amount as param_5_amount]) where (param_5_amount = 50))))))  ∧ 
-      // Postconditions
-      (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = (coffeemachine ⨝ (CoffeeMachineSelected ⨝ cur))[selected] ∧
-      (some (amount[amount as param_6_amount] ⨯ (coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded] ⨯ (coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ cur))[amountNeeded][amountNeeded as cur_amountNeeded]) where (nxt_amountNeeded = cur_amountNeeded - param_6_amount))  ∧ 
+      (some ((account ⨝ (AccountBalance ⨝ cur))[balance][balance as cur_balance]) where (cur_balance = 0))  ∧ 
+       
       // Generic event conditions
-      forceState[curState, nxtState, EventCoffeeMachinePay__amountNotMet] ∧
+      forceState[curState, nxtState, EventAccountClose] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, coffeemachine]
+      inChangeSet[step, account]
     )
 
-pred eventCoffeeMachinePay__amountMet[step:(cur:id, nxt:id), coffeemachine: (instance:id), amount: (amount:int)]
+pred eventAccountForceClose[step:(cur:id, nxt:id), account: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] |
+        curState = (instanceInState ⨝ cur ⨝ account)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] |
+    ( 
+       
+       
+      // Generic event conditions
+      forceState[curState, nxtState, EventAccountForceClose] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, account]
+    )
+
+pred eventAccountOpen[step:(cur:id, nxt:id), account: (instance:id), nr: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ account)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] |
+    ( 
+       
+      // Postconditions
+      (account ⨝ (AccountNr ⨝ nxt))[nr] = nr[instance as nr] ∧
+      (some ((account ⨝ (AccountBalance ⨝ nxt))[balance][balance as nxt_balance]) where (nxt_balance = 0))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventAccountOpen] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, account]
+    )
+
+pred eventAccountWithdraw[step:(cur:id, nxt:id), account: (instance:id), amount: (amount:int)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ account)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] |
     ( 
       // Preconditions 
-      (some (amount[amount as param_1_amount] ⨯ (coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ cur))[amountNeeded][amountNeeded as cur_amountNeeded]) where (cur_amountNeeded - param_1_amount = 0)) ∧
-      (((some (amount[amount as param_2_amount]) where (param_2_amount = 5)) ∨ ((some (amount[amount as param_3_amount]) where (param_3_amount = 10)) ∨ ((some (amount[amount as param_4_amount]) where (param_4_amount = 20)) ∨ (some (amount[amount as param_5_amount]) where (param_5_amount = 50))))))  ∧ 
+      (some (amount[amount as param_1_amount]) where (param_1_amount > 0)) ∧
+      (some ((account ⨝ (AccountBalance ⨝ cur))[balance][balance as cur_balance] ⨯ amount[amount as param_2_amount]) where (cur_balance >= param_2_amount))  ∧ 
       // Postconditions
-      (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = CoffeeType_NONE[instance as selected] ∧
-      (some (amount[amount as param_6_amount] ⨯ (coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded] ⨯ (coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ cur))[amountNeeded][amountNeeded as cur_amountNeeded]) where (nxt_amountNeeded = cur_amountNeeded - param_6_amount))  ∧ 
+      (account ⨝ (AccountNr ⨝ nxt))[nr] = (account ⨝ (AccountNr ⨝ cur))[nr] ∧
+      (some ((account ⨝ (AccountBalance ⨝ nxt))[balance][balance as nxt_balance] ⨯ (account ⨝ (AccountBalance ⨝ cur))[balance][balance as cur_balance] ⨯ amount[amount as param_3_amount]) where (nxt_balance = cur_balance - param_3_amount))  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventCoffeeMachinePay__amountMet] ∧
+      forceState[curState, nxtState, EventAccountWithdraw] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, coffeemachine]
+      inChangeSet[step, account]
     )
 
-pred eventCoffeeMachineSelect__latte[step:(cur:id, nxt:id), coffeemachine: (instance:id)]
+pred eventAccountPayInterest[step:(cur:id, nxt:id), account: (instance:id), rate: (rate:int)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] |
+        curState = (instanceInState ⨝ cur ⨝ account)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] |
     ( 
        
       // Postconditions
-      (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = CoffeeType_LATTE[instance as selected] ∧
-      (some ((coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded]) where (nxt_amountNeeded = 150))  ∧ 
+      (account ⨝ (AccountNr ⨝ nxt))[nr] = (account ⨝ (AccountNr ⨝ cur))[nr] ∧
+      (some ((account ⨝ (AccountBalance ⨝ nxt))[balance][balance as nxt_balance] ⨯ rate[rate as param_1_rate] ⨯ (account ⨝ (AccountBalance ⨝ cur))[balance][balance as cur_balance]) where (nxt_balance = cur_balance + ((cur_balance * param_1_rate) / 100)))  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventCoffeeMachineSelect__latte] ∧
+      forceState[curState, nxtState, EventAccountPayInterest] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, coffeemachine]
+      inChangeSet[step, account]
     )
 
-pred eventCoffeeMachineSelect__americano[step:(cur:id, nxt:id), coffeemachine: (instance:id)]
+pred eventAccountBlock[step:(cur:id, nxt:id), account: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] |
+        curState = (instanceInState ⨝ cur ⨝ account)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] |
     ( 
        
       // Postconditions
-      (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = CoffeeType_AMERICANO[instance as selected] ∧
-      (some ((coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded]) where (nxt_amountNeeded = 130))  ∧ 
+      (some ((account ⨝ (AccountBalance ⨝ nxt))[balance][balance as nxt_balance] ⨯ (account ⨝ (AccountBalance ⨝ cur))[balance][balance as cur_balance]) where (nxt_balance = cur_balance)) ∧
+      (account ⨝ (AccountNr ⨝ nxt))[nr] = (account ⨝ (AccountNr ⨝ cur))[nr]  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventCoffeeMachineSelect__americano] ∧
+      forceState[curState, nxtState, EventAccountBlock] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, coffeemachine]
+      inChangeSet[step, account]
     )
 
-pred eventCoffeeMachineSelect__espresso[step:(cur:id, nxt:id), coffeemachine: (instance:id)]
+pred eventAccountUnblock[step:(cur:id, nxt:id), account: (instance:id)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] |
+        curState = (instanceInState ⨝ cur ⨝ account)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] |
     ( 
        
       // Postconditions
-      (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = CoffeeType_ESPRESSO[instance as selected] ∧
-      (some ((coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded]) where (nxt_amountNeeded = 120))  ∧ 
+      (some ((account ⨝ (AccountBalance ⨝ nxt))[balance][balance as nxt_balance] ⨯ (account ⨝ (AccountBalance ⨝ cur))[balance][balance as cur_balance]) where (nxt_balance = cur_balance)) ∧
+      (account ⨝ (AccountNr ⨝ nxt))[nr] = (account ⨝ (AccountNr ⨝ cur))[nr]  ∧ 
       // Generic event conditions
-      forceState[curState, nxtState, EventCoffeeMachineSelect__espresso] ∧
+      forceState[curState, nxtState, EventAccountUnblock] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, coffeemachine]
+      inChangeSet[step, account]
     )
 
-pred eventCoffeeMachineEmpty[step:(cur:id, nxt:id), coffeemachine: (instance:id)]
+pred eventAccountDeposit[step:(cur:id, nxt:id), account: (instance:id), amount: (amount:int)]
   = let cur = step[cur->config],
         nxt = step[nxt->config],
-        curState = (instanceInState ⨝ cur ⨝ coffeemachine)[state],
-        nxtState = (instanceInState ⨝ nxt ⨝ coffeemachine)[state] |
+        curState = (instanceInState ⨝ cur ⨝ account)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ account)[state] |
+    ( 
+      // Preconditions 
+      (some (amount[amount as param_1_amount]) where (param_1_amount > 0))  ∧ 
+      // Postconditions
+      (account ⨝ (AccountNr ⨝ nxt))[nr] = (account ⨝ (AccountNr ⨝ cur))[nr] ∧
+      (some ((account ⨝ (AccountBalance ⨝ nxt))[balance][balance as nxt_balance] ⨯ (account ⨝ (AccountBalance ⨝ cur))[balance][balance as cur_balance] ⨯ amount[amount as param_2_amount]) where (nxt_balance = cur_balance + param_2_amount))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventAccountDeposit] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, account]
+    )
+
+// Event predicates for `Transaction`
+pred eventTransactionCreate[step:(cur:id, nxt:id), transaction: (instance:id), from: (instance:id), to: (instance:id), amount: (amount:int)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ transaction)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ transaction)[state] |
+    ( 
+      // Preconditions 
+      from != to ∧
+      inState[cur, from, StateAccountOpened] ∧
+      inState[cur, to, StateAccountOpened] ∧
+      (some (amount[amount as param_1_amount]) where (param_1_amount > 0))  ∧ 
+      // Postconditions
+      (transaction ⨝ (TransactionFrom ⨝ nxt))[from] = from[instance as from] ∧
+      (transaction ⨝ (TransactionTo ⨝ nxt))[to] = to[instance as to] ∧
+      (some ((transaction ⨝ (TransactionAmount ⨝ nxt))[amount][amount as nxt_amount] ⨯ amount[amount as param_2_amount]) where (nxt_amount = param_2_amount))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventTransactionCreate] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, transaction]
+    )
+
+pred frameTransaction[step: (cur:id, nxt:id), transaction: (instance:id)] 
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ transaction)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ transaction)[state] | (
+    nxtState = curState ∧
+    (
+      curState ⊆ uninitialized ∨ 
+      (// Postconditions
+       (transaction ⨝ (TransactionFrom ⨝ nxt))[from] = (transaction ⨝ (TransactionFrom ⨝ cur))[from] ∧
+       (transaction ⨝ (TransactionTo ⨝ nxt))[to] = (transaction ⨝ (TransactionTo ⨝ cur))[to] ∧
+       (some ((transaction ⨝ (TransactionAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (transaction ⨝ (TransactionAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)))
+    )
+  )
+
+pred eventTransactionCancel[step:(cur:id, nxt:id), transaction: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ transaction)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ transaction)[state] |
     ( 
        
-      // Postconditions
-      (coffeemachine ⨝ (CoffeeMachineSelected ⨝ nxt))[selected] = (coffeemachine ⨝ (CoffeeMachineSelected ⨝ cur))[selected] ∧
-      (some ((coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ nxt))[amountNeeded][amountNeeded as nxt_amountNeeded] ⨯ (coffeemachine ⨝ (CoffeeMachineAmountNeeded ⨝ cur))[amountNeeded][amountNeeded as cur_amountNeeded]) where (nxt_amountNeeded = cur_amountNeeded))  ∧ 
+       
       // Generic event conditions
-      forceState[curState, nxtState, EventCoffeeMachineEmpty] ∧
+      forceState[curState, nxtState, EventTransactionCancel] ∧
       // Make sure this instance is in the change set
-      inChangeSet[step, coffeemachine]
+      inChangeSet[step, transaction]
+    )
+
+pred eventTransactionBook[step:(cur:id, nxt:id), transaction: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ transaction)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ transaction)[state] |
+    ( 
+      // Preconditions 
+      eventAccountWithdraw[step, (transaction ⨝ (TransactionFrom ⨝ cur))[from][from as instance], (transaction ⨝ (TransactionAmount ⨝ cur))[amount]] ∧
+      eventAccountDeposit[step, (transaction ⨝ (TransactionTo ⨝ cur))[to][to as instance], (transaction ⨝ (TransactionAmount ⨝ cur))[amount]]  ∧ 
+       
+      // Generic event conditions
+      forceState[curState, nxtState, EventTransactionBook] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, transaction]
     )
 
 
-// Transition function for `CoffeeMachine`
-pred possibleTransitionsCoffeeMachine[step: (cur:id, nxt:id)] 
-  = ∀ inst ∈ (Instance ⨝ CoffeeMachine)[instance] |
+// Transition function for `Account`
+pred possibleTransitionsAccount[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ Account)[instance] |
     (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
-      (eventCoffeeMachineSelect__americano[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventCoffeeMachineSelect__americano ∧
+      (eventAccountPayInterest[step,inst,(step ⨝ ParamEventAccountPayInterestRate)[rate]] ∧
+      (step ⨝ raisedEvent)[event] = EventAccountPayInterest ∧
       changeSetCanContain[step, inst])
       ∨
-      (eventCoffeeMachinePowerOff[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventCoffeeMachinePowerOff ∧
+      (eventAccountBlock[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventAccountBlock ∧
       changeSetCanContain[step, inst])
       ∨
-      (eventCoffeeMachinePay__amountMet[step,inst,(step ⨝ ParamEventCoffeeMachinePay__amountMetAmount)[amount]] ∧
-      (step ⨝ raisedEvent)[event] = EventCoffeeMachinePay__amountMet ∧
+      (eventAccountUnblock[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventAccountUnblock ∧
       changeSetCanContain[step, inst])
       ∨
-      (eventCoffeeMachineSelect__normal[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventCoffeeMachineSelect__normal ∧
+      (eventAccountClose[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventAccountClose ∧
       changeSetCanContain[step, inst])
       ∨
-      (eventCoffeeMachineSelect__espresso[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventCoffeeMachineSelect__espresso ∧
+      (eventAccountOpen[step,inst,(step ⨝ ParamEventAccountOpenNr)[nr->instance]] ∧
+      (step ⨝ raisedEvent)[event] = EventAccountOpen ∧
       changeSetCanContain[step, inst])
       ∨
-      (eventCoffeeMachinePowerOn[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventCoffeeMachinePowerOn ∧
+      (eventAccountWithdraw[step,inst,(step ⨝ ParamEventAccountWithdrawAmount)[amount]] ∧
+      (step ⨝ raisedEvent)[event] = EventAccountWithdraw ∧
       changeSetCanContain[step, inst])
       ∨
-      (eventCoffeeMachineCancel[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventCoffeeMachineCancel ∧
+      (eventAccountForceClose[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventAccountForceClose ∧
       changeSetCanContain[step, inst])
       ∨
-      (eventCoffeeMachineSelect__latte[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventCoffeeMachineSelect__latte ∧
-      changeSetCanContain[step, inst])
-      ∨
-      (eventCoffeeMachinePay__amountNotMet[step,inst,(step ⨝ ParamEventCoffeeMachinePay__amountNotMetAmount)[amount]] ∧
-      (step ⨝ raisedEvent)[event] = EventCoffeeMachinePay__amountNotMet ∧
-      changeSetCanContain[step, inst])
-      ∨
-      (eventCoffeeMachineEmpty[step,inst] ∧
-      (step ⨝ raisedEvent)[event] = EventCoffeeMachineEmpty ∧
+      (eventAccountDeposit[step,inst,(step ⨝ ParamEventAccountDepositAmount)[amount]] ∧
+      (step ⨝ raisedEvent)[event] = EventAccountDeposit ∧
       changeSetCanContain[step, inst])
     ))
     ∧
-    (notInChangeSet[step, inst] ⇒ frameCoffeeMachine[step, inst])
+    (notInChangeSet[step, inst] ⇒ frameAccount[step, inst])
+
+// Transition function for `Transaction`
+pred possibleTransitionsTransaction[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ Transaction)[instance] |
+    (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
+      (eventTransactionCancel[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventTransactionCancel ∧
+      changeSetCanContain[step, inst])
+      ∨
+      (eventTransactionBook[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventTransactionBook ∧
+      let cur = step[cur->config], transaction = inst, transaction_this_from = (transaction ⨝ (TransactionFrom ⨝ cur))[from][from as instance], transaction_this_to = (transaction ⨝ (TransactionTo ⨝ cur))[to][to as instance] | changeSetCanContain[step, inst ∪ transaction_this_from ∪ transaction_this_to ∪ transaction])
+      ∨
+      (eventTransactionCreate[step,inst,(step ⨝ ParamEventTransactionCreateFrom)[from->instance],(step ⨝ ParamEventTransactionCreateTo)[to->instance],(step ⨝ ParamEventTransactionCreateAmount)[amount]] ∧
+      (step ⨝ raisedEvent)[event] = EventTransactionCreate ∧
+      changeSetCanContain[step, inst])
+    ))
+    ∧
+    (notInChangeSet[step, inst] ⇒ frameTransaction[step, inst])
 
 
 // Transition function
-∀ step ∈ order| possibleTransitionsCoffeeMachine[step]
+∀ step ∈ order ∪ loop| possibleTransitionsAccount[step] ∧ possibleTransitionsTransaction[step]
 
 
+// Fact from `Account`
+∀ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∀ ac1 ∈ (Instance ⨝ Account)[instance],ac2 ∈ (Instance ⨝ Account)[instance] | (((inState[cur_1, ac1, initialized] ∧ (inState[cur_1, ac2, initialized] ∧ (ac1 ⨝ (AccountNr ⨝ cur_1))[nr] = (ac2 ⨝ (AccountNr ⨝ cur_1))[nr])) ⇒ ac1 = ac2)))
 
-// Assert `MachineIsServing`
-∃ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∃ m ∈ (Instance ⨝ CoffeeMachine)[instance] | inState[cur_1, m, StateCoffeeMachineServe])
+// Assert `TransactionCanGetStuck`
+∃ cur_1 ∈ Config | let step_1 = cur_1[config as cur] ⨝ (order ∪ loop) | (∃ t ∈ (Instance ⨝ Transaction)[instance] | (inState[cur_1, t, initialized] ∧ ¬ (((EventTransactionBook ⊆ (raisedEvent ⨝ step_1 ⨝ t)[event])))))
 // Minimize the number of steps by minimizing the number of Configurations
 objectives: minimize Config[count()]

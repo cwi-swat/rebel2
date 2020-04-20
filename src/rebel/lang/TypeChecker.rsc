@@ -71,7 +71,7 @@ TypeCheckerResult checkModule(Module root, Graph[RebelDependency] depGraph, Path
 
 private Graph[RebelDependency] subgraph(RebelDependency from, Graph[RebelDependency] depGraph) = {<from,d> | <from, RebelDependency d> <- depGraph};
 
-private TModel rebelTModelFromModule(Module root, Graph[RebelDependency] depGraph, PathConfig pcfg, bool saveTModels = false, bool debug = false){
+TModel rebelTModelFromModule(Module root, Graph[RebelDependency] depGraph, PathConfig pcfg, bool saveTModels = false, bool debug = false){
   c = newCollector("collectAndSolve", root, config = tconfig(getTypeNamesAndRole = rebelTypeNamesAndRole,
                                                              isSubType = subtype,
                                                              verbose=debug, 

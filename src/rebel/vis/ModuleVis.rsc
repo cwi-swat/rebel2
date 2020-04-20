@@ -24,7 +24,7 @@ App[Model] createStateMachineVis(loc rebelFile) {
   Model init() = <rebelFile, spcs>;
     
   return webApp(makeApp("rebelModVis", init, view, update, subs = changeCheckSubs), 
-    |project://rebel2/salix/modulevis.html|, |project://rebel2/salix/|
+    index = |project://rebel2/salix/modulevis.html|, static = |project://rebel2/salix/|
   );
 }
 
