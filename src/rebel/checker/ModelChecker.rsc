@@ -23,13 +23,16 @@ import String;
 import IO;
 
 Trace performCheck(Check chk, Module m, TModel tm, Graph[RebelDependency] deps, PathConfig pcfg = defaultPathConfig(m@\loc.top), bool saveIntermediateFiles = true) {
+  // Step 1: Construct a new module containing all the Specifications that are refereced in the Config part of the check. 
+  //         Also replace the abstracted specifications with the concrete mocks
   CheckedModule gen = assembleCheck(chk, m, tm, deps, pcfg, saveGenModule = saveIntermediateFiles);
+  // Step 2: Normalize this combined, check specific Module 
   CheckedModule norm = normalizeAndTypeCheck(gen.m, gen.tm, pcfg, saveNormalizedMod = saveIntermediateFiles); 
-  
+  // Step 3: Build a configuration containing all instances and initial values, etc.
   Config cfg = buildConfig(findConfigByName("<chk.config>",norm.m), norm.m, norm.tm, findSearchDepth(chk.depth), /(Objective)`infinite trace` := chk);
-  
+  // Step 4: Translate the normalized, combined module to an AlleAlle specification
   str alleSpec = translateToAlleAlle(cfg, norm.m, norm.tm, pcfg, saveAlleAlleFile = saveIntermediateFiles);
-  
+  // Step 5: Run the translated AlleAlle specification in the ModelFinder and interpet the result (based on the generated, non-normalized, module)
   return runAlleAlle(alleSpec, cfg, gen.m); 
 }
 
