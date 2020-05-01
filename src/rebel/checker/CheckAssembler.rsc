@@ -56,12 +56,43 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
     return true;
   }  
 
+  bool slice(set[Id] fields, Type spcType) {
+    set[Spec] allSpecs = {s | /Spec s := spcDep};
+    
+    for (Id field <- fields) {
+      Field fld = lookupFieldByRef(tm.useDef[field@\loc], spcDep);
+      
+      // Find all the uses of the field
+      set[loc] uses = tm.useDef<1,0>[tm.useDef[field@\loc]]; 
+      // Remove all fields, formula's in pre and post and facts that reference the 'forgotten' field
+      allSpecs = visit(allSpecs) {
+        case Spec s => filterFieldAndFacts(fld, s, uses)
+        case Pre pre => filterPre(pre, uses)    
+        case Post post => filterPost(post, uses)
+      }
+
+      // Replace all occurrences of the specs in the spec dependency graph      
+      spcDep = visit(spcDep) {
+        case Spec orig => changed when /Spec changed <- allSpecs, changed@\loc == orig@\loc
+      }
+    }
+    
+    return true;
+  }
+
+  // Step 1: Apply abstraction
   cfg = visit (cfg) {
-    case (InstanceSetup)`<{Id ","}+ labels> : <Type abstractSpc> abstracts <Type concreteSpc> <InState? inState> <WithAssignments? assignments>` =>
-      (InstanceSetup)`<{Id ","}+ labels> : <Type concreteSpc> <InState? inState> <WithAssignments? assignments>` when replace(abstractSpc, concreteSpc)
+    case (InstanceSetup)`<{Id ","}+ labels> : <Type abstractSpc> abstracts <Type concreteSpc> <Forget? forget> <InState? inState> <WithAssignments? assignments>` =>
+      (InstanceSetup)`<{Id ","}+ labels> : <Type concreteSpc> <Forget? forget> <InState? inState> <WithAssignments? assignments>` when replace(abstractSpc, concreteSpc)
+  };  
+  
+  // Step 2: Apply slicing (removing 'forgotten' fields)
+  cfg = visit (cfg) {
+    case (InstanceSetup)`<{Id ","}+ labels> : <Type spc> forget <{Id ","}+ fields> <InState? inState> <WithAssignments? assignments>` =>
+      (InstanceSetup)`<{Id ","}+ labels> : <Type spc> <InState? inState> <WithAssignments? assignments>` when slice({f | f <- fields}, spc)
   };  
 
-  set[Spec] filteredSpecs = filterNonReferencedSpecs(spcDep, deps, tm, cfg);  
+  set[Spec] filteredSpecs = filterNonReferencedSpecs(spcDep, tm, cfg);  
   Module gen = assembleModule(root.\module.name, filteredSpecs, as, cfg, chk);
   
   if (saveGenModule) {
@@ -73,11 +104,96 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
   return <gen, genTm>;
 }
 
-private set[Spec] filterNonReferencedSpecs(Graph[Spec] spcDep, set[RebelDependency] deps, TModel tm, Config cfg) {
+private Spec filterFieldAndFacts(Field fld, Spec s, set[loc] uses) = filterFacts(filterField(s, fld), uses);
+
+private Spec filterField(spc:(Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Fact* fcts> <States? sts>`, Field fld) {
+  if (size({f | /Field f := flds}) == 1, /fld := flds) {
+    return ((Spec)`spec <Id name> <Instances? inst> <Constraints? cons> <Event* evnts> <Fact* fcts> <States? sts>`)[@\loc=spc@\loc];
+  }
+  
+  Fields filterFields((Fields)`<Field f>, <{Field ","}+ after>;`)
+    = (Fields)`<{Field ","}+ after>;` when f == fld; 
+
+  Fields filterFields((Fields)`<{Field ","}+ before>, <Field f>;`)
+    = (Fields)`<{Field ","}+ before>;` when f == fld; 
+
+  Fields filterFields((Fields)`<{Field ","}+ before>, <Field f>, <{Field ","}+ after>;`)
+    = (Fields)`<{Field ","}+ before>, <{Field ","}+ after>;` when f == fld; 
+
+  
+  return visit(spc) {
+    case Fields ff => filterFields(ff) when /fld := ff 
+  }
+}
+
+private Pre filterPre(Pre pre, set[loc] uses) {
+  Pre filterPre(p:(Pre)`pre: <Formula ff>;`, Formula f)
+    = (Pre)`pre: ;`[@\loc=p@\loc] when ff == f;
+
+  Pre filterPre(p:(Pre)`pre: <{Formula ","}* form>, <Formula ff>;`, Formula f)
+    = (Pre)`pre: <{Formula ","}* form>;`[@\loc=p@\loc] when ff == f;
+
+  Pre filterPre(p:(Pre)`pre: <Formula ff>, <{Formula ","}* form>;`, Formula f)
+    = (Pre)`pre: <{Formula ","}* form>;`[@\loc=p@\loc] when ff == f;
+
+  Pre filterPre(p:(Pre)`pre: <{Formula ","}* before>, <Formula ff>, <{Formula ","}* after>;`, Formula f)
+    = (Pre)`pre: <{Formula ","}* before>, 
+           '     <{Formula ","}* after>;`[@\loc=p@\loc] when ff == f;
+      
+  for (loc use <- uses, isContainedIn(use, pre@\loc), Formula f <- pre.formulas, isContainedIn(use, f@\loc)) {
+    pre = filterPre(pre, f); 
+  }
+  
+  return pre;
+}
+
+private Post filterPost(Post post, set[loc] uses) {
+  Post filterPost(p:(Post)`post: <Formula ff>;`, Formula f)
+    = (Post)`post: ;`[@\loc=p@\loc] when ff == f;
+
+  Post filterPost(p:(Post)`post: <{Formula ","}* form>, <Formula ff>;`, Formula f)
+    = (Post)`post: <{Formula ","}* form>;`[@\loc=p@\loc] when ff == f;
+
+  Post filterPost(p:(Post)`post: <Formula ff>, <{Formula ","}* form>;`, Formula f)
+    = (Post)`post: <{Formula ","}* form>;`[@\loc=p@\loc] when ff == f;
+
+  Post filterPost(p:(Post)`post: <{Formula ","}* before>, <Formula ff>, <{Formula ","}* after>;`, Formula f)
+    = (Post)`post: <{Formula ","}* before>, 
+            '      <{Formula ","}* after>;`[@\loc=p@\loc] when ff == f;
+      
+  for (loc use <- uses, isContainedIn(use, post@\loc), Formula f <- post.formulas, isContainedIn(use, f@\loc)) {
+    post = filterPost(post, f); 
+  }
+  
+  return post;
+}
+
+private Spec filterFacts(Spec spc, set[loc] uses) {
+  Spec filterFact(s:spc:(Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Fact ff> <States? sts>`, Fact f)
+    = (Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <States? sts>`[@\loc=s@\loc] when ff == f;
+
+  Spec filterFact(s:spc:(Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Fact ff> <Fact* other> <States? sts>`, Fact f)
+    = (Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Fact* other> <States? sts>`[@\loc=s@\loc] when ff == f;
+
+  Spec filterFact(s:spc:(Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Fact* other> <Fact ff> <States? sts>`, Fact f)
+    = (Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Fact* other> <States? sts>`[@\loc=s@\loc] when ff == f;
+
+  Spec filterFact(s:spc:(Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Fact* before> <Fact ff> <Fact* after> <States? sts>`, Fact f)
+    = (Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Fact* before> <Fact* after> <States? sts>`[@\loc=s@\loc] when ff == f;
+
+  for (loc use <- uses, Fact f <- spc.facts, isContainedIn(use, f@\loc)) {
+    spc = filterFact(spc, f);
+  }
+  
+  return spc;
+}
+
+private set[Spec] filterNonReferencedSpecs(Graph[Spec] spcDep, TModel tm, Config cfg) {
   set[set[Spec]] components = connectedComponents(spcDep);
-  set[Spec] referencedSpcs = {lookupSpecByRef(tm.useDef[spc@\loc], deps) | (InstanceSetup)`<{Id ","}+ _> : <Type spc> <InState? _> <WithAssignments? _>` <- cfg.instances};
+  set[Spec] referencedSpcs = {lookupSpecByRef(tm.useDef[spc@\loc], spcDep) | (InstanceSetup)`<{Id ","}+ _> : <Type spc> <InState? _> <WithAssignments? _>` <- cfg.instances};
   
   Spec s = getOneFrom(referencedSpcs);
+
   for (set[Spec] comp <- components, s in comp) {
     return comp;
   }
@@ -127,8 +243,25 @@ private Graph[Spec] extractSpecDependencyGraph(Graph[RebelDependency] modDep) {
   return spcDepGraph;
 }
 
-private Spec lookupSpecByRef({loc specDef}, set[RebelDependency] deps) = lookupSpecByRef(specDef, deps);
+private Field lookupFieldByRef({loc fldDef}, Graph[Spec] spcDeps) = lookupFieldByRef(fldDef, spcDeps);
+private Field lookupFieldByRef(loc fldDef, Graph[Spec] spcDeps) {
+  for (/Spec s <- spcDeps, /Field f <- s.fields, f.name@\loc == fldDef) {
+    return f;
+  } 
+  
+  throw "Unable to find referenced Field at `<fldDef>`";
+} 
 
+private Spec lookupSpecByRef({loc specDef}, Graph[Spec] spcDeps) = lookupSpecByRef(specDef, spcDeps);
+private Spec lookupSpecByRef(loc specDef, Graph[Spec] spcDeps) {
+  for (/Spec s <- spcDeps, s@\loc == specDef) {
+    return s;
+  } 
+  
+  throw "Unable to find referenced Spec at `<specDef>`";
+}
+
+private Spec lookupSpecByRef({loc specDef}, set[RebelDependency] deps) = lookupSpecByRef(specDef, deps);
 private Spec lookupSpecByRef(loc specDef, set[RebelDependency] deps) {
   for (resolvedAndCheckedModule(Module m, _, _) <- deps, /Spec s <- m.parts, s@\loc == specDef) {
     return s;

@@ -50,8 +50,8 @@ spec CoffeeMachine
 
 spec CoffeeType[NONE,NORMAL,ESPRESSO,AMERICANO,LATTE]
  
-config InitialMachine = cm: CoffeeMachine is uninitialized;
-  
+config InitialMachine = cm: CoffeeMachine forget amountNeeded, selected is uninitialized;
+   
 assert MachineIsServing = eventually exists m: CoffeeMachine | m is serve;  
 check MachineIsServing from InitialMachine in max 10 steps;
 

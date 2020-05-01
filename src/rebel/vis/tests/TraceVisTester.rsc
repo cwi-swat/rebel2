@@ -21,6 +21,7 @@ App[TraceVisModel] visRingLeaderElectionCheck() = visTrace("EventuallyOneIsElect
 App[TraceVisModel] visLightCheck() = visTrace("BulbCanBreak", |project://rebel2/examples/Light.rebel|);
 App[TraceVisModel] visAccountCheck() = visTrace("CanBeOverdrawn", |project://rebel2/examples/banking/Account.rebel|);
 App[TraceVisModel] visDoctorCheck() = visTrace("DoctorCanGoOffCall", |project://rebel2/examples/local/doctor/protocol/Doctor.rebel|);
+App[TraceVisModel] visRiverCrossingCheck(str check) = visTrace(check, |project://rebel2/examples/RiverCrossing.rebel|);
 
 App[TraceVisModel] visPaperTransactionGetStuckCheck() = visTrace("TransactionCanGetStuck", |project://rebel2/examples/local/paper/Transaction.rebel|);
 App[TraceVisModel] visPaperTransactionCanBookCheck() = visTrace("CanBookATransaction", |project://rebel2/examples/local/paper/Transaction.rebel|);

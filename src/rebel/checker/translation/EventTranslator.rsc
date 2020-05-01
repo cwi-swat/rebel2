@@ -230,15 +230,17 @@ private str translateEventBody(Spec spc, Event event, Context ctx) {
 }
 
 private str translatePre(Event event, Context ctx) 
-  = "// Preconditions 
-    '<intercalate(" ∧\n",[translate(f,ctx) | f <- pre.formulas])>"
-    when /Pre pre := event;
+  = "<if (cons != []) {>// Preconditions 
+    '<intercalate(" ∧\n", cons)><}>"
+    when /Pre pre := event, 
+         list[str] cons := [translate(f,ctx) | f <- pre.formulas];
 
 private default str translatePre(Event event, Context ctx) = "";     
 
 private str translatePost(Event event, Context ctx) 
-  = "// Postconditions
-    '<intercalate(" ∧\n", [translate(f, ctx) | Formula f <- post.formulas])>"
-    when /Post post := event;
+  = "<if (cons != []) {>// Postconditions
+    '<intercalate(" ∧\n", cons)><}>"
+    when /Post post := event,
+         list[str] cons := [translate(f,ctx) | f <- post.formulas];
 
 private default str translatePost(Event event, Context ctx) = "";     

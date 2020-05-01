@@ -66,7 +66,7 @@ test SimpleCorrectConfig [[
   config Simple = ac: Account, m: Money;
 ]]
 
-test SimpleWrongConfig [[
+test ForgetField [[
   module Account
   
   spec Money
@@ -74,5 +74,6 @@ test SimpleWrongConfig [[
   spec Account
     balance: Money;
   
-  config Simple = ac: Account;
-]] expect {"Specification `Money` is referenced by specifications but no instance is declared in the configuration"}
+  config Simple = ac: Account forget balance, m: Money;
+]]
+

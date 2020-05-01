@@ -1,4 +1,4 @@
-module Plugin
+module rebel::Plugin
 
 import rebel::lang::Syntax;
 import rebel::lang::Parser;

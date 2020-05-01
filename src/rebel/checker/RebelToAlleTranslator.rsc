@@ -50,7 +50,8 @@ str translateFacts(Module m, RelMapping rm, TModel tm, set[Spec] spcs) {
   Context ctx = ctx(rm, tm, spcs, defaultCurRel(), defaultStepRel(), nxtUnique);
 
   return "<for (/Spec s <- m.parts) {>// Facts from spec `<s.name>`
-         '<for (Fact f <- s.facts) {><translate(f.form, ctx)>
+         '<for (Fact f <- s.facts) {>// Fact `<f.name>` 
+         '<translate(f.form, ctx)>
          '<}><}>";
 }
 

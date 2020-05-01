@@ -1,6 +1,6 @@
 Manifest-Version: 0.0.1
 Source: src
-Main-Module: Plugin
+Main-Module: rebel::Plugin
 Main-Function: main
 Project-Name: rebel2
 Require-Libraries: |lib://allealle|, |lib://typepal|, |lib://salix|, |lib://rascal_eclipse|

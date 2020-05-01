@@ -16,6 +16,8 @@ Trace testPerformCheckOnTransaction2() = testPerformCheck("TransactionCanGetStuc
 
 Trace testPerformCheckOnHotel() = testPerformCheck("NoIntruder", |project://rebel2/examples/Hotel.rebel|);
 
+Trace testPerformCheckOnLight() = testPerformCheck("BulbCanBreak", |project://rebel2/examples/Light.rebel|);
+
 Trace testPerformCheck(str check, loc spec) {
   PathConfig pcfg = defaultPathConfig(spec);
   

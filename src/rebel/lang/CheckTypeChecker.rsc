@@ -44,13 +44,17 @@ void collect(current: (Config)`config <Id name> = <{InstanceSetup ","}+ instance
   c.leaveScope(current);  
 }
 
-void collect(current: (InstanceSetup)`<{Id ","}+ labels>: <Type spc> <Abstracts? abstracts> <InState? inState> <WithAssignments? assignments>`, Collector c) {
+void collect(current: (InstanceSetup)`<{Id ","}+ labels>: <Type spc> <Abstracts? abstracts> <Forget? forget> <InState? inState> <WithAssignments? assignments>`, Collector c) {
   for (l <- labels) {
     c.define("<l>", instanceId(), l, defType(spc));
   }
   
   if (/(InState)`is <State st>` := inState) {
     c.useViaType(spc, st, {stateId()});
+  }
+  
+  for (/(Forget)`forget <{Id ","}+ fields>` := forget, Id field <- fields) {
+    c.useViaType(spc, field, {fieldId()});
   }
   
   for (/assign:(Assignment)`<Id fieldName> = <Lit val>` := assignments) {

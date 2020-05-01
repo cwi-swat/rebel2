@@ -29,7 +29,7 @@ App[TraceVisModel] createTraceVis(str check, Trace trace) {
   TraceVisModel init() = <check, trace, 0, getTotalNumberOfSteps(trace), isInfiniteTrace(trace), false, initialFilters(trace)>;
     
   return webApp(makeApp("rebelTraceVis", init, view, update), 
-    index = |project://rebel2/salix/tracevis.html|, static = |project://rebel2/salix/|
+    |project://rebel2/salix/tracevis.html|, |project://rebel2/salix/|
   );
 }
 
@@ -236,7 +236,7 @@ str displayConf(TraceVisModel m) {
   default str affectedInstanceColor(str inst) = "";
   
   str result = "parallel[Label=\"\<\<Composite Machine\>\>\"] {
-               '  <intercalate(",", ["<inst>[Label=\"<inst> \<\<<spc.name>\>\>\" <affectedInstanceColor(inst)>] { <specToStateMachineJs(spc, instance = inst, activeState = state2Str(cur), values = getValues(spc, inst), nextTrans = getNxtTrans(inst), \filter = m.filters[inst])> }" | Spec spc <- currentStep.conf.instances<0>, <str inst, State cur> <- currentStep.conf.instances[spc], m.filters[inst] != hide()])>;
+               '  <intercalate(",", ["<inst>[Label=\"<inst> \<\<<spc.name>\>\>\" <affectedInstanceColor(inst)>] { <specToStateMachineJs(spc, instance = inst, activeState = state2Str(cur), showValues = true, values = getValues(spc, inst), nextTrans = getNxtTrans(inst), \filter = m.filters[inst])> }" | Spec spc <- currentStep.conf.instances<0>, <str inst, State cur> <- currentStep.conf.instances[spc], m.filters[inst] != hide()])>;
                '};";
     
   return result;

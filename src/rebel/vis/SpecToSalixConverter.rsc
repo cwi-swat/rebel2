@@ -15,8 +15,8 @@ data Filter
 str specToStateMachineJs(Spec spc, str instance = "", str activeState = "", str nextTrans = "", bool showValues = false, map[str,str] values = (), Filter \filter = show()) {
   set[str] done = {};
     
-  str conv(Spec spc) = "<convValues()>
-                       '<if (\filter != valuesOnly()) {>, <convStates(s)>
+  str conv(Spec spc) = "<if (showValues) {><convValues()><}>
+                       '<if (\filter != valuesOnly()) {><if (showValues) {>,<}> <convStates(s)>
                        '
                        '<convTrans(s)><} else {>;<}>"
                         when /States s := spc.states;
