@@ -28,6 +28,9 @@ App[TraceVisModel] visPaperTransactionCanBookCheck() = visTrace("CanBookATransac
 
 App[TraceVisModel] visPaperAccountCheck() = visTrace("CanOverdrawAccount", |project://rebel2/examples/local/paper/Account.rebel|);
 
+App[TraceVisModel] visPaperAccountCheck() = visTrace("CanOverdrawAccount", |project://rebel2/examples/local/paper/Account.rebel|);
+
+
 App[TraceVisModel] visTrace(str check, loc rebelFile) {
   Trace t = testPerformCheck(check, rebelFile);
   return createTraceVis(check, t);

@@ -13,6 +13,9 @@ import ParseTree;
 import Set;
 import analysis::graphs::Graph;
 
+import util::Progress;
+import util::Benchmark;
+
 alias CheckedModule = tuple[Module m, TModel tm];
 
 CheckedModule assembleCheck(str check, loc modLoc, PathConfig pcfg, bool saveGenModule = true) = assembleCheck(check, parseModule(modLoc), pcfg, saveGenModule = saveGenModule);
@@ -28,6 +31,9 @@ CheckedModule assembleCheck(str check, Module root, Graph[RebelDependency] modDe
 }
 
 CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDependency] modDep, PathConfig pcfg, bool saveGenModule = true) {
+  print("Preparing module for check ...");
+  int startTime = cpuTime();
+    
   if (/resolvedOnlyModule(_,_) := modDep || /unresolvedModule(_) := modDep) {
     throw "Can only assemble check modules when all dependend modules are resolved and type checked";
   } 
@@ -63,12 +69,18 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
       Field fld = lookupFieldByRef(tm.useDef[field@\loc], spcDep);
       
       // Find all the uses of the field
-      set[loc] uses = tm.useDef<1,0>[tm.useDef[field@\loc]]; 
+      set[loc] uses = tm.useDef<1,0>[fld.name@\loc]; 
+
       // Remove all fields, formula's in pre and post and facts that reference the 'forgotten' field
       allSpecs = visit(allSpecs) {
         case Spec s => filterFieldAndFacts(fld, s, uses)
         case Pre pre => filterPre(pre, uses)    
         case Post post => filterPost(post, uses)
+      }
+      
+      // Remove all parameters that became unused
+      allSpecs = visit(allSpecs) {
+        case Event e => filterParameters(e, tm.useDef<1,0>)
       }
 
       // Replace all occurrences of the specs in the spec dependency graph      
@@ -101,6 +113,8 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
   
   TModel genTm = rebelTModelFromModule(gen, {}, pcfg);
   
+  println("done, took: <((cpuTime() - startTime) / 1000000)> ms.");
+  
   return <gen, genTm>;
 }
 
@@ -120,10 +134,48 @@ private Spec filterField(spc:(Spec)`spec <Id name> <Instances? inst> <Fields? fl
   Fields filterFields((Fields)`<{Field ","}+ before>, <Field f>, <{Field ","}+ after>;`)
     = (Fields)`<{Field ","}+ before>, <{Field ","}+ after>;` when f == fld; 
 
-  
   return visit(spc) {
     case Fields ff => filterFields(ff) when /fld := ff 
   }
+}
+
+private Event filterParameters(Event evnt, rel[loc,loc] defUse) {
+  Event filterParam((Event)`<Modifier* modifiers> event <Id name>(<FormalParam p>) <EventBody body>`, FormalParam pp) 
+    = (Event)`<Modifier* modifiers> event <Id name>() <EventBody body>` when p == pp;
+    
+  Event filterParam((Event)`<Modifier* modifiers> event <Id name>(<FormalParam p>,<{FormalParam ","}* after>) <EventBody body>`, FormalParam pp) 
+    = (Event)`<Modifier* modifiers> event <Id name>(<{FormalParam ","}* after>) <EventBody body>` when p == pp;
+
+  Event filterParam((Event)`<Modifier* modifiers> event <Id name>(<{FormalParam ","}* before>,<FormalParam p>) <EventBody body>`, FormalParam pp) 
+    = (Event)`<Modifier* modifiers> event <Id name>(<{FormalParam ","}* before>) <EventBody body>` when p == pp;
+
+  Event filterParam((Event)`<Modifier* modifiers> event <Id name>(<{FormalParam ","}* before>,<FormalParam p>,<{FormalParam ","}* after>) <EventBody body>`, FormalParam pp) 
+    = (Event)`<Modifier* modifiers> event <Id name>(<{FormalParam ","}* before>,<{FormalParam ","}* after>) <EventBody body>` when p == pp;
+
+  bool isUsed(FormalParam p) {
+    for (loc use <- defUse[p.name@\loc]) {
+      visit (evnt) {
+        case Pre pre: {
+          if (Formula f <- pre.formulas, isContainedIn(use, f@\loc)) {
+            return true;
+          }
+        }
+        case Post post: {
+          if (Formula f <- post.formulas, isContainedIn(use, f@\loc)) {
+            return true;
+          }
+        }
+      } 
+    }
+    
+    return false;
+  }
+  
+  for (FormalParam p <- evnt.params, !isUsed(p)) {
+    evnt = filterParam(evnt, p);
+  }
+      
+  return evnt;
 }
 
 private Pre filterPre(Pre pre, set[loc] uses) {
@@ -169,22 +221,22 @@ private Post filterPost(Post post, set[loc] uses) {
 }
 
 private Spec filterFacts(Spec spc, set[loc] uses) {
-  Spec filterFact(s:spc:(Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Fact ff> <States? sts>`, Fact f)
+  Spec filterFact(s:(Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Fact ff> <States? sts>`, Fact f)
     = (Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <States? sts>`[@\loc=s@\loc] when ff == f;
 
-  Spec filterFact(s:spc:(Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Fact ff> <Fact* other> <States? sts>`, Fact f)
+  Spec filterFact(s:(Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Fact ff> <Fact* other> <States? sts>`, Fact f)
     = (Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Fact* other> <States? sts>`[@\loc=s@\loc] when ff == f;
 
-  Spec filterFact(s:spc:(Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Fact* other> <Fact ff> <States? sts>`, Fact f)
+  Spec filterFact(s:(Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Fact* other> <Fact ff> <States? sts>`, Fact f)
     = (Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Fact* other> <States? sts>`[@\loc=s@\loc] when ff == f;
 
-  Spec filterFact(s:spc:(Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Fact* before> <Fact ff> <Fact* after> <States? sts>`, Fact f)
+  Spec filterFact(s:(Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Fact* before> <Fact ff> <Fact* after> <States? sts>`, Fact f)
     = (Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Fact* before> <Fact* after> <States? sts>`[@\loc=s@\loc] when ff == f;
 
   for (loc use <- uses, Fact f <- spc.facts, isContainedIn(use, f@\loc)) {
     spc = filterFact(spc, f);
   }
-  
+   
   return spc;
 }
 
@@ -245,7 +297,7 @@ private Graph[Spec] extractSpecDependencyGraph(Graph[RebelDependency] modDep) {
 
 private Field lookupFieldByRef({loc fldDef}, Graph[Spec] spcDeps) = lookupFieldByRef(fldDef, spcDeps);
 private Field lookupFieldByRef(loc fldDef, Graph[Spec] spcDeps) {
-  for (/Spec s <- spcDeps, /Field f <- s.fields, f.name@\loc == fldDef) {
+  for (/Spec s <- spcDeps, /Field f := s.fields, f.name@\loc == fldDef) {
     return f;
   } 
   
