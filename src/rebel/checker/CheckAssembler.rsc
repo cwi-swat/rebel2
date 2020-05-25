@@ -12,6 +12,7 @@ import Location;
 import ParseTree;
 import Set;
 import analysis::graphs::Graph;
+import DateTime;
 
 import util::Progress;
 import util::Benchmark;
@@ -45,6 +46,9 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
   // Build a spec dependency graph from the module dependency graph
   Graph[Spec] spcDep = extractSpecDependencyGraph(modDep);
   
+  // Merge all useDef relations 
+  rel[loc,loc] globDefUse = {*dep.tm.useDef<1,0> | /RebelDependency dep <- modDep};
+    
   bool replace(Type abstractSpcType, Type concreteSpcType) {
     Spec abstractSpc = lookupSpecByRef(tm.useDef[abstractSpcType@\loc], deps);
     Spec concreteSpc = lookupSpecByRef(tm.useDef[concreteSpcType@\loc], deps);
@@ -62,14 +66,14 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
     return true;
   }  
 
-  bool slice(set[Id] fields, Type spcType) {
+  bool slice(set[Id] fields) {
     set[Spec] allSpecs = {s | /Spec s := spcDep};
     
     for (Id field <- fields) {
       Field fld = lookupFieldByRef(tm.useDef[field@\loc], spcDep);
       
       // Find all the uses of the field
-      set[loc] uses = tm.useDef<1,0>[fld.name@\loc]; 
+      set[loc] uses = globDefUse[fld.name@\loc]; 
 
       // Remove all fields, formula's in pre and post and facts that reference the 'forgotten' field
       allSpecs = visit(allSpecs) {
@@ -80,8 +84,8 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
       
       // Remove all parameters that became unused
       allSpecs = visit(allSpecs) {
-        case Event e => filterParameters(e, tm.useDef<1,0>)
-      }
+        case Event e => filterParameters(e, globDefUse)
+      } 
 
       // Replace all occurrences of the specs in the spec dependency graph      
       spcDep = visit(spcDep) {
@@ -101,18 +105,25 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
   // Step 2: Apply slicing (removing 'forgotten' fields)
   cfg = visit (cfg) {
     case (InstanceSetup)`<{Id ","}+ labels> : <Type spc> forget <{Id ","}+ fields> <InState? inState> <WithAssignments? assignments>` =>
-      (InstanceSetup)`<{Id ","}+ labels> : <Type spc> <InState? inState> <WithAssignments? assignments>` when slice({f | f <- fields}, spc)
+      (InstanceSetup)`<{Id ","}+ labels> : <Type spc> <InState? inState> <WithAssignments? assignments>` when slice({f | f <- fields})
   };  
 
   set[Spec] filteredSpecs = filterNonReferencedSpecs(spcDep, tm, cfg);  
   Module gen = assembleModule(root.\module.name, filteredSpecs, as, cfg, chk);
+  TModel genTm = rebelTModelFromModule(gen, {}, pcfg);
   
+  // Filter the specs until none can be removed any more
+  Graph[Spec] newSpcDep = extractSpecDependencyGraph({<resolvedAndCheckedModule(gen,genTm,now()), resolvedAndCheckedModule(gen,genTm,now())>});
+  if (size(newSpcDep) != size(spcDep)) {
+    filteredSpecs = filterNonReferencedSpecs(newSpcDep, genTm, findConfig(gen));  
+    gen = assembleModule(root.\module.name, filteredSpecs, as, cfg, chk);
+    genTm = rebelTModelFromModule(gen, {}, pcfg);
+  }
+    
   if (saveGenModule) {
     writeFile(addModuleToBase(pcfg.checks, gen)[extension="rebel"], gen);
   }
-  
-  TModel genTm = rebelTModelFromModule(gen, {}, pcfg);
-  
+
   println("done, took: <((cpuTime() - startTime) / 1000000)> ms.");
   
   return <gen, genTm>;
@@ -265,6 +276,8 @@ private Module assembleModule(QualifiedName origMod, set[Spec] specs, Assert as,
                  '
                  '<chk>";
 } 
+
+private rebel::lang::Syntax::Config findConfig(Module m) = c when /rebel::lang::Syntax::Config c := m.parts;
 
 private rebel::lang::Syntax::Config findReferencedConfig(Check chk, TModel tm, set[RebelDependency] deps) {
   for (resolvedAndCheckedModule(Module m, _, _) <- deps, /rebel::lang::Syntax::Config cfg <- m.parts, {cfg@\loc} == tm.useDef[chk.config@\loc]) {

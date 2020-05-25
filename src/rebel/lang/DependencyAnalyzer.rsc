@@ -25,6 +25,7 @@ data RebelDependency
 
 Graph[RebelDependency] calculateDependencies(Module m, PathConfig pcfg) {
   map[QualifiedName,RebelDependency] done = ();
+  
   Maybe[RebelDependency] isDone(QualifiedName n) = just(done[n]) when n in done;
   Maybe[RebelDependency] isDone(QualifiedName n) = nothing() when n notin done;
   void addToDone(RebelDependency dep) { done[dep.m.\module.name] = dep; }

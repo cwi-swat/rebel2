@@ -38,7 +38,7 @@ PathConfig normalizerPathConfig(loc file) {
 loc extractBase(Module m) = extractBase(m.\module.name); 
 
 loc extractBase(QualifiedName modDef) {
-  loc modLoc = m@\loc.top;
+  loc modLoc = modDef@\loc.top;
   
   for (str part <- split("::", "<modDef>")) {
     modLoc = modLoc.parent;

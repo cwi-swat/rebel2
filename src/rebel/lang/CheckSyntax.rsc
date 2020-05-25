@@ -35,8 +35,10 @@ syntax Formula
   > "eventually" Formula form
   | "always" Formula form
   | "always-last" Formula form
+  | Formula first "until" Formula second
   | "next" Formula form
   | "first" Formula form
+  | "last" Formula form
   | TransEvent event "on" Expr var WithAssignments? with
   ;
 
