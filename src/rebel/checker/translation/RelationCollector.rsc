@@ -182,11 +182,11 @@ void analyse(current:(Id)`<Id var>`, AnalysisContext ctx) {
 
 void analyse(current:(Expr)`<Expr expr>.<Id fld>`, AnalysisContext ctx) {
   
-  Maybe[Define] md = getDefinitionIfExists(expr@\loc, ctx);
-  if (just(Define d) := md, d.idRole in {quantVarId()}) {
-    str curRel = ctx.lookupCurRelScoped(d.defined);
-    ctx = newCurRel(curRel, ctx); 
-  }
+  //Maybe[Define] md = getDefinitionIfExists(expr@\loc, ctx);
+  //if (just(Define d) := md, d.idRole in {quantVarId()}) {
+  //  str curRel = ctx.lookupCurRelScoped(d.defined);
+  //  ctx = newCurRel(curRel, ctx); 
+  //}
   
   analyse(expr,ctx);
   analyse(fld,ctx);

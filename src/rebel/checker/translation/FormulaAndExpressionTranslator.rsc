@@ -61,19 +61,19 @@ str translate((Formula)`<Expr lhs> is <Id state>`, Context ctx) {
 str translate((Formula)`eventually <Formula f>`, Context ctx) {
   str configRel = (ctx.curRel == defaultCurRel()) ? "Config" : "(<ctx.curRel>[config as cur] ⨝ *\<cur,nxt\>(order ∪ loop))[nxt-\>config]";
   ctx = nextCurAndStepRel(ctx);
-  return "∃ <ctx.curRel> ∈ <configRel> | let <ctx.stepRel> = <ctx.curRel>[config as cur] ⨝ (order ∪ loop) | <translate(f, ctx)>";
+  return "∃ <ctx.curRel> ∈ <configRel> | let <ctx.stepRel> = <ctx.curRel>[config as nxt] ⨝ (order ∪ loop) | <translate(f, ctx)>";
 } 
 
 str translate((Formula)`always <Formula f>`, Context ctx) {
   str configRel = (ctx.curRel == defaultCurRel()) ? "Config" : "(<ctx.curRel>[config as cur] ⨝ *\<cur,nxt\>(order ∪ loop))[nxt-\>config]";
   ctx = nextCurAndStepRel(ctx);
-  return "∀ <ctx.curRel> ∈ <configRel> | let <ctx.stepRel> = <ctx.curRel>[config as cur] ⨝ (order ∪ loop) | <translate(f, ctx)>";
+  return "∀ <ctx.curRel> ∈ <configRel> | let <ctx.stepRel> = <ctx.curRel>[config as nxt] ⨝ (order ∪ loop) | <translate(f, ctx)>";
 }
 
 str translate((Formula)`always-last <Formula f>`, Context ctx) {
   str configRel = (ctx.curRel == defaultCurRel()) ? "Config ∖ last" : "(<ctx.curRel>[config as cur] ⨝ *\<cur,nxt\>(order ∪ loop))[nxt-\>config] ∖ last";
   ctx = nextCurAndStepRel(ctx);
-  return "∀ <ctx.curRel> ∈ <configRel> | let <ctx.stepRel> = <ctx.curRel>[config as cur] ⨝ (order ∪ loop) | <translate(f, ctx)>";
+  return "∀ <ctx.curRel> ∈ <configRel> | let <ctx.stepRel> = <ctx.curRel>[config as nxt] ⨝ (order ∪ loop) | <translate(f, ctx)>";
 }
 
 str translate((Formula)`next <Formula f>`, Context ctx) {
