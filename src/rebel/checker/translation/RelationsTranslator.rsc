@@ -52,7 +52,7 @@ private str buildSpecRel(Spec spc)
   
 private str buildStateRel(set[Spec] spcs) 
   = "// Define all possible states for all machines
-    'State (state:id) = {\<state_uninitialized\>,\<state_finalized\>,<stateTuples>}
+    'State (state:id) = {\<state_uninitialized\>,\<state_finalized\><if (stateTuples != "") {>,<stateTuples><}>}
     'initialized (state:id) = {<stateTuples>}
     'finalized (state:id) = {\<state_finalized\>}
     'uninitialized (state:id) = {\<state_uninitialized\>}

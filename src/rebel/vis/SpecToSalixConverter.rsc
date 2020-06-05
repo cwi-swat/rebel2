@@ -21,7 +21,7 @@ str specToStateMachineJs(Spec spc, str instance = "", str activeState = "", str 
                        '<convTrans(s)><} else {>;<}>"
                         when /States s := spc.states;
                         
-  default str conv(Spec spc) = "";                         
+  default str conv(Spec spc) = "<if (showValues) {><convValues()>;<}>";                         
   
   str actCol = "#dc3545";
   str nxtCol = "#007bff";

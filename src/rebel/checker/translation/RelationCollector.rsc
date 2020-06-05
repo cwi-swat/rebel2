@@ -63,7 +63,7 @@ RelMapping constructRelMapping(Module m, TModel tm) {
 }
 
 private set[str] findEmptySpecs(Module m) = {"<s.name>" | /Spec s <- m.parts, isEmptySpec(s)};
-private bool isEmptySpec(Spec spc) = /Field _ !:= spc.fields && /Transition _ !:= spc.states;
+private bool isEmptySpec(Spec spc) = /Transition _ !:= spc.states;
 
 void analyse(current:(Event)`<Modifier* _> event <Id name>(<{FormalParam ","}* params>) <EventBody body>`, str specName, AnalysisContext ctx) {
   // Add relations for parameters
@@ -139,6 +139,11 @@ void analyse((Formula)`always <Formula f>`, AnalysisContext ctx) = analyse(f,nex
 void analyse((Formula)`always-last <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurAndStepRel(ctx));
 void analyse((Formula)`next <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurAndStepRel(ctx));
 void analyse((Formula)`first <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurRel(ctx));
+void analyse((Formula)`last <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurRel(ctx));
+
+void analyse((Formula)`<Formula frst> until <Formula scnd>`, AnalysisContext ctx) {
+ analyse(f,nextCurRel(ctx));
+}
 
 void analyse((Formula)`<TransEvent event> on <Expr var> <WithAssignments? w>`, AnalysisContext ctx) { 
   analyse(var,ctx);
@@ -181,20 +186,18 @@ void analyse(current:(Id)`<Id var>`, AnalysisContext ctx) {
 }
 
 void analyse(current:(Expr)`<Expr expr>.<Id fld>`, AnalysisContext ctx) {
-  
-  //Maybe[Define] md = getDefinitionIfExists(expr@\loc, ctx);
-  //if (just(Define d) := md, d.idRole in {quantVarId()}) {
-  //  str curRel = ctx.lookupCurRelScoped(d.defined);
-  //  ctx = newCurRel(curRel, ctx); 
-  //}
-  
   analyse(expr,ctx);
-  analyse(fld,ctx);
-  
   RelExpr exprRel  = ctx.lookup(expr@\loc);
-  RelExpr fieldRel = ctx.lookup(fld@\loc);
-  
-  ctx.add(current@\loc, <"(<exprRel.relExpr><renameIfNeeded(getFieldName(exprRel),"instance")> ⨝ <fieldRel.relExpr>)[<fld>]", ("<fld>":type2Dom(getType(fld@\loc,ctx)))>);
+
+  if (getType(expr@\loc, ctx) == stringType() && "<fld>" == "length") {
+    // built-in attribute on string
+    ctx.add(current@\loc, <"(<exprRel.relExpr>)[<getFieldName(exprRel)>]", ("<getFieldName(exprRel)>":type2Dom(intType()))>);  
+  } else {
+    analyse(fld,ctx);
+    RelExpr fieldRel = ctx.lookup(fld@\loc);
+    
+    ctx.add(current@\loc, <"(<exprRel.relExpr><renameIfNeeded(getFieldName(exprRel),"instance")> ⨝ <fieldRel.relExpr>)[<fld>]", ("<fld>":type2Dom(getType(fld@\loc,ctx)))>);
+  }
 }
 
 void analyse(current:(Expr)`<Expr spc>[<Id fld>]`, AnalysisContext ctx) {
@@ -386,21 +389,21 @@ default str dom2Str(AType t) = "id";
 private str getNextCurRel(str oldCurRel) {
   if (oldCurRel == defaultCurRel()) {
     return "<defaultCurRel()>_1";
-  }
-  
-  if (/cur_<n:[0-9]+>/ := oldCurRel) {
+  } else if (/cur_<n:[0-9]+>/ := oldCurRel) {
     return "<defaultCurRel()>_<toInt(n)+1>";
   }
+  
+  throw "Should not happen";
 }
 
 private str getNextStepRel(str oldStepRel) {
   if (oldStepRel == defaultStepRel()) {
     return "<defaultStepRel()>_1";
-  }
-  
-  if (/step_<n:[0-9]+>/ := oldStepRel) {
+  } else if (/step_<n:[0-9]+>/ := oldStepRel) {
     return "<defaultStepRel()>_<toInt(n)+1>";
   }
+  
+  throw "Should not happen";
 }
 
 private str defaultCurRel() = "cur";

@@ -228,16 +228,20 @@ AttRes translateAttrExpr(current:(Expr)`<Expr spc>[<Id inst>].<Id fld>`, Context
 AttRes translateAttrExpr(current:(Expr)`<Expr expr>.<Id fld>`, Context ctx) {
   str r = ctx.rm[current@\loc].relExpr;
 
-  IdRole role = getIdRole(expr,ctx.tm);
-  str newFld = "<fld>";
-  switch (role) {
-    case fieldId(): newFld = "<ctx.curRel>_<ctx.nxtUniquePrefix()>_<fld>";
-    case paramId(): newFld = "param_<ctx.nxtUniquePrefix()>_<fld>";
-    case quantVarId(): newFld = "<expr>_<fld>";
+  if (getType(expr, ctx.tm) == stringType() && "<fld>" == "length") {
+    return <{r}, "length(<getFieldName(expr,ctx)>)">;
+  } else {
+    IdRole role = getIdRole(expr,ctx.tm);
+    str newFld = "<fld>";
+    switch (role) {
+      case fieldId(): newFld = "<ctx.curRel>_<ctx.nxtUniquePrefix()>_<fld>";
+      case paramId(): newFld = "param_<ctx.nxtUniquePrefix()>_<fld>";
+      case quantVarId(): newFld = "<expr>_<fld>";
+    }
+    
+    r = "<r><renameIfNecessary(current, newFld, ctx)>";
+    return <{r}, newFld>;
   }
-  
-  r = "<r><renameIfNecessary(current, newFld, ctx)>";
-  return <{r}, newFld>;
 }
 
 AttRes translateAttrExpr((Expr)`- <Expr e>`, Context ctx) { 

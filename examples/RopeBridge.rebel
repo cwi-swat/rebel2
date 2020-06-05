@@ -21,7 +21,7 @@ spec FlashLight
         then this.totalTimeSpend' = this.totalTimeSpend + p1.timeToCross
         else this.totalTimeSpend' = this.totalTimeSpend + p2.timeToCross;
       
-  event crossFarToNear(p: Adventurer)
+  event crossFarToNear(p: Adventurer) 
     pre: p.crossFarToNear();
     post: this.totalTimeSpend' = this.totalTimeSpend + p.timeToCross; 
     
@@ -40,5 +40,5 @@ config EverybodyNear
     a3 with timeToCross = 5,
     a4 with timeToCross = 10;
   
-check EverybodyCrossedInTheLeastTime from EverybodyNear in max 6 steps;  
+run EverybodyCrossedInTheLeastTime from EverybodyNear in max 6 steps;  
 

@@ -1,0 +1,53 @@
+module local::paper::example::Account
+
+import local::paper::example::AccountNumber
+import local::paper::example::Date
+
+spec Account
+  nr: AccountNumber,  
+  balance: Integer,
+  openedOn: Date;
+  
+  init event open(nr: AccountNumber, openedOn: Date)
+    post: this.nr' = nr, this.balance' = 0, this.openedOn' = openedOn;
+    
+  event deposit(amount: Integer)
+    pre: amount > 0;
+    post: this.balance' = this.balance + amount;
+    
+  event withdraw(amount: Integer)
+    pre: amount > 0, this.balance >= amount;
+    post: this.balance' = this.balance - amount;
+    
+  event payInterest(rate: Integer)
+    pre: rate > 0;
+    post: this.balance' = this.balance + ((this.balance * rate) / 100);
+    
+  event block()
+  event unblock()  
+  final event forceClose()
+   
+  final event close()
+    pre: this.balance = 0; 
+  
+  fact AllAccountsHaveUniqueAccountNumbers 
+    = always forall ac1, ac2: Account | (ac1 is initialized && ac2 is initialized && ac1.nr = ac2.nr => ac1 = ac2);
+  
+  states:
+    (*) -> waitingForActivation: open;
+    waitingForActivation -> opened: deposit;
+    opened -> opened: deposit, withdraw, payInterest;
+    opened -> blocked: block;
+    blocked -> opened: unblock;
+    blocked -> (*): forceClose;
+    opened -> (*): close;
+    
+assert CantOverdrawAccount = always forall a:Account | (a is initialized => a.balance >= 0);
+
+assert CanPayInterestAndClose = eventually exists ac:Account | payInterest on ac && eventually close on ac;
+  
+config Basic = ac: Account forget nr, openedOn is uninitialized; //, an: AccountNumber, d:Date;
+
+check CantOverdrawAccount from Basic in max 10 steps; 
+  
+run CanPayInterestAndClose from Basic in max 8 steps;

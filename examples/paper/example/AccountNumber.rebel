@@ -1,0 +1,5 @@
+module local::paper::example::AccountNumber
+
+spec AccountNumber
+      
+ 

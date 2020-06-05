@@ -1,0 +1,3 @@
+module paper::sepact::Country
+
+spec Country[DE,EN,IT,NO,FR,PL,RO,SR,BG,SL,NL,RU,HU,LT,TR,CA,SV,ZH,EL,ES,SQ,PT,CS,FI,SK,DA,HR,LV,ET,JA,KA,MN]

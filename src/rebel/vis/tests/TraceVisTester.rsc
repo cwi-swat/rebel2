@@ -21,7 +21,7 @@ App[TraceVisModel] visRiverCrossingCheck(str check) = visTrace(check, |home:///w
 App[TraceVisModel] visPaperTransactionGetStuckCheck() = visTrace("TransactionCanGetStuck", |home:///workspace/rebel2/examples/local/paper/example/Transaction.rebel|);
 App[TraceVisModel] visPaperTransactionCanBookCheck() = visTrace("CanBookATransaction", |home:///workspace/rebel2/examples/local/paper/example/Transaction.rebel|);
 
-App[TraceVisModel] visPaperAccountCheck() = visTrace("CanOverdrawAccount", |home:///workspace/rebel2/examples/local/paper/example/Account.rebel|);
+App[TraceVisModel] visPaperAccountCheck(str check) = visTrace(check, |home:///workspace/rebel2/examples/local/paper/example/Account.rebel|);
 
 App[TraceVisModel] visTrace(str check, loc rebelFile) {
   Trace t = testPerformCheck(check, rebelFile);

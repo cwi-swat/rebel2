@@ -1,0 +1,22 @@
+module paper::sepact::IBAN
+
+import paper::sepact::Country
+
+spec IBAN
+  cc: Country,
+  checkDigits: Integer,
+  bban: String;
+  
+  init event create(cc: Country, checkDigits: Integer, bban: String) 
+    pre: bban.length <= 30;
+    post: this.bban' = bban, this.cc' = cc, this.checkDigits' = checkDigits;
+  
+  fact MaxBbanLength = 
+    always forall iban:IBAN | (iban is initialized =>
+      if iban.cc = Country[AL] then iban.bban.length <= 24 else
+      iban.bban.length <= 30
+            
+    ); 
+    
+  states:
+    (*) -> created: create;

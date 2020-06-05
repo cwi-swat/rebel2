@@ -1,0 +1,4 @@
+module tlaplus::Sequence
+
+spec Sequence
+  val: 

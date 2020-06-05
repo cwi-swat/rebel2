@@ -1,0 +1,8 @@
+module paper::sepact::Party
+
+import paper::sepact::Address
+
+spec Party
+  id: String,
+  name: String,
+  address: Address;

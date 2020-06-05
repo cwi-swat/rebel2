@@ -52,9 +52,10 @@ syntax Expr
   > "-" Expr
   > assoc Expr lhs "*" Expr rhs
   | non-assoc Expr lhs "/" Expr rhs
+  | non-assoc Expr lhs "%" Expr rhs
   > assoc Expr lhs "+" Expr rhs
   | non-assoc Expr lhs "-" Expr rhs
-  | non-assoc Expr lhs "%" Expr rhs
+  | assoc Expr lhs "++" Expr rhs
   > "{" Decl d "|" Formula form "}"
   ; 
   

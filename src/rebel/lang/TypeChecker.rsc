@@ -71,8 +71,17 @@ TypeCheckerResult checkModule(Module root, Graph[RebelDependency] depGraph, Path
 
 private Graph[RebelDependency] subgraph(RebelDependency from, Graph[RebelDependency] depGraph) = {<from,d> | <from, RebelDependency d> <- depGraph};
 
+private AType rebelBuiltInTypes(AType containerType, Tree selector, loc _, Solver s) {
+    if(!(containerType == stringType() && "<selector>" == "length")){
+        s.report(error(selector, "Undefined field %q on %t", "<selector>", containerType));
+    }
+    
+    return intType();
+}
+
 TModel rebelTModelFromModule(Module root, Graph[RebelDependency] depGraph, PathConfig pcfg, bool saveTModels = false, bool debug = false){
   c = newCollector("collectAndSolve", root, config = tconfig(getTypeNamesAndRole = rebelTypeNamesAndRole,
+                                                             getTypeInNamelessType = rebelBuiltInTypes,
                                                              isSubType = subtype,
                                                              verbose=debug, 
                                                              logTModel = debug, 

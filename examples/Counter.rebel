@@ -18,8 +18,9 @@ spec Counter
     active -> active: inc,dec;
   
 assert EventuallyHigherThan3 = eventually always exists c:Counter | c.i > 3;
-//assert EventuallyHigherThan3 = eventually (exists c:Counter | c.i > 3 && eventually exists c2:Counter | c2.i < 4) ;
+assert Eventually3Later5 = eventually exists c:Counter | c.i = 3 && eventually c.i = 5;
 
 config Simple = c: Counter is uninitialized;
 
-check EventuallyHigherThan3 from Simple in max 6 steps with infinite trace;  
+check EventuallyHigherThan3 from Simple in max 6 steps with infinite trace;
+check Eventually3Later5 from Simple in max 7 steps;  

@@ -5,11 +5,10 @@ import rebel::lang::SpecSyntax;
 import rebel::lang::CheckSyntax;
 
 import util::PathUtil;
+import rebel::lang::CommonTypeChecker;
 
 extend analysis::typepal::TypePal;
 
-import IO;
- 
 data AType
   = configType()
   | assertType()
@@ -64,7 +63,9 @@ void collect(current: (InstanceSetup)`<{Id ","}+ labels>: <Type spc> <Abstracts?
     collect(val, c);    
   }
   
-  collect(abstracts, c);
+  if (/Abstracts ab := abstracts) { 
+    collect(ab, c);
+  }
   
   collect(spc, c); 
 }
@@ -102,6 +103,16 @@ void collect(current:(Formula)`always <Formula form>`, Collector c) {
   collect(form, c);  
 }
 
+void collect(current:(Formula)`<Formula first> until <Formula second>`, Collector c) {
+  c.fact(current, boolType());
+  collect(first, second, c);  
+}
+
+void collect(current:(Formula)`<Formula first> release <Formula second>`, Collector c) {
+  c.fact(current, boolType());
+  collect(first, second, c);  
+}
+
 void collect(current:(Formula)`always-last <Formula form>`, Collector c) {
   c.fact(current, boolType());
   collect(form, c);  
@@ -113,6 +124,11 @@ void collect(current:(Formula)`next <Formula form>`, Collector c) {
 }
 
 void collect(current:(Formula)`first <Formula form>`, Collector c) {
+  c.fact(current, boolType());
+  collect(form, c);  
+}
+
+void collect(current:(Formula)`last <Formula form>`, Collector c) {
   c.fact(current, boolType());
   collect(form, c);  
 }
@@ -150,7 +166,9 @@ void collect(current:(Formula)`<TransEvent event> on <Expr spc> <WithAssignments
   }
     
   //c.push("event", event);
-  collect(spc, w, c);
+  if (/WithAssignments wa := w) {
+    collect(spc, wa, c);
+  }
   //c.pop("event");      
 }
 
@@ -159,17 +177,15 @@ void collect(current:(WithAssignments)`with <{Assignment ","}+ assignments>`, Co
 }
 
 void collect(current:(Assignment)`<Id name> = <Expr val>`, Collector c) {
-  //event = c.top("event");
-  //println(event);
-  //c.useViaType(event, name, {paramId()});
   c.fact(name, val);
   
   collect(val,c);
 }
 
-void collect(current:(Check)`check <Id assrt> from <Id config> in <SearchDepth depth> <Objectives? objs>;`, Collector c) {
+void collect(current:(Check)`<Command cmd> <Id assrt> from <Id config> in <SearchDepth depth> <Objectives? objs>;`, Collector c) {
   c.enterScope(current); 
     c.use(assrt, {assertId()});
     c.use(config, {configId()});
   c.leaveScope(current);  
 }
+

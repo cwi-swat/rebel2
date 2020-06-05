@@ -232,13 +232,20 @@ str displayConf(TraceVisModel m) {
   
   str getNxtTrans(str inst) = m.showNxt ? getEventName(inst) : "";
   
+  bool hasFields(Spec s) = /Fields _ := s.fields;
+  
   str affectedInstanceColor(str inst) = "color=\"red\"" when m.showNxt, currentStep has re, inst in currentStep.re.affectedInstances;
   default str affectedInstanceColor(str inst) = "";
   
+  list[str] machines = [];
+  for (Spec spc <- currentStep.conf.instances<0>, <str inst, State cur> <- currentStep.conf.instances[spc], m.filters[inst] != hide()) {
+    str newMach = specToStateMachineJs(spc, instance = inst, activeState = state2Str(cur), showValues = hasFields(spc), values = getValues(spc, inst), nextTrans = getNxtTrans(inst), \filter = m.filters[inst]);
+    machines += "<inst>[Label=\"<inst> \<\<<spc.name>\>\>\" <affectedInstanceColor(inst)>]<if (newMach != "") {>{<newMach>}<}>";
+  }
   str result = "parallel[Label=\"\<\<Composite Machine\>\>\"] {
-               '  <intercalate(",", ["<inst>[Label=\"<inst> \<\<<spc.name>\>\>\" <affectedInstanceColor(inst)>] { <specToStateMachineJs(spc, instance = inst, activeState = state2Str(cur), showValues = true, values = getValues(spc, inst), nextTrans = getNxtTrans(inst), \filter = m.filters[inst])> }" | Spec spc <- currentStep.conf.instances<0>, <str inst, State cur> <- currentStep.conf.instances[spc], m.filters[inst] != hide()])>;
+               '  <intercalate(",", machines)>;
                '};";
-    
+  
   return result;
 }
 

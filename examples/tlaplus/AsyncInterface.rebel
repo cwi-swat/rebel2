@@ -1,0 +1,32 @@
+module AsyncInterface
+
+spec Channel
+  val: Integer,
+  rdy: Integer,
+  ack: Integer;
+  
+  init event start()
+    post: this.rdy' = this.ack';
+  
+  event send(val: Integer)
+    pre: this.rdy = this.ack;
+    post: this.val' = val, this.rdy' = 1 - this.rdy;
+    
+  event receive()
+    pre: this.rdy != this.ack;
+    post: this.ack' = 1 - this.ack;
+  
+  fact TypeInv = always forall c:Channel | 
+    (c is initialized => (c.val >= 0 && // Val is in Natural
+                         (c.rdy = 0 || c.rdy = 1) && (c.ack = 0 || c.ack = 1))); // rdy and ack are bits
+  
+  states:
+    (*) -> accepting: start;
+    accepting -> accepting: send, receive;
+    
+ assert CanAccept = eventually exists c:Channel | c is initialized;
+ 
+ config Single = c:Channel is uninitialized; 
+ 
+ check CanAccept from Single in max 4 steps with infinite trace;
+  

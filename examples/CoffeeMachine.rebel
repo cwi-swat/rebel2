@@ -50,12 +50,12 @@ spec CoffeeMachine
 
 spec CoffeeType[NONE,NORMAL,ESPRESSO,AMERICANO,LATTE]
  
-config InitialMachine = cm: CoffeeMachine forget amountNeeded, selected is uninitialized;
+config InitialMachine = cm: CoffeeMachine is uninitialized;
    
 assert MachineIsServing = eventually exists m: CoffeeMachine | m is serve;  
 check MachineIsServing from InitialMachine in max 10 steps;
 
-assert CanServeNormalCoffee 
+assert CanServeNormalCoffee  
   = eventually exists m: CoffeeMachine | m.selected = CoffeeType[NORMAL] && eventually m is serve;
 check CanServeNormalCoffee from InitialMachine in max 10 steps;
   

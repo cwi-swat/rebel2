@@ -1,0 +1,20 @@
+module paper::sepact::Address
+
+import paper::sepact::Country
+
+spec Address 
+  country: Country,
+  address: String;
+
+  fact FormatRules = always forall a:Address | a.address.length <= 70;
+     
+assert NoAddressLongerThan70 = always forall a:Address | a.address.length <= 70;
+assert OneAddressInTheConcordiastraat = eventually exists a:Address | a.address = "Concordiastraat";
+
+config Addresses = a1,a2: Address forget country;
+
+check NoAddressLongerThan70 from Addresses in max 1 steps;
+run OneAddressInTheConcordiastraat from Addresses in max 0 steps;
+
+
+   

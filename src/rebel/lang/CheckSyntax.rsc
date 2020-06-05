@@ -32,21 +32,29 @@ syntax Assert = "assert" Id name "=" Formula form ";";
 
 syntax Formula 
   = non-assoc "if" Formula cond "then" Formula then "else" Formula else
+  > TransEvent event "on" Expr var WithAssignments? with
+  > "next" Formula form
+  | "first" Formula form
+  | "last" Formula form
   > "eventually" Formula form
   | "always" Formula form
   | "always-last" Formula form
-  | Formula first "until" Formula second
-  | "next" Formula form
-  | "first" Formula form
-  | "last" Formula form
-  | TransEvent event "on" Expr var WithAssignments? with
+  | right Formula first "until" Formula second
+  | right Formula first "release" Formula second
   ;
 
 syntax TransEvent 
   = wildcard: "*"
   ;
 
-syntax Check = "check" Id name "from" Id config "in" SearchDepth depth Objectives? objs ";";
+syntax Check 
+  = Command cmd Id name "from" Id config "in" SearchDepth depth Objectives? objs ";"
+  ;
+
+syntax Command
+  = "check"
+  | "run"
+  ;
   
 syntax SearchDepth
   = "max" Int steps "steps"
@@ -68,6 +76,8 @@ keyword Keywords
   | "with"
   | "assert"
   | "fact"
+  | "until"
+  | "release"
   | "eventually"
   | "always"
   | "always-last"
@@ -76,7 +86,10 @@ keyword Keywords
   | "maximal"
   | "on"
   | "first"
+  | "last"
   | "inifinite"
   | "finite"
   | "trace"
+  | "check"
+  | "run"
   ;

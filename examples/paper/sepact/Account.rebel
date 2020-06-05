@@ -1,0 +1,8 @@
+module paper::sepact::Account
+
+import paper::sepact::Country
+import paper::sepact::IBAN
+
+spec Account
+  nr: IBAN,
+  cc: Country;

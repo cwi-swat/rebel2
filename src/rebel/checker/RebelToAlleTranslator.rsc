@@ -19,6 +19,7 @@ import IO;
 import Set;
 import String;
 import util::Benchmark;
+import ParseTree;
 
 str translateToAlleAlle(Config cfg, Module m, TModel tm, PathConfig pcfg, bool saveAlleAlleFile = true) {
   print("Translating Rebel to AlleAlle ...");

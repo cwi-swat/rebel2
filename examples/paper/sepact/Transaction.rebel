@@ -1,0 +1,10 @@
+module paper::sepact::Transaction
+
+import paper::sepact::Party
+import paper::sepact::Account
+
+spec Transaction
+  originator: Party,
+  originatorAccount: Account,
+  amount: Money,
+  requestedExecutionDate: Date;

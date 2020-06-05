@@ -77,7 +77,7 @@ Configuration getConfiguration(int step, set[Spec] specs, rel[Spec spc, str inst
   rel[Spec,str,State] states = {};
   rel[Spec,str,str,str] values = {};
   
-  for (s <- specs, !isEmptySpec(s)) {
+  for (s <- specs) {
     states += getStateInConfig(step, s, instances[s], alleModel);
     values += getValuesInConfig(step, s, instances[s], alleModel);
   }

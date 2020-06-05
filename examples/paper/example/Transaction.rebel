@@ -1,0 +1,52 @@
+module local::paper::example::Transaction
+
+import local::paper::example::Account
+import local::paper::example::AccountNumber
+import local::paper::example::Date
+
+spec Transaction 
+  from: Account, 
+  to: Account, 
+  amount: Integer;
+   
+  init event create(from: Account, to: Account, amount: Integer)
+    pre: from != to, from is opened, to is opened, amount > 0;
+    post: this.from' = from, this.to' = to, this.amount' = amount;
+    
+  final event book()
+    pre: this.from.withdraw(this.amount), this.to.deposit(this.amount);
+  
+  final event cancel()
+    
+  states:
+    (*) -> created: create;
+    created -> (*): book, cancel;
+
+spec SimpleAccount
+  balance: Integer;
+  
+  internal event withdraw(amount: Integer)
+    pre: amount > 0;
+    post: this.balance' = this.balance - amount;
+    
+  internal event deposit(amount: Integer) 
+    pre: amount > 0;
+    post: this.balance' = this.balance + amount;
+    
+  fact PositiveBalance = always forall a:SimpleAccount | (a is initialized => a.balance >= 0);
+  
+  states:
+    opened -> opened: withdraw, deposit;
+    opened -> notOpened: empty;
+    notOpened -> opened: empty; 
+ 
+config BasicTrans = t: Transaction is uninitialized, ac1,ac2: Account, an1,an2: AccountNumber, d:Date;
+config MockTrans = t: Transaction is uninitialized, ac1,ac2: SimpleAccount abstracts Account;
+
+assert CanBookATransaction = eventually exists t: Transaction | book on t;
+assert TransactionCanGetStuck = eventually exists t: Transaction | t is initialized && !(book on t);
+
+//check CanBookATransaction from BasicTrans in max 5 steps;
+check CanBookATransaction from MockTrans in max 5 steps;
+
+check TransactionCanGetStuck from MockTrans in max 5 steps with infinite trace;

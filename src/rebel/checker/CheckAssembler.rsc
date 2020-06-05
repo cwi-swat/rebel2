@@ -42,6 +42,9 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
   set[RebelDependency] deps = {dep | /RebelDependency dep <- modDep}; 
   Config cfg = findReferencedConfig(chk,tm,deps);
   Assert as = findReferencedAssert(chk,tm,deps);
+  if ((Command)`check` := chk.cmd) { // Command is check, start finding counterexample by negating the assertion
+    as = parse(#Assert, "assert <as.name> = !(<as.form>);");
+  }
 
   // Build a spec dependency graph from the module dependency graph
   Graph[Spec] spcDep = extractSpecDependencyGraph(modDep);

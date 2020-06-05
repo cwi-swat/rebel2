@@ -71,14 +71,14 @@ config EmptyHotel
     fd: FrontDesk is uninitialized;
 
 assert CanEnterRoomTwice
-  = eventually exists g:Guest | next (enterRoom on g && next (enterRoom on g));
+  = eventually exists g:Guest | enterRoom on g && next enterRoom on g;
   
 assert NoIntruder 
-  = eventually exists g1,g2:Guest | //next exists g2: Guest |
+  = eventually exists g1,g2:Guest | 
       g1 != g2 && 
-      enterRoom on g1 && 
+      enterRoom on g1 &&  
         next (enterRoom on g2 && 
-          next enterRoom on g1); 
+          next enterRoom on g1);  
       
-check NoIntruder from EmptyHotel in max 10 steps;
-check CanEnterRoomTwice from EmptyHotel in max 10 steps;
+run NoIntruder from EmptyHotel in max 10 steps;
+run CanEnterRoomTwice from EmptyHotel in max 10 steps;

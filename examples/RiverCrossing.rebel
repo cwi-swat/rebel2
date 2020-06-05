@@ -33,5 +33,5 @@ assert CanGetEverybodyAcross = eventually forall f:Farmer | f is far && Cargo[FO
 assert NeverGetAcross = always exists c:Cargo | c is near;
  
 check CanGetEverybodyAcross from EverybodyNear in max 8 steps;
-
+ 
 check NeverGetAcross from EverybodyNear in max 6 steps with infinite trace;

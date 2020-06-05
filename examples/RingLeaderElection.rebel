@@ -42,7 +42,7 @@ spec Process
     
 config RingOfThree
   = p1,p2,p3: Process is notElected, 
-    p1 with succ = p2,
+    p1 with succ = p2, 
     p2 with succ = p3,
     p3 with succ = p1; 
 

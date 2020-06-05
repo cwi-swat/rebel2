@@ -134,7 +134,7 @@ set[str] lookupStateLabelsWithDefaultState(Spec spc)
 str getStateLabel(Spec spc, rebel::lang::SpecSyntax::State state)
   = "state_<getLowerCaseSpecName(spc)>_<toLowerCase("<state>")>";
 
-bool isEmptySpec(Spec spc) = /Field _ !:= spc.fields && /Transition _ !:= spc.states;
+bool isEmptySpec(Spec spc) = /Transition _ !:= spc.states;
 
 //@memo
 set[str] lookupInstances(Spec spc, rel[Spec spc, str instance] instances) 

@@ -71,19 +71,32 @@ private str machineOnlyHasValuesWhenInitialized(set[Spec] spcs, TModel tm) {
   
   for (Spec s <- spcs) {
     cons += "// for <s.name>\n"; 
+    bool isEmpty = isEmptySpec(s);
     
     for (/Field f <- s.fields) {    
       str relName = "<getCapitalizedSpecName(s)><getCapitalizedFieldName(f)>";
-      
-      if (isPrim(f.tipe, tm)) {
-        cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one <relName> ⨝ c ⨝ inst)\n"; 
-      } else {
-        cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no <relName> ⨝ c ⨝ inst)\n";  
-  
-        if (setType(_) !:= getType(f, tm) && optionalType(_) !:= getType(f, tm)) {
-          cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one <relName> ⨝ c ⨝ inst)\n";  
+      fldCons = [];
+      switch (<isPrim(f.tipe, tm), isEmpty>) {
+        case <_,true>:      fldCons += "one <relName> ⨝ c ⨝ inst";
+        case <true,false>:  fldCons += "(((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one <relName> ⨝ c ⨝ inst)";
+        case <false,false>: {
+          fldCons += "(no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no <relName> ⨝ c ⨝ inst)";
+          if (setType(_) !:= getType(f, tm) && optionalType(_) !:= getType(f, tm)) {
+            fldCons += "(((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one <relName> ⨝ c ⨝ inst)";
+          }
         }
       }
+      
+      cons += intercalate("\n", ["∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | <fc>" | fc <- fldCons]);
+    //  if (isPrim(f.tipe, tm)) {
+    //    cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one <relName> ⨝ c ⨝ inst)\n"; 
+    //  } else {
+    //    cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no <relName> ⨝ c ⨝ inst)\n";  
+    //
+    //    if (setType(_) !:= getType(f, tm) && optionalType(_) !:= getType(f, tm)) {
+    //      cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one <relName> ⨝ c ⨝ inst)\n";  
+    //    }
+    //  }
     }
   } 
 
@@ -188,7 +201,12 @@ private str translatePartialTransitionFunctions(AlleAlleSnippet snippets)
   
 private str translateCompleteTransitionFunction(set[Spec] spcs, Config cfg) 
   = "// Transition function
-    '∀ step ∈ order<if (!cfg.finiteTrace) {> ∪ loop<}>| <intercalate(" ∧ ", ["possibleTransitions<getCapitalizedSpecName(s)>[step]" | s <- spcs, hasTransitions(s)])>
-    '";  
+    '∀ step ∈ order<if (!cfg.finiteTrace) {> ∪ loop<}>| <intercalate(" ∧ ", posTrans)>
+    '"
+    when 
+      posTrans := ["possibleTransitions<getCapitalizedSpecName(s)>[step]" | s <- spcs, hasTransitions(s)],
+      posTrans != [];
+
+private default str translateCompleteTransitionFunction(set[Spec] spcs, Config cfg) = ""; 
 
 private bool isFrameEvent(Event e) = "<e.name>" == "__frame";
