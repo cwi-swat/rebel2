@@ -1,0 +1,15 @@
+module paper::sepact::Money
+
+spec Currency[EUR,USD]
+
+spec Money
+  cents: Integer,
+  currency: Currency;
+  
+  fact FiniteMoney = always forall m:Money | m.cents >= 99999999999 && m.cents <= 99999999999;
+  
+assert SomeMoney = eventually exists m:Money | m.cents > 0 && m.currency = Currency[EUR];
+
+config Basic = m:Money;
+
+run SomeMoney from Basic in max 0 steps; 

@@ -37,8 +37,7 @@ set[Contribution] getRebelContributions() {
       println("Running check");
       
       PathConfig pcfg = defaultPathConfig(m@\loc.top);
-      Graph[RebelDependency] depGraph = calculateDependencies(m, pcfg);
-      TypeCheckerResult tr = checkModule(m, depGraph, pcfg);
+      TypeCheckerResult tr = typeCheckModule(m);
       
       Trace t = performCheck(chk, m, tr.tm, tr.depGraph, pcfg = pcfg, saveIntermediateFiles = false);
       
@@ -58,23 +57,21 @@ set[Contribution] getRebelContributions() {
   
   Content showModuleVis(Module _, loc file) = createStateMachineVis(file.top);
 
-  TModel typeCheckModule(Module m) {
+  TypeCheckerResult typeCheckModule(Module m) {
     PathConfig pcfg = defaultPathConfig(m@\loc.top);
             
     Graph[RebelDependency] depGraph = calculateDependencies(m, pcfg);
     TypeCheckerResult tr = checkModule(m, depGraph, pcfg, saveTModels = true, refreshRoot = true, debug = false);
     
-    return tr.tm;
+    return tr;
   }
   
   return {
     annotator(Module (Module m) {
-      loc proj = project(m@\loc.top);
-
-      TModel tm = typeCheckModule(m);
+      TypeCheckerResult tr = typeCheckModule(m);
       
-      annotatedMod = m[@messages= {*tm.messages}];
-      annotatedMod = annotatedMod[@hyperlinks=tm.useDef];
+      annotatedMod = m[@messages= {*tr.tm.messages}];
+      annotatedMod = annotatedMod[@hyperlinks=tr.tm.useDef];
       
       return annotatedMod;
     }),

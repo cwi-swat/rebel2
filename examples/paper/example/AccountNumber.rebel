@@ -1,5 +1,3 @@
-module local::paper::example::AccountNumber
+module paper::example::AccountNumber
 
 spec AccountNumber
-      
- 

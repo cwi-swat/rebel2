@@ -5,7 +5,7 @@ import rebel::lang::SpecSyntax;
 import rebel::lang::CheckSyntax;
 
 import util::PathUtil;
-import rebel::lang::CommonTypeChecker;
+//import rebel::lang::CommonTypeChecker;
 
 extend analysis::typepal::TypePal;
 
@@ -165,11 +165,7 @@ void collect(current:(Formula)`<TransEvent event> on <Expr spc> <WithAssignments
       });
   }
     
-  //c.push("event", event);
-  if (/WithAssignments wa := w) {
-    collect(spc, wa, c);
-  }
-  //c.pop("event");      
+  collect(spc, c);
 }
 
 void collect(current:(WithAssignments)`with <{Assignment ","}+ assignments>`, Collector c) {

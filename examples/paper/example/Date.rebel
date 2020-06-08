@@ -1,10 +1,10 @@
-module local::paper::example::Date
+module paper::example::Date
  
 spec Date [NOW*]
   year: Integer,
-  month: Integer,
+  month: Integer,  
   day: Integer;
-  
+    
   //event create(year: Integer, month: Integer, day: Integer) 
   //  post: this.year' = year, this.month' = month, this.day' = day;
    
@@ -39,26 +39,26 @@ spec Date [NOW*]
         if d.month = 8 then d.day < 32 else
         if d.month = 9 then d.day < 31 else
         if d.month = 10 then d.day < 32 else
-        if d.month = 11 then d.day < 31 else
+        if d.month = 11 then d.day < 31 else 
         d.day < 32)); 
   
-  fact TimeAlwaysMovesForward
-    = always-last exists d1: Date[NOW] | next exists d2: Date[NOW] | ( 
-        d2.year > d1.year || 
-        (d2.year = d1.year && d2.month > d1.month) || 
-        (d2.year = d1.year && d2.month = d1.month && d2.day > d1.day)
-      );   
+  //fact TimeAlwaysMovesForward
+  //  = always-last exists d1: Date[NOW] | next exists d2: Date[NOW] | ( 
+  //      d2.year > d1.year || 
+  //      (d2.year = d1.year && d2.month > d1.month) || 
+  //      (d2.year = d1.year && d2.month = d1.month && d2.day > d1.day)
+  //    );   
    
   fact NowAlwaysExists = always (Date[NOW] is initialized);
 
-     
+       
   states:
     //(*) -> created: create;
-    created -> created: empty, same, after, yearsAfter;
-    
+    created -> created: same, after, yearsAfter;
+     
 assert SomeInitializedDate = eventually exists d: Date | d != Date[NOW] && d is initialized;
 
-config SomeDates = d1: Date with year = 2020;
+config SomeDates = d1: Date is uninitialized;
  
-check SomeInitializedDate from SomeDates in max 1 steps;
+run SomeInitializedDate from SomeDates in max 1 steps;
       

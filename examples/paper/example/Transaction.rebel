@@ -1,12 +1,12 @@
-module local::paper::example::Transaction
+module paper::example::Transaction
 
-import local::paper::example::Account
-import local::paper::example::AccountNumber
-import local::paper::example::Date
+import paper::example::Account
+import paper::example::AccountNumber
+import paper::example::Date
 
 spec Transaction 
   from: Account, 
-  to: Account, 
+  to: Account,  
   amount: Integer;
    
   init event create(from: Account, to: Account, amount: Integer)
@@ -17,7 +17,7 @@ spec Transaction
     pre: this.from.withdraw(this.amount), this.to.deposit(this.amount);
   
   final event cancel()
-    
+     
   states:
     (*) -> created: create;
     created -> (*): book, cancel;

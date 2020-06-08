@@ -33,7 +33,7 @@ Trace performCheck(Check chk, Module m, TModel tm, Graph[RebelDependency] deps, 
   // Step 4: Translate the normalized, combined module to an AlleAlle specification
   str alleSpec = translateToAlleAlle(cfg, norm.m, norm.tm, pcfg, saveAlleAlleFile = saveIntermediateFiles);
   // Step 5: Run the translated AlleAlle specification in the ModelFinder and interpet the result (based on the generated, non-normalized, module)
-  return runAlleAlle(alleSpec, cfg, gen.m); 
+  return runAlleAlle(alleSpec, cfg, gen.m, solverTimeOut = 60 * 1000); 
 }
 
 private Trace runAlleAlle(str alleSpec, Config cfg, Module m, int solverTimeOut = 30 * 1000) {

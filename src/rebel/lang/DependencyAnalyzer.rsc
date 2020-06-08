@@ -24,6 +24,7 @@ data RebelDependency
   ;
 
 Graph[RebelDependency] calculateDependencies(Module m, PathConfig pcfg) {
+  println(pcfg);
   map[QualifiedName,RebelDependency] done = ();
   
   Maybe[RebelDependency] isDone(QualifiedName n) = just(done[n]) when n in done;

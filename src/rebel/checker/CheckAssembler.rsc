@@ -302,6 +302,8 @@ private Graph[Spec] extractSpecDependencyGraph(Graph[RebelDependency] modDep) {
   Graph[Spec] spcDepGraph = {}; 
 
   for (dep1:resolvedAndCheckedModule(Module m, TModel tm, _) <- modDep<0>, /Spec s <- m.parts) {
+    // Always add self-dependency
+    spcDepGraph += <s,s>;
     // Get all referenced other specs from the current spec 
     for (loc def <- tm.facts, isContainedIn(def, s@\loc), specType(str name) := tm.facts[def]) { 
       spcDepGraph += <s, lookupSpecByName(name, modDep[dep1])>;

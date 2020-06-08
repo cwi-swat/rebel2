@@ -229,7 +229,9 @@ AttRes translateAttrExpr(current:(Expr)`<Expr expr>.<Id fld>`, Context ctx) {
   str r = ctx.rm[current@\loc].relExpr;
 
   if (getType(expr, ctx.tm) == stringType() && "<fld>" == "length") {
-    return <{r}, "length(<getFieldName(expr,ctx)>)">;
+    str newFld = "<getFieldName(expr,ctx)>_<ctx.nxtUniquePrefix()>";
+    r = "<r><renameIfNecessary(expr, newFld, ctx)>";
+    return <{r}, "length(<newFld>)">;
   } else {
     IdRole role = getIdRole(expr,ctx.tm);
     str newFld = "<fld>";
