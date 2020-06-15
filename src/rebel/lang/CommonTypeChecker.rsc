@@ -19,6 +19,8 @@ data AType
   | stateType()
   | eventType(AType argTypes)
   | moduleType()
+  | factType()
+  | predType(AType argTypes)
   | namedTypeList(list[tuple[str, AType]] ntl)
   ;
 
@@ -26,6 +28,8 @@ data ScopeRole
   = moduleScope()
   | specScope()
   | eventScope() 
+  | funcScope()
+  | predScope()
   | quantScope()
   | factScope()
   | assertScope() 
@@ -43,6 +47,7 @@ data IdRole
   | moduleId()
   | eventId()
   | eventVariantId()
+  | predId()
   | stateId()
   | fieldId()
   | paramId()
@@ -274,6 +279,16 @@ void collect(current: (Expr)`- <Expr expr>`, Collector c) {
   collect(expr, c);
 }
 
+void collect(current: (Expr)`|<Expr expr>|`, Collector c) {
+  c.calculate("absolute", current, [expr], 
+    AType (Solver s) {
+      s.requireEqual(expr, intType(), error(current, "Expression should be of type integer"));
+      return intType();
+    });
+    
+  collect(expr, c);
+}
+
 void collect(current: (Expr)`<Expr expr>'`, Collector c) {
   if (prePhase() := c.top("phase")) {
     c.report(error(current, "Can not reference post value in precondition"));
@@ -283,6 +298,19 @@ void collect(current: (Expr)`<Expr expr>'`, Collector c) {
     c.fact(current, expr);
     collect(expr, c);
   c.leaveScope(current);
+}
+
+void collect(current: (Expr)`<Expr lhs> ++ <Expr rhs>`, Collector c) {
+  c.calculate("string concat", current, [lhs, rhs],
+    AType (Solver s) {
+      if ({stringType()} != {s.getType(lhs), s.getType(rhs)}) {
+        s.report(error(current, "++ only works for strings"));
+      }
+      
+      return stringType();
+    });  
+    
+  collect(lhs, rhs, c);
 }
 
 void collect(current: (Expr)`<Expr lhs> + <Expr rhs>`, Collector c) {
@@ -296,6 +324,8 @@ void collect(current: (Expr)`<Expr lhs> + <Expr rhs>`, Collector c) {
         default:
           s.report(error(current, "`+` not defined for %t and %t", lhs, rhs));
       }
+      
+      return intType();
     });  
     
   collect(lhs, rhs, c);
@@ -353,6 +383,34 @@ void collect(current: (Expr)`<Expr expr>.<Id fld>`, Collector c) {
   c.fact(current, fld);
   
   collect(expr,c);
+}
+
+void collect(current: (Expr)`<Id func>(<{Expr ","}* actuals>)`, Collector c) {
+  args = [arg | arg <- actuals];
+  
+  c.calculate("function call <func>", current, args, 
+    AType (Solver s) {
+      argTypes = atypeList([s.getType(a) | a <- args]); 
+      formalTypes = atypeList([]);
+      returnType = stringType();
+      
+      switch("<func>") {
+        case "substr": formalTypes = atypeList([stringType(), intType(), intType()]);
+        case "toStr": formalTypes = atypeList([intType()]);
+        case "toInt": {
+          formalTypes = atypeList([stringType()]);
+          returnType = intType();
+        }
+        default: s.report(error(current, "unknown function `<func>`"));
+      }
+      
+      s.requireEqual(argTypes, formalTypes, 
+        error(current, "Expected arguments %t, found %t", formalTypes, argTypes));
+        
+      return returnType; 
+    });
+  
+  collect(actuals,c);
 }
  
 void collect(current: (Expr)`<Expr spc>[<Id inst>]`, Collector c) {

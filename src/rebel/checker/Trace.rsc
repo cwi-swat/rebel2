@@ -177,7 +177,7 @@ RaisedEvent getRaisedEvent(int step, set[Spec] specs, rel[Spec spc, str instance
   }
      
   Spec findSpec(str instance) = spc
-    when /<Spec normalizedSpc, instance> := instances,
+    when <Spec normalizedSpc, instance> <- instances,
       Spec spc <- specs,
       "<spc.name>" == "<normalizedSpc.name>";
   

@@ -6,11 +6,125 @@ spec IBANCountry[AL,DZ,AD,AO,AT,AZ,BH,BY,BE,BJ,BA,BR,VG,BG,BF,BI,CM,CV,FR,CG,CR,
 
 spec IBAN
   cc: IBANCountry,
-  checkDigits: Integer,
-  bban: String;
+  checkDigits: String,
+  bban: String,
+  complete: String;
+  
+  //fun conv(char: String): String  = 
+  //  char = "A" ? "10" :
+  //  char = "B" ? "11" : 
+  //  char = "C" ? "12" :
+  //  char;
+
+  fact RemainderIsOne = always forall iban: IBAN | toInt(iban.complete) % 11 = 1; 
+  fact CompleteLengthIsBBANPlusFour = always forall iban: IBAN | iban.complete.length = iban.bban.length + 4;
+  
+  fact AlwaysTwoCheckDigits = always forall iban: IBAN | iban.checkDigits.length = 2 && toInt(substr(iban.checkDigits,0,1)) >= 0 && toInt(substr(iban.checkDigits,0,1)) <= 9 && toInt(substr(iban.checkDigits,1,1)) >= 0 && toInt(substr(iban.checkDigits,1,1)) <= 9;
+  
+  fact OnlyDigitsInComplete = always forall iban: IBAN |
+    ((iban.bban.length >= 0) => if (substr(iban.bban,iban.bban.length - 3,1) = "A") then substr(iban.complete,0,2) = "10" else substr(iban.complete,0,1) = substr(iban.bban,0,1));
+    
+  //fact CompleteIsCountryPlusCheckDigitsPlusBBAN = always forall iban:IBAN | 
+  //         if iban.cc = IBANCountry[AL] then iban.complete = iban.bban ++ toStr(iban.checkDigits) ++ "AL" //Albania*  28 an AL
+  //    else if iban.cc = IBANCountry[DZ] then iban.complete = iban.bban ++ toStr(iban.checkDigits) ++ "DZ" //Algeria 24 an DZ
+  //    else if iban.cc = IBANCountry[AD] then iban.complete = iban.bban ++ toStr(iban.checkDigits) ++ "AD" //Andorra*  24 an AD
+  //    else if iban.cc = IBANCountry[AO] then iban.complete = iban.bban ++ toStr(iban.checkDigits) ++ "AO" //Angola  25 an AO
+  //    else if iban.cc = IBANCountry[AT] then iban.complete = iban.bban ++ toStr(iban.checkDigits) ++ "AT" //Austria** 20 an AT
+  //    else if iban.cc = IBANCountry[AZ] then iban.complete = iban.bban ++ toStr(iban.checkDigits) ++ "AZ" //Azerbaijan* 28 an AZ
+  //    else if iban.cc = IBANCountry[BH] then iban.complete = iban.bban ++ toStr(iban.checkDigits) ++ "BH" //Bahrain*  22 an BH
+  //    else if iban.cc = IBANCountry[BY] then iban.bban.length = 28 //Belarus*  28 an BY
+  //    else if iban.cc = IBANCountry[BE] then iban.bban.length = 16 //Belgium** 16 an BE
+  //    else if iban.cc = IBANCountry[BJ] then iban.bban.length = 28 //Benin 28 an BJ
+  //    else if iban.cc = IBANCountry[BA] then iban.bban.length = 20 //Bosnia and Herzegovina  20 an BA
+  //    else if iban.cc = IBANCountry[BH] then iban.bban.length = 22 //Bahrain* 22 an BH
+  //    else if iban.cc = IBANCountry[BR] then iban.bban.length = 29 //Brazil  29 an BR
+  //    else if iban.cc = IBANCountry[VG] then iban.bban.length = 24 //British Virgin Islands  24 an VG
+  //    else if iban.cc = IBANCountry[BG] then iban.bban.length = 22 //Bulgaria**  22 an BG  
+  //    else if iban.cc = IBANCountry[BF] then iban.bban.length = 27 //Burkina Faso  27 an BF
+  //    else if iban.cc = IBANCountry[BI] then iban.bban.length = 16 //Burundi 16 an BI     
+  //    else if iban.cc = IBANCountry[CM] then iban.bban.length = 27 //Cameroon  27 an CM
+  //    else if iban.cc = IBANCountry[CV] then iban.bban.length = 25 //Cape Verde  25 an CV
+  //    else if iban.cc = IBANCountry[FR] then iban.bban.length = 27 //France 27 an FR
+  //    else if iban.cc = IBANCountry[CG] then iban.bban.length = 27 //Congo 27 an CG
+  //    else if iban.cc = IBANCountry[CR] then iban.bban.length = 21 //Costa Rica  21 an CR
+  //    else if iban.cc = IBANCountry[HR] then iban.bban.length = 21 //Croatia** 21 an HR
+  //    else if iban.cc = IBANCountry[CY] then iban.bban.length = 28 //Cyprus**  28 an CY
+  //    else if iban.cc = IBANCountry[CZ] then iban.bban.length = 24 //Czech Republic**  24 an CZ
+  //    else if iban.cc = IBANCountry[DK] then iban.bban.length = 18 //Denmark** 18 an DK
+  //    else if iban.cc = IBANCountry[DO] then iban.bban.length = 28 //Dominican Republic  28 an DO
+  //    else if iban.cc = IBANCountry[EG] then iban.bban.length = 27 //Egypt 27 an EG
+  //    else if iban.cc = IBANCountry[EE] then iban.bban.length = 20 //Estonia** 20 an EE
+  //    else if iban.cc = IBANCountry[FO] then iban.bban.length = 18 //Faroe Islands*  18 an FO
+  //    else if iban.cc = IBANCountry[FI] then iban.bban.length = 18 //Finland** 18 an FI
+  //    else if iban.cc = IBANCountry[GA] then iban.bban.length = 27 //Gabon 27 an GA
+  //    else if iban.cc = IBANCountry[GE] then iban.bban.length = 22 //Georgia*  22 an GE
+  //    else if iban.cc = IBANCountry[DE] then iban.bban.length = 22 //Germany** 22 an DE
+  //    else if iban.cc = IBANCountry[GI] then iban.bban.length = 23 //Gibraltar** 23 an GI
+  //    else if iban.cc = IBANCountry[GR] then iban.bban.length = 27 //Greece**  27 an GR
+  //    else if iban.cc = IBANCountry[GL] then iban.bban.length = 18 //Greenland*  18 an GL
+  //    else if iban.cc = IBANCountry[GT] then iban.bban.length = 28 //Guatemala 28 an GT
+  //    else if iban.cc = IBANCountry[GG] then iban.bban.length = 22 //Guernsey**  22 an GG
+  //    else if iban.cc = IBANCountry[HU] then iban.bban.length = 28 //Hungary** 28 an HU
+  //    else if iban.cc = IBANCountry[IS] then iban.bban.length = 26 //Iceland** 26 an IS
+  //    else if iban.cc = IBANCountry[IR] then iban.bban.length = 26 //Iran  26 an IR
+  //    else if iban.cc = IBANCountry[IQ] then iban.bban.length = 23 //Iraq* 23 an IQ
+  //    else if iban.cc = IBANCountry[IE] then iban.bban.length = 22 //Ireland** 22 an IE
+  //    else if iban.cc = IBANCountry[IM] then iban.bban.length = 22 //Isle of Man** 22 an IM
+  //    else if iban.cc = IBANCountry[IL] then iban.bban.length = 23 //Israel* 23 an IL
+  //    else if iban.cc = IBANCountry[IT] then iban.bban.length = 27 //Italy** 27 an IT
+  //    else if iban.cc = IBANCountry[CI] then iban.bban.length = 28 //Ivory Coast 28 an CI
+  //    else if iban.cc = IBANCountry[JE] then iban.bban.length = 22 //Jersey**  22 an JE
+  //    else if iban.cc = IBANCountry[JO] then iban.bban.length = 30 //Jordan* 30 an JO
+  //    else if iban.cc = IBANCountry[KZ] then iban.bban.length = 20 //Kazakhstan  20 an KZ
+  //    else if iban.cc = IBANCountry[XK] then iban.bban.length = 20 //Kosovo  20 an XK
+  //    else if iban.cc = IBANCountry[KW] then iban.bban.length = 30 //Kuwait* 30 an KW
+  //    else if iban.cc = IBANCountry[LV] then iban.bban.length = 21 //Latvia**  21 an LV
+  //    else if iban.cc = IBANCountry[LB] then iban.bban.length = 28 //Lebanon*  28 an LB
+  //    else if iban.cc = IBANCountry[LI] then iban.bban.length = 21 //Liechtenstein** 21 an LI
+  //    else if iban.cc = IBANCountry[LT] then iban.bban.length = 20 //Lithuania** 20 an LT
+  //    else if iban.cc = IBANCountry[LU] then iban.bban.length = 20 //Luxembourg**  20 an LU
+  //    else if iban.cc = IBANCountry[MK] then iban.bban.length = 19 //North Macedonia 19 an MK
+  //    else if iban.cc = IBANCountry[MG] then iban.bban.length = 27 //Madagascar  27 an MG
+  //    else if iban.cc = IBANCountry[ML] then iban.bban.length = 28 //Mali  28 an ML
+  //    else if iban.cc = IBANCountry[MT] then iban.bban.length = 31 //Malta** 31 an MT
+  //    else if iban.cc = IBANCountry[MR] then iban.bban.length = 27 //Mauritania* 27 an MR
+  //    else if iban.cc = IBANCountry[MU] then iban.bban.length = 30 //Mauritius 30 an MU
+  //    else if iban.cc = IBANCountry[MD] then iban.bban.length = 24 //Moldova*  24 an MD
+  //    else if iban.cc = IBANCountry[MC] then iban.bban.length = 27 //Monaco**  27 an MC
+  //    else if iban.cc = IBANCountry[ME] then iban.bban.length = 22 //Montenegro  22 an ME
+  //    else if iban.cc = IBANCountry[MZ] then iban.bban.length = 25 //Mozambique  25 an MZ
+  //    else if iban.cc = IBANCountry[NL] then iban.bban.length = 18 //Netherlands** 18 an NL
+  //    else if iban.cc = IBANCountry[NO] then iban.bban.length = 15 //Norway**  15 an NO
+  //    else if iban.cc = IBANCountry[PK] then iban.bban.length = 24 //Pakistan* 24 an PK
+  //    else if iban.cc = IBANCountry[PS] then iban.bban.length = 29 //Palestine, State of*  29 an PS
+  //    else if iban.cc = IBANCountry[PL] then iban.bban.length = 28 //Poland**  28 an PL
+  //    else if iban.cc = IBANCountry[PT] then iban.bban.length = 25 //Portugal**  25 an PT
+  //    else if iban.cc = IBANCountry[QA] then iban.bban.length = 29 //Qatar*  29 an QA
+  //    else if iban.cc = IBANCountry[RO] then iban.bban.length = 24 //Romania** 24 an RO
+  //    else if iban.cc = IBANCountry[LC] then iban.bban.length = 32 //Saint Lucia 32 an LC
+  //    else if iban.cc = IBANCountry[SM] then iban.bban.length = 27 //San Marino**  27 an SM
+  //    else if iban.cc = IBANCountry[ST] then iban.bban.length = 25 //Sao Tome and Principe 25 an ST
+  //    else if iban.cc = IBANCountry[SA] then iban.bban.length = 24 //Saudi Arabia* 24 an SA
+  //    else if iban.cc = IBANCountry[SN] then iban.bban.length = 28 //Senegal 28 an SN
+  //    else if iban.cc = IBANCountry[RS] then iban.bban.length = 22 //Serbia  22 an RS
+  //    else if iban.cc = IBANCountry[SC] then iban.bban.length = 31 //Seychelles  31 an SC
+  //    else if iban.cc = IBANCountry[SK] then iban.bban.length = 24 //Slovakia**  24 an SK
+  //    else if iban.cc = IBANCountry[SI] then iban.bban.length = 19 //Slovenia**  19 an SI
+  //    else if iban.cc = IBANCountry[ES] then iban.bban.length = 24 //Spain** 24 an ES
+  //    else if iban.cc = IBANCountry[SE] then iban.bban.length = 24 //Sweden**  24 an SE
+  //    else if iban.cc = IBANCountry[CH] then iban.bban.length = 21 //Switzerland** 21 an CH
+  //    else if iban.cc = IBANCountry[TL] then iban.bban.length = 23 //Timor-Leste 23 an TL
+  //    else if iban.cc = IBANCountry[TN] then iban.bban.length = 24 //Tunisia*  24 an TN
+  //    else if iban.cc = IBANCountry[TR] then iban.bban.length = 26 //Turkey* 26 an TR
+  //    else if iban.cc = IBANCountry[UA] then iban.bban.length = 29 //Ukraine 29 an UA
+  //    else if iban.cc = IBANCountry[AE] then iban.bban.length = 23 //United Arab Emirates* 23 an AE
+  //    else if iban.cc = IBANCountry[GB] then iban.bban.length = 22 //United Kingdom**  22 an GB
+  //    else if iban.cc = IBANCountry[VA] then iban.bban.length = 22 //Vatican City State/the Holy See 22 an VA
+  //    else iban.bban.length = 0;
+    
   
   // source: https://www.nordea.com/en/our-services/cashmanagement/iban-validator-and-information/iban-countries/
-  //Country Length  First 2 characters (letters)  
+  //Country Length  First 2 characters (letters)   
   fact MaxBbanLength = 
     always forall iban:IBAN | 
            if iban.cc = IBANCountry[AL] then iban.bban.length = 28 //Albania*  28 an AL
@@ -100,7 +214,6 @@ spec IBAN
       else if iban.cc = IBANCountry[SI] then iban.bban.length = 19 //Slovenia**  19 an SI
       else if iban.cc = IBANCountry[ES] then iban.bban.length = 24 //Spain** 24 an ES
       else if iban.cc = IBANCountry[SE] then iban.bban.length = 24 //Sweden**  24 an SE
-      //else if iban.cc = IBANCountry[SE] then iban.bban.length = 25 //Sweden**  24 an SE
       else if iban.cc = IBANCountry[CH] then iban.bban.length = 21 //Switzerland** 21 an CH
       else if iban.cc = IBANCountry[TL] then iban.bban.length = 23 //Timor-Leste 23 an TL
       else if iban.cc = IBANCountry[TN] then iban.bban.length = 24 //Tunisia*  24 an TN
@@ -112,6 +225,13 @@ spec IBAN
       else iban.bban.length = 0;
 
 config SomeIban = ib:IBAN;
+
+assert CanCreateAnIban = eventually exists ib:IBAN | ib.bban.length > 0;      
+
+assert AllCountriesAreConfigured = always forall ib:IBAN | ib.bban.length > 0;
+assert NoIbanWithMultipleBbanSizes = always forall ib1,ib2:IBAN | (ib1.cc = ib2.cc => ib1.bban.length = ib2.bban.length); 
+assert CanCreateIbanForEachCountry = eventually forall c:IBANCountry | exists ib: IBAN | ib.cc = c;
+
 config IbanForEachCountry = ib1,ib2,ib3,ib4,ib5,ib6,ib7,ib8,ib9,ib10,
                             ib11,ib12,ib13,ib14,ib15,ib16,ib17,ib18,ib19,ib20,
                             ib21,ib22,ib23,ib24,ib25,ib26,ib27,ib28,ib29,ib30,
@@ -123,11 +243,6 @@ config IbanForEachCountry = ib1,ib2,ib3,ib4,ib5,ib6,ib7,ib8,ib9,ib10,
                             ib81,ib82,ib83,ib84,ib85,ib86,ib87,ib88,ib89,ib90,
                             ib91,ib92,ib93,ib94,ib95,ib96,ib97,ib98,ib99: IBAN;
 
-assert CanCreateAnIban = eventually exists ib:IBAN | ib.bban.length > 0;      
-
-assert AllCountriesAreConfigured = always forall ib:IBAN | ib.bban.length > 0;
-assert NoIbanWithMultipleBbanSizes = always forall ib1,ib2:IBAN | (ib1.cc = ib2.cc => ib1.bban.length = ib2.bban.length); 
-assert CanCreateIbanForEachCountry = eventually forall c:IBANCountry | exists ib: IBAN | ib.cc = c;
  
 run CanCreateAnIban from SomeIban in max 0 steps;
 run CanCreateIbanForEachCountry from IbanForEachCountry in max 0 steps;

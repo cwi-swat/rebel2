@@ -12,7 +12,6 @@ extend analysis::typepal::TypePal;
 data AType
   = configType()
   | assertType()
-  | factType()
   | checkType()
   ;
 

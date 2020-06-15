@@ -1,0 +1,85 @@
+module RushHour
+
+spec HVehicle[RED]
+  row: Integer,
+  col: Integer,
+  length: Integer;
+  
+  event move(steps: Integer) 
+    pre: steps != 0, 
+      
+      // don't bunny hop over other horizontal vehicle
+      forall h:HVehicle | (h != this && h.row = this.row =>  
+        (h.col < this.col => h.col < this.col + steps) &&
+        (h.col > this.col => h.col > this.col + steps)),
+
+      // don't bunny hop over vertical vehicle
+      forall v:VVehicle | ((v.row > this.row - v.length && v.row <= this.row) =>
+                            (this.col < v.col => this.col + steps < v.col) &&
+                            (this.col > v.col => this.col + steps > v.col));
+                          
+    post: this.col' = this.col + steps;  
+  
+  fact Grid = always forall h:HVehicle | h.col >= 0 && h.col <= 6 - h.length;
+  
+  fact NoHorizontalOverlap = 
+    always forall h1:HVehicle, h2:HVehicle | ((h1 != h2 && h1.row = h2.row) => h1.length <= |h1.col - h2.col|);  
+
+  fact RedPosition = first (HVehicle[RED].row = 2 && HVehicle[RED].col = 1 && HVehicle[RED].length = 2); 
+  
+  states:
+    active -> active: move;
+   
+spec VVehicle
+  row: Integer,
+  col: Integer,
+  length: Integer;
+
+  event move(steps: Integer) 
+    pre: steps != 0,
+      
+      // don't bunny hop over other vertical vehicle
+      forall v:VVehicle | ((v != this && v.col = this.col) =>  
+        (v.row < this.row => v.row < this.row + steps) &&
+        (v.row > this.row => v.row > this.row + steps)),
+
+      // don't bunny hop over horizontal vehicle
+      forall h:HVehicle | ((h.col > this.col - h.length && h.col <= this.col) => // it's blocking its path
+                            (this.row < h.row => this.row + steps < h.row) && 
+                            (this.row > h.row => this.row + steps > h.row));
+                          
+    post: this.row' = this.row + steps;  
+  
+  fact Grid = always forall v:VVehicle | v.row >= 0 && v.row <= 6 - v.length;
+
+  fact NoVerticalOverlap = 
+    always forall v1:VVehicle, v2:VVehicle | ((v1 != v2 && v1.col = v2.col) => v1.length <= |v1.row - v2.row|);  
+  
+  fact NoOrthogonalOverlap =
+    always forall v1:VVehicle, h1:HVehicle | 
+      ((v1.row > (h1.row - v1.length) && v1.row <= h1.row) => (h1.col + h1.length <= v1.col || h1.col > v1.col));
+  
+  states:
+    active -> active: move;
+
+config Beginner1 = greenCar:      HVehicle with row = 0, col = 0, length = 2,
+                   purpleTruck:   VVehicle with row = 1, col = 0, length = 3,
+                   orangeCar:     VVehicle with row = 4, col = 0, length = 2,
+                   blueTruck:     VVehicle with row = 1, col = 3, length = 3,
+                   greenTruck:    HVehicle with row = 5, col = 2, length = 3,
+                   blueCar:       HVehicle with row = 4, col = 4, length = 2,
+                   yellowTruck:   VVehicle with row = 0, col = 5, length = 3;
+                   
+assert Init = first (forall h:HVehicle | h is initialized) && (forall v:VVehicle | v is initialized);
+
+assert CanMoveHorizontalVehicle = eventually exists h:HVehicle | move on h;
+assert CanMoveVerticalVehicle = eventually exists v:VVehicle | move on v;
+ 
+assert RedCanGetOut = eventually HVehicle[RED].col = 4; // red is out!
+ 
+run Init from Beginner1 in max 0 steps;
+
+run CanMoveHorizontalVehicle from Beginner1 in max 1 steps;
+run CanMoveVerticalVehicle from Beginner1 in max 1 steps;
+
+run RedCanGetOut from Beginner1 in max 8 steps;

@@ -1,3 +1,24 @@
 module paper::example::AccountNumber
 
 spec AccountNumber
+  nr: String; 
+  
+  fact ElfProef = always forall an: AccountNumber |   
+    an.nr.length = 9 && toInt(an.nr) > 0 && 
+   ((toInt(substr(an.nr,0,1))   * 9) +
+    (toInt(substr(an.nr,1,1))   * 8) +
+    (toInt(substr(an.nr,2,1))   * 7) +
+    (toInt(substr(an.nr,3,1))   * 6) +
+    (toInt(substr(an.nr,4,1))   * 5) +
+    (toInt(substr(an.nr,5,1))   * 4) +
+    (toInt(substr(an.nr,6,1))   * 3) +
+    (toInt(substr(an.nr,7,1))   * 2) +
+    (toInt(substr(an.nr,8,1)))) % 11 = 0;
+ 
+ assert InitializedNr = eventually exists nr: AccountNumber | nr.nr != "" && substr(nr.nr,0,2) = "36";
+ assert ValidNr = eventually exists nr: AccountNumber | nr.nr = "736160221";
+ 
+ config SomeNr = nr: AccountNumber;
+ 
+ run InitializedNr from SomeNr in max 1 steps;
+ run ValidNr from SomeNr in max 0 steps;

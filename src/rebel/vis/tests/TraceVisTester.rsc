@@ -18,8 +18,8 @@ App[TraceVisModel] visAccountCheck() = visTrace("CanBeOverdrawn", |home:///works
 App[TraceVisModel] visDoctorCheck() = visTrace("DoctorCanGoOffCall", |home:///workspace/rebel2/examples/local/doctor/protocol/Doctor.rebel|);
 App[TraceVisModel] visRiverCrossingCheck(str check) = visTrace(check, |home:///workspace/rebel2/examples/RiverCrossing.rebel|);
 
-App[TraceVisModel] visPaperTransactionGetStuckCheck() = visTrace("TransactionCanGetStuck", |home:///workspace/rebel2/examples/paper/example/Transaction.rebel|);
-App[TraceVisModel] visPaperTransactionCanBookCheck() = visTrace("CanBookATransaction", |home:///workspace/rebel2/examples/paper/example/Transaction.rebel|);
+App[TraceVisModel] visPaperTransactionDontGetStuckCheck() = visTrace("TransactionsDontGetStuck", |home:///workspace/rebel2/examples/paper/example/Transaction.rebel|);
+App[TraceVisModel] visPaperTransactionCanBookRun() = visTrace("CanBookATransaction", |home:///workspace/rebel2/examples/paper/example/Transaction.rebel|);
 
 App[TraceVisModel] visPaperAccountCheck(str check) = visTrace(check, |home:///workspace/rebel2/examples/paper/example/Account.rebel|);
 

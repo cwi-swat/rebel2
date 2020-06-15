@@ -246,9 +246,43 @@ AttRes translateAttrExpr(current:(Expr)`<Expr expr>.<Id fld>`, Context ctx) {
   }
 }
 
+AttRes translateAttrExpr(current:(Expr)`<Id func>(<{Expr ","}* actuals>)`, Context ctx) {
+  str r = ctx.rm[current@\loc].relExpr;
+  list[Expr] params = [p | p <- actuals];
+  
+  switch("<func>") {
+    case "substr": {
+      str newFld = "<getFieldName(params[0],ctx)>_<ctx.nxtUniquePrefix()>";
+      AttRes sub = translateAttrExpr(params[0],ctx);
+      AttRes frm = translateAttrExpr(params[1],ctx);
+      AttRes to = translateAttrExpr(params[2],ctx);
+
+      r = "<r><renameIfNecessary(params[0], newFld, ctx)>";
+      return <{r} + sub.rels + frm.rels + to.rels, "substr(<newFld>,<frm.constraint>,<to.constraint>)">;
+    }
+    case "toInt": {
+      str newFld = "<getFieldName(params[0],ctx)>_<ctx.nxtUniquePrefix()>";
+      r = "<r><renameIfNecessary(params[0], newFld, ctx)>";
+      AttRes p0 = translateAttrExpr(params[0],ctx);
+      return <{r} + p0.rels, "toInt(<p0.constraint>)">;
+    }
+    case "toStr": {
+      str newFld = "<getFieldName(params[0],ctx)>_<ctx.nxtUniquePrefix()>";
+      r = "<r><renameIfNecessary(params[0], newFld, ctx)>";
+      AttRes p0 = translateAttrExpr(params[0],ctx);
+      return <{r} + p0.rels, "toStr(<p0.constraint>)">;
+    }            
+  }
+}
+
 AttRes translateAttrExpr((Expr)`- <Expr e>`, Context ctx) { 
   AttRes r = translateAttrExpr(e,ctx);
   return <r.rels, "(- <r.constraint>)">;
+}
+
+AttRes translateAttrExpr((Expr)`|<Expr e>|`, Context ctx) { 
+  AttRes r = translateAttrExpr(e,ctx);
+  return <r.rels, "|<r.constraint>|">;
 }
 
 private AttRes translateBinAttrExpr(Expr lhs, Expr rhs, str op, Context ctx) {

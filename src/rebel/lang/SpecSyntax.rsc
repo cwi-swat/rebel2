@@ -6,7 +6,7 @@ syntax Part
   = Spec spc
   ;
 
-syntax Spec = "spec" Id name Instances? instances Fields? fields Constraints? constraints Event* events Fact* facts States? states;
+syntax Spec = "spec" Id name Instances? instances Fields? fields Constraints? constraints Event* events Pred* preds Fact* facts States? states;
 
 syntax Instances
   = "[" {Instance ","}+ instances "]"
@@ -67,6 +67,8 @@ syntax EventVariantBody
   = Pre? pre Post? post
   ; 
 
+syntax Pred = "pred" Id name "(" {FormalParam ","}* params ")"  "=" Formula form ";";
+
 syntax Fact = "fact" Id name "=" Formula form ";";
   
 syntax States
@@ -109,5 +111,6 @@ keyword Keywords = "spec"
                  | "enum"
                  | "variant"
                  | "noOp"
+                 | "func"
                  ;
  

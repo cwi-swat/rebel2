@@ -26,7 +26,7 @@ Maybe[AType] getCurrentSpecType(Collector c) {
   return nothing();
 } 
  
-void collect(current: (Spec)`spec <Id name> <Instances? instances> <Fields? fields> <Constraints? constraints> <Event* events> <Fact* facts> <States? states>`, Collector c) {
+void collect(current: (Spec)`spec <Id name> <Instances? instances> <Fields? fields> <Constraints? constraints> <Event* events> <Pred* preds> <Fact* facts> <States? states>`, Collector c) {
   c.define("<name>", specId(), current, defType(specType("<name>")));
   
   c.enterScope(current); 
@@ -48,6 +48,7 @@ void collect(current: (Spec)`spec <Id name> <Instances? instances> <Fields? fiel
     }
 
     collect(facts, c);
+    collect(preds, c);
         
   c.leaveScope(current);
 }
@@ -62,6 +63,19 @@ void collect(current:(Fact)`fact <Id name> = <Formula form>;`, Collector c) {
   
   c.enterScope(current); 
     collect(form, c);
+  c.leaveScope(current);    
+}
+
+void collect(current:(Pred)`pred <Id name> (<{FormalParam ","}* formals>) = <Formula form>;`, Collector c) {
+  list[Id] fp = [f.name | f <- formals];
+  
+  c.define("<name>", predId(), current, defType(fp, 
+    AType (Solver s) {
+      return predType(namedTypeList([<"<f>",s.getType(f)> | f <- fp]));
+    }));
+    
+  c.enterScope(current);
+    collect(formals, form, c);
   c.leaveScope(current);    
 }
 
@@ -219,7 +233,7 @@ void collect((EventVariantBody)`<Pre? maybePre> <Post? maybePost>`, Collector c)
 }
 
 void collect(current: (Formula)`<Expr spc>.<Id event>(<{Expr ","}* arguments>)`, Collector c) {
-  c.useViaType(spc, event, {eventId()});
+  c.useViaType(spc, event, {eventId(),predId()});
   
   args = [arg | arg <- arguments];
   
@@ -227,7 +241,7 @@ void collect(current: (Formula)`<Expr spc>.<Id event>(<{Expr ","}* arguments>)`,
     AType (Solver s) {
       eType = s.getType(event);
       
-      if (eventType(namedTypeList(ntl)) := s.getType(event)) {
+      if (eventType(namedTypeList(ntl)) := s.getType(event) || predType(namedTypeList(ntl)) := s.getType(event)) {
         AType formalTypes = atypeList([tipe | <str _, AType tipe> <- ntl]);
         
         argTypes = atypeList([s.getType(a) | a <- args]);

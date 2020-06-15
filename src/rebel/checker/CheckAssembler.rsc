@@ -134,7 +134,7 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
 
 private Spec filterFieldAndFacts(Field fld, Spec s, set[loc] uses) = filterFacts(filterField(s, fld), uses);
 
-private Spec filterField(spc:(Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Fact* fcts> <States? sts>`, Field fld) {
+private Spec filterField(spc:(Spec)`spec <Id name> <Instances? inst> <Fields? flds> <Constraints? cons> <Event* evnts> <Pred* preds> <Fact* fcts> <States? sts>`, Field fld) {
   if (size({f | /Field f := flds}) == 1, /fld := flds) {
     return ((Spec)`spec <Id name> <Instances? inst> <Constraints? cons> <Event* evnts> <Fact* fcts> <States? sts>`)[@\loc=spc@\loc];
   }
@@ -256,15 +256,19 @@ private Spec filterFacts(Spec spc, set[loc] uses) {
 
 private set[Spec] filterNonReferencedSpecs(Graph[Spec] spcDep, TModel tm, Config cfg) {
   set[set[Spec]] components = connectedComponents(spcDep);
-  set[Spec] referencedSpcs = {lookupSpecByRef(tm.useDef[spc@\loc], spcDep) | (InstanceSetup)`<{Id ","}+ _> : <Type spc> <InState? _> <WithAssignments? _>` <- cfg.instances};
   
-  Spec s = getOneFrom(referencedSpcs);
+  set[Spec] referencedSpcs = {lookupSpecByRef(tm.useDef[spc@\loc], spcDep) | (InstanceSetup)`<{Id ","}+ n> : <Type spc> <InState? _> <WithAssignments? _>` <- cfg.instances};
+  set[Spec] filtered = referencedSpcs;
 
-  for (set[Spec] comp <- components, s in comp) {
-    return comp;
+  for (Spec s <- referencedSpcs, set[Spec] comp <- components, s in comp) {
+    filtered += comp;
   }
   
-  throw "Unable to find all referenced specs";
+  if (filtered == {}) {  
+    throw "Unable to find all referenced specs";
+  }
+  
+  return filtered;
 }
 
 private Module assembleModule(QualifiedName origMod, set[Spec] specs, Assert as, Config cfg, Check chk) {

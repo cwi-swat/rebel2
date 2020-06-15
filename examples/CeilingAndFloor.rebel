@@ -1,0 +1,23 @@
+module CeilingAndFloor
+
+spec Platform
+
+spec Man
+  ceiling: Platform,
+  floor: Platform;
+  
+  fact OneMansCeilingIsAnotherMensFloor =  always forall m: Man | exists n: Man | m.floor = n.ceiling;
+  //fact CantBeCeilingAndFloor = always forall m: Man | m.floor != m.ceiling;
+  fact NoSharing = always !(exists m,n: Man | m != n && (m.floor = n.floor || m.ceiling = n.ceiling));
+    
+assert BelowToo = always forall m: Man | exists n: Man | m.ceiling = n.floor;
+assert BelowToo2 = always ((forall m: Man | m.floor != m.ceiling) => (forall m: Man | exists n: Man | m.ceiling = n.floor));
+assert BelowToo3 = always ((forall m,n: Man | (m != n => (m.floor != n.floor && m.ceiling != n.ceiling))) => (forall m: Man | exists n: Man | m.ceiling = n.floor));
+
+config TwoOfEach = p1,p2: Platform, m1,m2: Man;
+config ThreeOfEach = p1,p2,p3: Platform, m1,m2,m3: Man;
+config TenOfEach = p1,p2,p3,p4,p5,p6,p7,p8,p9,p10: Platform, m1,m2,m3,m4,m5,m6,m7,m8,m9,m10: Man;
+
+check BelowToo from TenOfEach in max 0 steps;
+check BelowToo2 from ThreeOfEach in max 0 steps;
+check BelowToo3 from ThreeOfEach in max 0 steps;

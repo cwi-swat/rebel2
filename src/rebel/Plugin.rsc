@@ -32,14 +32,14 @@ alias VisConfig = tuple[int port, tuple[void () serve, void () stop] app];
 
 set[Contribution] getRebelContributions() {
 
-  Content runCheck(Module m, loc selection) {
+  Content runCheck(Module m, loc selection, int solverTimeout = 30 * 1000) {
     if (/Check chk <- m.parts, isContainedIn(selection, chk@\loc)) {
       println("Running check");
       
       PathConfig pcfg = defaultPathConfig(m@\loc.top);
       TypeCheckerResult tr = typeCheckModule(m);
       
-      Trace t = performCheck(chk, m, tr.tm, tr.depGraph, pcfg = pcfg, saveIntermediateFiles = false);
+      Trace t = performCheck(chk, m, tr.tm, tr.depGraph, pcfg = pcfg, saveIntermediateFiles = false, solverTimeout = solverTimeout);
       
       switch(t) {
         case noTrace(solverTimeout()): {
@@ -79,7 +79,10 @@ set[Contribution] getRebelContributions() {
     popup(
       menu("Rebel actions", [
         interaction("Visualize", showModuleVis), 
-        interaction("Run check", runCheck)
+        interaction("Run checker (30s timeout)", runCheck),
+        interaction("Run checker (custom timeout)", Content (Module m, loc selection) { 
+          return runCheck(m,selection, solverTimeout = promptForInt("Enter the desired solver timeout in seconds\n(0 means no timeout)") * 1000);
+        })
       ])
     )   
   };

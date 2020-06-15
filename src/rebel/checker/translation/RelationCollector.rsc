@@ -200,6 +200,28 @@ void analyse(current:(Expr)`<Expr expr>.<Id fld>`, AnalysisContext ctx) {
   }
 }
 
+void analyse(current:(Expr)`<Id func>(<{Expr ","}* actuals>)`, AnalysisContext ctx) {
+  list[Expr] params = [p | p <- actuals];
+  for (p <- params) {
+    analyse(p,ctx);
+  }
+  
+  switch ("<func>") {
+    case "substr": {
+      RelExpr strFld = ctx.lookup(params[0]@\loc);
+      ctx.add(current@\loc, <"<strFld.relExpr>[<getFieldName(strFld)>]", ("<getFieldName(strFld)>":type2Dom(stringType()))>);
+    }
+    case "toInt": {
+      RelExpr strFld = ctx.lookup(params[0]@\loc);
+      ctx.add(current@\loc, <"<strFld.relExpr>[<getFieldName(strFld)>]", ("<getFieldName(strFld)>":type2Dom(intType()))>);    
+    }
+    case "toStr": {
+      RelExpr intFld = ctx.lookup(params[0]@\loc);
+      ctx.add(current@\loc, <"<intFld.relExpr>[<getFieldName(intFld)>]", ("<getFieldName(intFld)>":type2Dom(stringType()))>);    
+    }
+  }
+}
+
 void analyse(current:(Expr)`<Expr spc>[<Id fld>]`, AnalysisContext ctx) {
   analyse(spc,ctx);
   analyse(fld,ctx);
@@ -216,6 +238,11 @@ void analyse(current:(Expr)`<Expr expr>'`, AnalysisContext ctx) {
 }
 
 void analyse(current:(Expr)`- <Expr expr>`, AnalysisContext ctx) {
+  analyse(expr, ctx);
+  ctx.add(current@\loc, ctx.lookup(expr@\loc));
+}
+
+void analyse(current:(Expr)`|<Expr expr>|`, AnalysisContext ctx) {
   analyse(expr, ctx);
   ctx.add(current@\loc, ctx.lookup(expr@\loc));
 }

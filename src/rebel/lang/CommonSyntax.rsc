@@ -45,7 +45,9 @@ syntax Decl = {Id ","}+ vars ":" Expr expr;
 syntax Expr
   = brackets: "(" Expr ")"
   > var: Id
-  | fieldAccess: Expr "." Id 
+  | "|" Expr "|"
+  > fieldAccess: Expr "." Id 
+  | functionCall: Id func "(" {Expr ","}* actuals ")"
   | instanceAccess: Expr spc "[" Id inst"]"
   | Lit
   > nextVal: Expr "\'"

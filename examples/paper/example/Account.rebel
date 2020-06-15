@@ -20,6 +20,7 @@ spec Account
     post: this.balance' = this.balance - amount;
     
   event payInterest(rate: Integer)
+    //pre: rate > 0;
     post: this.balance' = this.balance + ((this.balance * rate) / 100);
     
   event block()
@@ -39,16 +40,17 @@ spec Account
     opened -> blocked: block; 
     blocked -> opened: unblock;
     blocked -> (*): forceClose;   
-    opened -> (*): close;
-    
+    opened -> (*): close; 
+     
 assert CantOverdrawAccount = always forall a:Account | (a is initialized => a.balance >= 0);
 
 assert CanPayInterestAndClose = eventually exists ac:Account | payInterest on ac && eventually close on ac;
 assert CanOpenAccount = eventually exists ac:Account | ac is initialized;
-   
-config Basic = ac: Account is uninitialized, an: AccountNumber, d:Date;
-   
-check CantOverdrawAccount from Basic in max 10 steps; 
-   
+    
+config Basic = ac: Account is uninitialized, aNr:AccountNumber with nr = "736160221", d:Date;
+config Sliced = ac: Account forget nr is uninitialized;
+     
+check CantOverdrawAccount from Sliced in max 10 steps;  
+     
 run CanPayInterestAndClose from Basic in max 8 steps; 
-run CanOpenAccount from Basic in max 5 steps; 
+run CanOpenAccount from Basic in max 3 steps; 
