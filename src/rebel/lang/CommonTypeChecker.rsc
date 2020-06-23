@@ -128,6 +128,11 @@ void collect(current: (Formula)`if <Formula cond> then <Formula then> else <Form
   collect(cond, then, els, c);
 }
 
+void collect(current: (Formula)`if <Formula cond> then <Formula then>`, Collector c) {
+  c.fact(current, boolType());
+  collect(cond, then, c);
+}
+
 private void collectQuant([], Formula f, Collector c) { 
   collect(f, c);
 }

@@ -117,6 +117,7 @@ void analyse((Formula)`<Formula lhs> || <Formula rhs>`, AnalysisContext ctx) { a
 void analyse((Formula)`<Formula lhs> =\> <Formula rhs>`, AnalysisContext ctx) { analyse(lhs, ctx); analyse(rhs,ctx); }
 void analyse((Formula)`<Formula lhs> \<=\> <Formula rhs>`, AnalysisContext ctx) { analyse(lhs, ctx); analyse(rhs,ctx); }
 void analyse((Formula)`if <Formula cond> then <Formula then> else <Formula els>`, AnalysisContext ctx) { analyse(cond, ctx); analyse(\then,ctx); analyse(els,ctx);}
+void analyse((Formula)`if <Formula cond> then <Formula then>`, AnalysisContext ctx) { analyse(cond, ctx); analyse(\then,ctx);}
 void analyse((Formula)`forall <{Decl ","}+ decls> | <Formula f>`, AnalysisContext ctx) {
   for (Decl d <- decls) {
     analyse(d,ctx);

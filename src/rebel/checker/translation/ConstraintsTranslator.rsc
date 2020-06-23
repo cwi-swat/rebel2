@@ -88,15 +88,6 @@ private str machineOnlyHasValuesWhenInitialized(set[Spec] spcs, TModel tm) {
       }
       
       cons += intercalate("\n", ["∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | <fc>" | fc <- fldCons]);
-    //  if (isPrim(f.tipe, tm)) {
-    //    cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one <relName> ⨝ c ⨝ inst)\n"; 
-    //  } else {
-    //    cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no <relName> ⨝ c ⨝ inst)\n";  
-    //
-    //    if (setType(_) !:= getType(f, tm) && optionalType(_) !:= getType(f, tm)) {
-    //      cons += "∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one <relName> ⨝ c ⨝ inst)\n";  
-    //    }
-    //  }
     }
   } 
 

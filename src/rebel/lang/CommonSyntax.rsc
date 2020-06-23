@@ -32,6 +32,7 @@ syntax Formula
   > right Formula "=\>" Formula
   | right Formula "\<=\>" Formula
   | non-assoc "if" Formula cond "then" Formula then "else" Formula else
+  | non-assoc "if" Formula cond "then" Formula
   > "forall" {Decl ","}+ "|" Formula
   | "exists" {Decl ","}+ "|" Formula
   ;

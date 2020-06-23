@@ -150,6 +150,8 @@ str translate((Formula)`<Expr lhs> \> <Expr rhs>`,  Context ctx) = translateRest
 
 str translate((Formula)`if <Formula cond> then <Formula then> else <Formula \else>`,  Context ctx) = translate((Formula)`(<Formula cond> =\> <Formula then>) && (!(<Formula cond>) =\> <Formula \else>)`, ctx);
 
+str translate((Formula)`if <Formula cond> then <Formula then>`,  Context ctx) = translate((Formula)`(<Formula cond> =\> <Formula then>)`, ctx);
+
 str translate((Formula)`noOp(<Expr expr>)`, Context ctx) {
   return "notInChangeSet[step, <ctx.rm[expr@\loc].relExpr><renameIfNecessary(expr, "instance", ctx)>]";
 }
