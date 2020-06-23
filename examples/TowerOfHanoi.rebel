@@ -1,0 +1,66 @@
+module TowerOfHanoi
+
+spec Disc
+  size: Integer;
+
+  fact OrderedDiscs = always forall d1,d2: Disc | (d1 != d2 => d1.size != d2.size); 
+  
+  // tmp fix, currently field values are not framed if there are no states and transitions
+  states:
+    playing -> playing: empty; 
+  /////////////
+  
+spec Peg
+  discs: set Disc;
+  
+  internal event add(d: Disc)
+    pre:  // the disc should not already be on the peg
+          d notin this.discs,   
+          // only a disc smaller than the discs that are already on the peg can be added
+          forall other : this.discs | other.size > d.size;  
+    post: // add the disc to the peg
+          this.discs' = this.discs + d; 
+  
+  internal event remove(d: Disc)
+    pre:  // the disc should already be on the peg
+          d in this.discs, 
+          // only the smallest disc (top disc) can be removed from the peg
+          forall other: this.discs - d | other.size > d.size;
+    post: // remove the disc from the peg
+          this.discs' = this.discs - d; 
+
+  fact ADiscCanOnlyBeOnOneRod = always forall d:Disc | exists p: Peg | 
+      d in p.discs && forall other: Peg | (other != p => d notin other.discs);
+    
+  states:
+    playing -> playing: add,remove; 
+  
+spec Tower
+  initial: Peg,
+  goal: Peg;
+  
+  event move(d: Disc, from: Peg, to: Peg) 
+    pre: from.remove(d), to.add(d);
+  
+  fact InitiallyAllDiscOnInitialPeg = first forall d: Disc, t: Tower | d in t.initial.discs; 
+  
+  states:
+    playing -> playing: move;
+
+assert AllOnThirdRod = eventually exists t:Tower | forall d:Disc | d in t.goal.discs;
+
+assert CanMoveADisc = eventually exists t:Tower | move on t;
+assert CanInitialize = eventually exists t:Tower | t is initialized;
+
+config TwoDiscs   = d1,d2: Disc, p1,p2,p3: Peg, t:Tower with initial = p1, goal = p3, d1 with size = 1, d2 with size = 2;
+config ThreeDiscs = d1,d2,d3: Disc, p1,p2,p3: Peg, t:Tower with initial = p1, goal = p3, d1 with size = 1, d2 with size = 2, d3 with size = 3;
+config FourDiscs  = d1,d2,d3,d4: Disc, p1,p2,p3: Peg, t:Tower with initial = p1, goal = p3, d1 with size = 1, d2 with size = 2, d3 with size = 3, d4 with size = 4;
+config FiveDiscs  = d1,d2,d3,d4,d5: Disc, p1,p2,p3: Peg, t:Tower with initial = p1, goal = p3, d1 with size = 1, d2 with size = 2, d3 with size = 3, d4 with size = 4, d5 with size = 5;               
+               
+run CanInitialize from TwoDiscs in max 0 steps;             
+run CanMoveADisc from TwoDiscs in max 1 steps;             
+               
+//run AllOnThirdRod from TwoDiscs in max 3 steps;  
+//run AllOnThirdRod from ThreeDiscs in max 7 steps;
+run AllOnThirdRod from FourDiscs in max 15 steps;  
+//run AllOnThirdRod from FiveDiscs in max 32 steps;  

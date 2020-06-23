@@ -20,6 +20,7 @@ spec Process
     pre: if (this.pid > this.toSend) 
          then this.succ.received(this.pid) 
          else this.succ.received(this.toSend); 
+    post: this.toSend' = 0;
 
   fact UniqueIds
     = always forall p1,p2: Process |  
@@ -31,8 +32,8 @@ spec Process
   fact InitialToSendIsZero
     = first forall p: Process | p.toSend = 0; 
     
-  //fact Progress
-  //  = always forall p:Process | ((p is initialized && p.toSend > p.pid) => eventually send on p);
+  fact Progress
+    = always forall p:Process | ((p is initialized && p.toSend > p.pid) => eventually send on p);
         
   states:
     notElected -> notElected: send, received::lower, received::higher; 
@@ -50,14 +51,13 @@ assert EventuallyOneIsElected
   = eventually exists p: Process | p is elected;
 
 assert AProcessWillAlwaysBeElected
-  //= eventually always (exists p: Process | p is elected);
-  = always forall p: Process | !(p is elected);
-
+  = eventually always exists p: Process | p is elected;
+  
 assert OnlyOneCanGetElected  
-  = eventually exists p1,p2: Process | p1 is elected && p2 is elected && p1 != p2;  
+  = always forall p1,p2: Process | (p1 is elected && p2 is elected => p1 = p2);  
 
-check EventuallyOneIsElected from RingOfThree in max 6 steps;
+run EventuallyOneIsElected from RingOfThree in max 3 steps;
    
-check OnlyOneCanGetElected from RingOfThree in max 10 steps;  
+check OnlyOneCanGetElected from RingOfThree in max 5 steps;  
  
 check AProcessWillAlwaysBeElected from RingOfThree in max 4 steps with infinite trace;

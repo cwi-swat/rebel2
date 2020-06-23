@@ -53,13 +53,13 @@ spec CoffeeType[NONE,NORMAL,ESPRESSO,AMERICANO,LATTE]
 config InitialMachine = cm: CoffeeMachine is uninitialized;
    
 assert MachineIsServing = eventually exists m: CoffeeMachine | m is serve;  
-check MachineIsServing from InitialMachine in max 10 steps;
+run MachineIsServing from InitialMachine in max 10 steps;
 
 assert CanServeNormalCoffee  
   = eventually exists m: CoffeeMachine | m.selected = CoffeeType[NORMAL] && eventually m is serve;
-check CanServeNormalCoffee from InitialMachine in max 10 steps;
+run CanServeNormalCoffee from InitialMachine in max 10 steps;
   
-assert MachineWillNeverServe = always exists m: CoffeeMachine | !(m is serve);    
-check MachineWillNeverServe from InitialMachine in max 5 steps with infinite trace;
+assert MachineWillServeOrCancel = always exists m: CoffeeMachine | (m is acceptingPayment => eventually m is serve || cancel on m);    
+run MachineWillServeOrCancel from InitialMachine in max 7 steps with infinite trace;
 
     

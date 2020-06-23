@@ -1,9 +1,13 @@
 module RiverCrossing
 
-spec Cargo[FOX,CHICKEN,GRAIN]
+spec Cargo
+  eats: Cargo;
+  
   internal event cross()
        
-  fact StartAtNear = first forall c:Cargo | c is near;
+  fact DontBeAloneWithFood = always forall c1:Cargo, c2: Cargo, f:Farmer | (c1 != c2 && c2 = c1.eats =>  
+    if (c1 is near &&  c2 is near) then f is near 
+    else if (c1 is far && c2 is far) then f is far);
      
   states:
     near -> far: cross;
@@ -18,20 +22,14 @@ spec Farmer
   event crossToNear(cargo: Cargo)
       pre: cargo is far, cargo.cross();
 
-  fact CantBeAloneWithFood 
-    = always forall f:Farmer | (((Cargo[FOX] is near && Cargo[CHICKEN] is near) || (Cargo[CHICKEN] is near && Cargo[GRAIN] is near)) => f is near) &&
-                               (((Cargo[FOX] is far && Cargo[CHICKEN] is far) || (Cargo[CHICKEN] is far && Cargo[GRAIN] is far)) => f is far);
-    
   states:
     near -> far: crossAlone, crossToFar;
     far -> near: crossAlone, crossToNear;
 
-config EverybodyNear = f: Farmer is near;  
+config Game = f: Farmer is near, fox, chicken, grain: Cargo is near,
+              fox with eats = chicken, chicken with eats = grain, grain with eats = grain;  
 
-assert CanGetEverybodyAcross = eventually forall f:Farmer | f is far && Cargo[FOX] is far && Cargo[CHICKEN] is far && Cargo[GRAIN] is far;  
+assert CanGetEverybodyAcross = eventually forall f:Farmer, c:Cargo | f is far && c is far;  
 
-assert NeverGetAcross = always exists c:Cargo | c is near;
+run CanGetEverybodyAcross from Game in max 8 steps;
  
-check CanGetEverybodyAcross from EverybodyNear in max 8 steps;
- 
-check NeverGetAcross from EverybodyNear in max 6 steps with infinite trace;

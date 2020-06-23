@@ -3,7 +3,7 @@ module paper::example::AccountNumber
 spec AccountNumber
   nr: String; 
   
-  fact ElfProef = always forall an: AccountNumber |   
+  fact ElevenProof = always forall an: AccountNumber |   
     an.nr.length = 9 && toInt(an.nr) > 0 && 
    ((toInt(substr(an.nr,0,1))   * 9) +
     (toInt(substr(an.nr,1,1))   * 8) +
