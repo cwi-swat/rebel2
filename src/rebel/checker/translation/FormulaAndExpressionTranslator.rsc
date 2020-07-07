@@ -138,8 +138,10 @@ str translate((Formula)`<Formula lhs> || <Formula rhs>`,    Context ctx) = "(<tr
 str translate((Formula)`<Formula lhs> =\> <Formula rhs>`,   Context ctx) = "(<translate(lhs,ctx)> ⇒ <translate(rhs,ctx)>)";
 str translate((Formula)`<Formula lhs> \<=\> <Formula rhs>`, Context ctx) = "(<translate(lhs,ctx)> ⇔ <translate(rhs,ctx)>)";
 
-str translate((Formula)`<Expr exp> = {}`, Context ctx) = "no <translateRelExpr(exp, ctx)>";
-str translate((Formula)`{} = <Expr exp>`, Context ctx) = "no <translateRelExpr(exp, ctx)>";
+str translate((Formula)`<Expr expr> = {}`, Context ctx) = "no <translateRelExpr(expr, ctx)>";
+str translate((Formula)`{} = <Expr expr>`, Context ctx) = "no <translateRelExpr(expr, ctx)>";
+str translate((Formula)`<Expr expr> = none`, Context ctx) = "no <translateRelExpr(expr, ctx)>";
+str translate((Formula)`none = <Expr expr>`, Context ctx) = "no <translateRelExpr(expr, ctx)>";
 default str translate((Formula)`<Expr lhs> = <Expr rhs>`,   Context ctx)  = translateEq(lhs, rhs, "=", ctx);
 default str translate((Formula)`<Expr lhs> != <Expr rhs>`,   Context ctx) = translateEq(lhs, rhs, "!=", ctx);
 

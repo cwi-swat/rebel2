@@ -47,10 +47,10 @@ assert CantOverdrawAccount = always forall a:Account | (a is initialized => a.ba
 assert CanPayInterestAndClose = eventually exists ac:Account | payInterest on ac && eventually close on ac;
 assert CanOpenAccount = eventually exists ac:Account | ac is initialized;
     
-config Basic = ac: Account is uninitialized, aNr:AccountNumber with nr = "736160221", d:Date;
-config Sliced = ac: Account forget nr is uninitialized;
+config Basic = ac: Account is uninitialized, aNr:AccountNumber, d:Date;
+config Sliced = ac: Account forget nr, openedOn is uninitialized;
      
 check CantOverdrawAccount from Sliced in max 10 steps;  
-     
+run CanOpenAccount from Basic in max 1 steps;     
 run CanPayInterestAndClose from Basic in max 8 steps; 
 run CanOpenAccount from Basic in max 3 steps; 

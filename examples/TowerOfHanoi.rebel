@@ -3,7 +3,7 @@ module TowerOfHanoi
 spec Disc
   size: Integer;
 
-  fact OrderedDiscs = always forall d1,d2: Disc | (d1 != d2 => d1.size != d2.size); 
+  fact DistinctSizes = always forall d1,d2: Disc | (d1 != d2 => d1.size != d2.size); 
   
   // tmp fix, currently field values are not framed if there are no states and transitions
   states:
@@ -47,7 +47,7 @@ spec Tower
   states:
     playing -> playing: move;
 
-assert AllOnThirdRod = eventually exists t:Tower | forall d:Disc | d in t.goal.discs;
+assert AllOnGoalPeg = eventually exists t:Tower | forall d:Disc | d in t.goal.discs;
 
 assert CanMoveADisc = eventually exists t:Tower | move on t;
 assert CanInitialize = eventually exists t:Tower | t is initialized;
@@ -61,6 +61,6 @@ run CanInitialize from TwoDiscs in max 0 steps;
 run CanMoveADisc from TwoDiscs in max 1 steps;             
                
 //run AllOnThirdRod from TwoDiscs in max 3 steps;  
-//run AllOnThirdRod from ThreeDiscs in max 7 steps;
-run AllOnThirdRod from FourDiscs in max 15 steps;  
+run AllOnGoalPeg from ThreeDiscs in max 7 steps;
+//run AllOnGoalPeg from FourDiscs in max 15 steps;  
 //run AllOnThirdRod from FiveDiscs in max 32 steps;  

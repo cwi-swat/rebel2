@@ -16,20 +16,22 @@ spec Transaction
   final event book()
     pre: this.from.withdraw(this.amount), this.to.deposit(this.amount);
   
-  final event cancel()
+  final event fail()
+  
+  fact Progress = 
      
   states:
     (*) -> created: create;
-    created -> (*): book, cancel;
+    created -> (*): book;//, fail;
 
 spec SimpleAccount
   balance: Integer;
   
-  internal event withdraw(amount: Integer)
+  event withdraw(amount: Integer)
     pre: amount > 0;
     post: this.balance' = this.balance - amount;
     
-  internal event deposit(amount: Integer) 
+  event deposit(amount: Integer) 
     pre: amount > 0;
     post: this.balance' = this.balance + amount;
     
@@ -37,8 +39,6 @@ spec SimpleAccount
   
   states:
     opened -> opened: withdraw, deposit;
-    opened -> notOpened: empty;
-    notOpened -> opened: empty; 
  
 config BasicTrans = t: Transaction is uninitialized, ac1,ac2: Account is uninitialized, an1,an2: AccountNumber, d1:Date, d2:Date;
 config SimplifiedTrans = t: Transaction is uninitialized, ac1,ac2: SimpleAccount abstracts Account;
@@ -49,4 +49,4 @@ assert TransactionsDontGetStuck = always forall t: Transaction | (t is initializ
 //check CanBookATransaction from BasicTrans in max 5 steps;
 run CanBookATransaction from SimplifiedTrans in max 5 steps;
  
-check TransactionsDontGetStuck from BasicTrans in max 5 steps with infinite trace;
+check TransactionsDontGetStuck from SimplifiedTrans in max 5 steps with infinite trace;

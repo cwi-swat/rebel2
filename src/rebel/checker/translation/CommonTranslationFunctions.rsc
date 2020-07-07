@@ -43,6 +43,8 @@ str getSpecOfType(Type tipe, TModel tm) {
     return spc;
   } else if (specType(str spc) := getType(tipe, tm)) {
     return spc;
+  } else if (optionalType(specType(str spc)) := getType(tipe, tm)) {
+    return spc;
   } else {
     throw "<tipe> is not a (set) spec type";
   }

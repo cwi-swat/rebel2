@@ -72,6 +72,7 @@ str prettyAType(specInstanceType(str specName)) = "instance of <specName>";
 str prettyAType(eventType(AType argTypes)) = "event <prettyAType(argTypes)>";
 str prettyAType(voidType()) = "*";
 str prettyAType(setType(AType elem)) = "set of <prettyAType(elem)>";
+str prettyAType(optionalType(AType elem)) = "?<prettyAType(elem)>";
 
 tuple[list[str] typeNames, set[IdRole] idRoles] rebelTypeNamesAndRole(specType(str name)) = <[name], {specId()}>;
 
@@ -167,7 +168,7 @@ void collect(current: (Decl)`<{Id ","}+ vars> : <Expr expr>`, Collector c) {
           return elemType;
         } else if (specType(str name) := s.getType(expr)) {
           return specType(name);
-        }else {
+        } else {
           s.report(error(current, "Should be a set type or a type of specication but is %t", expr));
         }
       }));
@@ -295,7 +296,7 @@ void collect(current: (Expr)`|<Expr expr>|`, Collector c) {
 }
 
 void collect(current: (Expr)`<Expr expr>'`, Collector c) {
-  if (prePhase() := c.top("phase")) {
+  if ([prePhase()] := c.getStack("phase")) {
     c.report(error(current, "Can not reference post value in precondition"));
   }
   
@@ -439,7 +440,7 @@ void collect(current: (Lit)`<StringConstant s>`, Collector c) {
 }
 
 void collect(current: (Lit)`none`, Collector c) {
-  c.fact(current, optionalType(voidType()));
+  c.fact(current, voidType());
 }
 
 void collect(current: (Lit)`{<{Expr ","}* elems>}`, Collector c) {
@@ -501,8 +502,10 @@ bool subtype(setType(voidType()), setType(_)) = true;
 bool subtype(setType(_), setType(voidType())) = true;
 bool subtype(setType(AType a), setType(AType b)) = subtype(a,b);
 
-bool subtype(optionalType(voidType()), optionalType(_)) = true;
-bool subtype(optionalType(_), optionalType(voidType())) = true;
+bool subtype(voidType(), optionalType(_)) = true;
+bool subtype(optionalType(_), voidType()) = true;
+bool subtype(optionalType(AType a), a) = true;
+bool subtype(AType a, optionalType(a)) = true;
 bool subtype(optionalType(AType a), optionalType(AType b)) = subtype(a,b);
 
 bool subtype(specType(str a), specInstanceType(str b)) = a == b;

@@ -5,10 +5,10 @@ spec Date [NOW*]
   month: Integer,  
   day: Integer;
     
-  pred after(other: Date) =
-    (this.year > other.year) ||
-    (this.year = other.year && this.month > other.month) ||
-    (this.year = other.year && this.month = other.month && this.day > other.day);
+  //pred after(other: Date) =
+  //  (this.year > other.year) ||
+  //  (this.year = other.year && this.month > other.month) ||
+  //  (this.year = other.year && this.month = other.month && this.day > other.day);
 
   fact CorrectDate
     = always forall d:Date | (
@@ -28,9 +28,12 @@ spec Date [NOW*]
         if d.month = 11 then d.day < 31 else 
         d.day < 32);  
   
-assert SomeInitializedDate = eventually exists d: Date | d.after(Date[NOW]);
+  fact TimeFlowsForward 
+    = always-last Date[NOW].year' > Date[NOW].year; 
+     
+assert SomeInitializedDate = eventually exists d: Date | d is initialized;
 
 config SomeDates = d1: Date; 
  
-run SomeInitializedDate from SomeDates in max 0 steps;
+run SomeInitializedDate from SomeDates in max 2 steps;
       

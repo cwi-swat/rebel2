@@ -256,7 +256,7 @@ private Spec filterFacts(Spec spc, set[loc] uses) {
 
 private set[Spec] filterNonReferencedSpecs(Graph[Spec] spcDep, TModel tm, Config cfg) {
   set[set[Spec]] components = connectedComponents(spcDep);
-  
+   
   set[Spec] referencedSpcs = {lookupSpecByRef(tm.useDef[spc@\loc], spcDep) | (InstanceSetup)`<{Id ","}+ n> : <Type spc> <InState? _> <WithAssignments? _>` <- cfg.instances};
   set[Spec] filtered = referencedSpcs;
 
