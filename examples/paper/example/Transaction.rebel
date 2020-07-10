@@ -2,7 +2,6 @@ module paper::example::Transaction
 
 import paper::example::Account
 import paper::example::AccountNumber
-import paper::example::Date
 
 spec Transaction 
   from: Account, 
@@ -17,9 +16,7 @@ spec Transaction
     pre: this.from.withdraw(this.amount), this.to.deposit(this.amount);
   
   final event fail()
-  
-  fact Progress = 
-     
+
   states:
     (*) -> created: create;
     created -> (*): book;//, fail;

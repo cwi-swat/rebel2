@@ -5,14 +5,17 @@ spec Person
   spouse: ?Person;
   
   event marry(other: Person)
-    pre: this.spouse = none, other.age >= 18;
+    pre: this.spouse = none, other != this, other.age >= 18;
     post: this.spouse' = other;
   
   states:
     single -> married: marry;
     
 assert CanMarry = eventually exists p: Person | p is married;
+assert CanNotBeMarriedToSelf = always forall p:Person | (p is married => p.spouse != p);
 
 config TwoPersons = p1,p2: Person is single;
 
 run CanMarry from TwoPersons in max 1 steps;
+
+check CanNotBeMarriedToSelf from TwoPersons in max 5 steps;

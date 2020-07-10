@@ -143,6 +143,11 @@ str translate((Formula)`{} = <Expr expr>`, Context ctx) = "no <translateRelExpr(
 str translate((Formula)`<Expr expr> = none`, Context ctx) = "no <translateRelExpr(expr, ctx)>";
 str translate((Formula)`none = <Expr expr>`, Context ctx) = "no <translateRelExpr(expr, ctx)>";
 default str translate((Formula)`<Expr lhs> = <Expr rhs>`,   Context ctx)  = translateEq(lhs, rhs, "=", ctx);
+
+str translate((Formula)`<Expr expr> != {}`, Context ctx) = "some <translateRelExpr(expr, ctx)>";
+str translate((Formula)`{} != <Expr expr>`, Context ctx) = "some <translateRelExpr(expr, ctx)>";
+str translate((Formula)`<Expr expr> != none`, Context ctx) = "some <translateRelExpr(expr, ctx)>";
+str translate((Formula)`none != <Expr expr>`, Context ctx) = "some <translateRelExpr(expr, ctx)>";
 default str translate((Formula)`<Expr lhs> != <Expr rhs>`,   Context ctx) = translateEq(lhs, rhs, "!=", ctx);
 
 str translate((Formula)`<Expr lhs> \< <Expr rhs>`,  Context ctx) = translateRestrictionEq(lhs, rhs, "\<",  ctx);

@@ -1,0 +1,100 @@
+Config (c:id) = {<c1>,<c2>}
+trans (frm:id,to:id) = {<c1,c2>}
+first (c:id) = {<c1>}
+
+Transaction (inst:id) = {<t>} // immutable 
+frm (c:id,inst:id,f:id) <= {<c1,t,ac1>,<c1,t,ac2>,<c2,t,ac1>,<c2,t,ac2>}      // var
+to (c:id,inst:id,f:id) <= {<c1,t,ac1>,<c1,t,ac2>,<c2,t,ac1>,<c2,t,ac2>}       // var
+amt (c:id,inst:id,f:id) <= {<c1,t,amt1>,<c1,t,amt2>,<c2,t,amt1>,<c2,t,amt2>}  // var
+tstate (c:id,inst:id,f:id) <= {<c1,t,uninitialized>,<c1,t,created>,<c1,t,booked>,<c1,t,finalized>,<c2,t,uninitialized>,<c2,t,created>,<c2,t,booked>,<c2,t,finalized>}//var
+amt_val (f:id,val:int) <= {<amt1,?>,<amt2,?>} // immutable
+TState (state:id) = {<initialized>,<created>,<booked>,<finalized>} // immutable
+
+Account (inst:id) = {<ac1>,<ac2>} // immutable
+astate (c:id,inst:id,f:id) <= {<c1,ac1,opened>..<c2,ac2,opened>} // var
+bal (c:id,inst:id,f:id) <= {<c1,ac1,bal1>..<c2,ac2,bal4>} //var 
+bal_val (f:id, val:int) <= {<bal1,?>..<bal4,?>} // var
+AState (state:id) = {<opened>} // immutable
+
+Initialized (state:id) = {<created>,<booked>,<opened>} // immutable
+State_Created (state:id) = {<created>} // immutable
+State_Opened (state:id) = {<opened>} // immutable
+
+Events (event:id) = {<create>,<archive>,<book>,<withdraw>,<deposit>} // immutable
+Event_Create (event:id) = {<create>} // immutable
+Event_Book (event:id) = {<book>} // immutable
+Event_Withdraw (event:id) = {<withdraw>} // immutable
+Event_Deposit (event:id) = {<deposit>} // immutable
+ 
+Raised (c:id,inst:id,event:id) <= {<c1,t,create>,<c1,t,book>,<c1,t,archive>,<c2,t,create>,<c2,t,book>,<c2,t,archive>} //var
+ChangeSet (c:id,inst:id) <= {<c1,t>..<c2,t>,<c1,ac1>..<c2,ac1>,<c1,ac2>..<c2,ac2>}
+
+// Transaction Domain and Multiplicity constraints
+frm ⊆ Config ⨯ Transaction ⨯ Account[inst as f]
+∀ c ∈ Config | ∀ t ∈ Transaction | (((t ⨯ c) ⨝ tstate)[f->state] ⊆ Initialized ⇔ one (t ⨯ c) ⨝ frm)
+
+to ⊆ Config ⨯ Transaction ⨯ Account[inst as f]
+∀ c ∈ Config | ∀ t ∈ Transaction | (((t ⨯ c) ⨝ tstate)[f->state] ⊆ Initialized ⇔ one (t ⨯ c) ⨝ to)
+
+amt ⊆ Config ⨯ Transaction ⨯ amt_val[f]
+∀ c ∈ Config | ∀ t ∈ Transaction | (((t ⨯ c) ⨝ tstate)[f->state] ⊆ Initialized ⇔ one (t ⨯ c) ⨝ amt ⨝ amt_val)
+
+// Account Domain and Multiplicity constraints
+bal ⊆ Config ⨯ Account ⨯ bal_val[f]
+∀ c ∈ Config | ∀ ac ∈ Account | (((ac ⨯ c) ⨝ astate)[f->state] ⊆ Initialized ⇔ one (ac ⨯ c) ⨝ bal ⨝ bal_val)
+
+// Every transition has one raised event
+no Raised ⨝ first 
+∀ c ∈ Config ∖ first | one Raised ⨝ c
+
+∀ cur ∈ Config | let prev = (cur[c as to] ⨝ trans)[frm->c] |
+  // Booked Event
+  ∀ t ∈ Transaction | (((cur ⨝ Raised)[inst] = t ∧ (cur ⨝ Raised)[event] = Event_Book) ⇒ ( 
+  
+    // Synchronize with frm.withdraw
+    ((((prev ⨯ t) ⨝ frm)[f->inst] ⨯ prev) ⨝ astate)[inst] = ((((cur ⨯ t) ⨝ frm)[f->inst] ⨯ cur) ⨝ astate)[inst] ∧ 
+    some (((((prev ⨯ t) ⨝ frm)[f->inst] ⨯ prev) ⨝ bal ⨝ bal_val)[val->prev_val] ⨯ ((((cur ⨯ t) ⨝ frm)[f->inst] ⨯ cur) ⨝ bal ⨝ bal_val)[val->cur_val]) where (cur_val = prev_val - 10) ∧ 
+   
+    // Synchronize with to.deposit
+    ((((prev ⨯ t) ⨝ to)[f->inst] ⨯ prev) ⨝ astate)[inst] = ((((cur ⨯ t) ⨝ to)[f->inst] ⨯ cur) ⨝ astate)[inst] ∧ 
+    some (((((prev ⨯ t) ⨝ to)[f->inst] ⨯ prev) ⨝ bal ⨝ bal_val)[val->prev_val] ⨯ ((((cur ⨯ t) ⨝ to)[f->inst] ⨯ cur) ⨝ bal ⨝ bal_val)[val->cur_val]) where (cur_val = prev_val + 10) ∧ 
+    
+    // Post condition   
+    (prev ⨝ tstate ⨝ t)[f] = (cur ⨝ tstate ⨝ t)[f] ∧ 
+    (prev ⨝ amt ⨝ t)[f] = (cur ⨝ amt ⨝ t)[f] ∧ 
+    (prev ⨝ frm ⨝ t)[f] = (cur ⨝ frm ⨝ t)[f] ∧ 
+    (prev ⨝ to ⨝ t)[f] = (cur ⨝ to ⨝ t)[f]) 
+  )
+
+// Synchronization ChangeSet constraint
+∀ c ∈ Config | let prev = (c[c as to] ⨝ trans)[frm->c] |
+  // Booked Event
+  ∀ t ∈ Transaction | (
+    // Book Event
+    (((c ⨝ Raised)[inst] = t ∧ (c ⨝ Raised)[event] = Event_Book) ⇒ (  
+      (ChangeSet ⨝ c)[inst] = t ∪ (t ⨝ frm ⨝ prev)[f->inst] ∪ (t ⨝ to ⨝ prev)[f->inst]  
+    )) ∧ 
+    // Create Event
+    (((c ⨝ Raised)[inst] = t ∧ (c ⨝ Raised)[event] = Event_Create) ⇒ (  
+      (ChangeSet ⨝ c)[inst] = t  
+    ))
+  )
+    
+// Frame values
+∀ c ∈ Config | let prev = (c[c as to] ⨝ trans)[frm->c] |
+  ∀ t ∈ Transaction | (no t ∩ (ChangeSet ⨝ c)[inst] ⇒ (  
+    (prev ⨝ tstate ⨝ t)[f] = (c ⨝ tstate ⨝ t)[f] ∧ 
+    (prev ⨝ amt ⨝ t)[f] = (c ⨝ amt ⨝ t)[f] ∧ 
+    (prev ⨝ frm ⨝ t)[f] = (c ⨝ frm ⨝ t)[f] ∧ 
+    (prev ⨝ to ⨝ t)[f] = (c ⨝ to ⨝ t)[f])
+  ) ∧ 
+  ∀ ac ∈ Account | (no ac ∩ (ChangeSet ⨝ c)[inst] ⇒ (  
+    (prev ⨝ astate ⨝ ac)[f] = (c ⨝ astate ⨝ ac)[f] ∧ 
+    (prev ⨝ bal ⨝ ac)[f] = (c ⨝ bal ⨝ ac)[f])
+  )
+
+// Assert: CanBookATransaction
+∃ c ∈ Config, t ∈ Transaction | (Raised ⨝ c ⨝ t)[event] = Event_Book
+
+(first ⨝ tstate)[f->state] = State_Created 
+          
