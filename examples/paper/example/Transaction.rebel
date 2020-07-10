@@ -37,7 +37,7 @@ spec SimpleAccount
   states:
     opened -> opened: withdraw, deposit;
  
-config BasicTrans = t: Transaction is uninitialized, ac1,ac2: Account is uninitialized, an1,an2: AccountNumber, d1:Date, d2:Date;
+//config BasicTrans = t: Transaction is uninitialized, ac1,ac2: Account is uninitialized, an1,an2: AccountNumber, d1:Date, d2:Date;
 config SimplifiedTrans = t: Transaction is uninitialized, ac1,ac2: SimpleAccount abstracts Account;
 
 assert CanBookATransaction = eventually exists t: Transaction | book on t;
