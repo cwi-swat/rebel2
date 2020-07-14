@@ -48,7 +48,7 @@ str translateToAlleAlle(Config cfg, Module m, TModel tm, PathConfig pcfg, bool s
 str translateFacts(Module m, RelMapping rm, TModel tm, set[Spec] spcs) {
   int lastUnique = 0;
   int nxtUnique() { return lastUnique += 1;}
-  Context ctx = ctx(rm, tm, spcs, defaultCurRel(), defaultStepRel(), nxtUnique);
+  Context ctx = ctx(rm, tm, spcs, true, defaultCurRel(), defaultStepRel(), nxtUnique);
 
   return "<for (/Spec s <- m.parts) {>// Facts from spec `<s.name>`
          '<for (Fact f <- s.facts) {>// Fact `<f.name>` 
@@ -64,7 +64,7 @@ str translateAssert(Module m, RelMapping rm, TModel tm, set[Spec] spcs) {
   
   int lastUnique = 0;
   int nxtUnique() { lastUnique += 1; return lastUnique; }
-  Context ctx = ctx(rm, tm, spcs, defaultCurRel(), defaultStepRel(), nxtUnique);
+  Context ctx = ctx(rm, tm, spcs, true, defaultCurRel(), defaultStepRel(), nxtUnique);
   
   return "<for (Assert a <- asserts) {>// Assert `<a.name>`
          '<translate(a.form, ctx)><}>";

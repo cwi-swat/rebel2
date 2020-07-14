@@ -33,7 +33,7 @@ str constructTransitionFunction(Spec spc, Graph[SyncedWith] syncDep, set[Spec] s
   str buildTransCond(Event e) {
     int lastUnique = 0;
     int nxtUnique() { lastUnique += 1; return lastUnique; }
-    Context ctx = ctx(rm, tm, spcs, defaultCurRel(), defaultStepRel(), nxtUnique);
+    Context ctx = ctx(rm, tm, spcs, true, defaultCurRel(), defaultStepRel(), nxtUnique);
 
     tuple[set[str] names, list[str] syncs] lets = syncedInstanceRels(spc, e, "inst", syncDep, top(), ctx);
     lets.names += {"inst"};
@@ -169,7 +169,7 @@ private bool isFrameEvent(Event e) = "<e.name>" == "__frame";
 str translateEventToPred(Spec spc, Event event, str instanceRel, RelMapping rm, TModel tm, set[Spec] allSpecs) {
   int lastUnique = 0;
   int nxtUnique() { lastUnique += 1; return lastUnique; }
-  Context ctx = ctx(rm, tm, allSpecs, defaultCurRel(), defaultStepRel(), nxtUnique);
+  Context ctx = ctx(rm, tm, allSpecs, true, defaultCurRel(), defaultStepRel(), nxtUnique);
 
   list[str] letRels = buildLetVars(spc, event, instanceRel);
   list[str] paramVars = ["step:(cur:id, nxt:id)", "<getLowerCaseSpecName(spc)>: (instance:id)"] + buildParamVars(event, tm);
@@ -183,7 +183,7 @@ str translateEventToPred(Spec spc, Event event, str instanceRel, RelMapping rm, 
 str translateFrameEvent(Spec spc, Event frameEvent, str instRel, RelMapping rm, TModel tm, set[Spec] allSpecs) {
   int lastUnique = 0;
   int nxtUnique() { lastUnique += 1; return lastUnique; }
-  Context ctx = ctx(rm, tm, allSpecs, defaultCurRel(), defaultStepRel(), nxtUnique);
+  Context ctx = ctx(rm, tm, allSpecs, true, defaultCurRel(), defaultStepRel(), nxtUnique);
 
   list[str] letRels = buildLetVars(spc, frameEvent, instRel);
 

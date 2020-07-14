@@ -9,7 +9,7 @@ import util::PathUtil;
 
 import salix::App;
 
-App[TraceVisModel] visCoffeeMachineCheck() = visTrace("MachineIsServing", |home:///workspace/rebel2/examples/CoffeeMachine.rebel|);
+App[TraceVisModel] visCoffeeMachineCheck(str check) = visTrace(check, |home:///workspace/rebel2/examples/CoffeeMachine.rebel|);
 App[TraceVisModel] visHotelCheck(str check) = visTrace(check, |home:///workspace/rebel2/examples/Hotel.rebel|);
 App[TraceVisModel] visRopeBridgeCheck() = visTrace("EverybodyCrossedInTheLeastTime", |home:///workspace/rebel2/examples/RopeBridge.rebel|);
 App[TraceVisModel] visRingLeaderElectionCheck() = visTrace("EventuallyOneIsElected", |home:///workspace/rebel2/examples/RingLeaderElection.rebel|);

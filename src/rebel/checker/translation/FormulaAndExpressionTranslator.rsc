@@ -13,11 +13,13 @@ import Map;
 import ParseTree;
 import util::Maybe;
 
-data Context = ctx(RelMapping rm, TModel tm, set[Spec] allSpecs, str curRel, str stepRel, int () nxtUniquePrefix);
+data Context = ctx(RelMapping rm, TModel tm, set[Spec] allSpecs, bool topLevelLtl, str curRel, str stepRel, int () nxtUniquePrefix);
 
-Context nextCurRel(Context old) = ctx(old.rm, old.tm, old.allSpecs, getNextCurRel(old.curRel), old.stepRel, old.nxtUniquePrefix);
-Context nextStepRel(Context old) = ctx(old.rm, old.tm, old.allSpecs, old.curRel, getNextStepRel(old.stepRel), old.nxtUniquePrefix);
-Context nextCurAndStepRel(Context old) = ctx(old.rm, old.tm, old.allSpecs, getNextCurRel(old.curRel), getNextStepRel(old.stepRel), old.nxtUniquePrefix);
+Context nextCurRel(Context old) = ctx(old.rm, old.tm, old.allSpecs, old.topLevelLtl, getNextCurRel(old.curRel), old.stepRel, old.nxtUniquePrefix);
+Context nextStepRel(Context old) = ctx(old.rm, old.tm, old.allSpecs, old.topLevelLtl, old.curRel, getNextStepRel(old.stepRel), old.nxtUniquePrefix);
+Context nextCurAndStepRel(Context old) = ctx(old.rm, old.tm, old.allSpecs, old.topLevelLtl, getNextCurRel(old.curRel), getNextStepRel(old.stepRel), old.nxtUniquePrefix);
+
+Context flipTopLevelLtl(Context old) = ctx(old.rm, old.tm, old.allSpecs, false, old.curRel, old.stepRel, old.nxtUniquePrefix);
 
 str translate((Formula)`(<Formula f>)`, Context ctx) = "(<translate(f,ctx)>)";
 str translate((Formula)`!<Formula f>`, Context ctx) = "¬ (<translate(f,ctx)>)";
@@ -56,37 +58,55 @@ str translate((Formula)`<Expr lhs> is <Id state>`, Context ctx) {
   };
     
   return "inState[<ctx.curRel>, <specRel><maybeRename(getFieldName(lhs,ctx), "instance")>, <stateRel>]";    
+  //return "inState[cur, <specRel><maybeRename(getFieldName(lhs,ctx), "instance")>, <stateRel>]";    
 }  
 
 str translate((Formula)`eventually <Formula f>`, Context ctx) {
-  str configRel = (ctx.curRel == defaultCurRel()) ? "Config" : "(<ctx.curRel>[config as cur] ⨝ *\<cur,nxt\>(order ∪ loop))[nxt-\>config]";
-  ctx = nextCurAndStepRel(ctx);
-  return "∃ <ctx.curRel> ∈ <configRel> | let <ctx.stepRel> = <ctx.curRel>[config as nxt] ⨝ (order ∪ loop) | <translate(f, ctx)>";
+  //str configRel = (ctx.curRel == defaultCurRel()) ? "Config" : "(<ctx.curRel>[config as cur] ⨝ *\<cur,nxt\>(order ∪ loop))[nxt-\>config]";
+  //ctx = nextCurAndStepRel(ctx);
+  //return "∃ <ctx.curRel> ∈ <configRel> | let <ctx.stepRel> = <ctx.curRel>[config as nxt] ⨝ (order ∪ loop) | <translate(f, ctx)>";
+  str s = ctx.topLevelLtl ? "let cur = first | " : "";
+  ctx = flipTopLevelLtl(ctx);
+  
+  return "<s>(exists cur: (cur[config as cur] |x| *\<cur,nxt\>(order + loop))[nxt-\>config] | let step = cur[config as cur] |x| (order + loop), nxt = step[nxt-\>config] | <translate(f,ctx)>)";
 } 
 
 str translate((Formula)`always <Formula f>`, Context ctx) {
-  str configRel = (ctx.curRel == defaultCurRel()) ? "Config" : "(<ctx.curRel>[config as cur] ⨝ *\<cur,nxt\>(order ∪ loop))[nxt-\>config]";
-  ctx = nextCurAndStepRel(ctx);
-  return "∀ <ctx.curRel> ∈ <configRel> | let <ctx.stepRel> = <ctx.curRel>[config as nxt] ⨝ (order ∪ loop) | <translate(f, ctx)>";
+  //str configRel = (ctx.curRel == defaultCurRel()) ? "Config" : "(<ctx.curRel>[config as cur] ⨝ *\<cur,nxt\>(order ∪ loop))[nxt-\>config]";
+  //ctx = nextCurAndStepRel(ctx);
+  //return "∀ <ctx.curRel> ∈ <configRel> | let <ctx.stepRel> = <ctx.curRel>[config as nxt] ⨝ (order ∪ loop), nxt = (<ctx.stepRel>[nxt-\>cur] |x| (order ∪ loop))[nxt-\>config] | <translate(f, ctx)>";
+  
+  str s = ctx.topLevelLtl ? "let cur = first | " : "";
+  ctx = flipTopLevelLtl(ctx);
+
+  return "<s>(forall cur: (cur[config as cur] |x| *\<cur,nxt\>(order + loop))[nxt-\>config] | let step = cur[config as cur] |x| (order + loop), nxt = step[nxt-\>config] | <translate(f,ctx)>)";
 }
 
 str translate((Formula)`always-last <Formula f>`, Context ctx) {
-  str configRel = (ctx.curRel == defaultCurRel()) ? "Config ∖ last" : "(<ctx.curRel>[config as cur] ⨝ *\<cur,nxt\>(order ∪ loop))[nxt-\>config] ∖ last";
-  ctx = nextCurAndStepRel(ctx);
-  return "∀ <ctx.curRel> ∈ <configRel> | let <ctx.stepRel> = <ctx.curRel>[config as nxt] ⨝ (order ∪ loop) | <translate(f, ctx)>";
+  //str configRel = (ctx.curRel == defaultCurRel()) ? "Config ∖ last" : "(<ctx.curRel>[config as cur] ⨝ *\<cur,nxt\>(order ∪ loop))[nxt-\>config] ∖ last";
+  //ctx = nextCurAndStepRel(ctx);
+  //return "∀ <ctx.curRel> ∈ <configRel> | let <ctx.stepRel> = <ctx.curRel>[config as nxt] ⨝ (order ∪ loop) | <translate(f, ctx)>";
+  str s = ctx.topLevelLtl ? "let cur = first | " : "";
+  ctx = flipTopLevelLtl(ctx);
+
+  return "<s>(forall cur: (cur[config as cur] |x| *\<cur,nxt\>(order + loop))[nxt-\>config] - last | let step = cur[config as cur] |x| (order + loop), nxt = step[nxt-\>config] | <translate(f,ctx)>)";
 }
 
 str translate((Formula)`next <Formula f>`, Context ctx) {
-  newCtx = nextCurAndStepRel(ctx);
+  //newCtx = nextCurAndStepRel(ctx);
+  //
+  //return "let <newCtx.stepRel> = ((order ∪ loop) ⨝ <ctx.curRel>[config as cur]), <newCtx.curRel> = <newCtx.stepRel>[nxt-\>config] | <translate(f, newCtx)>";
+
+  str s = ctx.topLevelLtl ? "let cur = first | " : "";
+  ctx = flipTopLevelLtl(ctx);
   
-  str cons = "let <newCtx.stepRel> = ((order ∪ loop) ⨝ <ctx.curRel>[config as cur]), <newCtx.curRel> = <newCtx.stepRel>[nxt-\>config] | <translate(f, newCtx)>";
-    
-  return cons; 
+  return "<s>(let cur = (cur[config as cur] |x| (order ∪ loop))[nxt-\>config], step = cur[config as cur] |x| (order ∪ loop) | <translate(f,ctx)>)";
 }
 
 str translate((Formula)`first <Formula f>`, Context ctx) {
-  ctx = nextCurRel(ctx);
-  return "let <ctx.curRel> = first | <translate(f, ctx)>";
+  //ctx = nextCurRel(ctx);
+  //return "let <ctx.curRel> = first | <translate(f, ctx)>";
+  return "let cur = first | <translate(f,ctx)>";
 }
 
 str translate((Formula)`<TransEvent event> on <Expr var> <WithAssignments? with>`, Context ctx) {
@@ -211,7 +231,7 @@ AttRes translateAttrExpr((Expr)`(<Expr e>)`, Context ctx) {
   return <r.rels, "(<r.constraint>)">;
 } 
 
-Context replaceCurRel(Context old, str newCurRel) = ctx(old.rm, old.tm, old.allSpecs, "nxt", old.stepRel, old.nxtUniquePrefix);
+Context replaceCurRel(Context old, str newCurRel) = ctx(old.rm, old.tm, old.allSpecs, old.topLevelLtl, "nxt", old.stepRel, old.nxtUniquePrefix);
 
 AttRes translateAttrExpr((Expr)`<Expr e>'`, Context ctx) {
   AttRes r = translateAttrExpr(e, replaceCurRel(ctx, "nxt"));   
@@ -225,13 +245,16 @@ AttRes translateAttrExpr(current:(Expr)`<Id id>`, Context ctx) {
 }
 
 AttRes translateAttrExpr(current:(Expr)`this.<Id id>`, Context ctx) {
+ //str r = "<ctx.rm[current@\loc].relExpr><renameIfNecessary(current, "cur_<id>", ctx)>";
+ //return <{r}, "cur_<id>">;
  str r = "<ctx.rm[current@\loc].relExpr><renameIfNecessary(current, "<ctx.curRel>_<id>", ctx)>";
  return <{r}, "<ctx.curRel>_<id>">;
 }
 
 AttRes translateAttrExpr(current:(Expr)`<Expr spc>[<Id inst>].<Id fld>`, Context ctx) {
- str r = "<ctx.rm[current@\loc].relExpr><renameIfNecessary(current, "<inst>_<fld>", ctx)>";
- return <{r}, "<inst>_<fld>">;
+ str fldName = "<inst>_<fld>_<ctx.nxtUniquePrefix()>";
+ str r = "<ctx.rm[current@\loc].relExpr><renameIfNecessary(current, fldName, ctx)>";
+ return <{r}, fldName>;
 }
 
 AttRes translateAttrExpr(current:(Expr)`<Expr expr>.<Id fld>`, Context ctx) {
@@ -246,6 +269,7 @@ AttRes translateAttrExpr(current:(Expr)`<Expr expr>.<Id fld>`, Context ctx) {
     str newFld = "<fld>";
     switch (role) {
       case fieldId(): newFld = "<ctx.curRel>_<ctx.nxtUniquePrefix()>_<fld>";
+      //case fieldId(): newFld = "cur_<ctx.nxtUniquePrefix()>_<fld>";
       case paramId(): newFld = "param_<ctx.nxtUniquePrefix()>_<fld>";
       case quantVarId(): newFld = "<expr>_<fld>";
     }

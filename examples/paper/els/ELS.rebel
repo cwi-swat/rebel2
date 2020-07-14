@@ -1,0 +1,36 @@
+module paper::els::ELS
+
+import paper::els::Sensors 
+import paper::els::Input
+import paper::els::Timer
+import paper::els::Actuators
+ 
+spec ELS 
+  sensors: SensorValues,
+  leftPitmanArm: PitmanArm,
+  lightSwitch: LightRotarySwitch,
+  harzardLightSwitch: Boolean,
+  daytimeRunningLight: Boolean,
+  ambientLight: Boolean,
+  directionLights: DirectionLights;
+  
+  fact ELS1 = always exists p:PitmanArm, d:DirectionLights | (down7 on p => next startBlinkLeft on d) && (d is blinkLeft => (p is blinkingLeft || p is phbBlinkingLeft));  
+  fact ELS2 = always exists p:PitmanArm, d:DirectionLights | (down5 on p => next startFlashBlinkLeft on d) && (d is flashBlinkLeft => (p is tipBlinkingLeft || p is phbTipBlinkingLeft));
+  fact ELS3 = always exists p:PitmanArm, d:DirectionLights | ((d is flashBlinkLeft && up5 on p) => next stop on d);   
+   
+  states:
+    active -> active: empty;
+  
+config Setup = els: ELS, s: SensorValues, p: PitmanArm, l: LightRotarySwitch, d: DirectionLights,
+               els with leftPitmanArm = p, sensors = s, lightSwitch = l, directionLights = d;
+
+config BlinkSetup = p:PitmanArm, d:DirectionLights, 
+  els: ELS forget sensors, lightSwitch is active 
+  with leftPitmanArm = p, directionLights = d;
+
+assert SetupWorks = eventually exists els:ELS | els is initialized;
+run SetupWorks from Setup in max 0 steps;   
+
+assert CheckELS1 = eventually exists p:PitmanArm, d:DirectionLights | down7 on p && (eventually startBlinkLeft on d);
+run CheckELS1 from BlinkSetup in max 5 steps;
+

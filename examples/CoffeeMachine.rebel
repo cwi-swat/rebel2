@@ -60,6 +60,6 @@ assert CanServeNormalCoffee
 run CanServeNormalCoffee from InitialMachine in max 10 steps;
   
 assert MachineWillServeOrCancel = always exists m: CoffeeMachine | (m is acceptingPayment => eventually m is serve || cancel on m);    
-run MachineWillServeOrCancel from InitialMachine in max 7 steps with infinite trace;
+check MachineWillServeOrCancel from InitialMachine in max 7 steps with infinite trace;
 
     

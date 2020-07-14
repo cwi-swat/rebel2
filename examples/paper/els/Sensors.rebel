@@ -1,0 +1,35 @@
+module paper::els::Sensors
+
+spec KeyState[NOT_INSERTED, INSERTED, IN_IGNITION_ON_POS]
+
+spec CameraState[READY,DIRTY,NOT_READY]
+
+spec Boolean[TRUE,FALSE]
+  
+spec SensorValues 
+  key: KeyState,
+  engineOn: Boolean,
+  brightness: Integer,
+  brakePedalDeflection: Integer,
+  batteryVoltage: Integer,
+  steeringWheelAngle: Integer,
+  allDoorsOpen: Boolean,
+  oncommingTraffic: Boolean,
+  cameraState: CameraState,
+  currentSpeed: Integer, // Unit = 0.1 km/h
+  reverseGear: Boolean;
+  
+  fact SensorsRanges = always forall s:SensorValues | 
+    s.brightness > 0 && s.brightness < 10000 &&
+    s.brakePedalDeflection >= 0 && s.brakePedalDeflection <= 225 &&
+    s.batteryVoltage >= 0 && s.batteryVoltage <= 500 &&
+    s.currentSpeed >= 0 && s.currentSpeed <= 5000 &&
+    s.steeringWheelAngle >= 0 && s.steeringWheelAngle <= 1022;
+
+      
+ config SensorData = s:SensorValues;
+ 
+ assert SomeSensorValues = eventually exists s:SensorValues | s.currentSpeed != 0;
+ 
+ run SomeSensorValues from SensorData in max 0 steps;
+ 

@@ -32,6 +32,10 @@ spec FlashLight
 assert EverybodyCrossedInTheLeastTime
   = eventually ((forall a: Adventurer | a is far) && (exists fl: FlashLight | fl.totalTimeSpend = 17));
 
+assert CantGoquicker
+  = eventually ((forall a: Adventurer | a is far) && (exists fl: FlashLight | fl.totalTimeSpend < 17));
+
+
 config EverybodyNear
   = a1,a2,a3,a4: Adventurer is near, 
     fl: FlashLight is near with totalTimeSpend = 0,
@@ -40,5 +44,6 @@ config EverybodyNear
     a3 with timeToCross = 5,
     a4 with timeToCross = 10;
   
-run EverybodyCrossedInTheLeastTime from EverybodyNear in max 6 steps;  
+run EverybodyCrossedInTheLeastTime from EverybodyNear in max 6 steps;
+run CantGoquicker from EverybodyNear in max 10 steps;  
 

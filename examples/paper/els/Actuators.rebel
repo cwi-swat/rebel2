@@ -1,0 +1,55 @@
+module paper::els::Actuators
+
+import paper::els::Sensors;
+
+spec Light[ON,OFF]
+
+spec DirectionLights
+  sensors: SensorValues,
+  frontLeft: Light,
+  frontRight: Light,
+  exteriorLeft: Light,
+  exteriorRight: Light,
+  rearLeft: Light,
+  rearRight: Light;
+  
+  internal event startBlinkLeft() 
+    post: this.frontLeft' = Light[ON], this.exteriorLeft' = Light[ON], this.rearLeft' = Light[ON];
+
+  internal event startFlashBlinkLeft() 
+    post: this.frontLeft' = Light[ON], this.exteriorLeft' = Light[ON], this.rearLeft' = Light[ON];
+  
+  internal event startBlinkRight() 
+    post: this.frontRight' = Light[ON], this.exteriorRight' = Light[ON], this.rearRight' = Light[ON];
+
+  internal event startFlashBlinkRight() 
+    post: this.frontRight' = Light[ON], this.exteriorRight' = Light[ON], this.rearRight' = Light[ON];
+  
+  internal event startHazardLights()
+    post: this.frontRight' = Light[ON], this.exteriorRight' = Light[ON], this.rearRight' = Light[ON],
+          this.frontLeft' = Light[ON], this.exteriorLeft' = Light[ON], this.rearLeft' = Light[ON];
+    
+  internal event stop()
+    post: this.frontLeft' = Light[OFF], this.frontRight' = Light[OFF],
+          this.exteriorLeft' = Light[OFF], this.exteriorRight' = Light[OFF],
+          this.rearLeft' = Light[OFF], this.rearRight' = Light[OFF];
+          
+  states:
+    off -> blinkLeft: startBlinkLeft;
+    off -> flashBlinkLeft: startFlashBlinkLeft;
+    flashBlinkLeft -> off: stop;
+    flashBlinkLeft -> blinkLeft: startBlinkLeft;
+    flashBlinkLeft -> hazardLightsOn: startHazardLights;
+    blinkLeft -> off: stop;
+    blinkLeft -> hazardLightsOn: startHazardLights;
+
+    off -> blinkRight: startBlinkRight;
+    off -> flashBlinkRight: startFlashBlinkRight;
+    flashBlinkRight -> off: stop;
+    flashBlinkRight -> blinkRight: startBlinkRight;
+    flashBlinkRight -> hazardLightsOn: startHazardLights;
+    blinkRight -> off: stop;
+    blinkRight -> hazardLightsOn: startHazardLights;
+    
+    off -> hazardLightsOn: startHazardLights;
+    hazardLightsOn -> off: stop;

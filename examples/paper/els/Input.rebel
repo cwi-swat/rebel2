@@ -1,0 +1,86 @@
+module paper::els::Input
+
+import paper::els::Actuators
+
+spec HazardLightSwitch
+  dirLights: DirectionLight;
+  
+  event turnOn() 
+    post: this.dirLights.startHazardLights();
+  
+  event turnOff()
+    post: this.dirLights.stop();
+  
+  states:
+    off -> onn: turnOn;
+    onn -> off: turnOff;
+
+spec LightRotarySwitch
+  event change()
+  
+  states:
+    off -> auto: change;
+    auto -> alwaysOn: change;
+    alwaysOn -> auto: change;
+    auto -> off: change;
+
+spec PitmanArm
+  dirLights: DirectionLights;
+  
+  event back()
+  event forward()
+  
+  event up5()
+    pre: this.dirLights is flashBlinkLeft, 
+         this.dirLights.stop();
+         
+  event up7()
+    pre: this.dirLights is blinkLeft, 
+         this.dirLights.stop();
+
+  event down5() 
+    pre: this.dirLights is off, 
+         this.dirLights.startFlashBlinkLeft();
+  
+  event down7()
+    pre: (this.dirLights is off || this.dirLights is flashBlinkLeft), 
+         this.dirLights.startBlinkLeft();
+  
+  states:
+    neutral -> phb: back;
+    phb -> neutral: forward;
+    phb -> phbTipBlinkingLeft: down5;
+    phb -> phbBlinkingLeft: down7;
+    phbBlinkingLeft -> neutral: up7;
+    phbTipBlinkingLeft -> phbBlinkingLeft: down7;
+    
+    phb -> phbTipBlinkingRight: up5;
+    phb -> phbBlinkingRight: up7;
+    phbTipBlinkingRight -> phbBlinkingRight: up7;
+    phbBlinkingRight -> neutral: up7;
+    neutral -> tmpPhb: forward;
+    tmpPhb -> neutral: back;
+    
+    neutral -> tipBlinkingLeft: down5;
+    neutral -> blinkingLeft: down7;
+    tipBlinkingLeft -> blinkingLeft: down7;
+    tipBlinkingLeft -> neutral: up5;
+    blinkingLeft -> neutral: up7;
+    neutral -> tipBlinkingRight: up5;
+    neutral -> blinkingRight: up7;
+    tipBlinkingRight -> blinkingRight: up7;
+    blinkingRight -> neutral: down7;
+    
+ config Simple = d:DirectionLights is off, p: PitmanArm is neutral with dirLights = d;
+ 
+ assert ELS1 = always exists d:DirectionLights, p: PitmanArm | (down7 on p => next d is blinkLeft);
+ assert ELS1_sim = eventually exists d:DirectionLights, p: PitmanArm | (down7 on p && next d is blinkLeft);
+ check ELS1 from Simple in max 5 steps with infinite trace;  
+ run ELS1_sim from Simple in max 2 steps with infinite trace;
+ 
+ assert ELS2 = exists d:DirectionLights, p: PitmanArm | always (down5 on p => next d is flashBlinkLeft);  
+ assert ELS2_sim = exists d:DirectionLights, p: PitmanArm | eventually down5 on p && next d is flashBlinkLeft;  
+ check ELS2 from Simple in max 4 steps with infinite trace;
+ run ELS2_sim from Simple in max 2 steps with infinite trace;
+ 
+ assert ELS3 = exists d:DirectionLights, p: PitmanArm, h: HazardLightSwitch | always (d is flashBlinkLeft && (up5 on p ||  

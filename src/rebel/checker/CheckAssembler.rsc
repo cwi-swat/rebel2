@@ -255,14 +255,16 @@ private Spec filterFacts(Spec spc, set[loc] uses) {
 }
 
 private set[Spec] filterNonReferencedSpecs(Graph[Spec] spcDep, TModel tm, Config cfg) {
-  set[set[Spec]] components = connectedComponents(spcDep);
+  //set[set[Spec]] components = stronglyConnectedComponents(spcDep); //connectedComponents(spcDep);
    
-  set[Spec] referencedSpcs = {lookupSpecByRef(tm.useDef[spc@\loc], spcDep) | (InstanceSetup)`<{Id ","}+ n> : <Type spc> <InState? _> <WithAssignments? _>` <- cfg.instances};
-  set[Spec] filtered = referencedSpcs;
+  set[Spec] referencedSpcs = {lookupSpecByRef(tm.useDef[spc@\loc], spcDep) | (InstanceSetup)`<{Id ","}+ _> : <Type spc> <InState? _> <WithAssignments? _>` <- cfg.instances};
+  set[Spec] reachable = reach(spcDep, referencedSpcs);
+  
+  set[Spec] filtered = referencedSpcs + reachable;
 
-  for (Spec s <- referencedSpcs, set[Spec] comp <- components, s in comp) {
-    filtered += comp;
-  }
+  //for (Spec s <- referencedSpcs, set[Spec] comp <- components, s in comp) {
+  //  filtered += comp;
+  //}
   
   if (filtered == {}) {  
     throw "Unable to find all referenced specs";
