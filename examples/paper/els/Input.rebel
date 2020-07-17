@@ -3,7 +3,7 @@ module paper::els::Input
 import paper::els::Actuators
 
 spec HazardLightSwitch
-  dirLights: DirectionLight;
+  dirLights: DirectionLights;
   
   event turnOn() 
     post: this.dirLights.startHazardLights();
@@ -14,15 +14,6 @@ spec HazardLightSwitch
   states:
     off -> onn: turnOn;
     onn -> off: turnOff;
-
-spec LightRotarySwitch
-  event change()
-  
-  states:
-    off -> auto: change;
-    auto -> alwaysOn: change;
-    alwaysOn -> auto: change;
-    auto -> off: change;
 
 spec PitmanArm
   dirLights: DirectionLights;
@@ -83,4 +74,4 @@ spec PitmanArm
  check ELS2 from Simple in max 4 steps with infinite trace;
  run ELS2_sim from Simple in max 2 steps with infinite trace;
  
- assert ELS3 = exists d:DirectionLights, p: PitmanArm, h: HazardLightSwitch | always (d is flashBlinkLeft && (up5 on p ||  
+ //assert ELS3 = exists d:DirectionLights, p: PitmanArm, h: HazardLightSwitch | always (d is flashBlinkLeft && (up5 on p ||  

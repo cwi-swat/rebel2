@@ -23,6 +23,7 @@ data Msg
   | hideNxt()
   | prev()
   | changeFilter(str selected)
+  | toggleConstants()
   ;
 
 App[TraceVisModel] createTraceVis(str check, Trace trace) {
@@ -116,7 +117,7 @@ void displayVisualTrace(TraceVisModel m) {
 void displayFiltersAndOptions(TraceVisModel m) {
   form(class("form-inline"), () {
     for (str inst <- m.filters) {
-        div(class("form-group"), () {
+      div(class("form-group"), () {
         label(\for("<inst>"),"<inst>");
         select(class("form-control"), id("<inst>"), onChange(changeFilter), () {
           option(selected(m.filters[inst] == show()), \value("<inst>§show"), "Show");
@@ -125,6 +126,9 @@ void displayFiltersAndOptions(TraceVisModel m) {
         });
       });
     }
+    div(class("form-group"), () {
+      button(\type("button"), onClick(toggleConstants()), class("btn btn-primary"),"Hide/show constants");
+    });
   });
 }
 
@@ -193,6 +197,11 @@ TraceVisModel update(Msg msg, TraceVisModel m) {
     case changeFilter(str selected): {
       list[str] vals = split("§", selected);
       m.filters[vals[0]] = make(#Filter, vals[1], []);
+    }
+    case toggleConstants(): {
+      for (str s <- m.filters, s == toUpperCase(s)) {
+        m.filters[s] = hide();
+      }
     }
   }
   

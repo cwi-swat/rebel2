@@ -6,6 +6,7 @@ import rebel::lang::TypeChecker;
 import rebel::lang::DependencyAnalyzer;
 
 import rebel::checker::ModelChecker;
+import rebel::checker::ExpectationRunner;
 import rebel::checker::Trace;
  
 import util::IDE;
@@ -54,6 +55,44 @@ set[Contribution] getRebelContributions() {
       } 
     } 
   }
+
+  void runExpectation(Module m, loc selection, int solverTimeout = 30 * 1000) {
+    if (/Check chk <- m.parts, isContainedIn(selection, chk@\loc)) {
+      println("Checking expectation");
+      
+      PathConfig pcfg = defaultPathConfig(m@\loc.top);
+      TypeCheckerResult tr = typeCheckModule(m);
+      
+      ExpectationResult r = checkExpectation(chk, m, tr.tm, tr.depGraph, pcfg = pcfg, saveIntermediateFiles = false, solverTimeout = solverTimeout);
+      
+      println();
+      println("===========================");
+      
+      switch (r) {
+        case asExpected(str c): println("Check `<c>` as expected");
+        case notAsExpected(str c, str reason): println("Check `<c>` NOT as expected: <reason>");
+      }
+    } 
+  }
+
+  void runAllExpectations(Module m, loc selection, int solverTimeout = 30 * 1000) {
+    println("Checking all expectation in module");
+    
+    PathConfig pcfg = defaultPathConfig(m@\loc.top);
+    TypeCheckerResult tr = typeCheckModule(m);
+    
+    list[ExpectationResult] results = checkExpectations(m, tr.tm, tr.depGraph, pcfg = pcfg, saveIntermediateFiles = false, solverTimeout = solverTimeout);
+
+    println();
+    println("===========================");
+    
+    for (r <- results) {
+      switch (r) {
+        case asExpected(str c): println("Check `<c>` as expected");
+        case notAsExpected(str c, str reason): println("Check `<c>` NOT as expected: <reason>");
+      }
+    }
+  }
   
   Content showModuleVis(Module _, loc file) = createStateMachineVis(file.top);
 
@@ -82,7 +121,9 @@ set[Contribution] getRebelContributions() {
         interaction("Run checker (30s timeout)", runCheck),
         interaction("Run checker (custom timeout)", Content (Module m, loc selection) { 
           return runCheck(m,selection, solverTimeout = promptForInt("Enter the desired solver timeout in seconds\n(0 means no timeout)") * 1000);
-        })
+        }),
+        action("Check expectation", runExpectation),
+        action("Check all expectations of module", runAllExpectations)
       ])
     )   
   };

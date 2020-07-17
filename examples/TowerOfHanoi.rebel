@@ -4,11 +4,7 @@ spec Disc
   size: Integer;
 
   fact DistinctSizes = always forall d1,d2: Disc | (d1 != d2 => d1.size != d2.size); 
-  
-  // tmp fix, currently field values are not framed if there are no states and transitions
-  states:
-    playing -> playing: empty; 
-  /////////////
+  fact DiscsAreImmutable = always-last forall d:Disc | d.size' = d.size;
   
 spec Peg
   discs: set Disc;

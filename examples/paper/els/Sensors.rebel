@@ -1,6 +1,6 @@
 module paper::els::Sensors
 
-spec KeyState[NOT_INSERTED, INSERTED, IN_IGNITION_ON_POS]
+spec KeyState[NOT_INSERTED, INSERTED, IN_IGNITION_ON]
 
 spec CameraState[READY,DIRTY,NOT_READY]
 

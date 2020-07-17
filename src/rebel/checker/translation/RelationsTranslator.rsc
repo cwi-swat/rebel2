@@ -194,27 +194,29 @@ private str getParamHeaderDef(FormalParam p, Config cfg) = "<p.name>:<convertTyp
 
 private str buildFieldTuples(Spec spc, Field f, Config cfg, TModel tm) {
   list[str] lowerBound = [];
-  for (<str inst, "<f.name>", str val> <- cfg.initialValues[spc]) {
+  for (<str inst, "<f.name>", str val> <- cfg.initialValues[spc], val != "__none") {
     lowerBound += "\<c1,<inst>,<val>\>";
   }
   
   list[str] upperBound = [];  
   for (str inst <- lookupInstances(spc, cfg.instances<0,1>), int i <- [1..cfg.numberOfTransitions+1]) {
-    if (isPrim(f.tipe, tm)) {
-      upperBound += "\<c<i>,<inst>,?\>";
-    } else if (isSetOfInt(f.tipe, tm)) {
-      for (int j <- [1..cfg.maxSizeIntegerSets+1]) {
-        upperBound += "\<c<i>,<inst>,<inst>_elem<j>\>";
-      }
-    } else if (isSetOfString(f.tipe, tm)) {
-      for (int j <- [1..cfg.maxSizeStringSets+1]) {
-        upperBound += "\<c<i>,<inst>,<inst>_elem<j>\>";
-      }
-    }else { // Set of other specification
-      for (str otherInst <- getInstancesOfType(f.tipe, cfg.instances<0,1>, tm)) {
-        upperBound += "\<c<i>,<inst>,<otherInst>\>";
-      }
-    } 
+    if (!(i == 1 && /<inst, "<f.name>", "__none"> := cfg.initialValues[spc])) { // skip when the initial value should be 'none' or '{}'
+      if (isPrim(f.tipe, tm)) {
+        upperBound += "\<c<i>,<inst>,?\>";
+      } else if (isSetOfInt(f.tipe, tm)) {
+        for (int j <- [1..cfg.maxSizeIntegerSets+1]) {
+          upperBound += "\<c<i>,<inst>,<inst>_elem<j>\>";
+        }
+      } else if (isSetOfString(f.tipe, tm)) {
+        for (int j <- [1..cfg.maxSizeStringSets+1]) {
+          upperBound += "\<c<i>,<inst>,<inst>_elem<j>\>";
+        }
+      }else { // Set of other specification
+        for (str otherInst <- getInstancesOfType(f.tipe, cfg.instances<0,1>, tm)) {
+          upperBound += "\<c<i>,<inst>,<otherInst>\>";
+        }
+      } 
+    }
   }
   
   if (lowerBound != []) {

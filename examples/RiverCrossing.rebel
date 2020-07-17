@@ -1,7 +1,7 @@
 module RiverCrossing
 
 spec Cargo
-  eats: Cargo;
+  eats: ?Cargo;
   
   internal event cross()
        
@@ -27,7 +27,7 @@ spec Farmer
     far -> near: crossAlone, crossToNear;
 
 config Game = f: Farmer is near, fox, chicken, grain: Cargo is near,
-              fox with eats = chicken, chicken with eats = grain, grain with eats = grain;  
+              fox with eats = chicken, chicken with eats = grain, grain with eats = none;  
 
 assert CanGetEverybodyAcross = eventually forall f:Farmer, c:Cargo | f is far && c is far;  
 

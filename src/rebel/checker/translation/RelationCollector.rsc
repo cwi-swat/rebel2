@@ -149,8 +149,9 @@ void analyse((Formula)`next <Formula f>`, AnalysisContext ctx) = analyse(f,ctx);
 void analyse((Formula)`first <Formula f>`, AnalysisContext ctx) = analyse(f,ctx);
 void analyse((Formula)`last <Formula f>`, AnalysisContext ctx) = analyse(f,ctx);
 
-void analyse((Formula)`<Formula frst> until <Formula scnd>`, AnalysisContext ctx) {
- analyse(f,nextCurRel(ctx));
+void analyse((Formula)`<Formula u> until <Formula r>`, AnalysisContext ctx) {
+ analyse(u,ctx);
+ analyse(r,ctx);
 }
 
 void analyse((Formula)`<TransEvent event> on <Expr var> <WithAssignments? w>`, AnalysisContext ctx) { 
@@ -187,7 +188,6 @@ void analyse(current:(Id)`<Id var>`, AnalysisContext ctx) {
     case paramId(): ctx.add(current@\loc, ctx.lookup(def.defined));
     case quantVarId(): ctx.add(current@\loc, <"<var>", ctx.lookup(def.defined).heading>);
     case fieldId(): ctx.add(current@\loc, <"(<getSpecName(current@\loc,ctx)><capitalize("<var>")> ⨝ <ctx.curRel>)", ("instance":idDom(), "<var>": type2Dom(getType(current@\loc,ctx)))>);
-    case fieldId(): ctx.add(current@\loc, <"(<getSpecName(current@\loc,ctx)><capitalize("<var>")> ⨝ cur)", ("instance":idDom(), "<var>": type2Dom(getType(current@\loc,ctx)))>);
     case specId(): ctx.add(current@\loc, <"(Instance ⨝ <capitalize("<var>")>)[instance]", ("instance":idDom())>);
     case specInstanceId(): ctx.add(current@\loc, <"<getSpecName(current@\loc,ctx)>_<var>", ("instance":idDom())>);
     default: throw "Id expression at `<current@\loc>` with role `<def.idRole>` is used in a way not yet handled by the relation analyser";        

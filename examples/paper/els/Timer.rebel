@@ -1,18 +1,12 @@
 module paper::els::Timer
 
-spec Timer[NOW*]
+spec Timer[NOW]
   timepast: Integer;
+    
+  fact TimeMovesForward = always-last forall t:Timer | t.timepast' > t.timepast;
+  fact TimeIsPositive = always forall t:Timer | t.timepast >= 0;
   
-  event timeFlowsForward()
-    post: this.timepast' > this.timepast;
-  
-  fact TimeMovesForward = always-last Timer[NOW].timepast' > Timer[NOW].timepast;
-  fact TimeIsPositive = always Timer[NOW].timepast >= 0;
-  
-  states:
-    active->active: timeFlowsForward; 
-  
-assert TimeCannotGoBackwards = eventually timeFlowsForward on Timer[NOW];
+assert TimeCannotGoBackwards = eventually exists t:Timer | t.timepast > 0;
 
 config SingletonTimer = t:Timer;
 

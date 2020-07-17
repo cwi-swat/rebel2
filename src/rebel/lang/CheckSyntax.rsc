@@ -48,7 +48,7 @@ syntax TransEvent
   ;
 
 syntax Check 
-  = Command cmd Id name "from" Id config "in" SearchDepth depth Objectives? objs ";"
+  = Command cmd Id name "from" Id config "in" SearchDepth depth Objectives? objs Expect? expect";"
   ;
 
 syntax Command
@@ -70,6 +70,15 @@ syntax Objective
   | "infinite" "trace"
   | "finite" "trace"
   ;
+
+syntax Expect
+  = "expect" ExpectResult
+  ;
+  
+syntax ExpectResult
+  = "trace"
+  | "no" "trace"
+  ;  
   
 keyword Keywords 
   = "config"

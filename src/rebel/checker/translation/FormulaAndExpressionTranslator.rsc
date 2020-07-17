@@ -92,6 +92,19 @@ str translate((Formula)`always-last <Formula f>`, Context ctx) {
   return "<s>(forall cur: (cur[config as cur] |x| *\<cur,nxt\>(order + loop))[nxt-\>config] - last | let step = cur[config as cur] |x| (order + loop), nxt = step[nxt-\>config] | <translate(f,ctx)>)";
 }
 
+str translate((Formula)`<Formula u> until <Formula r>`, Context ctx) {
+  str s = ctx.topLevelLtl ? "let cur = first | " : "";
+  ctx = flipTopLevelLtl(ctx);
+  
+  return "<s>
+         '  (((no loop || (exists goal: (cur[config as cur] ⨝ *\<cur,nxt\>order)[nxt-\>config] | (let cur = goal, step = cur[config as cur] |x| (order + loop), nxt = step[nxt-\>config] | <translate(r,ctx)>))) =\>
+         '    (exists goal: (cur[config as cur] ⨝ *\<cur,nxt\>order)[nxt-\>config] | (let cur = goal, step = cur[config as cur] |x| (order + loop), nxt = step[nxt-\>config] | 
+         '      (forall cur: ((cur[config-\>cur] ⨝ *\<cur,nxt\>order)[nxt-\>config] ∩ (goal[config-\>nxt] ⨝ ^\<cur,nxt\>order)[cur-\>config]) | (let step = cur[config as cur] |x| (order + loop), nxt = step[nxt-\>config] | <translate(u,ctx)>)))))
+         '  && ((not (no loop || (exists goal: (cur[config as cur] ⨝ *\<cur,nxt\>order)[nxt-\>config] | (let cur = goal, step = cur[config as cur] |x| (order + loop), nxt = step[nxt-\>config] | <translate(r,ctx)>)))) =\>
+         '    (exists goal: (cur[config as cur] ⨝ *\<cur,nxt\>(order+loop))[nxt-\>config] | (let cur = goal, step = cur[config as cur] |x| (order + loop), nxt = step[nxt-\>config] |
+         '      (forall cur: (((cur[config-\>cur] ⨝ *\<cur,nxt\>order)[nxt-\>config] + (goal[config-\>nxt] ⨝ ^\<cur,nxt\>order)[cur-\>config]) & (last[config-\>cur] |x| *\<cur,nxt\>order)[nxt-\>config]) | (let step = cur[config as cur] |x| (order + loop), nxt = step[nxt-\>config] | <translate(u,ctx)>))))))";
+}
+
 str translate((Formula)`next <Formula f>`, Context ctx) {
   //newCtx = nextCurAndStepRel(ctx);
   //
@@ -100,7 +113,7 @@ str translate((Formula)`next <Formula f>`, Context ctx) {
   str s = ctx.topLevelLtl ? "let cur = first | " : "";
   ctx = flipTopLevelLtl(ctx);
   
-  return "<s>(let cur = (cur[config as cur] |x| (order ∪ loop))[nxt-\>config], step = cur[config as cur] |x| (order ∪ loop) | <translate(f,ctx)>)";
+  return "<s>(let cur = (cur[config as cur] |x| (order ∪ loop))[nxt-\>config], step = cur[config as cur] |x| (order ∪ loop) | some cur && (<translate(f,ctx)>))";
 }
 
 str translate((Formula)`first <Formula f>`, Context ctx) {
@@ -269,9 +282,8 @@ AttRes translateAttrExpr(current:(Expr)`<Expr expr>.<Id fld>`, Context ctx) {
     str newFld = "<fld>";
     switch (role) {
       case fieldId(): newFld = "<ctx.curRel>_<ctx.nxtUniquePrefix()>_<fld>";
-      //case fieldId(): newFld = "cur_<ctx.nxtUniquePrefix()>_<fld>";
       case paramId(): newFld = "param_<ctx.nxtUniquePrefix()>_<fld>";
-      case quantVarId(): newFld = "<expr>_<fld>";
+      case quantVarId(): newFld = "<expr>_<fld>_<ctx.nxtUniquePrefix()>";
     }
     
     r = "<r><renameIfNecessary(current, newFld, ctx)>";

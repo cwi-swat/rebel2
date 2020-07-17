@@ -81,8 +81,11 @@ private str machineOnlyHasValuesWhenInitialized(set[Spec] spcs, TModel tm) {
         case <true,false>:  fldCons += "(((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one <relName> ⨝ c ⨝ inst)";
         case <false,false>: {
           fldCons += "(no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no <relName> ⨝ c ⨝ inst)";
-          if (setType(_) !:= getType(f, tm) && optionalType(_) !:= getType(f, tm)) {
-            fldCons += "(((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one <relName> ⨝ c ⨝ inst)";
+          
+          switch(getType(f, tm)) {
+            case optionalType(_): fldCons += "(((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ lone <relName> ⨝ c ⨝ inst)";
+            case setType(_): ;
+            default: fldCons += "(((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one <relName> ⨝ c ⨝ inst)";
           }
         }
       }

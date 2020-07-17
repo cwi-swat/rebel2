@@ -38,6 +38,7 @@ spec Process
   states:
     notElected -> notElected: send, received::lower, received::higher; 
     notElected -> elected: received::elected; 
+    elected->elected: empty;
            
 // ---------------------------
     

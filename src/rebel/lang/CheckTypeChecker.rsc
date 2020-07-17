@@ -78,7 +78,7 @@ void collect(current: (InstanceSetup)`<Id label> <WithAssignments assignments>`,
   
   for (/assign:(Assignment)`<Id fieldName> = <Lit val>` := assignments) {
     c.useViaType(label, fieldName, {fieldId()});
-    c.requireEqual(fieldName, val, error(assign, "Field is of type %t, but assigned value is of type %t", fieldName, val)); 
+    c.requireSubType(fieldName, val, error(assign, "Field is of type %t, but assigned value is of type %t", fieldName, val)); 
           
     collect(val, c);
   }  
@@ -177,7 +177,7 @@ void collect(current:(Assignment)`<Id name> = <Expr val>`, Collector c) {
   collect(val,c);
 }
 
-void collect(current:(Check)`<Command cmd> <Id assrt> from <Id config> in <SearchDepth depth> <Objectives? objs>;`, Collector c) {
+void collect(current:(Check)`<Command cmd> <Id assrt> from <Id config> in <SearchDepth depth> <Objectives? objs> <Expect? _>;`, Collector c) {
   c.enterScope(current); 
     c.use(assrt, {assertId()});
     c.use(config, {configId()});
