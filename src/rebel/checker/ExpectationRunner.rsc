@@ -15,12 +15,12 @@ import IO;
 
 data ExpectationResult
   = asExpected(str check)
-  | notAsExpected(str check, str message)
+  | notAsExpected(str check, str message, Trace trace)
   ;
 
 list[ExpectationResult] checkExpectations(Module m, TModel tm, Graph[RebelDependency] deps, PathConfig pcfg = defaultPathConfig(m@\loc.top), bool saveIntermediateFiles = true, int solverTimeout = 30 * 1000) 
   = [checkExpectation(chk,m,tm,deps,pcfg=pcfg,saveIntermediateFiles=saveIntermediateFiles, solverTimeout=solverTimeout) | 
-      /chk:(Check)`check <Id name> from <Id _> in <SearchDepth _> <Objectives? _> <Expect expect>;` := m.parts];
+      /chk:(Check)`<Command _> <Id name> from <Id _> in <SearchDepth _> <Objectives? _> <Expect expect>;` := m.parts];
 
 ExpectationResult checkExpectation(Check chk, Module m, TModel tm, Graph[RebelDependency] deps, PathConfig pcfg = defaultPathConfig(m@\loc.top), bool saveIntermediateFiles = true, int solverTimeout = 30 * 1000) {
   if (/Expect expect := chk) {
@@ -33,13 +33,15 @@ ExpectationResult checkExpectation(Check chk, Module m, TModel tm, Graph[RebelDe
     if (/(ExpectResult)`no trace` := expect) {
       switch (foundTrace) {
         case noTrace(noSolutionFound()): return asExpected("<chk.name>");
-        case noTrace(solverTimeout()): return notAsExpected("<chk.name>", "Time out");
-        default: return notAsExpected("<chk.name>", "Trace found while no trace is expected");
+        case t:noTrace(solverTimeout()): return notAsExpected("<chk.name>", "Time out", t);
+        case t:step(_,_,_): return notAsExpected("<chk.name>", "Trace found while no trace is expected", t);
+        case t:goal(_): return notAsExpected("<chk.name>", "Trace found while no trace is expected", t);
+        case t:goalInfiniteTrace(_,_,_): return notAsExpected("<chk.name>", "Trace found while no trace is expected", t);
       }
     } else {
       switch (foundTrace) {
-        case noTrace(noSolutionFound()): return notAsExpected("<chk.name>","No trace found while trace is expected");
-        case noTrace(solverTimeout()): return notAsExpected("<chk.name>", "Time out");
+        case t:noTrace(noSolutionFound()): return notAsExpected("<chk.name>","No trace found while trace is expected", t);
+        case t:noTrace(solverTimeout()): return notAsExpected("<chk.name>", "Time out", t);
         default: return asExpected("<chk.name>");      
       }    
     }  

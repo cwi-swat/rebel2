@@ -1,6 +1,8 @@
 module paper::els::Input
 
 import paper::els::Actuators
+import paper::els::Timer
+import paper::els::Sensors
 
 spec HazardLightSwitch
   dirLights: DirectionLights;
@@ -16,62 +18,70 @@ spec HazardLightSwitch
     onn -> off: turnOff;
 
 spec PitmanArm
+  sensors: SensorValues,
   dirLights: DirectionLights;
   
-  event back()
-  event forward()
+  event startTipBlinkLeft()
+    pre: if this.sensors.key = KeyState[IN_IGNITION_ON] then this.dirLights.startFlashBlinkLeft() else this.dirLights.skip();
+      
+  event startTipBlinkRight()
+    pre: if this.sensors.key = KeyState[IN_IGNITION_ON] then this.dirLights.startFlashBlinkRight() else this.dirLights.skip(); 
+    
+  event releaseArm()
   
-  event up5()
-    pre: this.dirLights is flashBlinkLeft, 
-         this.dirLights.stop();
-         
-  event up7()
-    pre: this.dirLights is blinkLeft, 
-         this.dirLights.stop();
+  event holdArm()
+    variant left
+      pre: if this.sensors.key = KeyState[IN_IGNITION_ON] then this.dirLights.startBlinkLeft() else this.dirLights.skip(); 
+      
+    variant right
+      pre: if this.sensors.key = KeyState[IN_IGNITION_ON] then this.dirLights.startBlinkRight() else this.dirLights.skip(); 
+  
+  event startBlink()
+    variant left
+      pre: if this.sensors.key = KeyState[IN_IGNITION_ON] then this.dirLights.startBlinkLeft() else this.dirLights.skip();
+    variant right
+      pre: if this.sensors.key = KeyState[IN_IGNITION_ON] then this.dirLights.startBlinkRight() else this.dirLights.skip();
+  
+  event stop()
+    pre: this.dirLights.stop();
+  
+  fact ReleaseArmIfTipBlinkingLeft = exists p: PitmanArm, d: DirectionLights, s:SensorValues | 
+    always ((s.key = KeyState[IN_IGNITION_ON] && startTipBlinkLeft on p) => 
+      if (Timer[NOW].timepast' - Timer[NOW].timepast < 500)
+        then (next releaseArm on p)
+        else (next holdArm on p || (next holdArm on p))
+      );
+      
+  fact ReleaseArmIfTipBlinkingRight = exists p: PitmanArm, d: DirectionLights | 
+    always ((startTipBlinkRight on p && d.cycle = 0 && next (p is tipBlinkingRight && flashBlink on d && next flashBlink on d)) => next holdArm on p);
 
-  event down5() 
-    pre: this.dirLights is off, 
-         this.dirLights.startFlashBlinkLeft();
-  
-  event down7()
-    pre: (this.dirLights is off || this.dirLights is flashBlinkLeft), 
-         this.dirLights.startBlinkLeft();
-  
   states:
-    neutral -> phb: back;
-    phb -> neutral: forward;
-    phb -> phbTipBlinkingLeft: down5;
-    phb -> phbBlinkingLeft: down7;
-    phbBlinkingLeft -> neutral: up7;
-    phbTipBlinkingLeft -> phbBlinkingLeft: down7;
+    neutral -> tipBlinkingLeft: startTipBlinkLeft;
+    tipBlinkingLeft -> neutral: releaseArm;
+    tipBlinkingLeft -> tipBlinkingLeft: holdArm::left; 
+
+    neutral -> tipBlinkingRight: startTipBlinkRight;
+    tipBlinkingRight -> neutral: releaseArm;
+    tipBlinkingRight -> tipBlinkingRight: holdArm::right; 
+
+    neutral -> blinkingLeft: startBlink::left;
+    blinkingLeft -> neutral: stop;  
     
-    phb -> phbTipBlinkingRight: up5;
-    phb -> phbBlinkingRight: up7;
-    phbTipBlinkingRight -> phbBlinkingRight: up7;
-    phbBlinkingRight -> neutral: up7;
-    neutral -> tmpPhb: forward;
-    tmpPhb -> neutral: back;
-    
-    neutral -> tipBlinkingLeft: down5;
-    neutral -> blinkingLeft: down7;
-    tipBlinkingLeft -> blinkingLeft: down7;
-    tipBlinkingLeft -> neutral: up5;
-    blinkingLeft -> neutral: up7;
-    neutral -> tipBlinkingRight: up5;
-    neutral -> blinkingRight: up7;
-    tipBlinkingRight -> blinkingRight: up7;
-    blinkingRight -> neutral: down7;
-    
- config Simple = d:DirectionLights is off, p: PitmanArm is neutral with dirLights = d;
+ config Simple = s: KeyOnlySensor abstracts SensorValues,
+                 d:DirectionLights is off with left = 0, right = 0, cycle = 0, sensors = s, 
+                 p: PitmanArm is neutral with dirLights = d;
  
- assert ELS1 = always exists d:DirectionLights, p: PitmanArm | (down7 on p => next d is blinkLeft);
- assert ELS1_sim = eventually exists d:DirectionLights, p: PitmanArm | (down7 on p && next d is blinkLeft);
- check ELS1 from Simple in max 5 steps with infinite trace;  
- run ELS1_sim from Simple in max 2 steps with infinite trace;
+ assert CanDoTipBlinkingCycle = exists d:DirectionLights, p:PitmanArm, s:SensorValues | 
+  eventually (startTipBlinkLeft on p && s.key = KeyState[IN_IGNITION_ON]) && 
+    next (s.key = KeyState[IN_IGNITION_ON]) &&
+      eventually (d.cycle = 6 && 
+        eventually (d is off));
+ run CanDoTipBlinkingCycle from Simple in max 10 steps;
  
- assert ELS2 = exists d:DirectionLights, p: PitmanArm | always (down5 on p => next d is flashBlinkLeft);  
- assert ELS2_sim = exists d:DirectionLights, p: PitmanArm | eventually down5 on p && next d is flashBlinkLeft;  
- check ELS2 from Simple in max 4 steps with infinite trace;
- run ELS2_sim from Simple in max 2 steps with infinite trace;
+ assert CheckHoldArmBehaviour = exists d:DirectionLights, p:PitmanArm, s:SensorValues |
+  eventually (startTipBlinkLeft on p && s.key = KeyState[IN_IGNITION_ON]) && 
+    next (s.key = KeyState[IN_IGNITION_ON]) &&
+      eventually (d is lBright);   
  
- //assert ELS3 = exists d:DirectionLights, p: PitmanArm, h: HazardLightSwitch | always (d is flashBlinkLeft && (up5 on p ||  
+ run CheckHoldArmBehaviour from Simple in max 5 steps;
+ 

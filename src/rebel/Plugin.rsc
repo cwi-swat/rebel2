@@ -70,7 +70,10 @@ set[Contribution] getRebelContributions() {
       
       switch (r) {
         case asExpected(str c): println("Check `<c>` as expected");
-        case notAsExpected(str c, str reason): println("Check `<c>` NOT as expected: <reason>");
+        case notAsExpected(str c, str reason, Trace t): {
+          println("Check `<c>` NOT as expected: <reason>");
+          println(trace2Str(t));
+        }
       }
     } 
   }
@@ -89,7 +92,10 @@ set[Contribution] getRebelContributions() {
     for (r <- results) {
       switch (r) {
         case asExpected(str c): println("Check `<c>` as expected");
-        case notAsExpected(str c, str reason): println("Check `<c>` NOT as expected: <reason>");
+        case notAsExpected(str c, str reason, Trace t): {
+          println("Check `<c>` NOT as expected: <reason>");
+          println(trace2Str(t));
+        }
       }
     }
   }

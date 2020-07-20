@@ -239,7 +239,10 @@ RaisedEvent getRaisedEvent(int step, set[Spec] specs, rel[Spec spc, str instance
   }
 }
 
-str trace2Str(Trace t) = 
+str trace2Str(noTrace(solverTimeout())) = "SOLVER TIMED OUT";
+str trace2Str(noTrace(noSolutionFound())) = "NO SOLUTION FOUND";
+
+default str trace2Str(Trace t) = 
   "
   'FOUND TRACE:
   '===============

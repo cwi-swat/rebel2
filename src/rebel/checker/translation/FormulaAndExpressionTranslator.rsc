@@ -56,15 +56,12 @@ str translate((Formula)`<Expr lhs> is <Id state>`, Context ctx) {
     case "initialized": stateRel = "initialized";
     case "finalized" : stateRel = "finalized";
   };
-    
-  return "inState[<ctx.curRel>, <specRel><maybeRename(getFieldName(lhs,ctx), "instance")>, <stateRel>]";    
-  //return "inState[cur, <specRel><maybeRename(getFieldName(lhs,ctx), "instance")>, <stateRel>]";    
+  
+  str stepRel = (Expr)`<Expr _>'` := lhs ? "nxt" : "cur";
+  return "inState[<stepRel>, <specRel><maybeRename(getFieldName(lhs,ctx), "instance")>, <stateRel>]";    
 }  
 
 str translate((Formula)`eventually <Formula f>`, Context ctx) {
-  //str configRel = (ctx.curRel == defaultCurRel()) ? "Config" : "(<ctx.curRel>[config as cur] ⨝ *\<cur,nxt\>(order ∪ loop))[nxt-\>config]";
-  //ctx = nextCurAndStepRel(ctx);
-  //return "∃ <ctx.curRel> ∈ <configRel> | let <ctx.stepRel> = <ctx.curRel>[config as nxt] ⨝ (order ∪ loop) | <translate(f, ctx)>";
   str s = ctx.topLevelLtl ? "let cur = first | " : "";
   ctx = flipTopLevelLtl(ctx);
   
@@ -72,10 +69,6 @@ str translate((Formula)`eventually <Formula f>`, Context ctx) {
 } 
 
 str translate((Formula)`always <Formula f>`, Context ctx) {
-  //str configRel = (ctx.curRel == defaultCurRel()) ? "Config" : "(<ctx.curRel>[config as cur] ⨝ *\<cur,nxt\>(order ∪ loop))[nxt-\>config]";
-  //ctx = nextCurAndStepRel(ctx);
-  //return "∀ <ctx.curRel> ∈ <configRel> | let <ctx.stepRel> = <ctx.curRel>[config as nxt] ⨝ (order ∪ loop), nxt = (<ctx.stepRel>[nxt-\>cur] |x| (order ∪ loop))[nxt-\>config] | <translate(f, ctx)>";
-  
   str s = ctx.topLevelLtl ? "let cur = first | " : "";
   ctx = flipTopLevelLtl(ctx);
 
@@ -83,9 +76,6 @@ str translate((Formula)`always <Formula f>`, Context ctx) {
 }
 
 str translate((Formula)`always-last <Formula f>`, Context ctx) {
-  //str configRel = (ctx.curRel == defaultCurRel()) ? "Config ∖ last" : "(<ctx.curRel>[config as cur] ⨝ *\<cur,nxt\>(order ∪ loop))[nxt-\>config] ∖ last";
-  //ctx = nextCurAndStepRel(ctx);
-  //return "∀ <ctx.curRel> ∈ <configRel> | let <ctx.stepRel> = <ctx.curRel>[config as nxt] ⨝ (order ∪ loop) | <translate(f, ctx)>";
   str s = ctx.topLevelLtl ? "let cur = first | " : "";
   ctx = flipTopLevelLtl(ctx);
 
@@ -106,10 +96,6 @@ str translate((Formula)`<Formula u> until <Formula r>`, Context ctx) {
 }
 
 str translate((Formula)`next <Formula f>`, Context ctx) {
-  //newCtx = nextCurAndStepRel(ctx);
-  //
-  //return "let <newCtx.stepRel> = ((order ∪ loop) ⨝ <ctx.curRel>[config as cur]), <newCtx.curRel> = <newCtx.stepRel>[nxt-\>config] | <translate(f, newCtx)>";
-
   str s = ctx.topLevelLtl ? "let cur = first | " : "";
   ctx = flipTopLevelLtl(ctx);
   
@@ -117,8 +103,6 @@ str translate((Formula)`next <Formula f>`, Context ctx) {
 }
 
 str translate((Formula)`first <Formula f>`, Context ctx) {
-  //ctx = nextCurRel(ctx);
-  //return "let <ctx.curRel> = first | <translate(f, ctx)>";
   return "let cur = first | <translate(f,ctx)>";
 }
 

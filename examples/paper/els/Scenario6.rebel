@@ -1,0 +1,70 @@
+module paper::els::Scenario6
+
+import paper::els::Input
+import paper::els::Sensors
+import paper::els::Timer
+import paper::els::Actuators
+ 
+spec Scenario6
+  s: SensorValues,
+  d: DirectionLights, 
+  p: PitmanArm;
+   
+  event doStep1()
+    pre:  // Event
+          this.p.startTipBlinkLeft(), 
+          // Sensors
+          this.s.key = KeyState[NOT_INSERTED], 
+          // Time 
+          Timer[NOW].timepast = 200;
+    post: // Direction lights
+          this.d' is off, 
+          this.d.left' = 0,
+          this.d.right' = 0,
+          // Pitman arm
+          this.p' is tipBlinkingLeft;
+          
+  event doStep2()
+    pre:  //Event 
+          this.p.releaseArm(),
+          // Sensors
+          this.s.key = KeyState[NOT_INSERTED],
+          // Time
+          Timer[NOW].timepast = 300;
+    post: ;// Sensors
+          // Direction lights
+          // Pitman arm
+  
+  event doStep3()
+    pre:  // Event
+          this.p.startTipBlinkLeft(),
+          // Sensors
+          this.s.key = KeyState[IN_IGNITION_ON],
+          // Time
+          Timer[NOW].timepast = 5000;
+    post: // Sensors
+          // Direction lights
+          this.d.left' = 100,
+          this.d.right' = 0,
+          // Pitman arm
+          this.p' is tipBlinkingLeft; 
+
+  states:
+    initial -> step1: doStep1; 
+    step1 -> step2: doStep2;
+    step2 -> step3: doStep3;
+    
+config Scenario6Config =  
+  s: KeyOnlySensor abstracts SensorValues,
+  d: DirectionLights is off with left = 0, right = 0, cycle = 0, sensors = s,
+  p: PitmanArm is neutral with dirLights = d, sensors = s,
+  scen6: Scenario6 is initial with s = s, d = d, p = p;
+ 
+assert UpToStep1 = exists s:Scenario6 | eventually s is step1;
+run UpToStep1 from Scenario6Config in max 1 steps expect trace; 
+ 
+assert UpToStep2 = exists s:Scenario6 | eventually s is step2;
+run UpToStep2 from Scenario6Config in max 2 steps expect trace;
+
+assert UpToStep3 = exists s:Scenario6 | eventually s is step3;
+run UpToStep3 from Scenario6Config in max 3 steps expect trace;            

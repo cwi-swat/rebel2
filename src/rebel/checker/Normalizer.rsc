@@ -6,6 +6,7 @@ import rebel::lang::DependencyAnalyzer;
 import rebel::lang::Parser;
 
 import util::PathUtil;
+import util::Benchmark;
 
 import ParseTree;
 import List;
@@ -17,6 +18,9 @@ import Location;
 alias CheckedModule = tuple[Module m, TModel tm];
 
 CheckedModule normalizeAndTypeCheck(Module origMod, TModel origTm, PathConfig pcfg, bool saveNormalizedMod = false) {
+  print("Normalizing prepared module ...");
+  int startTime = cpuTime();
+
   Module normMod = normalizeEventVariantSyncs(origMod, origTm);
 
   normMod = visit(normMod) {
@@ -32,6 +36,8 @@ CheckedModule normalizeAndTypeCheck(Module origMod, TModel origTm, PathConfig pc
   ////////////////
     
   TModel normModTm = rebelTModelFromModule(normMod, {}, pcfg, debug = false);
+  
+  println("done, took: <(cpuTime() - startTime) / 1000000> ms.");
   
   return <normMod, normModTm>;
 }

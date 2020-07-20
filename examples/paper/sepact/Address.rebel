@@ -13,7 +13,7 @@ assert OneAddressInTheConcordiastraat = eventually exists a:Address | a.address 
 
 config Addresses = a1,a2: Address forget country;
  
-check NoAddressLongerThan70 from Addresses in max 1 steps;
+check NoAddressLongerThan70 from Addresses in max 1 steps expect no trace;
 run OneAddressInTheConcordiastraat from Addresses in max 0 steps;
  
 

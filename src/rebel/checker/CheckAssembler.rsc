@@ -35,22 +35,26 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
   print("Preparing module for check ...");
   int startTime = cpuTime();
     
-  if (/resolvedOnlyModule(_,_) := modDep || /unresolvedModule(_) := modDep) {
-    throw "Can only assemble check modules when all dependend modules are resolved and type checked";
-  } 
+  //if (/resolvedOnlyModule(_,_) := modDep || /unresolvedModule(_) := modDep) {
+  //  throw "Can only assemble check modules when all dependend modules are resolved and type checked";
+  //} 
+  //println("After checking if all modules are resolved: <(cpuTime() - startTime) / 1000000>ms");
   
-  set[RebelDependency] deps = {dep | /RebelDependency dep <- modDep}; 
+  set[RebelDependency] deps = {d1,d2 | <RebelDependency d1, RebelDependency d2> <- modDep}; 
   Config cfg = findReferencedConfig(chk,tm,deps);
   Assert as = findReferencedAssert(chk,tm,deps);
   if ((Command)`check` := chk.cmd) { // Command is check, start finding counterexample by negating the assertion
     as = parse(#Assert, "assert <as.name> = !(<as.form>);");
   }
-
+  //println("After gathering dependencies: <(cpuTime() - startTime) / 1000000>ms");
+  
   // Build a spec dependency graph from the module dependency graph
   Graph[Spec] spcDep = extractSpecDependencyGraph(modDep);
+  //println("After extracting spec dependency grap: <(cpuTime() - startTime) / 1000000>ms");
   
   // Merge all useDef relations 
-  rel[loc,loc] globDefUse = {*dep.tm.useDef<1,0> | /RebelDependency dep <- modDep};
+  rel[loc,loc] globDefUse = {*dep1.tm.useDef<1,0>,*dep2.tm.useDef<1,0> | <RebelDependency dep1, RebelDependency dep2> <- modDep};
+  //println("After merging all defUses: <(cpuTime() - startTime) / 1000000>ms");
     
   bool replace(Type abstractSpcType, Type concreteSpcType) {
     Spec abstractSpc = lookupSpecByRef(tm.useDef[abstractSpcType@\loc], deps);
@@ -104,24 +108,31 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
     case (InstanceSetup)`<{Id ","}+ labels> : <Type abstractSpc> abstracts <Type concreteSpc> <Forget? forget> <InState? inState> <WithAssignments? assignments>` =>
       (InstanceSetup)`<{Id ","}+ labels> : <Type concreteSpc> <Forget? forget> <InState? inState> <WithAssignments? assignments>` when replace(abstractSpc, concreteSpc)
   };  
+  //println("After applying abstractions: <(cpuTime() - startTime) / 1000000>ms");
   
   // Step 2: Apply slicing (removing 'forgotten' fields)
   cfg = visit (cfg) {
     case (InstanceSetup)`<{Id ","}+ labels> : <Type spc> forget <{Id ","}+ fields> <InState? inState> <WithAssignments? assignments>` =>
       (InstanceSetup)`<{Id ","}+ labels> : <Type spc> <InState? inState> <WithAssignments? assignments>` when slice({f | f <- fields})
   };  
+  //println("After applying slicing: <(cpuTime() - startTime) / 1000000>ms");
 
   set[Spec] filteredSpecs = filterNonReferencedSpecs(spcDep, tm, cfg);  
+  //println("After filtering non referenced specs: <(cpuTime() - startTime) / 1000000>ms");
+
   Module gen = assembleModule(root.\module.name, filteredSpecs, as, cfg, chk);
+  //println("After assembling new module: <(cpuTime() - startTime) / 1000000>ms");
   TModel genTm = rebelTModelFromModule(gen, {}, pcfg);
+  //println("After type checking new module: <(cpuTime() - startTime) / 1000000>ms");
   
   // Filter the specs until none can be removed any more
-  Graph[Spec] newSpcDep = extractSpecDependencyGraph({<resolvedAndCheckedModule(gen,genTm,now()), resolvedAndCheckedModule(gen,genTm,now())>});
-  if (size(newSpcDep) != size(spcDep)) {
-    filteredSpecs = filterNonReferencedSpecs(newSpcDep, genTm, findConfig(gen));  
-    gen = assembleModule(root.\module.name, filteredSpecs, as, cfg, chk);
-    genTm = rebelTModelFromModule(gen, {}, pcfg);
-  }
+  //Graph[Spec] newSpcDep = extractSpecDependencyGraph({<resolvedAndCheckedModule(gen,genTm,now()), resolvedAndCheckedModule(gen,genTm,now())>});
+  //if (size(newSpcDep) != size(spcDep)) {
+  //  filteredSpecs = filterNonReferencedSpecs(newSpcDep, genTm, findConfig(gen));  
+  //  gen = assembleModule(root.\module.name, filteredSpecs, as, cfg, chk);
+  //  genTm = rebelTModelFromModule(gen, {}, pcfg);
+  //}
+  //println("After filtering one last time: <(cpuTime() - startTime) / 1000000>ms");
     
   if (saveGenModule) {
     writeFile(addModuleToBase(pcfg.checks, gen)[extension="rebel"], gen);
@@ -255,17 +266,11 @@ private Spec filterFacts(Spec spc, set[loc] uses) {
 }
 
 private set[Spec] filterNonReferencedSpecs(Graph[Spec] spcDep, TModel tm, Config cfg) {
-  //set[set[Spec]] components = stronglyConnectedComponents(spcDep); //connectedComponents(spcDep);
-   
   set[Spec] referencedSpcs = {lookupSpecByRef(tm.useDef[spc@\loc], spcDep) | (InstanceSetup)`<{Id ","}+ _> : <Type spc> <InState? _> <WithAssignments? _>` <- cfg.instances};
   set[Spec] reachable = reach(spcDep, referencedSpcs);
   
   set[Spec] filtered = referencedSpcs + reachable;
 
-  //for (Spec s <- referencedSpcs, set[Spec] comp <- components, s in comp) {
-  //  filtered += comp;
-  //}
-  
   if (filtered == {}) {  
     throw "Unable to find all referenced specs";
   }
@@ -307,7 +312,7 @@ private rebel::lang::Syntax::Assert findReferencedAssert(Check chk, TModel tm, s
 private Graph[Spec] extractSpecDependencyGraph(Graph[RebelDependency] modDep) {
   Graph[Spec] spcDepGraph = {}; 
 
-  for (dep1:resolvedAndCheckedModule(Module m, TModel tm, _) <- modDep<0>, /Spec s <- m.parts) {
+  for (dep1:resolvedAndCheckedModule(Module m, TModel tm, _) <- modDep<0>, (Part)`<Spec s>` <- m.parts) {
     // Always add self-dependency
     spcDepGraph += <s,s>;
     // Get all referenced other specs from the current spec 
@@ -321,7 +326,7 @@ private Graph[Spec] extractSpecDependencyGraph(Graph[RebelDependency] modDep) {
 
 private Field lookupFieldByRef({loc fldDef}, Graph[Spec] spcDeps) = lookupFieldByRef(fldDef, spcDeps);
 private Field lookupFieldByRef(loc fldDef, Graph[Spec] spcDeps) {
-  for (/Spec s <- spcDeps, /Field f := s.fields, f.name@\loc == fldDef) {
+  for (Spec s <- spcDeps<0>+spcDeps<1>, /Field f := s.fields, f.name@\loc == fldDef) {
     return f;
   } 
   
@@ -330,7 +335,7 @@ private Field lookupFieldByRef(loc fldDef, Graph[Spec] spcDeps) {
 
 private Spec lookupSpecByRef({loc specDef}, Graph[Spec] spcDeps) = lookupSpecByRef(specDef, spcDeps);
 private Spec lookupSpecByRef(loc specDef, Graph[Spec] spcDeps) {
-  for (/Spec s <- spcDeps, s@\loc == specDef) {
+  for (Spec s <- spcDeps<0>+spcDeps<1>, s@\loc == specDef) {
     return s;
   } 
   
@@ -339,7 +344,7 @@ private Spec lookupSpecByRef(loc specDef, Graph[Spec] spcDeps) {
 
 private Spec lookupSpecByRef({loc specDef}, set[RebelDependency] deps) = lookupSpecByRef(specDef, deps);
 private Spec lookupSpecByRef(loc specDef, set[RebelDependency] deps) {
-  for (resolvedAndCheckedModule(Module m, _, _) <- deps, /Spec s <- m.parts, s@\loc == specDef) {
+  for (resolvedAndCheckedModule(Module m, _, _) <- deps, (Part)`<Spec s>` <- m.parts, s@\loc == specDef) {
     return s;
   } 
   
@@ -347,7 +352,7 @@ private Spec lookupSpecByRef(loc specDef, set[RebelDependency] deps) {
 } 
 
 private Spec lookupSpecByName(str name, set[RebelDependency] deps) {
-  for (resolvedAndCheckedModule(Module m, _, _) <- deps, /Spec s <- m.parts) { 
+  for (resolvedAndCheckedModule(Module m, _, _) <- deps, (Part)`<Spec s>` <- m.parts) { 
     if ("<s.name>" == name) {
       return s;
     }
