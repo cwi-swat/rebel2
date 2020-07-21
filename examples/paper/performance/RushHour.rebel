@@ -1,4 +1,4 @@
-module RushHour
+module paper::performance::RushHour
 
 spec HVehicle[RED]
   row: Integer,
@@ -25,7 +25,7 @@ spec HVehicle[RED]
   fact NoHorizontalOverlap = 
     always forall h1:HVehicle, h2:HVehicle | ((h1 != h2 && h1.row = h2.row) => h1.length <= |h1.col - h2.col|);  
 
-  fact RedPosition = first (HVehicle[RED].row = 2 && HVehicle[RED].col = 1 && HVehicle[RED].length = 2); 
+  fact RedPosition = first (HVehicle[RED].row = 2 && HVehicle[RED].length = 2); 
   
   states:
     active -> active: move;
@@ -69,17 +69,28 @@ config Beginner1 = greenCar:      HVehicle with row = 0, col = 0, length = 2,
                    greenTruck:    HVehicle with row = 5, col = 2, length = 3,
                    blueCar:       HVehicle with row = 4, col = 4, length = 2,
                    yellowTruck:   VVehicle with row = 0, col = 5, length = 3;
+
+config Advanced24 = orangeCar:    HVehicle with row = 0, col = 3, length = 2,
+                    lGreenCar:    VVehicle with row = 0, col = 2, length = 2,
+                    blueCar:      VVehicle with row = 1, col = 1, length = 2,
+                    pinkgCar:     VVehicle with row = 2, col = 0, length = 2,
+                    purpleCar:    VVehicle with row = 2, col = 4, length = 2,
+                    dGreenCar:    HVehicle with row = 3, col = 1, length = 2,
+                    yellowTruck:  HVehicle with row = 4, col = 0, length = 3,
+                    beigeCar:     HVehicle with row = 5, col = 0, length = 2,
+                    blackCar:     VVehicle with row = 4, col = 4, length = 2;
                    
-assert Init = first (forall h:HVehicle | h is initialized) && (forall v:VVehicle | v is initialized);
+assert Init = first (HVehicle[RED].col = 2 && (forall h:HVehicle | h is initialized) && (forall v:VVehicle | v is initialized));
 
 assert CanMoveHorizontalVehicle = eventually exists h:HVehicle | move on h;
 assert CanMoveVerticalVehicle = eventually exists v:VVehicle | move on v;
  
 assert RedCanGetOut = eventually HVehicle[RED].col = 4; // red is out!
  
-run Init from Beginner1 in max 0 steps;
+run Init from Advanced24 in max 1 steps;
 
 run CanMoveHorizontalVehicle from Beginner1 in max 1 steps;
 run CanMoveVerticalVehicle from Beginner1 in max 1 steps;
 
-run RedCanGetOut from Beginner1 in max 8 steps;
+//run RedCanGetOut from Beginner1 in max 8 steps;
+run RedCanGetOut from Advanced24 in max 25 steps;

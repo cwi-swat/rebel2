@@ -1,4 +1,4 @@
-module RiverCrossing
+module paper::performance::RiverCrossing
 
 spec Cargo
   eats: ?Cargo;

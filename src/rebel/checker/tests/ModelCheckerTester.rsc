@@ -18,14 +18,14 @@ Trace testPerformCheckOnHotel() = testPerformCheck("NoIntruder", |project://rebe
 
 Trace testPerformCheckOnLight() = testPerformCheck("BulbCanBreak", |project://rebel2/examples/Light.rebel|);
 
-Trace testPerformCheck(str check, loc spec) {
+Trace testPerformCheck(str check, loc spec, int timeout = 30 * 1000) {
   PathConfig pcfg = defaultPathConfig(spec);
   
   Module m = parseModule(spec);
   TypeCheckerResult tcr = checkModule(m, calculateDependencies(m,pcfg), pcfg); 
   
   Check chk = findCheckByName(check, tcr.depGraph);
-  return performCheck(chk, m, tcr.tm, tcr.depGraph, pcfg = pcfg, saveIntermediateFiles = true);
+  return performCheck(chk, m, tcr.tm, tcr.depGraph, pcfg = pcfg, saveIntermediateFiles = true, solverTimeout = timeout);
 }
 
 private Check findCheckByName(str check, Graph[RebelDependency] modDep) {

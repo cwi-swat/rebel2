@@ -1,4 +1,4 @@
-module RingLeaderElection
+module paper::performance::RingLeaderElection
 
 spec Process
   pid: Integer,

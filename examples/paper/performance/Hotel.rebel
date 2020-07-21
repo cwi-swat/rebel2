@@ -1,4 +1,4 @@
-module Hotel
+module paper::performance::Hotel
 
 spec Key
 
@@ -55,7 +55,8 @@ spec FrontDesk
   event checkin(card: Card, room: Room, guest: Guest)
     pre:   
       guest.checkin(card, room),  
-      card.second notin this.issued;
+      card.second notin this.issued,
+      card.frst notin this.issued;
     post: 
       this.issued' = this.issued + card.second;
     

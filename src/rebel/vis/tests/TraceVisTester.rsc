@@ -23,7 +23,7 @@ App[TraceVisModel] visPaperTransactionCanBookRun() = visTrace("CanBookATransacti
 
 App[TraceVisModel] visPaperAccountCheck(str check) = visTrace(check, |home:///workspace/rebel2/examples/paper/example/Account.rebel|);
 
-App[TraceVisModel] visTrace(str check, loc rebelFile) {
-  Trace t = testPerformCheck(check, rebelFile);
+App[TraceVisModel] visTrace(str check, loc rebelFile, int timeout = 30 * 1000) {
+  Trace t = testPerformCheck(check, rebelFile, timeout = timeout);
   return createTraceVis(check, t);
 }

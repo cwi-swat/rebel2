@@ -14,7 +14,7 @@ import util::Prompt;
 
 import salix::App;
 import rebel::vis::ModuleVis;
-import rebel::vis::TraceVis;
+import rebel::vis::TraceVis; 
 
 import ParseTree;
 import Location;
