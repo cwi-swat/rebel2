@@ -2,8 +2,11 @@ module paper::sepact::OriginatorBank
 
 import paper::sepact::services::BICChecker
 import paper::sepact::messages::CustomerCreditTransferRequest
+import paper::sepact::data::Date
 
 spec OriginatorBank 
+  instructions: set CustomerCreditTransferRequest,
   bicChecker: BICChecker;
   
   event accept(req: CustomerCreditTransferRequest)
+    pre: req notin this.instructions;
