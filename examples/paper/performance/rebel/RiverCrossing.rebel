@@ -1,4 +1,4 @@
-module paper::performance::RiverCrossing
+module paper::performance::rebel::RiverCrossing
 
 spec Cargo
   eats: ?Cargo;

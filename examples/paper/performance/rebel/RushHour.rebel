@@ -1,4 +1,4 @@
-module paper::performance::RushHour
+module paper::performance::rebel::RushHour
 
 spec HVehicle[RED]
   row: Integer,
@@ -92,5 +92,5 @@ run Init from Advanced24 in max 1 steps;
 run CanMoveHorizontalVehicle from Beginner1 in max 1 steps;
 run CanMoveVerticalVehicle from Beginner1 in max 1 steps;
 
-//run RedCanGetOut from Beginner1 in max 8 steps;
-run RedCanGetOut from Advanced24 in max 25 steps;
+run RedCanGetOut from Beginner1 in max 8 steps;
+//run RedCanGetOut from Advanced24 in max 25 steps;

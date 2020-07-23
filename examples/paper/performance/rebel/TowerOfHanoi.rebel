@@ -1,4 +1,4 @@
-module paper::performance::TowerOfHanoi
+module paper::performance::rebel::TowerOfHanoi
 
 spec Disc
   size: Integer;

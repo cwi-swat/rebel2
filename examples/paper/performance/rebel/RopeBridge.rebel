@@ -1,4 +1,4 @@
-module RopeBridge
+module paper::performance::rebel::RopeBridge
 
 spec Adventurer
   timeToCross: Integer;
@@ -10,7 +10,7 @@ spec Adventurer
     near -> far: crossNearToFar;
     far -> near: crossFarToNear;
     
-spec FlashLight
+spec Torch
   totalTimeSpend: Integer;
     
   event crossNearToFar(p1: Adventurer, p2: Adventurer)
@@ -30,15 +30,15 @@ spec FlashLight
     far -> near: crossFarToNear;   
       
 assert EverybodyCrossedInTheLeastTime
-  = eventually ((forall a: Adventurer | a is far) && (exists fl: FlashLight | fl.totalTimeSpend = 17));
+  = eventually ((forall a: Adventurer | a is far) && (exists t: Torch | t.totalTimeSpend = 17));
 
 assert CantGoquicker
-  = eventually ((forall a: Adventurer | a is far) && (exists fl: FlashLight | fl.totalTimeSpend < 17));
+  = eventually ((forall a: Adventurer | a is far) && (exists t: Torch | t.totalTimeSpend < 17));
 
 
 config EverybodyNear
   = a1,a2,a3,a4: Adventurer is near, 
-    fl: FlashLight is near with totalTimeSpend = 0,
+    t: Torch is near with totalTimeSpend = 0,
     a1 with timeToCross = 1,
     a2 with timeToCross = 2,  
     a3 with timeToCross = 5,

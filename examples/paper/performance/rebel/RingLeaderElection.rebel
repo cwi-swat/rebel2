@@ -1,4 +1,4 @@
-module paper::performance::RingLeaderElection
+module paper::performance::rebel::RingLeaderElection
 
 spec Process
   pid: Integer,
@@ -59,6 +59,6 @@ assert OnlyOneCanGetElected
 
 run EventuallyOneIsElected from RingOfThree in max 3 steps;
    
-check OnlyOneCanGetElected from RingOfThree in max 5 steps;  
+check OnlyOneCanGetElected from RingOfThree in max 7 steps;  
  
 check AProcessWillAlwaysBeElected from RingOfThree in max 4 steps with infinite trace;
