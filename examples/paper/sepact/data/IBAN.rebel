@@ -1,4 +1,4 @@
-module paper::sepact::IBAN
+module paper::sepact::data::IBAN
 
 spec IBANCountry[AL,DZ,AD,AO,AT,AZ,BH,BY,BE,BJ,BA,BR,VG,BG,BF,BI,CM,CV,FR,CG,CR,HR,CY,CZ,DK,DO,EG,EE,FO,FI,GA,GE,DE,
                  GI,GR,GL,GT,GG,HU,IS,IR,IQ,IE,IM,IL,IT,CI,JE,JO,KZ,XK,KW,LV,LB,LI,LT,LU,MK,MG,ML,MT,MR,MU,MD,MC,ME,

@@ -1,0 +1,3 @@
+module paper::sepact::services::BICChecker
+
+spec BICChecker

@@ -1,0 +1,8 @@
+module paper::sepact::data::Date
+
+spec Date[NOW]
+  year: Integer,
+  month: Integer,
+  day: Integer;
+  
+  

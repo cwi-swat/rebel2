@@ -1,0 +1,12 @@
+module paper::sepact::data::checks::MoneyChecks
+
+import paper::sepact::data::Money
+
+spec Mock
+ states: s->s:empty;
+ 
+config Basic = m:Money, mm:Mock;
+
+assert SomeMoney = eventually exists m:Money | m.cents > 0 && m.currency = Currency[EUR];
+run SomeMoney from Basic in max 0 steps;
+ 

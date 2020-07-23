@@ -1,4 +1,4 @@
-module paper::sepact::Account
+module paper::sepact::data::Account
 
 import paper::sepact::Country
 import paper::sepact::IBAN

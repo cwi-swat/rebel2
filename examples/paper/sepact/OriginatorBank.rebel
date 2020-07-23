@@ -1,0 +1,9 @@
+module paper::sepact::OriginatorBank
+
+import paper::sepact::services::BICChecker
+import paper::sepact::messages::CustomerCreditTransferRequest
+
+spec OriginatorBank 
+  bicChecker: BICChecker;
+  
+  event accept(req: CustomerCreditTransferRequest)

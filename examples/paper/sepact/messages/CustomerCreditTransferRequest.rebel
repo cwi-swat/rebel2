@@ -1,0 +1,3 @@
+module paper::sepact::messages::CustomerCreditTransferRequest
+
+spec CustomerCreditTransferRequest
