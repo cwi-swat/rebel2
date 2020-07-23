@@ -142,6 +142,7 @@ spec KeyOnlySensor
   key: KeyState;
   
 config DirectionLightsAndKeySensor = d: DirectionLights is off with left = 0, right = 0, cycle = 0, s: KeyOnlySensor abstracts SensorValues;
+//config DirectionLightsAndKeySensor = d: DirectionLights is off with left = 0, right = 0, cycle = 0, s: SensorValues;
 
 assert WhenInDarkCycleNoLights = always forall d:DirectionLights | ((d is lDark || d is rDark || d is hDark) => (d.left = 0 && d.right = 0));
 check WhenInDarkCycleNoLights from DirectionLightsAndKeySensor in max 5 steps expect no trace;
