@@ -26,6 +26,8 @@ spec CustomerCreditTransferRequest
   purpose: String,
   purposeCategory: String;
   
+  //init event create(
+  
   fact Immutable = always-last forall cctr: CustomerCreditTransferRequest |
     cctr.originatorId' = cctr.originatorId &&
     cctr.originator' = cctr.originator &&

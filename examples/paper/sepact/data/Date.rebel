@@ -1,9 +1,40 @@
 module paper::sepact::data::Date
 
-spec Date[NOW]
+spec Date[NOW*]
   year: Integer,
   month: Integer,
   day: Integer;
   
+  event same(other:Date) 
+    pre: this.year = other.year, this.month = other.month, this.day = other.day;
+  
+  event after(other:Date) 
+    pre: this.year > other.year || 
+        (this.year = other.year && this.month > other.month) ||
+        (this.year = other.year && this.month = other.month && this.day > other.day);
+  
+    fact CorrectDate
+    = always forall d:Date | (
+        d.year >= 1900 && d.year <= 2200 &&
+        d.month > 0 && d.month < 13 &&
+        d.day > 0 && 
+        if d.month = 1 then d.day < 32 else
+        if d.month = 2 then d.day < 30 else
+        if d.month = 3 then d.day < 32 else
+        if d.month = 4 then d.day < 31 else
+        if d.month = 5 then d.day < 32 else
+        if d.month = 6 then d.day < 31 else
+        if d.month = 7 then d.day < 32 else
+        if d.month = 8 then d.day < 32 else
+        if d.month = 9 then d.day < 31 else
+        if d.month = 10 then d.day < 32 else
+        if d.month = 11 then d.day < 31 else
+        d.day < 32); 
+  
+  fact TimeAlwaysMovesForward
+    = always-last (Date[NOW].year' > Date[NOW].year ||
+                  (Date[NOW].year' = Date[NOW].year && Date[NOW].month' > Date[NOW].month) ||
+                  (Date[NOW].year' = Date[NOW].year && Date[NOW].month' = Date[NOW].month && Date[NOW].day' = Date[NOW].day)); 
+  
   states:
-    active->active:empty;   
+    created->created: after,same;   

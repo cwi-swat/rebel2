@@ -21,7 +21,7 @@ void checkAllExpectations(loc modul) {
   TypeCheckerResult tr = checkModule(m, depGraph, pcfg, saveTModels = true, refreshRoot = true, debug = false);
   
   int startTime = cpuTime();
-  list[ExpectationResult] results = checkExpectations(m, tr.tm, tr.depGraph, pcfg = pcfg, saveIntermediateFiles = false, solverTimeout = 0);
+  list[ExpectationResult] results = checkExpectations(m, tr.tm, tr.depGraph, pcfg = pcfg, saveIntermediateFiles = true, solverTimeout = 0);
   int endTime = cpuTime();
   
   println();

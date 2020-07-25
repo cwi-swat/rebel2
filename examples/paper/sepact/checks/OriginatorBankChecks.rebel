@@ -1,0 +1,38 @@
+module paper::sepact::checks::OriginatorBankChecks
+
+import paper::sepact::OriginatorBank
+import paper::sepact::messages::CustomerCreditTransferRequest
+import paper::sepact::data::Address
+import paper::sepact::data::Party
+import paper::sepact::data::IBAN
+import paper::sepact::data::Money
+import paper::sepact::data::Date
+import paper::sepact::data::ID
+
+import paper::sepact::services::BICChecker
+import paper::sepact::services::ClearingAndSettlement
+
+config Full = ob: OriginatorBank,
+              p1,p2:Party,
+              a1,a2:Address,
+              ib1,ib2:IBAN, 
+              m: Money,
+              d: Date,
+              id1,id2: ID,
+              ct: CustomerCreditTransferRequest,
+              biccheck: BICChecker,
+              cas:ClearingAndSettlement;
+
+spec MockIBAN
+  
+config Small = ib1,ib2:MockIBAN abstracts IBAN,
+               m: Money,
+               d: Date,
+               cas:ClearingAndSettlement,
+               ob: OriginatorBank forget bicChecker,
+               ct: CustomerCreditTransferRequest forget originator, originatorId, originatorReferenceId, originatorReferenceParty, beneficiary, beneficiaryId, remittanceInfo;
+               
+assert CanSettleInstruction = eventually exists ob:OriginatorBank | settle on ob;
+run CanSettleInstruction from Small in max 2 steps expect trace; 
+
+              
