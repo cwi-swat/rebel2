@@ -1,8 +1,10 @@
-module paper::sepact::Party
+module paper::sepact::data::Party
 
-import paper::sepact::Address
+import paper::sepact::data::Address
 
 spec Party
   id: String,
   name: String,
   address: Address;
+
+  fact Immutable = always-last forall p:Party | p.id' = p.id && p.name' = p.name && p.address' = p.address;

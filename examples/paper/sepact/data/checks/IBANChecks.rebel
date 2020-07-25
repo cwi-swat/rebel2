@@ -1,0 +1,13 @@
+module paper::sepact::data::checks::IBANChecks
+
+import paper::sepact::data::IBAN
+
+config SomeIban = ib:IBAN;
+
+assert CanCreateAnIban = eventually exists ib:IBAN | ib.bban.length > 0;      
+assert AllCountriesAreConfigured = always forall ib:IBAN | ib.bban.length > 0;
+assert NoIbanWithMultipleBbanSizes = always forall ib1,ib2:IBAN | (ib1.cc = ib2.cc => ib1.bban.length = ib2.bban.length); 
+ 
+run CanCreateAnIban from SomeIban in max 0 steps expect trace;
+check AllCountriesAreConfigured from SomeIban in max 0 steps expect no trace;
+check NoIbanWithMultipleBbanSizes from SomeIban in max 0 steps expect no trace;

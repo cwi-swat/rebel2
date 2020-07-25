@@ -1,7 +1,7 @@
 module paper::sepact::data::Account
 
-import paper::sepact::Country
-import paper::sepact::IBAN
+import paper::sepact::data::Country
+import paper::sepact::data::IBAN
 
 spec Account
   nr: IBAN,

@@ -1,3 +1,13 @@
 module paper::sepact::services::BICChecker
 
+import paper::sepact::data::IBAN
+
 spec BICChecker
+  // TODO: this should be extended to all bics
+  event checkBic(nr: IBAN, bic: String)
+    pre: nr.cc = IBANCountry[NL], 
+         substr(nr.bban,0,4) = "RABO", 
+         bic = "RABONL2U";
+    
+  states:
+    active->active: checkBic;

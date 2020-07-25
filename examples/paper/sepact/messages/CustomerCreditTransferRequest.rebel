@@ -1,3 +1,44 @@
 module paper::sepact::messages::CustomerCreditTransferRequest
 
+import paper::sepact::data::Party
+import paper::sepact::data::IBAN
+import paper::sepact::data::Money
+import paper::sepact::data::Date
+import paper::sepact::data::ID
+
 spec CustomerCreditTransferRequest
+  originatorId: ?ID,
+  originator: Party,
+  originatorIBAN: IBAN,
+  
+  originatorReferenceId: ?ID,
+  originatorReferenceParty: ?Party,
+  
+  amount: Money,
+  remittanceInfo: String,
+  requestedExecutionDate: Date,
+  
+  beneficiaryId: ID,
+  beneficiary: Party,
+  beneficiaryIBAN: IBAN,
+  beneficiaryBIC: String,
+  
+  purpose: String,
+  purposeCategory: String;
+  
+  fact Immutable = always-last forall cctr: CustomerCreditTransferRequest |
+    cctr.originatorId' = cctr.originatorId &&
+    cctr.originator' = cctr.originator &&
+    cctr.originatorIBAN' = cctr.originatorIBAN &&
+    cctr.originatorReferenceId' = cctr.originatorReferenceId &&
+    cctr.originatorReferenceParty' = cctr.originatorReferenceParty &&
+    cctr.amount' = cctr.amount &&
+    cctr.remittanceInfo' = cctr.remittanceInfo &&
+    cctr.requestedExecutionDate' = cctr.requestedExecutionDate &&
+    cctr.beneficiaryId' = cctr.beneficiaryId &&
+    cctr.beneficiary' = cctr.beneficiary &&
+    cctr.beneficiaryIBAN' = cctr.beneficiaryIBAN &&
+    cctr.beneficiaryBIC' = cctr.beneficiaryBIC &&
+    cctr.purpose' = cctr.purpose &&
+    cctr.purposeCategory' = cctr.purposeCategory;
+  

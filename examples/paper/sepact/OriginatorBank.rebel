@@ -9,4 +9,6 @@ spec OriginatorBank
   bicChecker: BICChecker;
   
   event accept(req: CustomerCreditTransferRequest)
-    pre: req notin this.instructions;
+    pre: req notin this.instructions,
+        // can't wire money to itself
+        req.originator != req.beneficiary, req.originatorId != req.beneficiaryId, req.originatorIBAN != req.beneficiaryIBAN;

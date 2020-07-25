@@ -1,0 +1,28 @@
+module paper::sepact::messages::checks::CTChecks
+
+import paper::sepact::messages::CustomerCreditTransferRequest
+import paper::sepact::data::Party
+import paper::sepact::data::IBAN
+import paper::sepact::data::Money
+import paper::sepact::data::Date
+import paper::sepact::data::ID
+
+// transitive objects
+import paper::sepact::data::Address
+import paper::sepact::data::Country
+
+spec Mock
+  states:
+    m->m: empty;
+
+config SingleCT = p1,p2:Party,
+                  a1,a2:Address,
+                  ib1,ib2:IBAN, 
+                  m: Money,
+                  d: Date,
+                  id1,id2: ID,
+                  ct: CustomerCreditTransferRequest,
+                  mock: Mock;
+                  
+assert CTCanBeConstructed = eventually exists ct: CustomerCreditTransferRequest | ct.purpose = "foo";
+run CTCanBeConstructed from SingleCT in max 1 steps expect trace;

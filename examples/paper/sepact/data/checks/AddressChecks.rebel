@@ -1,0 +1,18 @@
+module paper::sepact::data::checks::AddressChecks
+
+import paper::sepact::data::Address
+
+spec Mock
+  states:
+    some->some:empty;
+     
+config Addresses = a: Address, m:Mock; 
+
+assert NoAddressLongerThan70 = always forall a:Address | a.address.length <= 70;
+check NoAddressLongerThan70 from Addresses in max 0 steps expect no trace;
+ 
+assert AddressesAreImmutable = forall a:Address | always-last a.address = a.address';
+check AddressesAreImmutable from Addresses in max 2 steps expect no trace; 
+
+assert OneAddressInTheConcordiastraat = eventually exists a:Address | a.address = "Concordiastraat"; 
+run OneAddressInTheConcordiastraat from Addresses in max 0 steps expect trace;  

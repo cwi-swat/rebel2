@@ -5,4 +5,5 @@ spec Date[NOW]
   month: Integer,
   day: Integer;
   
-  
+  states:
+    active->active:empty;   

@@ -1,0 +1,11 @@
+module paper::sepact::services::ClearingAndSettlement
+
+import paper::sepact::messages::CustomerCreditTransferRequest
+
+// This is a stub, here our case study stops
+spec ClearingAndSettlement
+  
+  event accept(req: CustomerCreditTransferRequest)
+  
+  states:
+    active->active: accept;

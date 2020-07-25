@@ -1,0 +1,19 @@
+module paper::sepact::data::checks::PartyChecks
+
+import paper::sepact::data::Party
+import paper::sepact::data::Address
+
+config aParty = p:Party, a:Address;
+config multipleParties = p1,p2:Party, a1,a2:Address;
+
+assert PartyIsImmutable = eventually exists p:Party | p.name != p.name';
+run PartyIsImmutable from aParty in max 1 steps expect no trace;  
+
+assert CanCreateParty = eventually exists p:Party | p.id = "1" && p.name = "Party";
+run CanCreateParty from aParty in max 1 steps expect trace;
+
+assert MultiplePartiesCanHaveOneAddress = eventually exists p1,p2:Party | p1 != p2 && p1.address = p2.address;
+run MultiplePartiesCanHaveOneAddress from multipleParties in max 2 steps expect trace;
+
+assert PartiesCantSwapAddress = eventually exists p1,p2:Party | p1 != p2 && p1.address != p2.address && next(p1.address = p2.address);
+run PartiesCantSwapAddress from multipleParties in max 4 steps expect no trace;
