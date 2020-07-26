@@ -15,7 +15,7 @@ spec OriginatorBank
   instructions: CustomerCreditTransferRequest, // BUG: should be a set
   bicChecker: BICChecker,
   cas: ClearingAndSettlement;
-  
+   
   event accept(req: CustomerCreditTransferRequest)
     pre:  // the request can not already be part of the handled instructions
           //req notin this.instructions, 

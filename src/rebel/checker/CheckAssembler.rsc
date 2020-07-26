@@ -60,6 +60,8 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
     Spec abstractSpc = lookupSpecByRef(tm.useDef[abstractSpcType@\loc], deps);
     Spec concreteSpc = lookupSpecByRef(tm.useDef[concreteSpcType@\loc], deps);
     
+    Spec unalteredAbstractSpc = abstractSpc;
+    
     abstractSpc = visit(abstractSpc) {
       case Type t => concreteSpcType when "<t>" == "<abstractSpcType>"
       case Expr e => [Expr]"<concreteSpcType>" when "<e>" == "<abstractSpcType>"
@@ -69,12 +71,15 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
     
     spcDep += {<f,abstractSpc> | <f,t> <- spcDep, t == concreteSpc};
     spcDep = {<f,t> | <Spec f, Spec t> <- spcDep, f != concreteSpc, t != concreteSpc};
+    
+    // remove the original mock spec from the depencendies
+    spcDep -= {<unalteredAbstractSpc,unalteredAbstractSpc>};
       
     return true;
   }  
 
   bool slice(set[Id] fields) {
-    set[Spec] allSpecs = {s | /Spec s := spcDep};
+    set[Spec] allSpecs = {s | Spec s <- spcDep<0>+spcDep<1>};
     
     for (Id field <- fields) {
       Field fld = lookupFieldByRef(tm.useDef[field@\loc], spcDep);
@@ -93,13 +98,13 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
       allSpecs = visit(allSpecs) {
         case Event e => filterParameters(e, globDefUse)
       } 
-
-      // Replace all occurrences of the specs in the spec dependency graph      
-      spcDep = visit(spcDep) {
-        case Spec orig => changed when /Spec changed <- allSpecs, changed@\loc == orig@\loc
-      }
     }
     
+    // Replace all occurrences of the specs in the spec dependency graph      
+    spcDep = visit(spcDep) {
+      case Spec orig => changed when Spec changed <- allSpecs, changed@\loc == orig@\loc
+    }
+
     return true;
   }
 
@@ -126,12 +131,12 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
   //println("After type checking new module: <(cpuTime() - startTime) / 1000000>ms");
   
   // Filter the specs until none can be removed any more
-  //Graph[Spec] newSpcDep = extractSpecDependencyGraph({<resolvedAndCheckedModule(gen,genTm,now()), resolvedAndCheckedModule(gen,genTm,now())>});
-  //if (size(newSpcDep) != size(spcDep)) {
-  //  filteredSpecs = filterNonReferencedSpecs(newSpcDep, genTm, findConfig(gen));  
-  //  gen = assembleModule(root.\module.name, filteredSpecs, as, cfg, chk);
-  //  genTm = rebelTModelFromModule(gen, {}, pcfg);
-  //}
+  Graph[Spec] newSpcDep = extractSpecDependencyGraph({<resolvedAndCheckedModule(gen,genTm,now()), resolvedAndCheckedModule(gen,genTm,now())>});
+  if (size(newSpcDep) != size(spcDep)) {
+    filteredSpecs = filterNonReferencedSpecs(newSpcDep, genTm, findConfig(gen));  
+    gen = assembleModule(root.\module.name, filteredSpecs, as, cfg, chk);
+    genTm = rebelTModelFromModule(gen, {}, pcfg);
+  }
   //println("After filtering one last time: <(cpuTime() - startTime) / 1000000>ms");
     
   if (saveGenModule) {

@@ -34,5 +34,6 @@ config Small = ib1,ib2:MockIBAN abstracts IBAN,
                
 assert CanSettleInstruction = eventually exists ob:OriginatorBank | settle on ob;
 run CanSettleInstruction from Small in max 2 steps expect trace; 
+//run CanSettleInstruction from Full in max 2 steps expect trace; 
 
               
