@@ -3,14 +3,14 @@ module paper::sepact::services::ClearingAndSettlement
 import paper::sepact::messages::CustomerCreditTransferRequest
 
 import paper::sepact::data::Date
+import paper::sepact::data::Today
 
 // This is a stub, here our case study stops
 spec ClearingAndSettlement
-  
   event accept(req: CustomerCreditTransferRequest)
-    pre: req.requestedExecutionDate.year = Date[NOW].year, 
-         req.requestedExecutionDate.month = Date[NOW].month, 
-         req.requestedExecutionDate.day = Date[NOW].day;
+    pre: req.requestedExecutionDate.year  = Today[NOW].year, 
+         req.requestedExecutionDate.month = Today[NOW].month, 
+         req.requestedExecutionDate.day   = Today[NOW].day;
     
   states:
     active->active: accept;

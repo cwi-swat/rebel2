@@ -11,3 +11,4 @@ assert NoIbanWithMultipleBbanSizes = always forall ib1,ib2:IBAN | (ib1.cc = ib2.
 run CanCreateAnIban from SomeIban in max 0 steps expect trace;
 check AllCountriesAreConfigured from SomeIban in max 0 steps expect no trace;
 check NoIbanWithMultipleBbanSizes from SomeIban in max 0 steps expect no trace;
+ 

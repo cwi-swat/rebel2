@@ -4,15 +4,12 @@ import paper::sepact::data::Party
 import paper::sepact::data::IBAN
 import paper::sepact::data::Money
 import paper::sepact::data::Date
-import paper::sepact::data::ID
+import paper::sepact::data::ID 
+import paper::sepact::data::Today
 
 spec CustomerCreditTransferRequest
-  originatorId: ?ID,
   originator: Party,
   originatorIBAN: IBAN,
-  
-  originatorReferenceId: ?ID,
-  originatorReferenceParty: ?Party,
   
   amount: Money,
   remittanceInfo: String,
@@ -24,23 +21,45 @@ spec CustomerCreditTransferRequest
   beneficiaryBIC: String,
   
   purpose: String,
-  purposeCategory: String;
+  purposeCategory: String; 
   
-  //init event create(
+  init event create(originator: Party, 
+                    originatorIBAN: IBAN, 
+                    amount: Money, 
+                    remittanceInfo: String, 
+                    requestedExecutionDate: Date, 
+                    beneficiaryId: ID,
+                    beneficiary: Party,
+                    beneficiaryIBAN: IBAN,
+                    beneficiaryBIC: String,
+                    purpose: String,
+                    purposeCategory: String)
+    pre:  // can't wire money to yourself
+          originatorIBAN != beneficiaryIBAN,
+          // the executiondate must be in the future
+          requestedExecutionDate.year >= Today[NOW].year, requestedExecutionDate.month >= Today[NOW].month, requestedExecutionDate.day >= Today[NOW].day,
+          // the amount must be positive and in Euros
+          amount.cents > 0, amount.currency = Currency[EUR];
+          
+    post: this.originator' = originator, 
+          this.originatorIBAN' = originatorIBAN,
+          this.amount' = amount, 
+          this.remittanceInfo' = remittanceInfo,
+          this.requestedExecutionDate' = requestedExecutionDate,
+          this.beneficiary' = beneficiary,
+          this.beneficiaryId' = beneficiaryId,
+          this.beneficiaryIBAN' = beneficiaryIBAN,
+          this.beneficiaryBIC' = beneficiaryBIC,
+          this.purpose' = purpose,
+          this.purposeCategory' = purposeCategory, 
+         
+          this.originator' != this.beneficiary'; 
+ 
+  final event book()
+    pre:  this.requestedExecutionDate.year = Today[NOW].year,
+          this.requestedExecutionDate.month = Today[NOW].month,
+          this.requestedExecutionDate.day = Today[NOW].day;
   
-  fact Immutable = always-last forall cctr: CustomerCreditTransferRequest |
-    cctr.originatorId' = cctr.originatorId &&
-    cctr.originator' = cctr.originator &&
-    cctr.originatorIBAN' = cctr.originatorIBAN &&
-    cctr.originatorReferenceId' = cctr.originatorReferenceId &&
-    cctr.originatorReferenceParty' = cctr.originatorReferenceParty &&
-    cctr.amount' = cctr.amount &&
-    cctr.remittanceInfo' = cctr.remittanceInfo &&
-    cctr.requestedExecutionDate' = cctr.requestedExecutionDate &&
-    cctr.beneficiaryId' = cctr.beneficiaryId &&
-    cctr.beneficiary' = cctr.beneficiary &&
-    cctr.beneficiaryIBAN' = cctr.beneficiaryIBAN &&
-    cctr.beneficiaryBIC' = cctr.beneficiaryBIC &&
-    cctr.purpose' = cctr.purpose &&
-    cctr.purposeCategory' = cctr.purposeCategory;
-  
+  states:
+    (*) -> created: create;
+    created -> (*): book;

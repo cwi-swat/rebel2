@@ -1,18 +1,24 @@
 module paper::sepact::data::IBAN
 
-spec IBANCountry[AL,DZ,AD,AO,AT,AZ,BH,BY,BE,BJ,BA,BR,VG,BG,BF,BI,CM,CV,FR,CG,CR,HR,CY,CZ,DK,DO,EG,EE,FO,FI,GA,GE,DE,
-                 GI,GR,GL,GT,GG,HU,IS,IR,IQ,IE,IM,IL,IT,CI,JE,JO,KZ,XK,KW,LV,LB,LI,LT,LU,MK,MG,ML,MT,MR,MU,MD,MC,ME,
-                 MZ,NL,NO,PK,PS,PL,PT,QA,RO,LC,SM,ST,SA,SN,RS,SC,SK,SI,ES,SE,CH,TL,TN,TR,UA,AE,GB,VA]
-
 spec IBAN
-  cc: IBANCountry,
+  cc: String,
   checkDigits: String,
   bban: String;
-  //complete: String;
   
-  //fact RemainderIsOne = always forall iban: IBAN | toInt(iban.complete) % 11 = 1; 
-  //fact CompleteLengthIsBBANPlusFour = always forall iban: IBAN | iban.complete.length = iban.bban.length + 4;
-  
+  fact CountriesList = always forall iban: IBAN |          (iban.cc = "AL" || iban.cc = "DZ" || iban.cc = "AD" || iban.cc = "AO" ||
+      iban.cc = "AT" || iban.cc = "AZ" || iban.cc = "BH" || iban.cc = "BY" || iban.cc = "BE" || iban.cc = "BJ" || iban.cc = "BA" || iban.cc = "BH" ||
+      iban.cc = "BR" || iban.cc = "VG" || iban.cc = "BG" || iban.cc = "BF" || iban.cc = "BI" || iban.cc = "CM" || iban.cc = "CV" || iban.cc = "FR" ||
+      iban.cc = "CG" || iban.cc = "CR" || iban.cc = "HR" || iban.cc = "CY" || iban.cc = "CZ" || iban.cc = "DK" || iban.cc = "DO" || iban.cc = "EG" ||
+      iban.cc = "EE" || iban.cc = "FO" || iban.cc = "FI" || iban.cc = "GA" || iban.cc = "GE" || iban.cc = "DE" || iban.cc = "GI" || iban.cc = "GR" ||
+      iban.cc = "GL" || iban.cc = "GT" || iban.cc = "GG" || iban.cc = "HU" || iban.cc = "IS" || iban.cc = "IR" || iban.cc = "IQ" || iban.cc = "IE" ||
+      iban.cc = "IM" || iban.cc = "IL" || iban.cc = "IT" || iban.cc = "CI" || iban.cc = "JE" || iban.cc = "JO" || iban.cc = "KZ" || iban.cc = "XK" ||
+      iban.cc = "KW" || iban.cc = "LV" || iban.cc = "LB" || iban.cc = "LI" || iban.cc = "LT" || iban.cc = "LU" || iban.cc = "MK" || iban.cc = "MG" ||
+      iban.cc = "ML" || iban.cc = "MT" || iban.cc = "MR" || iban.cc = "MU" || iban.cc = "MD" || iban.cc = "MC" || iban.cc = "ME" || iban.cc = "MZ" ||
+      iban.cc = "NL" || iban.cc = "NO" || iban.cc = "PK" || iban.cc = "PS" || iban.cc = "PL" || iban.cc = "PT" || iban.cc = "QA" || iban.cc = "RO" ||
+      iban.cc = "LC" || iban.cc = "SM" || iban.cc = "ST" || iban.cc = "SA" || iban.cc = "SN" || iban.cc = "RS" || iban.cc = "SC" || iban.cc = "SK" ||
+      iban.cc = "SI" || iban.cc = "ES" || iban.cc = "SE" || iban.cc = "CH" || iban.cc = "TL" || iban.cc = "TN" || iban.cc = "TR" || iban.cc = "UA" ||
+      iban.cc = "AE" || iban.cc = "GB" || iban.cc = "VA");
+          
   fact AlwaysTwoCheckDigits = always forall iban: IBAN | iban.checkDigits.length = 2 && toInt(substr(iban.checkDigits,0,1)) >= 0 && toInt(substr(iban.checkDigits,0,1)) <= 9 && toInt(substr(iban.checkDigits,1,1)) >= 0 && toInt(substr(iban.checkDigits,1,1)) <= 9;
     
   fact Immutable = always-last forall iban:IBAN | iban.cc'=iban.cc && iban.checkDigits'= iban.checkDigits && iban.bban'= iban.bban;  
@@ -21,99 +27,99 @@ spec IBAN
   //Country Length  First 2 characters (letters)   
   fact MaxBbanLength = 
     always forall iban:IBAN | 
-           if iban.cc = IBANCountry[AL] then iban.bban.length = 28 //Albania*  28 an AL
-      else if iban.cc = IBANCountry[DZ] then iban.bban.length = 24 //Algeria 24 an DZ
-      else if iban.cc = IBANCountry[AD] then iban.bban.length = 24 //Andorra*  24 an AD
-      else if iban.cc = IBANCountry[AO] then iban.bban.length = 25 //Angola  25 an AO
-      else if iban.cc = IBANCountry[AT] then iban.bban.length = 20 //Austria** 20 an AT
-      else if iban.cc = IBANCountry[AZ] then iban.bban.length = 28 //Azerbaijan* 28 an AZ
-      else if iban.cc = IBANCountry[BH] then iban.bban.length = 22 //Bahrain*  22 an BH
-      else if iban.cc = IBANCountry[BY] then iban.bban.length = 28 //Belarus*  28 an BY
-      else if iban.cc = IBANCountry[BE] then iban.bban.length = 16 //Belgium** 16 an BE
-      else if iban.cc = IBANCountry[BJ] then iban.bban.length = 28 //Benin 28 an BJ
-      else if iban.cc = IBANCountry[BA] then iban.bban.length = 20 //Bosnia and Herzegovina  20 an BA
-      else if iban.cc = IBANCountry[BH] then iban.bban.length = 22 //Bahrain* 22 an BH
-      else if iban.cc = IBANCountry[BR] then iban.bban.length = 29 //Brazil  29 an BR
-      else if iban.cc = IBANCountry[VG] then iban.bban.length = 24 //British Virgin Islands  24 an VG
-      else if iban.cc = IBANCountry[BG] then iban.bban.length = 22 //Bulgaria**  22 an BG  
-      else if iban.cc = IBANCountry[BF] then iban.bban.length = 27 //Burkina Faso  27 an BF
-      else if iban.cc = IBANCountry[BI] then iban.bban.length = 16 //Burundi 16 an BI     
-      else if iban.cc = IBANCountry[CM] then iban.bban.length = 27 //Cameroon  27 an CM
-      else if iban.cc = IBANCountry[CV] then iban.bban.length = 25 //Cape Verde  25 an CV
-      else if iban.cc = IBANCountry[FR] then iban.bban.length = 27 //France 27 an FR
-      else if iban.cc = IBANCountry[CG] then iban.bban.length = 27 //Congo 27 an CG
-      else if iban.cc = IBANCountry[CR] then iban.bban.length = 21 //Costa Rica  21 an CR
-      else if iban.cc = IBANCountry[HR] then iban.bban.length = 21 //Croatia** 21 an HR
-      else if iban.cc = IBANCountry[CY] then iban.bban.length = 28 //Cyprus**  28 an CY
-      else if iban.cc = IBANCountry[CZ] then iban.bban.length = 24 //Czech Republic**  24 an CZ
-      else if iban.cc = IBANCountry[DK] then iban.bban.length = 18 //Denmark** 18 an DK
-      else if iban.cc = IBANCountry[DO] then iban.bban.length = 28 //Dominican Republic  28 an DO
-      else if iban.cc = IBANCountry[EG] then iban.bban.length = 27 //Egypt 27 an EG
-      else if iban.cc = IBANCountry[EE] then iban.bban.length = 20 //Estonia** 20 an EE
-      else if iban.cc = IBANCountry[FO] then iban.bban.length = 18 //Faroe Islands*  18 an FO
-      else if iban.cc = IBANCountry[FI] then iban.bban.length = 18 //Finland** 18 an FI
-      else if iban.cc = IBANCountry[GA] then iban.bban.length = 27 //Gabon 27 an GA
-      else if iban.cc = IBANCountry[GE] then iban.bban.length = 22 //Georgia*  22 an GE
-      else if iban.cc = IBANCountry[DE] then iban.bban.length = 22 //Germany** 22 an DE
-      else if iban.cc = IBANCountry[GI] then iban.bban.length = 23 //Gibraltar** 23 an GI
-      else if iban.cc = IBANCountry[GR] then iban.bban.length = 27 //Greece**  27 an GR
-      else if iban.cc = IBANCountry[GL] then iban.bban.length = 18 //Greenland*  18 an GL
-      else if iban.cc = IBANCountry[GT] then iban.bban.length = 28 //Guatemala 28 an GT
-      else if iban.cc = IBANCountry[GG] then iban.bban.length = 22 //Guernsey**  22 an GG
-      else if iban.cc = IBANCountry[HU] then iban.bban.length = 28 //Hungary** 28 an HU
-      else if iban.cc = IBANCountry[IS] then iban.bban.length = 26 //Iceland** 26 an IS
-      else if iban.cc = IBANCountry[IR] then iban.bban.length = 26 //Iran  26 an IR
-      else if iban.cc = IBANCountry[IQ] then iban.bban.length = 23 //Iraq* 23 an IQ
-      else if iban.cc = IBANCountry[IE] then iban.bban.length = 22 //Ireland** 22 an IE
-      else if iban.cc = IBANCountry[IM] then iban.bban.length = 22 //Isle of Man** 22 an IM
-      else if iban.cc = IBANCountry[IL] then iban.bban.length = 23 //Israel* 23 an IL
-      else if iban.cc = IBANCountry[IT] then iban.bban.length = 27 //Italy** 27 an IT
-      else if iban.cc = IBANCountry[CI] then iban.bban.length = 28 //Ivory Coast 28 an CI
-      else if iban.cc = IBANCountry[JE] then iban.bban.length = 22 //Jersey**  22 an JE
-      else if iban.cc = IBANCountry[JO] then iban.bban.length = 30 //Jordan* 30 an JO
-      else if iban.cc = IBANCountry[KZ] then iban.bban.length = 20 //Kazakhstan  20 an KZ
-      else if iban.cc = IBANCountry[XK] then iban.bban.length = 20 //Kosovo  20 an XK
-      else if iban.cc = IBANCountry[KW] then iban.bban.length = 30 //Kuwait* 30 an KW
-      else if iban.cc = IBANCountry[LV] then iban.bban.length = 21 //Latvia**  21 an LV
-      else if iban.cc = IBANCountry[LB] then iban.bban.length = 28 //Lebanon*  28 an LB
-      else if iban.cc = IBANCountry[LI] then iban.bban.length = 21 //Liechtenstein** 21 an LI
-      else if iban.cc = IBANCountry[LT] then iban.bban.length = 20 //Lithuania** 20 an LT
-      else if iban.cc = IBANCountry[LU] then iban.bban.length = 20 //Luxembourg**  20 an LU
-      else if iban.cc = IBANCountry[MK] then iban.bban.length = 19 //North Macedonia 19 an MK
-      else if iban.cc = IBANCountry[MG] then iban.bban.length = 27 //Madagascar  27 an MG
-      else if iban.cc = IBANCountry[ML] then iban.bban.length = 28 //Mali  28 an ML
-      else if iban.cc = IBANCountry[MT] then iban.bban.length = 31 //Malta** 31 an MT
-      else if iban.cc = IBANCountry[MR] then iban.bban.length = 27 //Mauritania* 27 an MR
-      else if iban.cc = IBANCountry[MU] then iban.bban.length = 30 //Mauritius 30 an MU
-      else if iban.cc = IBANCountry[MD] then iban.bban.length = 24 //Moldova*  24 an MD
-      else if iban.cc = IBANCountry[MC] then iban.bban.length = 27 //Monaco**  27 an MC
-      else if iban.cc = IBANCountry[ME] then iban.bban.length = 22 //Montenegro  22 an ME
-      else if iban.cc = IBANCountry[MZ] then iban.bban.length = 25 //Mozambique  25 an MZ
-      else if iban.cc = IBANCountry[NL] then iban.bban.length = 18 //Netherlands** 18 an NL
-      else if iban.cc = IBANCountry[NO] then iban.bban.length = 15 //Norway**  15 an NO
-      else if iban.cc = IBANCountry[PK] then iban.bban.length = 24 //Pakistan* 24 an PK
-      else if iban.cc = IBANCountry[PS] then iban.bban.length = 29 //Palestine, State of*  29 an PS
-      else if iban.cc = IBANCountry[PL] then iban.bban.length = 28 //Poland**  28 an PL
-      else if iban.cc = IBANCountry[PT] then iban.bban.length = 25 //Portugal**  25 an PT
-      else if iban.cc = IBANCountry[QA] then iban.bban.length = 29 //Qatar*  29 an QA
-      else if iban.cc = IBANCountry[RO] then iban.bban.length = 24 //Romania** 24 an RO
-      else if iban.cc = IBANCountry[LC] then iban.bban.length = 32 //Saint Lucia 32 an LC
-      else if iban.cc = IBANCountry[SM] then iban.bban.length = 27 //San Marino**  27 an SM
-      else if iban.cc = IBANCountry[ST] then iban.bban.length = 25 //Sao Tome and Principe 25 an ST
-      else if iban.cc = IBANCountry[SA] then iban.bban.length = 24 //Saudi Arabia* 24 an SA
-      else if iban.cc = IBANCountry[SN] then iban.bban.length = 28 //Senegal 28 an SN
-      else if iban.cc = IBANCountry[RS] then iban.bban.length = 22 //Serbia  22 an RS
-      else if iban.cc = IBANCountry[SC] then iban.bban.length = 31 //Seychelles  31 an SC
-      else if iban.cc = IBANCountry[SK] then iban.bban.length = 24 //Slovakia**  24 an SK
-      else if iban.cc = IBANCountry[SI] then iban.bban.length = 19 //Slovenia**  19 an SI
-      else if iban.cc = IBANCountry[ES] then iban.bban.length = 24 //Spain** 24 an ES
-      else if iban.cc = IBANCountry[SE] then iban.bban.length = 24 //Sweden**  24 an SE
-      else if iban.cc = IBANCountry[CH] then iban.bban.length = 21 //Switzerland** 21 an CH
-      else if iban.cc = IBANCountry[TL] then iban.bban.length = 23 //Timor-Leste 23 an TL
-      else if iban.cc = IBANCountry[TN] then iban.bban.length = 24 //Tunisia*  24 an TN
-      else if iban.cc = IBANCountry[TR] then iban.bban.length = 26 //Turkey* 26 an TR
-      else if iban.cc = IBANCountry[UA] then iban.bban.length = 29 //Ukraine 29 an UA
-      else if iban.cc = IBANCountry[AE] then iban.bban.length = 23 //United Arab Emirates* 23 an AE
-      else if iban.cc = IBANCountry[GB] then iban.bban.length = 22 //United Kingdom**  22 an GB
-      else if iban.cc = IBANCountry[VA] then iban.bban.length = 22 //Vatican City State/the Holy See 22 an VA
+           if iban.cc = "AL" then iban.bban.length = 28 //Albania*  28 an AL
+      else if iban.cc = "DZ" then iban.bban.length = 24 //Algeria 24 an DZ
+      else if iban.cc = "AD" then iban.bban.length = 24 //Andorra*  24 an AD
+      else if iban.cc = "AO" then iban.bban.length = 25 //Angola  25 an AO
+      else if iban.cc = "AT" then iban.bban.length = 20 //Austria** 20 an AT
+      else if iban.cc = "AZ" then iban.bban.length = 28 //Azerbaijan* 28 an AZ
+      else if iban.cc = "BH" then iban.bban.length = 22 //Bahrain*  22 an BH
+      else if iban.cc = "BY" then iban.bban.length = 28 //Belarus*  28 an BY
+      else if iban.cc = "BE" then iban.bban.length = 16 //Belgium** 16 an BE
+      else if iban.cc = "BJ" then iban.bban.length = 28 //Benin 28 an BJ
+      else if iban.cc = "BA" then iban.bban.length = 20 //Bosnia and Herzegovina  20 an BA
+      else if iban.cc = "BH" then iban.bban.length = 22 //Bahrain* 22 an BH
+      else if iban.cc = "BR" then iban.bban.length = 29 //Brazil  29 an BR
+      else if iban.cc = "VG" then iban.bban.length = 24 //British Virgin Islands  24 an VG
+      else if iban.cc = "BG" then iban.bban.length = 22 //Bulgaria**  22 an BG  
+      else if iban.cc = "BF" then iban.bban.length = 27 //Burkina Faso  27 an BF
+      else if iban.cc = "BI" then iban.bban.length = 16 //Burundi 16 an BI     
+      else if iban.cc = "CM" then iban.bban.length = 27 //Cameroon  27 an CM
+      else if iban.cc = "CV" then iban.bban.length = 25 //Cape Verde  25 an CV
+      else if iban.cc = "FR" then iban.bban.length = 27 //France 27 an FR
+      else if iban.cc = "CG" then iban.bban.length = 27 //Congo 27 an CG
+      else if iban.cc = "CR" then iban.bban.length = 21 //Costa Rica  21 an CR
+      else if iban.cc = "HR" then iban.bban.length = 21 //Croatia** 21 an HR
+      else if iban.cc = "CY" then iban.bban.length = 28 //Cyprus**  28 an CY
+      else if iban.cc = "CZ" then iban.bban.length = 24 //Czech Republic**  24 an CZ
+      else if iban.cc = "DK" then iban.bban.length = 18 //Denmark** 18 an DK
+      else if iban.cc = "DO" then iban.bban.length = 28 //Dominican Republic  28 an DO
+      else if iban.cc = "EG" then iban.bban.length = 27 //Egypt 27 an EG
+      else if iban.cc = "EE" then iban.bban.length = 20 //Estonia** 20 an EE
+      else if iban.cc = "FO" then iban.bban.length = 18 //Faroe Islands*  18 an FO
+      else if iban.cc = "FI" then iban.bban.length = 18 //Finland** 18 an FI
+      else if iban.cc = "GA" then iban.bban.length = 27 //Gabon 27 an GA
+      else if iban.cc = "GE" then iban.bban.length = 22 //Georgia*  22 an GE
+      else if iban.cc = "DE" then iban.bban.length = 22 //Germany** 22 an DE
+      else if iban.cc = "GI" then iban.bban.length = 23 //Gibraltar** 23 an GI
+      else if iban.cc = "GR" then iban.bban.length = 27 //Greece**  27 an GR
+      else if iban.cc = "GL" then iban.bban.length = 18 //Greenland*  18 an GL
+      else if iban.cc = "GT" then iban.bban.length = 28 //Guatemala 28 an GT
+      else if iban.cc = "GG" then iban.bban.length = 22 //Guernsey**  22 an GG
+      else if iban.cc = "HU" then iban.bban.length = 28 //Hungary** 28 an HU
+      else if iban.cc = "IS" then iban.bban.length = 26 //Iceland** 26 an IS
+      else if iban.cc = "IR" then iban.bban.length = 26 //Iran  26 an IR
+      else if iban.cc = "IQ" then iban.bban.length = 23 //Iraq* 23 an IQ
+      else if iban.cc = "IE" then iban.bban.length = 22 //Ireland** 22 an IE
+      else if iban.cc = "IM" then iban.bban.length = 22 //Isle of Man** 22 an IM
+      else if iban.cc = "IL" then iban.bban.length = 23 //Israel* 23 an IL
+      else if iban.cc = "IT" then iban.bban.length = 27 //Italy** 27 an IT
+      else if iban.cc = "CI" then iban.bban.length = 28 //Ivory Coast 28 an CI
+      else if iban.cc = "JE" then iban.bban.length = 22 //Jersey**  22 an JE
+      else if iban.cc = "JO" then iban.bban.length = 30 //Jordan* 30 an JO
+      else if iban.cc = "KZ" then iban.bban.length = 20 //Kazakhstan  20 an KZ
+      else if iban.cc = "XK" then iban.bban.length = 20 //Kosovo  20 an XK
+      else if iban.cc = "KW" then iban.bban.length = 30 //Kuwait* 30 an KW
+      else if iban.cc = "LV" then iban.bban.length = 21 //Latvia**  21 an LV
+      else if iban.cc = "LB" then iban.bban.length = 28 //Lebanon*  28 an LB
+      else if iban.cc = "LI" then iban.bban.length = 21 //Liechtenstein** 21 an LI
+      else if iban.cc = "LT" then iban.bban.length = 20 //Lithuania** 20 an LT
+      else if iban.cc = "LU" then iban.bban.length = 20 //Luxembourg**  20 an LU
+      else if iban.cc = "MK" then iban.bban.length = 19 //North Macedonia 19 an MK
+      else if iban.cc = "MG" then iban.bban.length = 27 //Madagascar  27 an MG
+      else if iban.cc = "ML" then iban.bban.length = 28 //Mali  28 an ML
+      else if iban.cc = "MT" then iban.bban.length = 31 //Malta** 31 an MT
+      else if iban.cc = "MR" then iban.bban.length = 27 //Mauritania* 27 an MR
+      else if iban.cc = "MU" then iban.bban.length = 30 //Mauritius 30 an MU
+      else if iban.cc = "MD" then iban.bban.length = 24 //Moldova*  24 an MD
+      else if iban.cc = "MC" then iban.bban.length = 27 //Monaco**  27 an MC
+      else if iban.cc = "ME" then iban.bban.length = 22 //Montenegro  22 an ME
+      else if iban.cc = "MZ" then iban.bban.length = 25 //Mozambique  25 an MZ
+      else if iban.cc = "NL" then iban.bban.length = 18 //Netherlands** 18 an NL
+      else if iban.cc = "NO" then iban.bban.length = 15 //Norway**  15 an NO
+      else if iban.cc = "PK" then iban.bban.length = 24 //Pakistan* 24 an PK
+      else if iban.cc = "PS" then iban.bban.length = 29 //Palestine, State of*  29 an PS
+      else if iban.cc = "PL" then iban.bban.length = 28 //Poland**  28 an PL
+      else if iban.cc = "PT" then iban.bban.length = 25 //Portugal**  25 an PT
+      else if iban.cc = "QA" then iban.bban.length = 29 //Qatar*  29 an QA
+      else if iban.cc = "RO" then iban.bban.length = 24 //Romania** 24 an RO
+      else if iban.cc = "LC" then iban.bban.length = 32 //Saint Lucia 32 an LC
+      else if iban.cc = "SM" then iban.bban.length = 27 //San Marino**  27 an SM
+      else if iban.cc = "ST" then iban.bban.length = 25 //Sao Tome and Principe 25 an ST
+      else if iban.cc = "SA" then iban.bban.length = 24 //Saudi Arabia* 24 an SA
+      else if iban.cc = "SN" then iban.bban.length = 28 //Senegal 28 an SN
+      else if iban.cc = "RS" then iban.bban.length = 22 //Serbia  22 an RS
+      else if iban.cc = "SC" then iban.bban.length = 31 //Seychelles  31 an SC
+      else if iban.cc = "SK" then iban.bban.length = 24 //Slovakia**  24 an SK
+      else if iban.cc = "SI" then iban.bban.length = 19 //Slovenia**  19 an SI
+      else if iban.cc = "ES" then iban.bban.length = 24 //Spain** 24 an ES
+      else if iban.cc = "SE" then iban.bban.length = 24 //Sweden**  24 an SE
+      else if iban.cc = "CH" then iban.bban.length = 21 //Switzerland** 21 an CH
+      else if iban.cc = "TL" then iban.bban.length = 23 //Timor-Leste 23 an TL
+      else if iban.cc = "TN" then iban.bban.length = 24 //Tunisia*  24 an TN
+      else if iban.cc = "TR" then iban.bban.length = 26 //Turkey* 26 an TR
+      else if iban.cc = "UA" then iban.bban.length = 29 //Ukraine 29 an UA
+      else if iban.cc = "AE" then iban.bban.length = 23 //United Arab Emirates* 23 an AE
+      else if iban.cc = "GB" then iban.bban.length = 22 //United Kingdom**  22 an GB
+      else if iban.cc = "VA" then iban.bban.length = 22 //Vatican City State/the Holy See 22 an VA
       else iban.bban.length = 0;

@@ -6,4 +6,4 @@ import paper::sepact::data::IBAN
 config BicCheck = bc:BICChecker, iban: IBAN;
 
 assert CanCheckBic = exists b:BICChecker, i:IBAN | eventually checkBic on b;
-run CanCheckBic from BicCheck in max 1 steps expect trace;
+run CanCheckBic from BicCheck in max 1 steps expect trace; 

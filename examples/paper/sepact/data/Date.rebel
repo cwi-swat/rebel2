@@ -1,6 +1,8 @@
 module paper::sepact::data::Date
 
-spec Date[NOW*]
+import paper::sepact::data::Today
+
+spec Date
   year: Integer,
   month: Integer,
   day: Integer;
@@ -13,7 +15,12 @@ spec Date[NOW*]
         (this.year = other.year && this.month > other.month) ||
         (this.year = other.year && this.month = other.month && this.day > other.day);
   
-    fact CorrectDate
+  event later()
+    pre: this.year > Today[NOW].year ||
+         (this.year = Today[NOW].year && this.month > Today[NOW].month) ||
+         (this.year = Today[NOW].year && this.month = Today[NOW].month && this.day = Today[NOW].day);
+  
+  fact CorrectDate
     = always forall d:Date | (
         d.year >= 1900 && d.year <= 2200 &&
         d.month > 0 && d.month < 13 &&
@@ -31,10 +38,5 @@ spec Date[NOW*]
         if d.month = 11 then d.day < 31 else
         d.day < 32); 
   
-  fact TimeAlwaysMovesForward
-    = always-last (Date[NOW].year' > Date[NOW].year ||
-                  (Date[NOW].year' = Date[NOW].year && Date[NOW].month' > Date[NOW].month) ||
-                  (Date[NOW].year' = Date[NOW].year && Date[NOW].month' = Date[NOW].month && Date[NOW].day' = Date[NOW].day)); 
-  
   states:
-    created->created: after,same;   
+    created->created: after,same,later;   

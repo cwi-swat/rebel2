@@ -5,15 +5,12 @@ import paper::sepact::data::Party
 import paper::sepact::data::IBAN
 import paper::sepact::data::Money
 import paper::sepact::data::Date
+import paper::sepact::data::Today
 import paper::sepact::data::ID
 
 // transitive objects
 import paper::sepact::data::Address
 import paper::sepact::data::Country
-
-spec Mock
-  states:
-    m->m: empty;
 
 config SingleCT = p1,p2:Party,
                   a1,a2:Address,
@@ -21,8 +18,21 @@ config SingleCT = p1,p2:Party,
                   m: Money,
                   d: Date,
                   id1,id2: ID,
-                  ct: CustomerCreditTransferRequest,
-                  mock: Mock;
+                  ct: CustomerCreditTransferRequest is uninitialized;
+
+spec MockIBAN
+
+config SimpleCT = ib1,ib2:MockIBAN abstracts IBAN, 
+                  m: Money,
+                  d: Date,  
+                  ct: CustomerCreditTransferRequest forget originator, remittanceInfo, 
+                    beneficiaryId, beneficiary, beneficiaryBIC, purpose, purposeCategory is uninitialized;
                   
-assert CTCanBeConstructed = eventually exists ct: CustomerCreditTransferRequest | ct.purpose = "foo";
+assert CTCanBeConstructed = eventually exists ct: CustomerCreditTransferRequest | ct is initialized;
 run CTCanBeConstructed from SingleCT in max 1 steps expect trace;
+ 
+assert CTCanBeBooked = eventually exists ct: CustomerCreditTransferRequest | ct is finalized;
+run CTCanBeBooked from SimpleCT in max 2 steps expect trace;
+
+assert CTIsImmutable = eventually exists ct:CustomerCreditTransferRequest | (ct is initialized => ct.purpose = ct.purpose');
+check CTIsImmutable from SingleCT in max 3 steps expect no trace; 

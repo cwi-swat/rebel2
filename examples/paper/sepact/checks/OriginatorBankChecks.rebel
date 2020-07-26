@@ -8,32 +8,39 @@ import paper::sepact::data::IBAN
 import paper::sepact::data::Money
 import paper::sepact::data::Date
 import paper::sepact::data::ID
-
+ 
 import paper::sepact::services::BICChecker
 import paper::sepact::services::ClearingAndSettlement
 
-config Full = ob: OriginatorBank,
-              p1,p2:Party,
+config Full = ob: OriginatorBank is accepting,
+              p1,p2:Party, 
               a1,a2:Address,
               ib1,ib2:IBAN, 
               m: Money,
               d: Date,
               id1,id2: ID,
-              ct: CustomerCreditTransferRequest,
+              ct: CustomerCreditTransferRequest is uninitialized,
               biccheck: BICChecker,
               cas:ClearingAndSettlement;
 
-spec MockIBAN
+spec MockIBAN  
+  cc: String,
+  bban: String;
   
-config Small = ib1,ib2:MockIBAN abstracts IBAN,
-               m: Money,
-               d: Date,
-               cas:ClearingAndSettlement,
-               ob: OriginatorBank forget bicChecker,
-               ct: CustomerCreditTransferRequest forget originator, originatorId, originatorReferenceId, originatorReferenceParty, beneficiary, beneficiaryId, remittanceInfo;
+  states:
+    a->a:empty; 
+    
+config Small = ib1,ib2:MockIBAN abstracts IBAN, 
+               m: Money, 
+               d: Date, 
+               bicChecker: BICChecker,
+               cas:ClearingAndSettlement, 
+               ob: OriginatorBank is accepting,
+               ct: CustomerCreditTransferRequest forget originator, remittanceInfo, 
+                  beneficiaryId, beneficiary, purpose, purposeCategory is uninitialized;
                
 assert CanSettleInstruction = eventually exists ob:OriginatorBank | settle on ob;
-run CanSettleInstruction from Small in max 2 steps expect trace; 
-//run CanSettleInstruction from Full in max 2 steps expect trace; 
+run CanSettleInstruction from Small in max 3 steps expect trace; 
+//run CanSettleInstruction from Full in max 3 steps expect trace; 
 
               

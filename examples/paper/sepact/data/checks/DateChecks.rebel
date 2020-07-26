@@ -7,5 +7,5 @@ config OneDate = d:Date;
 assert CanInitDate = eventually exists d:Date | d.year = 2020;
 run CanInitDate from OneDate in max 0 steps expect trace;
 
-assert CanInitDateWhichIsInTheFuture = eventually exists d:Date | after on d;
+assert CanInitDateWhichIsInTheFuture = eventually exists d:Date | later on d;
 run CanInitDateWhichIsInTheFuture from OneDate in max 1 steps expect trace;

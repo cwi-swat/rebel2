@@ -10,32 +10,21 @@ import paper::sepact::data::IBAN
 import paper::sepact::data::Money
 
 import paper::sepact::services::ClearingAndSettlement
-
+ 
 spec OriginatorBank 
-  instructions: CustomerCreditTransferRequest, // BUG: should be a set
+  instruction: CustomerCreditTransferRequest, // BUG: should be a set
   bicChecker: BICChecker,
   cas: ClearingAndSettlement;
    
   event accept(req: CustomerCreditTransferRequest)
-    pre:  // the request can not already be part of the handled instructions
-          //req notin this.instructions, 
-          // can't wire money to itself
-          req.originator != req.beneficiary, req.originatorId != req.beneficiaryId, req.originatorIBAN != req.beneficiaryIBAN,
-          // can't wire negative money
-          req.amount.cents > 0,
-          // can only wire payments in EURO
-          req.amount.currency = Currency[EUR],
-          // execution date must be today or somewhere in the future 
-          req.requestedExecutionDate.year >= Date[NOW].year, req.requestedExecutionDate.month >= Date[NOW].month, req.requestedExecutionDate.day >= Date[NOW].day,
-          // the added BIC is correct
-          this.bicChecker.checkBic(req.beneficiaryIBAN, req.beneficiaryBIC);
+    pre:  this.bicChecker.checkBic(req.beneficiaryIBAN, req.beneficiaryBIC);
     post: // add request to the instruction set
           //this.instructions' = this.instructions + req;
-          this.instructions' = req;
-           
+          this.instruction' = req;
          
-  event settle() 
-    pre: this.cas.accept(this.instructions);
+  event settle()  
+    pre: this.cas.accept(this.instruction), this.instruction.book();
              
   states:
-    created->w: accept, settle;
+    accepting->waiting: accept;
+    waiting->accepting: settle; 
