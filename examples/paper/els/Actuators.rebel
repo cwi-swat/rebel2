@@ -8,36 +8,44 @@ spec Light[ON,OFF]
 spec DirectionLights
   sensors: SensorValues,
   cycle: Integer,
-  left: Integer,
+  left: Integer, 
+  lastBlinkAt: Integer,
   right: Integer; 
   
   event startBlinkLeft() 
-    post: this.left' = 100, this.right' = 0;
+    post: this.left' = 100, this.right' = 0, 
+          this.lastBlinkAt' = Timer[NOW].timepast;
 
   event startBlinkRight() 
-      post: this.left' = 0, this.right' = 100;
+    post: this.left' = 0, this.right' = 100, 
+          this.lastBlinkAt' = Timer[NOW].timepast;
             
   event startFlashBlinkLeft() 
-    post: this.cycle' = 0, this.left' = 100, this.right' = 0;
+    post: this.cycle' = 0, this.left' = 100, this.right' = 0, 
+          this.lastBlinkAt' = Timer[NOW].timepast;
     
   event startFlashBlinkRight() 
-    post: this.cycle' = 0, this.left' = 0, this.right' = 100;
+    post: this.cycle' = 0, this.left' = 0, this.right' = 100, 
+          this.lastBlinkAt' = Timer[NOW].timepast;
   
   event startHazardLights()
     post: if (this.sensors.key' = KeyState[IN_IGNITION_ON]) 
           then (this.left' = 100 && this.right' = 100)  
-          else (this.left' = 50 && this.right' = 50);
+          else (this.left' = 50 && this.right' = 50),
+          this.lastBlinkAt' = Timer[NOW].timepast;
       
   event blink()
-    pre: this.sensors.key = KeyState[IN_IGNITION_ON];
-    post: this.sensors.key' = KeyState[IN_IGNITION_ON];
+    pre:  this.sensors.key = KeyState[IN_IGNITION_ON], 
+          Timer[NOW].timepast - this.lastBlinkAt = 500; // 500 ms per blink cycle 
+    post: this.sensors.key' = KeyState[IN_IGNITION_ON], 
+          this.lastBlinkAt' = Timer[NOW].timepast;
     
     variant left
       pre:  this is lDark || this is lBright;
       post: this.left' = 100 - this.left;
             
     variant right
-      pre: this is rDark || this is rBright;
+      pre:  this is rDark || this is rBright;
       post: this.right' = 100 - this.right;
     
     variant hazard
@@ -45,14 +53,18 @@ spec DirectionLights
       post: this.right' = 100 - this.right, this.left' = 100 - this.left; 
   
   event hazardBlinkWhenOff()
-    pre: this.sensors.key != KeyState[IN_IGNITION_ON];
+    pre:  this.sensors.key != KeyState[IN_IGNITION_ON],
+          Timer[NOW].timepast - this.lastBlinkAt = 500; // 500 ms per blink cycle
     post: this.sensors.key' != KeyState[IN_IGNITION_ON],
+          this.lastBlinkAt' = Timer[NOW].timepast,
           (this is hDark => (this.right' = 50 && this.left' = 50)),
           (this is hBright => (this.right' = 0 && this.left' = 0));
   
   event flashBlink()
-    pre: this.sensors.key = KeyState[IN_IGNITION_ON];
-    post: this.sensors.key' = KeyState[IN_IGNITION_ON];
+    pre:  this.sensors.key = KeyState[IN_IGNITION_ON],
+          Timer[NOW].timepast - this.lastBlinkAt = 500; // 500 ms per blink cycle;
+    post: this.sensors.key' = KeyState[IN_IGNITION_ON],
+          this.lastBlinkAt' = Timer[NOW].timepast;
   
     variant left
       pre:  this.cycle < 6;  // ELS-2 && ELS-5: After 3 cycles (from dark to bright and back) the indicators should be turned off again (only transition left that is possible)    
@@ -68,16 +80,22 @@ spec DirectionLights
     pre: this.cycle = 6;
     post: this.cycle' = 0, this.left' = 0, this.right' = 0, 
           Timer[NOW].timepast' = Timer[NOW].timepast + 1; // The stop follows quickly after the ending of the tip blinking cycle
+  
+  event restartFlashBlinking()
+    variant bright
+      post: this.cycle' = 0;
+    variant dark
+      post: this.cycle' = -1;
            
   event stop()
     post: this.left' = 0, this.right' = 0;
     
   event skip()
       
-  // ELS-1: 60 flashes per minute, dark/bright cycle takes 1 second. After 500 ms always a transition from dark/bright or vice versa  
-  fact Cycle = always forall d:DirectionLights | 
-    ((blink on d || flashBlink on d) => ((Timer[NOW].timepast' - Timer[NOW].timepast >= 500) && (Timer[NOW].timepast' - Timer[NOW].timepast <= 505)));
-   
+  //// ELS-1: 60 flashes per minute, dark/bright cycle takes 1 second. After 500 ms always a transition from dark/bright or vice versa  
+  //fact Cycle = always forall d:DirectionLights | 
+  //  ((blink on d || flashBlink on d) => ((Timer[NOW].timepast' - Timer[NOW].timepast >= 500) && (Timer[NOW].timepast' - Timer[NOW].timepast <= 505)));
+
   // (Tip)Blinking only allowed when key is in ignition on position
   fact KeyInIgnitionDefinesBlinking = always forall d:DirectionLights | 
     (d.sensors.key != KeyState[IN_IGNITION_ON] => (d is off || d is hDark || d is hBright));
@@ -100,11 +118,17 @@ spec DirectionLights
     flashBlinkLeft {
       lFlashBright -> lFlashDark: flashBlink::left;
       lFlashDark -> lFlashBright: flashBlink::left; 
+
+      lFlashDark -> lFlashDark: restartFlashBlinking::dark;
+      lFlashBright -> lFlashBright: restartFlashBlinking::bright;
     }
 
     flashBlinkRight {
       rFlashBright -> rFlashDark: flashBlink::right;
       rFlashDark -> rFlashBright: flashBlink::right; 
+
+      rFlashDark -> rFlashDark: restartFlashBlinking::dark;
+      rFlashBright -> rFlashBright: restartFlashBlinking::bright;
     }
     
     hazardLightsOn {
@@ -179,10 +203,15 @@ check IntensityAlwaysInRange from DirectionLightsAndKeySensor in max 10 steps ex
 assert CanCompleteFlashBlinkCycle = eventually exists d:DirectionLights | d is lFlashBright && eventually (d.cycle = 6 && d is off);
 run CanCompleteFlashBlinkCycle from DirectionLightsAndKeySensor in max 10 steps expect trace;
 
+assert CanResetFlashBlinkCycle = exists d:DirectionLights | eventually (d.cycle = 4 && eventually d.cycle = 1);
+run CanResetFlashBlinkCycle from DirectionLightsAndKeySensor in max 10 steps expect trace;
+
 assert NoFlashBlinkingWhenCycleIsComplete = always exists d:DirectionLights | (d is lFlashBright => d.cycle < 7); 
 check NoFlashBlinkingWhenCycleIsComplete from DirectionLightsAndKeySensor in max 10 steps expect no trace;
 
-assert CanBlinkLeft = eventually exists d:DirectionLights | d is lBright && next (d is lDark && next d is lBright);
+assert CanBlinkLeft = eventually exists d:DirectionLights | d is lBright && Timer[NOW].timepast = 1000 && 
+  next (d is lDark && Timer[NOW].timepast = 1500 && 
+  next (d is lBright && Timer[NOW].timepast = 2000));
 run CanBlinkLeft from DirectionLightsAndKeySensor in max 4 steps expect trace;
 
 assert CanBlinkRight = eventually exists d:DirectionLights | (d is rBright && Timer[NOW].timepast = 2000) && next (d is rDark && next (d is rBright && Timer[NOW].timepast = 3000));

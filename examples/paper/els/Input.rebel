@@ -22,25 +22,32 @@ spec PitmanArm
   dirLights: DirectionLights;
   
   event startTipBlinkLeft()
-    pre: if this.sensors.key = KeyState[IN_IGNITION_ON] then this.dirLights.startFlashBlinkLeft() else this.dirLights.skip();
+    pre: if this.sensors.key = KeyState[IN_IGNITION_ON] then (this.dirLights.startFlashBlinkLeft() || this.dirLights.restartFlashBlinking()) 
+         else this.dirLights.skip();
       
   event startTipBlinkRight()
-    pre: if this.sensors.key = KeyState[IN_IGNITION_ON] then this.dirLights.startFlashBlinkRight() else this.dirLights.skip(); 
+    pre: if this.sensors.key = KeyState[IN_IGNITION_ON] then (this.dirLights.startFlashBlinkRight() || this.dirLights.restartFlashBlinking()) 
+         else this.dirLights.skip(); 
     
   event releaseArm()
   
   event holdArm()
     variant left
-      pre: if this.sensors.key = KeyState[IN_IGNITION_ON] then this.dirLights.startBlinkLeft() else this.dirLights.skip(); 
+      pre: if this.sensors.key = KeyState[IN_IGNITION_ON] then this.dirLights.startBlinkLeft() 
+           else this.dirLights.skip(); 
       
     variant right
-      pre: if this.sensors.key = KeyState[IN_IGNITION_ON] then this.dirLights.startBlinkRight() else this.dirLights.skip(); 
+      pre: if this.sensors.key = KeyState[IN_IGNITION_ON] then this.dirLights.startBlinkRight() 
+           else this.dirLights.skip(); 
   
   event startBlink()
     variant left
-      pre: if this.sensors.key = KeyState[IN_IGNITION_ON] then this.dirLights.startBlinkLeft() else this.dirLights.skip();
+      pre: if this.sensors.key = KeyState[IN_IGNITION_ON] then this.dirLights.startBlinkLeft() 
+           else this.dirLights.skip();
+    
     variant right
-      pre: if this.sensors.key = KeyState[IN_IGNITION_ON] then this.dirLights.startBlinkRight() else this.dirLights.skip();
+      pre: if this.sensors.key = KeyState[IN_IGNITION_ON] then this.dirLights.startBlinkRight() 
+           else this.dirLights.skip();
   
   event stop()
     pre: this.dirLights.stop();
