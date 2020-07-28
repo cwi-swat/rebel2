@@ -40,7 +40,7 @@ config Small = ib1,ib2:MockIBAN abstracts IBAN,
                   beneficiaryId, beneficiary, purpose, purposeCategory is uninitialized;
                
 assert CanSettleInstruction = eventually exists ob:OriginatorBank | settle on ob;
-run CanSettleInstruction from Small in max 3 steps expect trace; 
+run CanSettleInstruction from Small in max 5 steps expect trace; 
 //run CanSettleInstruction from Full in max 3 steps expect trace; 
 
               
