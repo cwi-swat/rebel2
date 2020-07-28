@@ -1,0 +1,13 @@
+module paper::sepact::data::checks::TodayChecks
+
+import paper::sepact::data::Today
+
+config Dummy = t:Today;
+
+assert TimeAlwaysMovesForward = always-last ( 
+   Today[NOW].year' > Today[NOW].year ||
+  (Today[NOW].year' = Today[NOW].year && Today[NOW].month' > Today[NOW].month) ||
+  (Today[NOW].year' = Today[NOW].year && Today[NOW].month' = Today[NOW].month && Today[NOW].day' > Today[NOW].day)
+);
+
+check TimeAlwaysMovesForward from Dummy in max 5 steps expect no trace;  

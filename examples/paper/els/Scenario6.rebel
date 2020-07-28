@@ -8,7 +8,7 @@ import paper::els::Actuators
 spec Scenario6
   s: SensorValues,
   d: DirectionLights, 
-  p: PitmanArm;
+  p: PitmanArm;  
    
   event doStep1()
     pre:  // Event
@@ -49,22 +49,227 @@ spec Scenario6
           // Pitman arm
           this.p' is tipBlinkingLeft; 
 
+  event doStep4()
+    pre:  // Event
+          this.p.releaseArm(),
+          // Sensors
+          this.s.key = KeyState[IN_IGNITION_ON],
+          // Time
+          Timer[NOW].timepast = 5200;
+    post: // Sensors
+          // Direction lights
+          this.d.left' = 100,
+          this.d.right' = 0,
+          this.d' is lFlashBright,
+          // Pitman arm
+          this.p' is neutral; 
+
+  event doStep5()
+    pre:  // Event
+          // Nothing; forcing the timer to 500 + 1 ms should force the direction light machine to fire the flash blink event just before step 5
+          // Sensors
+          this.s.key = KeyState[IN_IGNITION_ON],
+          // Time 
+          Timer[NOW].timepast = 5501,
+          // Direction lights
+          this.d.left = 0,
+          this.d.right = 0,
+          this.d.cycle = 1,
+          this.d is lFlashDark,
+          // Pitman arm
+          this.p is neutral; 
+
+  event doStep6()
+    pre:  // Event
+          // Nothing; forcing the timer to +499 ms should keep the direction lights in their dark cycle
+          // Sensors
+          this.s.key = KeyState[IN_IGNITION_ON],
+          // Time 
+          Timer[NOW].timepast = 5999,
+          // Direction lights
+          this.d.left = 0,
+          this.d.right = 0,
+          this.d.cycle = 1,
+          this.d is lFlashDark,
+          // Pitman arm
+          this.p is neutral; 
+
+  event doStep7()
+    pre:  // Event
+          // Nothing; forcing the timer to +2 ms should force a new flash blink on the direction lights
+          // Sensors
+          this.s.key = KeyState[IN_IGNITION_ON],
+          // Time 
+          Timer[NOW].timepast = 6001,
+          // Direction lights
+          this.d.left = 100,
+          this.d.right = 0,
+          this.d.cycle = 2,
+          this.d is lFlashBright,
+          // Pitman arm
+          this.p is neutral; 
+
+  event doStep8()
+    pre:  // Event
+          // Nothing; forcing the timer to +498 ms should keep the direction lights in their bright cycle
+          // Sensors
+          this.s.key = KeyState[IN_IGNITION_ON],
+          // Time 
+          Timer[NOW].timepast = 6499,
+          // Direction lights
+          this.d.left = 100,
+          this.d.right = 0,
+          this.d.cycle = 2,
+          this.d is lFlashBright,
+          // Pitman arm
+          this.p is neutral; 
+
+  event doStep9()
+    pre:  // Event
+          // Nothing; forcing the timer to +2 ms should force a new flash blink on the direction lights
+          // Sensors
+          this.s.key = KeyState[IN_IGNITION_ON],
+          // Time 
+          Timer[NOW].timepast = 6501,
+          // Direction lights
+          this.d.left = 0,
+          this.d.right = 0,
+          this.d.cycle = 3,
+          this.d is lFlashDark,
+          // Pitman arm
+          this.p is neutral; 
+
+  event doStep10()
+    pre:  // Event
+          // Nothing; forcing the timer to +2 ms should force a new flash blink on the direction lights
+          // Sensors
+          this.s.key = KeyState[IN_IGNITION_ON],
+          // Time 
+          Timer[NOW].timepast = 7501,
+          // Direction lights
+          this.d.left = 0,
+          this.d.right = 0,
+          this.d.cycle = 5,
+          this.d is lFlashDark,
+          // Pitman arm
+          this.p is neutral; 
+
+  event doStep11()
+    pre:  // Event
+          this.p.startTipBlinkLeft(),
+          // Sensors
+          this.s.key = KeyState[IN_IGNITION_ON],
+          // Time 
+          Timer[NOW].timepast = 7700;
+    post: // Direction lights
+          this.d.left' = 0,
+          this.d.right' = 0,
+          this.d.cycle' = -1, // reset performed
+          this.d' is lFlashDark,
+          // Pitman arm
+          this.p' is tipBlinkingLeft; 
+
+  event doStep12()
+    pre:  // Event
+          this.p.releaseArm(),
+          // Sensors
+          this.s.key = KeyState[IN_IGNITION_ON],
+          // Time
+          Timer[NOW].timepast = 7800;
+    post: // Sensors
+          // Direction lights
+          this.d.left' = 0,
+          this.d.right' = 0,
+          this.d.cycle' = -1,          
+          this.d' is lFlashDark,
+          // Pitman arm
+          this.p' is neutral; 
+
+  event doStep13()
+    pre:  // Event
+          // Nothing; forcing the timer to +201 ms should force a new flash blink on the direction lights
+          // Sensors
+          this.s.key = KeyState[IN_IGNITION_ON],
+          // Time 
+          Timer[NOW].timepast = 8001,
+          // Direction lights
+          this.d.left = 100,
+          this.d.right = 0,
+          this.d.cycle = 0,
+          this.d is lFlashBright,
+          // Pitman arm
+          this.p is neutral; 
+
+
   states:
     initial -> step1: doStep1; 
-    step1 -> step2: doStep2;
-    step2 -> step3: doStep3;
+    step1 -> step2:   doStep2;
+    step2 -> step3:   doStep3;
+    step3 -> step4:   doStep4;
+    step4 -> step5:   doStep5;
+    step5 -> step6:   doStep6;
+    step6 -> step7:   doStep7;
+    step7 -> step8:   doStep8;
+    step8 -> step9:   doStep9;
+    step9 -> step10:  doStep10;
+    step10 -> step11: doStep11;
+    step11 -> step12: doStep12;
+    step12 -> step13: doStep13;
     
-config Scenario6Config =  
+config StartConfig =  
   s: KeyOnlySensor abstracts SensorValues,
   d: DirectionLights is off with left = 0, right = 0, cycle = 0, sensors = s,
   p: PitmanArm is neutral with dirLights = d, sensors = s,
   scen6: Scenario6 is initial with s = s, d = d, p = p;
  
 assert UpToStep1 = exists s:Scenario6 | eventually s is step1;
-run UpToStep1 from Scenario6Config in max 1 steps expect trace; 
+run UpToStep1 from StartConfig in max 1 steps expect trace; 
  
 assert UpToStep2 = exists s:Scenario6 | eventually s is step2;
-run UpToStep2 from Scenario6Config in max 2 steps expect trace;
+run UpToStep2 from StartConfig in max 2 steps expect trace;
 
 assert UpToStep3 = exists s:Scenario6 | eventually s is step3;
-run UpToStep3 from Scenario6Config in max 3 steps expect trace;            
+run UpToStep3 from StartConfig in max 3 steps expect trace;
+
+assert UpToStep4 = exists s:Scenario6 | eventually s is step4;
+run UpToStep4 from StartConfig in max 4 steps expect trace;
+
+assert UpToStep5 = exists s:Scenario6 | eventually s is step5;
+run UpToStep5 from StartConfig in max 6 steps expect trace;
+
+config AfterStep5 =
+  s: KeyOnlySensor abstracts SensorValues,
+  d: DirectionLights is lFlashDark with left = 0, right = 0, cycle = 1, sensors = s,
+  p: PitmanArm is neutral with dirLights = d, sensors = s,
+  scen6: Scenario6 is step5 with s = s, d = d, p = p;
+
+assert UpToStep6 = exists s:Scenario6 | eventually s is step6;
+run UpToStep6 from AfterStep5 in max 2 steps expect trace;
+
+assert UpToStep7 = exists s:Scenario6 | eventually s is step7;
+run UpToStep7 from AfterStep5 in max 3 steps expect trace;
+  
+assert UpToStep8 = exists s:Scenario6 | eventually s is step8;
+run UpToStep8 from AfterStep5 in max 5 steps expect trace;
+
+assert UpToStep9 = exists s:Scenario6 | eventually s is step9;
+run UpToStep9 from AfterStep5 in max 6 steps expect trace;
+
+assert UpToStep10 = exists s:Scenario6 | eventually s is step10;
+run UpToStep10 from AfterStep5 in max 10 steps expect trace;
+
+config AfterStep10 =  
+  s: KeyOnlySensor abstracts SensorValues,
+  d: DirectionLights is lFlashDark with left = 0, right = 0, cycle = 5, sensors = s, lastBlinkAt = 7500,
+  p: PitmanArm is neutral with dirLights = d, sensors = s,
+  scen6: Scenario6 is step10 with s = s, d = d, p = p;
+
+assert UpToStep11 = exists s:Scenario6 | eventually s is step11;
+run UpToStep11 from AfterStep10 in max 2 steps expect trace;
+
+assert UpToStep12 = exists s:Scenario6 | eventually s is step12;
+run UpToStep12 from AfterStep10 in max 2 steps expect trace;
+
+assert UpToStep13 = exists s:Scenario6 | eventually s is step13;
+run UpToStep13 from AfterStep10 in max 4 steps expect trace;
+ 

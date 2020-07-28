@@ -26,5 +26,5 @@ spec Today[NOW]
   fact TimeAlwaysMovesForward
     = always-last (Today[NOW].year' > Today[NOW].year ||
                   (Today[NOW].year' = Today[NOW].year && Today[NOW].month' > Today[NOW].month) ||
-                  (Today[NOW].year' = Today[NOW].year && Today[NOW].month' = Today[NOW].month && Today[NOW].day' = Today[NOW].day)); 
+                  (Today[NOW].year' = Today[NOW].year && Today[NOW].month' = Today[NOW].month && Today[NOW].day' > Today[NOW].day)); 
   
