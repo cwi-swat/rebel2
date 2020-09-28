@@ -17,8 +17,8 @@ syntax QualifiedName = {Id "::"}+ names !>> "::";
 syntax Formula
   = brackets: "(" Formula ")"
   > "!" Formula form
-  > sync: Expr spc "." Id event  "(" {Expr ","}* params ")" 
-  | inState: Expr "is" Id
+  > sync: Expr spc "." QualifiedName event  "(" {Expr ","}* params ")" 
+  | inState: Expr expr "is" QualifiedName state
   | membership: Expr "in" Expr
   | nonMembership: Expr "notin" Expr
   > Expr "\<" Expr
@@ -74,6 +74,8 @@ syntax Type
   | "set" TypeName elem
   | "?" TypeName elem
   ;  
+
+lexical QuasiQualifiedName = [a-z A-Z 0-9 _:] !<< ([a-zA-Z_][a-zA-Z0-9_]*([:][:][a-zA-Z0-9_])* !>> [a-zA-Z0-9_]) \ Keywords;
   
 lexical Id = [a-z A-Z 0-9 _] !<< ([a-z A-Z_][a-z A-Z 0-9 _]* !>> [a-z A-Z 0-9 _]) \ Keywords;
 lexical TypeName = @category="Type" [a-z A-Z 0-9 _] !<< [A-Z][a-z A-Z 0-9 _]* !>> [a-z A-Z 0-9 _] \ Keywords;

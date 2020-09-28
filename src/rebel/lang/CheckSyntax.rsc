@@ -58,6 +58,7 @@ syntax Command
   
 syntax SearchDepth
   = "max" Int steps "steps"
+  | "exact" Int steps "steps"
   ;  
 
 syntax Objectives
@@ -93,6 +94,7 @@ keyword Keywords
   | "next"
   | "minimal"
   | "maximal"
+  | "exact"
   | "on"
   | "first"
   | "last"

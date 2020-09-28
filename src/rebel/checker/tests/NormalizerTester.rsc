@@ -10,5 +10,5 @@ void testNormalize(str check, loc modul) {
   PathConfig pcfg = defaultPathConfig(modul);
 
   gen = assembleCheck(check, modul, pcfg);
-  normalizeAndTypeCheck(gen.m, gen.tm, pcfg);
+  normalizeAndTypeCheck(gen.m, gen.tm, pcfg, saveNormalizedMod=true);
 }

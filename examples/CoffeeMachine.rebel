@@ -46,20 +46,20 @@ spec CoffeeMachine
     }
     
     active -> (*): powerOff;  
-    (*) -> waiting: powerOn;  
+    (*) -> active::waiting: powerOn;  
 
 spec CoffeeType[NONE,NORMAL,ESPRESSO,AMERICANO,LATTE]
  
 config InitialMachine = cm: CoffeeMachine is uninitialized;
    
-assert MachineIsServing = eventually exists m: CoffeeMachine | m is serve;  
+assert MachineIsServing = eventually exists m: CoffeeMachine | m is active::serve;  
 run MachineIsServing from InitialMachine in max 10 steps;
 
 assert CanServeNormalCoffee  
-  = eventually exists m: CoffeeMachine | m.selected = CoffeeType[NORMAL] && eventually m is serve;
+  = eventually exists m: CoffeeMachine | m.selected = CoffeeType[NORMAL] && eventually m is active::serve;
 run CanServeNormalCoffee from InitialMachine in max 10 steps;
   
-assert MachineWillServeOrCancel = always exists m: CoffeeMachine | (m is acceptingPayment => eventually m is serve || cancel on m);    
+assert MachineWillServeOrCancel = always exists m: CoffeeMachine | (m is active::acceptingPayment => eventually m is active::serve || cancel on m);    
 check MachineWillServeOrCancel from InitialMachine in max 7 steps with infinite trace;
 
     

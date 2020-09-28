@@ -10,7 +10,7 @@ import util::PathUtil;
 import salix::App;
 
 App[TraceVisModel] visCoffeeMachineCheck(str check) = visTrace(check, |home:///workspace/rebel2/examples/CoffeeMachine.rebel|);
-App[TraceVisModel] visHotelCheck(str check) = visTrace(check, |home:///workspace/rebel2/examples/Hotel.rebel|);
+App[TraceVisModel] visHotelCheck(str check) = visTrace(check, |home:///workspace/rebel2/examples/paper/performance/rebel/Hotel.rebel|);
 App[TraceVisModel] visRopeBridgeCheck() = visTrace("EverybodyCrossedInTheLeastTime", |home:///workspace/rebel2/examples/RopeBridge.rebel|);
 App[TraceVisModel] visRingLeaderElectionCheck() = visTrace("EventuallyOneIsElected", |home:///workspace/rebel2/examples/RingLeaderElection.rebel|);
 App[TraceVisModel] visLightCheck() = visTrace("BulbCanBreak", |home:///workspace/rebel2/examples/Light.rebel|);

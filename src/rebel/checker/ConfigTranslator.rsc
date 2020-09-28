@@ -15,14 +15,15 @@ data Config = config(rel[Spec spc, str instance, State initialState] instances,
                      rel[Spec spc, str instance, str field, str val] initialValues, 
                      int numberOfTransitions,
                      bool finiteTrace = true,
+                     bool exactNrOfSteps = false,
                      int maxSizeIntegerSets = 5,
                      int maxSizeStringSets = 5);
-
-Config buildConfig(rebel::lang::Syntax::Config cfg, Module m, TModel tm, int searchDepth, bool infiniteTrace) {
+ 
+Config buildConfig(rebel::lang::Syntax::Config cfg, Module m, TModel tm, int searchDepth, bool exactNrOfSteps, bool infiniteTrace) {
   rel[Spec,str,State] instances = buildInstances(cfg, m, tm);
   rel[Spec,str,str,str] initialValues = buildInitialValues(cfg, m, tm);
   
-  return config(instances, initialValues, searchDepth, finiteTrace = !infiniteTrace);
+  return config(instances, initialValues, searchDepth, exactNrOfSteps = exactNrOfSteps, finiteTrace = !infiniteTrace);
 }
 
 str config2Str(Config cfg) 

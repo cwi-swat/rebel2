@@ -20,7 +20,7 @@ TModel check(Tree t, bool saveTModels = false, PathConfig pcfg = pathConfig(srcs
   throw "No Rebel module to check";
 }
    
-bool runRebelTests()
+bool runRebelTypeTests()
   = runTests([|project://rebel2/src/rebel/lang/tests/tests.ttl|], #Module, check);
 
 TModel checkModule(loc spc) {

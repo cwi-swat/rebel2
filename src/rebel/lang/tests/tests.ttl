@@ -24,6 +24,56 @@ test EventVariant [[
     started -> (*): base;
 ]]
 
+test NestedStateMachines [[
+  module NSM
+  
+  spec NSM
+    event base() 
+  
+  states:
+    [a,b,c]
+    
+    (*) -> a: base;
+    a -> b::x: base;
+
+    b {
+      [x,y]
+      x -> y: base;
+    }
+        
+    b -> c: base;
+    c -> (*): base;
+]]
+
+test EmptyEvents [[
+  module EE
+  
+  spec EE
+  
+  states:
+    (*) -> created: empty;
+]]
+
+test DoubleNestedStateMachine [[
+  module DNSM
+  
+  spec DNSM
+  
+  event ev()
+  
+  states:
+    a {
+      b {
+        c -> d: ev;
+        d -> a::b::c: ev;
+      }
+      
+      e->d: ev;
+    }
+    
+    f->c: ev; 
+]]     
+
 test MultipleSpecs [[
   module Multiple 
   
@@ -75,5 +125,19 @@ test ForgetField [[
     balance: Money;
   
   config Simple = ac: Account forget balance, m: Money;
+]]
+
+test FieldReferenceOptional [[
+  module FRO
+  
+  spec ADT
+    f: Integer;
+    
+  spec Ref
+    a: ?ADT;
+    
+    event refOp() 
+      pre: this.a.f = 0;
+      post: this.a.f' = 10; 
 ]]
 

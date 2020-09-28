@@ -4,9 +4,6 @@ import rebel::lang::CommonSyntax;
 
 extend analysis::typepal::TypePal;
 
-import List;
-import IO;
-
 data AType
   = intType()
   | stringType()
@@ -75,7 +72,7 @@ str prettyAType(setType(AType elem)) = "set of <prettyAType(elem)>";
 str prettyAType(optionalType(AType elem)) = "?<prettyAType(elem)>";
 
 tuple[list[str] typeNames, set[IdRole] idRoles] rebelTypeNamesAndRole(specType(str name)) = <[name], {specId()}>;
-
+tuple[list[str] typeNames, set[IdRole] idRoles] rebelTypeNamesAndRole(optionalType(AType elem)) = rebelTypeNamesAndRole(elem);
 default tuple[list[str] typeNames, set[IdRole] idRoles] rebelTypeNamesAndRole(AType t) = <[], {}>;
 
 //private str __REBEL_IMPORT_QUEUE = "__rebelImportQueue";
@@ -177,7 +174,7 @@ void collect(current: (Decl)`<{Id ","}+ vars> : <Expr expr>`, Collector c) {
   collect(expr, c);
 }
 
-void collect(current: (Formula)`<Expr exp> is <Id state>`, Collector c) {
+void collect(current: (Formula)`<Expr exp> is <QualifiedName state>`, Collector c) {
   c.calculate("is in state", current, [exp],
     AType (Solver s) {
       s.requireTrue(specType(_) := s.getType(exp),  

@@ -134,7 +134,7 @@ set[str] lookupStateLabelsWithDefaultState(Spec spc)
   = lookupStateLabels(spc); // + (!isEmptySpec(spc) ? {"state_uninitialized", "state_finalized"} : {});   
 
 str getStateLabel(Spec spc, rebel::lang::SpecSyntax::State state)
-  = "state_<getLowerCaseSpecName(spc)>_<toLowerCase("<state>")>";
+  = "state_<getLowerCaseSpecName(spc)>_<toLowerCase(replaceAll("<state>", "::", "__"))>";
 
 bool isEmptySpec(Spec spc) = /Transition _ !:= spc.states;
 

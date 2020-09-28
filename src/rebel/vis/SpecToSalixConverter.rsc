@@ -16,9 +16,8 @@ str specToStateMachineJs(Spec spc, str instance = "", str activeState = "", str 
   set[str] done = {};
     
   str conv(Spec spc) = "<if (showValues) {><convValues()><}>
-                       '<if (\filter != valuesOnly()) {><if (showValues) {>,<}> <convStates(s)>
-                       '
-                       '<convTrans(s)><} else {>;<}>"
+                       '<if (\filter != valuesOnly()) {><if (showValues) {>,<}> <convLifeCycle(s)>
+                       '<} else {>;<}>"
                         when /States s := spc.states;
                         
   default str conv(Spec spc) = "<if (showValues) {><convValues()>;<}>";                         
@@ -42,48 +41,101 @@ str specToStateMachineJs(Spec spc, str instance = "", str activeState = "", str 
                      '  <intercalate("\n", ["<f>: <values[f]>" | f <- values])>"
                      when values != (); 
   default str convValues() = "<prefix>.vals[Label=\"Values\" color=\"<valCol>\"] : -";
-  
-  str convStates((States)`states: <Transition* trans>`) = "<intercalate(", ", toList({c | t <- trans, str c := convState(t), c != ""}))>;";
-  str convState((Transition)`<State super> { <Transition* trans> }`) { 
-    done += "<super>";
-    return "<prefix>.<super>[Label=\"<super>\"] {  
-           '  <intercalate(", ", dup([c | t <- trans, str c := convState(t), c != ""]))>;
-           '}";
-  }
-  str convState((Transition)`<State super> <InnerStates inner> { <Transition* _> }`) { 
-    done += "<super>";
-    return "<super> {  
-           '  <convState(inner)>;
-           '}";
-  }
-  
-  str convState((InnerStates)`[<{State ","}+ inner>]`) = intercalate(",", dup(["<prefix>.<s><labelAndActive("<s>", "<s>")>" | s <- inner]));
-  str convState((Transition)`(*) -\> <State to> : <{TransEvent ","}+ _>;`) = "<prefix>.initial<active("initial")>" when "<to>" notin done; 
-  str convState((Transition)`<State from> -\> (*) : <{TransEvent ","}+ _>;`) = "<prefix>.<from><labelAndActive("<from>","<from>")>, <prefix>.final<active("final")>" when "<from>" notin done; 
-  str convState((Transition)`<State from> -\> <State to> : <{TransEvent ","}+ _>;`) = "<prefix>.<from><labelAndActive("<from>","<from>")>" when "<from>" notin done;
-  default str convState(Transition _) = ""; 
-  
-  str convTrans((States)`states: <Transition* trans>`) = intercalate("\n", [convTrans(t) | t <- trans]);
-  str convTrans((Transition)`<State super> { <Transition* trans> }`) 
-    = "<for (t <- trans) {><convTrans(t)>
-      '<}>";
-  str convTrans((Transition)`<State super> <InnerStates _> { <Transition* trans> }`) 
-    = "<for (t <- trans) {><convTrans(t)>
-      '<}>";
 
-  str convTrans((Transition)`(*) -\> <State to> : <{TransEvent ","}+ events>;`) 
-    = "<prefix>.initial -\> <prefix>.<to><checkNext("initial", {e | e <- events})>: \"  <intercalate(", ", [convEvent(e) | e <- events])>\";";
-  str convTrans((Transition)`<State from> -\> (*) : <{TransEvent ","}+ events>;`) 
-    = "<prefix>.<from> -\> <prefix>.final<checkNext("<from>", {e | e <- events})>: \"  <intercalate(", ", [convEvent(e) | e <- events])>\";";
-  str convTrans((Transition)`<State from> -\> (*) : <{TransEvent ","}+ events>;`) 
-    = "<prefix>.<from> -\> <prefix>.final<checkNext("<from>", {e | e <- events})>: \"  <intercalate(", ", [convEvent(e) | e <- events])>\";";
-  str convTrans((Transition)`<State from> -\> <State to> : <{TransEvent ","}+ events>;`) 
-    = "<prefix>.<from> -\> <prefix>.<to><checkNext("<from>", {e | e <- events})>: \"  <intercalate(", ", [convEvent(e) | e <- events])>\";";
+  set[str] defStates = {};
+    
+  str convLifeCycle((States)`states: <StateBlock root>`) 
+    = "<if (/(Transition)`(*) -\> <State _>: <{TransEvent ","}+ events>;` := root) {><prefix>.initial<active("initial")>,<}> 
+      '<if (/(Transition)`<State _> -\> (*): <{TransEvent ","}+ events>;` := root) {><prefix>.final<active("final")>,<}>
+      '<convLifeCycle(root, "")>";
   
+  str convLifeCycle((StateBlock)`<InnerStates inner> <Transition* trans>`, str ns) {
+    list[str] states = [];
+    
+    // check whether inner state does not contain sub state, otherwise define later
+    set[str] superStates = {"<super>" | (Transition)`<Id super> { <StateBlock sb> }` <- trans}; 
+    for (Id innerState <- inner.states, "<innerState>" notin superStates, "<innerState>" notin defStates) {
+      states += "<prefix>.<if (ns != "") {><ns>.<}><innerState><labelAndActive("<innerState>", "<innerState>")>";
+      defStates += "<ns>.<innerState>";         
+    }
+    
+    tuple[list[str] states, list[str] trans] other = <[],[]>;
+    for (t <- trans) {
+      res = convLifeCycle(t,ns);
+      other.states = res<0>;
+      other.trans = res<1>; 
+    }
+    
+    return "<intercalate(",", states + other.states)>;
+           '<intercalate("\n", (other.trans))>";
+  }
+  
+  str convLifeCycle((StateBlock)`<Transition* trans>`, str ns) {
+    tuple[list[str] states, list[str] trans] other = <[],[]>;
+    for (t <- trans) {
+      res = convLifeCycle(t, ns);
+      other.states += res<0>;
+      other.trans += res<1>;
+    }
+    
+    return "<intercalate(",", other.states)>;
+           '<intercalate("\n", other.trans)>";  
+  }
+  
+  tuple[list[str], list[str]] convLifeCycle((Transition)`<State from> -\> <State to>: <{TransEvent ","}+ events>;`, str ns) {
+    list[str] states = []; 
+    list[str] trans = [];
+    
+    bool isRef((State)`<Id name>`) = "<ns>.<name>" in defStates; 
+    bool isRef((State)`<Id n>::<{Id "::"}+ m>`) = true; // qualified names are always references
+            
+    str getStateName((State)`<Id name>`)              = "<if (ns != "") {><ns>.<}><name>";        
+    str getStateName((State)`<Id n>::<{Id "::"}+ m>`) = replaceAll("<n>::<m>", "::", ".");        
+                     
+    if ("<from>" == "(*)") {
+      if (!isRef(to)) {
+        states += ["<prefix>.<getStateName(to)><labelAndActive("<to>","<to>")>"];
+        defStates += "<ns>.<to>";
+      }
+      
+      trans += ["<prefix>.initial -\> <prefix>.<getStateName(to)><checkNext("initial", {e | e <- events})>: \"  <intercalate(", ", [convEvent(e) | e <- events])>\";"];
+    } else if ("<to>" == "(*)") {
+      if (!isRef(from)) {
+        states += ["<prefix>.<getStateName(from)><labelAndActive("<from>","<from>")>"];
+        defStates += "<ns>.<from>";
+      }
+
+      trans += ["<prefix>.<getStateName(from)> -\> <prefix>.final<checkNext("<from>", {e | e <- events})>: \"  <intercalate(", ", [convEvent(e) | e <- events])>\";"];
+      defStates += "<ns>.<from>";
+    } else {
+      if (!isRef(from)) {
+        states += ["<prefix>.<getStateName(from)><labelAndActive("<from>","<from>")>"];
+        defStates += "<ns>.<from>";
+      } 
+      
+      if (!isRef(to)) {
+        states += ["<prefix>.<getStateName(to)><labelAndActive("<to>","<to>")>"];
+        defStates += "<ns>.<to>";
+      }
+
+      trans += ["<prefix>.<getStateName(from)> -\> <prefix>.<getStateName(to)><checkNext("<from>", {e | e <- events})>: \"  <intercalate(", ", [convEvent(e) | e <- events])>\";"];
+    }                     
+    
+    return <states,trans>;
+  }
+  
+  tuple[list[str], list[str]] convLifeCycle((Transition)`<Id super> { <StateBlock child> }`, str ns) {
+    defStates += "<ns>.<super>";
+    states = ["<prefix>.<if (ns != "") {><ns>.<}><super>[Label=\"<super>\"] {
+             '  <convLifeCycle(child, ns != "" ? "<ns>.<super>" : "<super>")>
+             '}"];
+             
+    return <states, []>;             
+  }
+
   str convEvent((TransEvent)`empty`) = "&#949;";
-  str convEvent((TransEvent)`<Id event>`) = "<event>";
-  str convEvent((TransEvent)`<Id event>::<Id variant>`) = "<event>::<variant>";
-  
+  str convEvent((TransEvent)`<QualifiedName event>`) = "<event>";
+
   str smCatStr = conv(spc);
   
   return smCatStr;

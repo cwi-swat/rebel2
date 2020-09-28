@@ -136,7 +136,7 @@ void collect(current:(Formula)`<TransEvent event> on <Expr spc> <WithAssignments
   c.fact(current, boolType());
 
   if ((TransEvent)`*` !:= event) {   
-    c.useViaType(spc, event, {eventId()});    
+    c.useViaType(spc, event, {eventId(),eventVariantId()});    
   }
   
   if (/WithAssignments wa := w) {

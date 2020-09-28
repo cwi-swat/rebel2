@@ -4,11 +4,11 @@ import rebel::lang::Syntax;
 import rebel::lang::Parser;
 import List;
 import Set;
+import IO;
 
 import salix::App;
 import salix::HTML;
 import salix::Core;
-import salix::lib::UML;
 
 import rebel::vis::SpecToSalixConverter;
 import rebel::vis::salix::StateMachineCat;
@@ -64,7 +64,7 @@ str specToStateMachineJs(set[Spec] spcs) {
            '};";
   } else {
     return "parallel[Label=\"\<\<Composite Machine\>\>\"] {    
-           '  <intercalate(",", ["<s.name> { <specToStateMachineJs(s)> }" | Spec s <- spcs, /State _ := s.states] + ["#empty signature\n<s.name>" | Spec s <- spcs, /State _ !:= s.states])>;
+           '  <intercalate(",", ["<s.name> { <specToStateMachineJs(s)> }" | Spec s <- spcs, /States _ := s.states] + ["#empty signature\n<s.name>" | Spec s <- spcs, /States _ !:= s.states])>;
            '};";    
   }
 }

@@ -46,40 +46,74 @@ Spec normalize(Spec spc, TModel origTm) {
   set[str] fields = {"<f.name>" | /Field f := spc};
   
   list[Event] normEvents = [e | Event e <- spc.events];
+
   normEvents = addEmptyTransitionIfNecessary(spc, normEvents);
-  normEvents = normalizeEvents(normEvents, origTm);
-  normEvents = addFrameConditions(fields, normEvents);
-  
+  normEvents = normalizeEventVariants(normEvents, origTm);
+  normEvents = addFrameConditionsToEvents(fields, normEvents);
   if (fields != {} || /Transition _ := spc.states){
     normEvents += createFrameEvent(spc);
   }
   
   spc.events = buildNormEvents(normEvents);
-  spc.states = normalizeStates(spc.states);
+  spc.states = normalizeStates(spc.states, origTm);
 
   return spc;
 }
 
 Module normalizeEventVariantSyncs(Module m, TModel origTm) {
-  set[Define] variants = {d | Define d <- origTm.definitions<1>, d.idRole == eventVariantId()};
-  set[Define] findVariants(loc eventRef) = {v | v <- variants, isContainedIn(v.defined, eventDef)} when {loc eventDef} := origTm.useDef[eventRef]; 
+  set[Define] variants = {d | Define d <- origTm.definitions<1>, d.idRole == eventVariantId()}; //, /.*[:][:].*/ !:= d.id};
+  set[Define] findVariants(loc eventRef) = {v | v <- variants, isStrictlyContainedIn(v.defined, eventDef)} when {loc eventDef} := origTm.useDef[eventRef]; 
   default set[Define] findVariants(loc eventRef) = {};  
 
   Formula buildSyncDisj((Formula)`<Expr spc>.<Id event>(<{Expr ","}* params>)`, set[Define] variants) 
-    = buildFormDisj([(Formula)`<Expr spc>.<Id varId>(<{Expr ","}* params>)` | Define var <- variants, Id varId := [Id]"<event>__<var.id>"]); 
+    = buildFormDisj([(Formula)`<Expr spc>.<Id eventVar>(<{Expr ","}* params>)` | Define var <- variants, Id eventVar := [Id]"<replaceAll(var.id, "::", "__")>"]); 
 
-  Formula buildRaisedDisj((Formula)`<TransEvent evnt> on <Expr spc> <WithAssignments? as>`, set[Define] variants)
-    = buildFormDisj([(Formula)`<TransEvent varEvnt> on <Expr spc> <WithAssignments? as>` | Define var <- variants, TransEvent varEvnt := [TransEvent]"<evnt>__<var.id>"]);
+  Formula buildRaisedDisj((Formula)`<Id event> on <Expr spc> <WithAssignments? as>`, set[Define] variants)
+    = buildFormDisj([(Formula)`<Id eventVar> on <Expr spc> <WithAssignments? as>` | Define var <- variants, Id eventVar := [Id]"<replaceAll(var.id, "::", "__")>"]);
 
   Formula buildFormDisj(list[Formula] terms) = [Formula]"(<intercalate(" || ", terms)>)";
   
+  Transition rewriteVariants(Transition orig) {
+    set[str] result = {};
+    bool rewritten = false;
+
+    for (e <- orig.events) {
+      vars = findVariants(e@\loc);
+
+      if (vars != {}) {
+        result += {replaceAll(ev.id, "::", "__") | Define ev <- vars};
+        rewritten = true;
+      } else {
+        result += "<e>";
+      }
+    }
+    
+    if (!rewritten) {
+      return orig;
+    } else {
+      Transition temp = [Transition]"a -\> b: <intercalate(",", ["<e>" | e <- result])>;";
+      orig.events = temp.events;
+      return orig;
+    }
+  }
+  
   return visit(m) {
+    // Raising an event with variants. Must be one of the variants
     case orig:(Formula)`<Expr _>.<Id event>(<{Expr ","}* _>)` => buildSyncDisj(orig, vars) 
       when set[Define] vars := findVariants(event@\loc), vars != {}     
 
-    case orig:(Formula)`<TransEvent evnt> on <Expr _> <WithAssignments? _>` => buildRaisedDisj(orig, vars) 
+    case orig:(Formula)`<Id evnt> on <Expr _> <WithAssignments? _>` => buildRaisedDisj(orig, vars) 
       when set[Define] vars := findVariants(evnt@\loc), vars != {}     
-
+      
+    // Raising an event variant directly. Make sure to reference the normalized event variant (renaming)
+    case orig:(Formula)`<Expr exp>.<Id event>::<Id var>(<{Expr ","}* args>)` => (Formula)`<Expr exp>.<Id eventVar>(<{Expr ","}* args>)`
+      when Id eventVar := [Id]"<event>__<var>"
+      
+    case orig:(Formula)`<Id event>::<Id var> on <Expr spc> <WithAssignments? as>` => (Formula)`<Id eventVar> on <Expr spc> <WithAssignments? as>`
+      when Id eventVar := [Id]"<event>__<var>"      
+      
+    case orig:(Transition)`<State from> -\> <State to>: <{TransEvent ","}+ events>;` => t 
+      when Transition t := rewriteVariants(orig)
   } 
 }
 
@@ -91,7 +125,7 @@ Event createFrameEvent(Spec spc) {
                 '";                  
 }
 
-list[Event] addFrameConditions(set[str] fields, list[Event] events) {
+list[Event] addFrameConditionsToEvents(set[str] fields, list[Event] events) {
   list[Event] framedEvents = [];
 
   for (e <- events) {
@@ -105,8 +139,17 @@ list[Event] addFrameConditions(set[str] fields, list[Event] events) {
   return framedEvents;
 }
 
-list[Event] normalizeEvents(list[Event] events, TModel origTm) {
-  list[Event] checkForVariantDefs(Event e) = [normalizeVariant(ev, e) | EventVariant ev <- e.body.variants];
+list[Event] normalizeEventVariants(list[Event] events, TModel origTm) {
+  Event normVar(EventVariant ev, Event e) {
+    Event var = e;
+    var.name = [Id]"<e.name>__<ev.name>";
+  
+    var.body = buildEventBody(mergePreConditions(e,ev).pre, mergePostConditions(e,ev).post);
+  
+    return var; 
+  }
+
+  list[Event] checkForVariantDefs(Event e) = [normVar(ev, e) | EventVariant ev <- e.body.variants];
 
   for (Event e <- events) {
     list[Event] varEvents = checkForVariantDefs(e);
@@ -186,33 +229,44 @@ private EventBody buildEventBody(Pre? origPre, Post? origPost) {
 private Post? addFrameConditions(set[str] fields, Post? post, str eventName) {
   set[str] referencedPostVals = {"<name>" | /(Expr)`this.<Id name>'` <- post}; 
 
+  list[Formula] frameConditions = [];
+
   for (f <- fields) {
     // If the post value of a field is not referenced, frame it
     if (f notin referencedPostVals) {
       Id fieldName = [Id]"<f>";
-      Formula frameCond = (Formula)`this.<Id fieldName>' = this.<Id fieldName>`;
-      post = addFrameCondition(post, frameCond);
+      frameConditions += (Formula)`this.<Id fieldName>' = this.<Id fieldName>`;
     }
   }
   
-  return post;  
+  if (frameConditions == []) {
+    return post;
+  } else {
+    post = buildFrameConditions(post, frameConditions);
+    return post;
+  }  
 }
 
-private Post? addFrameCondition(Post? p, Formula frameCond) {
+private Post? buildFrameConditions(Post? p, list[Formula] frameCond) {
   Event tmp;
-  if (/(Post)`post: <{Formula ","}* formulas>;` := p) {
-     tmp = (Event)`  event foo() 
-                  '    post:
-                  '      <Formula frameCond>,  // Frame condition
-                  '      <{Formula ","}* formulas>;
-                  '`;
-  } else {
-     tmp = (Event)`  event foo() 
-                  '    post:
-                  '      <Formula frameCond>; // Frame condition
-                  '`;
-  }
   
+  for (Formula fc <- frameCond) {
+    if (/(Post)`post: <{Formula ","}* formulas>;` := p) {
+       tmp = (Event)`  event foo() 
+                    '    post:
+                    '      <Formula fc>, // Frame condition
+                    '      <{Formula ","}* formulas>;
+                    '`;
+    } else {
+       tmp = (Event)`  event foo() 
+                    '    post:
+                    '      <Formula fc>; // Frame condition 
+                    '`;
+    }
+    
+    p = tmp.body.post;
+  }
+    
   return tmp.body.post;
 }
 
@@ -220,15 +274,6 @@ private Post? addFrameCondition(Post? p, Formula frameCond) {
 private Pre emptyPre() = (Pre)`pre: ;`;
 @memo
 private Post emptyPost() = (Post)`post: ;`;
-
-private Event normalizeVariant(EventVariant ev, Event e) {
-  Event var = e;
-  var.name = [Id]"<e.name>__<ev.name>";
-  
-  var.body = buildEventBody(mergePreConditions(e,ev).pre, mergePostConditions(e,ev).post);
-  
-  return var; 
-}
             
 private Event* buildNormEvents(list[Event] es) {
   Spec s = (Spec)`spec foo`;
@@ -243,46 +288,68 @@ private Event* buildNormEvents(list[Event] es) {
   return s.events;
 }
 
-private States? normalizeStates(States? states) {
-  if (/States sts !:= states) {
+private States? normalizeStates(States? states, TModel tm) {
+  if (/States _ !:= states) {
     return states;
   }
   
-  states = normalizeInnerStates(states);
+  rel[loc, Define] definitions = {<d.defined, d> | d <- tm.defines, d.idRole == stateId()};
   
-  lrel[str super, str inner] mapping = [<"<super>", "<n>"> | /(Transition)`<State super> <InnerStates inner> { <Transition* trans> }` := states, State n <- inner.states];
-
-  lrel[str from, str to, str events] normalized = [];
-
-  visit(states) {
-    case t:(Transition)`<State from> -\> <State to> : <{TransEvent ","}+ events>;`: {   
-      te = normalizeEventRefs(t);
-      
-      bool mapped = false;
-      for (<"<from>", str inner> <- mapping) {
-        mapped = true;
-        normalized += <inner, "<to>", "<te.events>">;
-      }
-      
-      if (!mapped) {
-        normalized += <"<from>", "<to>", "<te.events>">;
-      } 
-    }
+  set[str] findChildrenTransitive(loc super) {
+    set[str] children = {};
+    for (<loc def, Define d> <- definitions, isContainedIn(def, super), contains(d.id, "::")) {
+      children += d.id;  
+    }  
+    return children;
   }
   
+  str getQualifiedName(loc use) {
+    loc stateDefLoc = {loc def} := tm.useDef[use] ? def : use;
+    set[Define] defs = definitions[stateDefLoc];
+
+    if ({Define d} := defs) {
+      return d.id;
+    } else {
+      for (Define d <- defs, contains(d.id, "::")) {
+        return d.id;
+      }
+    }
+    
+    throw "Unable to find qualified state id";
+  }
+
+  rel[str super, str transChild] substates = {<qnSuper, child> | /t:(Transition)`<Id super> { <StateBlock block> }` := states, 
+    str qnSuper := getQualifiedName(t@\loc), child <- findChildrenTransitive(block@\loc)};
+  // remove all the states that are super states themselfs
+  substates -= substates<1,0>;   
+
+  lrel[str from, str to, str event] normalized = [];
+
+  visit(states) {
+    case (Transition)`<State from> -\> <State to> : <{TransEvent ","}+ events>;`: {
+      list[str] evnts = [normalizeEventRefs(e) | e <- events];
+      str t = "<to>" == "(*)" ? "<to>" : getQualifiedName(to@\loc);
+      str f = "<from>" == "(*)" ? "<from>" : getQualifiedName(from@\loc);
+      
+      if (substates[f] != {}) {
+        normalized += [<c,t,e> | str c <- substates[f], e <- evnts];
+      } else {  
+        normalized += [<f,t,e> | e <- evnts];
+      }      
+    }
+  }
+    
   Spec foo = parse(#Spec, trim("spec foo 
                           'states: 
-                          '<for (n <- normalized) {>  <n.from> -\> <n.to> : <n.events>;
+                          '<for (n <- normalized) {>  <n.from> -\> <n.to> : <n.event>;
                           <}>"));
                  
   return foo.states;
 }
 
-private Transition normalizeEventRefs(Transition t) {
-  return visit (t) {
-    case (TransEvent)`<Id event>::<Id variant>` => [TransEvent]"<event>__<variant>"
-  }
-}
+private str normalizeEventRefs((TransEvent)`<Id event>::<Id variant>`) = "<event>__<variant>";
+private str normalizeEventRefs(ev:(TransEvent)`<Id event>`) = "<ev>";
+private str normalizeEventRefs(ev:(TransEvent)`empty`) = "empty";
 
 private States? normalizeInnerStates(States? states) {
   states = visit(states) {

@@ -72,26 +72,30 @@ syntax Pred = "pred" Id name "(" {FormalParam ","}* params ")"  "=" Formula form
 syntax Fact = "fact" Id name "=" Formula form ";";
   
 syntax States
-  = "states" ":" Transition* trans
+  = "states" ":" StateBlock root
   ;
+  
+syntax StateBlock
+  = InnerStates? inner Transition* trans
+  ;  
   
 syntax Transition
   = State from "-\>" State to ":" {TransEvent ","}+ events ";"
-  | State super InnerStates? inner "{" Transition* trans "}"
+  | Id super "{" StateBlock child "}"
   ;
 
 syntax InnerStates
-  = "[" {State ","}+ states "]"
+  = "[" {Id ","}+ states "]"
   ;
   
 syntax State
-  = Id name
+  = QualifiedName name
+  //= QuasiQualifiedName name
   | "(*)"
   ;
   
 syntax TransEvent 
-  = Id event \ "empty"
-  | Id event "::" Id variant
+  = QualifiedName event \ "empty"
   | "empty"
   ;  
  

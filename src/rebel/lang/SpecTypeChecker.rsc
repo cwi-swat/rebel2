@@ -43,8 +43,19 @@ void collect(current: (Spec)`spec <Id name> <Instances? instances> <Fields? fiel
     
     collect(events, c);
     if (/States sts <- states) {
-      collectStates(sts,c);
-      collect(sts.trans, c);
+      collect(sts.root, c);
+      
+      done = getDefStates(c);
+      
+      if ("$$init$$" in done) {
+        c.define("initialized", stateId(), sts, defType(stateType()));
+      }
+      if ("$$fin$$" in done) {
+        c.define("finalized", stateId(), sts, defType(stateType()));
+      } 
+      if ({"$$init$$", "$$fin$$"} & done != {}) {
+        c.define("uninitialized", stateId(), sts, defType(stateType()));
+      }
     }
 
     collect(facts, c);
@@ -79,73 +90,97 @@ void collect(current:(Pred)`pred <Id name> (<{FormalParam ","}* formals>) = <For
   c.leaveScope(current);    
 }
 
-void collectStates(States sts, Collector c) {
-  set[State] done = {};
-  
-  visit(sts) {
-    case (Transition)`<State from> -\> <State to> : <{TransEvent ","}+ events>;`: {
-      if (from notin done) {
-        c.define("<from>", stateId(), from, defType(stateType()));
-        done += from;
-      } else {
-        c.use(from, {stateId()});        
-      }
-      
-      if (to notin done) {
-        c.define("<to>", stateId(), to, defType(stateType()));
-        done += to;
-      } else {
-        c.use(to, {stateId()});
-      }         
-    }
-    case (Transition)`<State super> <InnerStates? inner> { <Transition* trans> }`: {
-      for (/InnerStates is := inner, State s <- is.states) {
-        if (s notin done) { 
-          c.define("<s>", stateId(), s, defType(stateType()));
-          done += s;
-        } else {
-          c.use(s, {stateId()});
-        }
-      }
+void collect(current: (StateBlock)`<InnerStates inner> <Transition* trans>`, Collector c) {
+  for (Id state <- inner.states) { // If there are inner states, then they should always be defined
+    // check if the inner state is not being used for a sub state machine
+    if ((Transition)`<Id state> { <StateBlock _> }` <- trans) {
+      // do nothing, will be defined later
+      ;
+    } 
+    else {
+      defineState("<state>", state, c);
     }
   }
   
-  // add an 'initialized' and 'uninitialized' state
-  c.define("initialized", stateId(), sts, defType(stateType()));
-  c.define("uninitialized", stateId(), sts, defType(stateType()));
-  c.define("finalized", stateId(), sts, defType(stateType()));
+  collect(trans, c);
 }
 
+void collect(current: (StateBlock)`<Transition* trans>`, Collector c) {
+  collect(trans, c);
+}
+
+private set[str] getDefStates(Collector c) = (list[str] done := c.getStack("states_done")) ? toSet(done) : {};
+
+private void definedState(str s, Collector c) {
+  c.push("states_done", s);
+}
+
+private void pushStateQualifier(str q, Collector c) { c.push("state_scope", q); }
+private void popStateQualifier(Collector c) { c.pop("state_scope"); }
+
+private list[str] getStateQualifiers(Collector c) = (list[str] q := c.getStack("state_scope")) ? reverse(q) : [];
+
+private void defineState(str state, Tree t, Collector c) {
+  c.define(state, stateId(), t, defType(stateType()));
+  
+  list[str] sq = getStateQualifiers(c);
+  if (sq != []) {
+    str qn = intercalate("::", sq + [state]);
+    c.define(qn, stateId(), t, defType(stateType()));
+  } 
+  
+  definedState(state, c);
+}
+
+private bool alreadyDefinedState(str s, Collector c) = s in getDefStates(c);   
+
 void collect(current: (Transition)`<State from>-\><State to> : <{TransEvent ","}+ events>;`, Collector c) {
-  // 'from' and 'to' are already done earlier
+  // Check if the states are already in the done list. If so, reference, otherwise add. Always reference if it concerns a fully qualified referenced state
+  void collectState(State st) {
+    if (st has name) {
+      
+      if ((QualifiedName)`<Id name>` := st.name, !alreadyDefinedState("<name>",c)) {
+        defineState("<name>", st, c);
+      } else {
+        c.use(st, {stateId()});
+      }
+    } 
+  }
+  
+  if ("<from>" == "(*)") {
+    definedState("$$init$$", c);
+  } else{  
+    collectState(from); 
+  }
+    
+  if ("<to>" == "(*)") {
+    definedState("$$fin$$", c);
+  } else { 
+    collectState(to); 
+  }
+  
   collect(events,c);
 }
 
-void collect(current: (Transition)`<State super> <InnerStates? inner> { <Transition* trans> }`, Collector c) {
-  collect(super,c);
+void collect(current: (Transition)`<Id super> { <StateBlock child> }`, Collector c) {
+  defineState("<super>", current, c);
   
-  if (/InnerStates inn := inner) {
-    collect(inn.states,c);   
-  }
-  
-  collect(trans,c);
+  //c.enterScope(current); 
+    pushStateQualifier("<super>", c);
+    collect(child, c);
+    popStateQualifier(c);
+  //c.leaveScope(current);
 }
 
-void collect((TransEvent)`<Id event>`, Collector c) {
-  c.use(event, {eventId()});
-}
-
-void collect(current: (TransEvent)`<Id event>::<Id variant>`, Collector c) {
-  c.useQualified(["<event>","<variant>"], current, {eventVariantId()}, {eventId()});
+void collect(current: (TransEvent)`<QualifiedName event>`, Collector c) {
+  //if ((QualifiedName)`<Id ev>` := event) {
+    c.use(event, {eventId(),eventVariantId()});
+  //} else {
+    //c.useQualified(["<e>" | e <- event.names], event, {eventId(), eventVariantId()}, {eventId()});
+  //}  
 }
 
 void collect((TransEvent)`empty`, Collector c) {}
-
-void collect(current: (State)`<Id name>`, Collector c) {
-  c.use(name, {stateId()});
-}
-
-void collect(current: (State)`(*)`, Collector c) {}
 
 void collect(current: (Event)`<Modifier* modifiers> event <Id name>(<{FormalParam ","}* formals>) <EventBody body>`, Collector c) {
   list[Id] fp = [f.name | f <- formals];
@@ -154,6 +189,14 @@ void collect(current: (Event)`<Modifier* modifiers> event <Id name>(<{FormalPara
     AType (Solver s) {
       return eventType(namedTypeList([<"<f>",s.getType(f)> | f <- fp]));
     }));
+  
+  // Scan for possible variants, also define here to cicumvent qualified naming with external types issue
+  for (EventVariant var <- body.variants) {
+    c.define("<name>::<var.name>", eventVariantId(), var, defType(fp, 
+      AType (Solver s) {
+        return eventType(namedTypeList([<"<f>",s.getType(f)> | f <- fp]));
+      }));
+  }
   
   c.enterScope(current);
     c.push("eventName", "<name>");
@@ -173,7 +216,8 @@ void collect(current: (Event)`<Modifier* modifiers> event <Id name>(<{FormalPara
 
 void collect(current: (EventVariant)`variant <Id name> <EventVariantBody body>`, Collector c) {
   c.fact(current, boolType());
-  c.define("<name>", eventVariantId(), name, defType(current));
+  //c.define("<name>", eventVariantId(), current, defType(current));
+  // double define to workaround 'type qualification' problem
   
   c.enterScope(current); 
     collect(body, c);
@@ -232,8 +276,8 @@ void collect((EventVariantBody)`<Pre? maybePre> <Post? maybePost>`, Collector c)
   }
 }
 
-void collect(current: (Formula)`<Expr spc>.<Id event>(<{Expr ","}* arguments>)`, Collector c) {
-  c.useViaType(spc, event, {eventId(),predId()});
+void collect(current: (Formula)`<Expr spc>.<QualifiedName event>(<{Expr ","}* arguments>)`, Collector c) {
+  c.useViaType(spc, event, {eventId(),eventVariantId(),predId()});
   
   args = [arg | arg <- arguments];
   

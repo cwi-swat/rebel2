@@ -6,7 +6,7 @@ import banking::types::IBAN
  
 spec Account
   nr: IBAN,
-  balance: Money,  
+  balance: Money,   
   openedOn: Date,
   closedOn: Date;
   

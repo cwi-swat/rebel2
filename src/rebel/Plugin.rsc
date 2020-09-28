@@ -112,6 +112,7 @@ set[Contribution] getRebelContributions() {
   }
   
   return {
+    treeProperties(hasQuickFixes = false),
     annotator(Module (Module m) {
       TypeCheckerResult tr = typeCheckModule(m);
       

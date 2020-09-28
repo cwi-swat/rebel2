@@ -130,12 +130,19 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
   TModel genTm = rebelTModelFromModule(gen, {}, pcfg);
   //println("After type checking new module: <(cpuTime() - startTime) / 1000000>ms");
   
+  Module genMod = gen;
+  
   // Filter the specs until none can be removed any more
   Graph[Spec] newSpcDep = extractSpecDependencyGraph({<resolvedAndCheckedModule(gen,genTm,now()), resolvedAndCheckedModule(gen,genTm,now())>});
   if (size(newSpcDep) != size(spcDep)) {
     filteredSpecs = filterNonReferencedSpecs(newSpcDep, genTm, findConfig(gen));  
     gen = assembleModule(root.\module.name, filteredSpecs, as, cfg, chk);
-    genTm = rebelTModelFromModule(gen, {}, pcfg);
+    
+    // TEMP / TODO: Cop-out for Type checking issues with generated code (without reparsing). Location trouble on generated nodes
+    genMod = parse(#Module, "<gen>");
+    ////////////////
+    
+    genTm = rebelTModelFromModule(genMod, {}, pcfg);
   }
   //println("After filtering one last time: <(cpuTime() - startTime) / 1000000>ms");
     
@@ -145,7 +152,7 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
 
   println("done, took: <((cpuTime() - startTime) / 1000000)> ms.");
   
-  return <gen, genTm>;
+  return <genMod, genTm>;
 }
 
 private Spec filterFieldAndFacts(Field fld, Spec s, set[loc] uses) = filterFacts(filterField(s, fld), uses);

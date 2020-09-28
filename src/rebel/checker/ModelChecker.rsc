@@ -29,7 +29,8 @@ Trace performCheck(Check chk, Module m, TModel tm, Graph[RebelDependency] deps, 
   // Step 2: Normalize this combined, check specific Module 
   CheckedModule norm = normalizeAndTypeCheck(gen.m, gen.tm, pcfg, saveNormalizedMod = saveIntermediateFiles); 
   // Step 3: Build a configuration containing all instances and initial values, etc.
-  Config cfg = buildConfig(findConfigByName("<chk.config>",norm.m), norm.m, norm.tm, findSearchDepth(chk.depth), /(Objective)`infinite trace` := chk);
+  tuple[int,bool] steps = findSearchDepth(chk.depth);
+  Config cfg = buildConfig(findConfigByName("<chk.config>",norm.m), norm.m, norm.tm, steps<0>, steps<1>, /(Objective)`infinite trace` := chk);
   // Step 4: Translate the normalized, combined module to an AlleAlle specification
   str alleSpec = translateToAlleAlle(cfg, norm.m, norm.tm, pcfg, saveAlleAlleFile = saveIntermediateFiles);
   // Step 5: Run the translated AlleAlle specification in the ModelFinder and interpet the result (based on the generated, non-normalized, module)
@@ -71,4 +72,5 @@ private rebel::lang::Syntax::Config findConfigByName(str cfgName, Module m) {
   throw "Unable to find referenced Config at `<chk.config@\loc>`";
 }
 
-private int findSearchDepth((SearchDepth)`max <Int steps> steps`) = toInt("<steps>") + 1;
+private tuple[int,bool] findSearchDepth((SearchDepth)`max <Int steps> steps`) = <toInt("<steps>") + 1, false>;
+private tuple[int,bool] findSearchDepth((SearchDepth)`exact <Int steps> steps`) = <toInt("<steps>") + 1, true>;

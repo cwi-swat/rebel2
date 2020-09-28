@@ -127,7 +127,7 @@ private str eventParamTypeAndMultiplicityConstraints(set[Spec] spcs, TModel tm) 
 
 private str allConfigsAreReachable()
   = "// Generic: All configurations are reachable
-    '∀ c ∈ Config ∖ first | c ⊆ (first[config as cur] ⨝ ^\<cur,nxt\>order)[nxt -\> config]
+    '∀ c ∈ Config ∖ first | c ⊆ (first[config as cur] ⨝ ^order)[nxt -\> config]
     '";
     
 private str onlyOneTriggeringEvent(bool finiteTrace)

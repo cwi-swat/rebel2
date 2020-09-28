@@ -17,17 +17,17 @@ spec Transaction
       from is initialized,  
       to is initialized, 
       from != to, 
-      amount.currency = Currency[EUR],
+      amount.currency = Currency[EUR], 
       amount.amount > 0;
     post:  
       this.from' = from, 
       this.to' = to, 
-      this.amount' = amount,
+      this.amount' = amount, 
       this.bookOn' = bookOn;
    
   event book()
     pre: 
-      this.bookOn.same(Date[NOW]),
+      this.bookOn.same(Date[NOW]),  
       this.from.withdraw(this.amount),
       this.to.deposit(this.amount);  
    

@@ -29,7 +29,7 @@ private str translateStaticPart(set[Spec] spcs) {
 
 private str translateDynamicPart(Config cfg, TModel tm) {
   str def = "// Dynamic configuration of state machines
-            '<buildConfigRels(cfg.numberOfTransitions, cfg.finiteTrace)>
+            '<buildConfigRels(cfg.numberOfTransitions, cfg.finiteTrace, cfg.exactNrOfSteps)>
             '<buildInstanceRel(cfg.instances)>
             '<buildInstanceInStateRel(cfg.instances, cfg.numberOfTransitions)>
             '<buildRaisedEventsRel(cfg.instances<0,1>, cfg.numberOfTransitions, cfg.finiteTrace)>
@@ -64,7 +64,7 @@ private str buildIndividualStateRels(set[Spec] spcs)
     '<}>";
 
 private str buildIndividualStateRel(Spec spc)
-  = "<for (rebel::lang::SpecSyntax::State s <- states) {>State<getCapitalizedSpecName(spc)><capitalize("<s>")> (state:id) = {\<<getStateLabel(spc, s)>\>}
+  = "<for (rebel::lang::SpecSyntax::State s <- states) {>State<getCapitalizedSpecName(spc)><capitalize(replaceAll("<s>", "::", "__"))> (state:id) = {\<<getStateLabel(spc, s)>\>}
     '<}>"
     when set[rebel::lang::SpecSyntax::State] states := lookupStates(spc);
   
@@ -72,7 +72,7 @@ private str buildStateTuples(Spec spc)
   = intercalate(",", ["\<state_<s>\>" | str s <- states])
   when 
     str name := getLowerCaseSpecName(spc),
-    set[str] states := {"<name>_<toLowerCase("<s.name>")>" | /rebel::lang::SpecSyntax::State s := spc.states, s has name};
+    set[str] states := {"<name>_<toLowerCase(replaceAll("<s.name>", "::", "__"))>" | /rebel::lang::SpecSyntax::State s := spc.states, s has name};
 
 private str buildAllowedTransitionRel(set[Spec] spcs)
   = "// Define which transitions are allowed (in the form of `from a state` -\> ` via an event` -\> `to a state`
@@ -126,11 +126,11 @@ private default str convertFromState(rebel::lang::SpecSyntax::State st, str spec
 private str convertToState((State)`(*)`, str _) = "state_finalized";
 private default str convertToState(rebel::lang::SpecSyntax::State st, str spec) = convertState(st, spec);
 
-private str convertState(rebel::lang::SpecSyntax::State st, str spec) = "state_<spec>_<toLowerCase("<st>")>";   
+private str convertState(rebel::lang::SpecSyntax::State st, str spec) = "state_<spec>_<toLowerCase(replaceAll("<st>", "::", "__"))>";   
   
 str translateConfigState(Spec spc, uninitialized()) = "state_uninitialized";
 str translateConfigState(Spec spc, finalized())     = "state_finalized";
-str translateConfigState(Spec spc, state(str name)) = "state_<toLowerCase("<spc.name>")>_<toLowerCase("<name>")>";
+str translateConfigState(Spec spc, state(str name)) = "state_<toLowerCase("<spc.name>")>_<toLowerCase(replaceAll("<name>", "::", "__"))>";
 
 private str buildEventParamRels(set[Spec] specs, Config cfg, TModel tm) {
   list[str] rels = [];
@@ -251,9 +251,10 @@ private str buildRaisedEventsTuples(Spec spc, str instance, int numberOfTransiti
   return intercalate(",", tuples);
 }
 
-private str buildConfigRels(int numberOfTransitions, bool finiteTrace)
+private str buildConfigRels(int numberOfTransitions, bool finiteTrace, bool exactNrOfSteps)
   = "Config (config:id) \>= {\<c1\>} \<= {<intercalate(",", ["\<c<i>\>" | int i <- [1..numberOfTransitions+1]])>}
-    'order (cur:id, nxt:id) \<= {<intercalate(",", ["\<c<i>,c<i+1>\>" | int i <- [1..numberOfTransitions]])>}
+    '<if (exactNrOfSteps) {>order (cur:id, nxt:id) = {<intercalate(",", ["\<c<i>,c<i+1>\>" | int i <- [1..numberOfTransitions]])>}<} else {>
+    'order (cur:id, nxt:id) \<= {<intercalate(",", ["\<c<i>,c<i+1>\>" | int i <- [1..numberOfTransitions]])>}<}>
     'first (config:id) = {\<c1\>}
     'last (config:id) \<= {<intercalate(",", ["\<c<i>\>" | int i <- [1..numberOfTransitions+1]])>}
     'back (config:id) <if (finiteTrace) {>= {}<} else {> \<= {<intercalate(",", ["\<c<i>\>" | int i <- [1..numberOfTransitions+1]])>} <}>
