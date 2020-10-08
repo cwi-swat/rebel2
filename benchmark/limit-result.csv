@@ -1,0 +1,11 @@
+timestamp,modul,check,config,asExpected,checkAssemblyDuration,normDuration,configBuildDuration,translateToAlleDuration,translateToSmtDuration,solveDurationSolver,solveDurationTotal,relModelCreationDuration,total,observedTotalDuration
+$2020-10-06T10:11:58.554+00:00$,|project://rebel2/examples/local/debitcard/checks/LimitChecksWithoutMocks.rebel|,CanInitializeLimit,Basic,true,4935,5974,48,2718,9416,140,7394,293,30918,43535
+$2020-10-06T10:11:58.559+00:00$,|project://rebel2/examples/local/debitcard/checks/LimitChecksWithoutMocks.rebel|,CanAddOverrideAndCheck,Basic,true,4528,5480,64,6466,23621,6940,34516,1980,83595,104785
+$2020-10-06T10:11:58.559+00:00$,|project://rebel2/examples/local/debitcard/checks/LimitChecksWithoutMocks.rebel|,CantOverdrawLimit,Basic,false,7349,5909,50,6653,42046,31980,49657,3285,146929,180696
+$2020-10-06T10:11:58.559+00:00$,|project://rebel2/examples/local/debitcard/checks/LimitChecksWithoutMocks.rebel|,LimitIsAlwaysPositive,Basic,false,8599,6098,77,10129,41258,60390,34450,1315,162316,223180
+$2020-10-06T10:11:58.559+00:00$,|project://rebel2/examples/local/debitcard/checks/LimitChecksWithoutMocks.rebel|,NormalAndOverrideAlwaysInSameCurrency,Basic,true,6699,7818,58,6378,20474,1050,-1,-1,42475,91192
+$2020-10-06T10:14:41.028+00:00$,|project://rebel2/examples/local/debitcard/checks/LimitChecksWithMocks.rebel|,CanInitializeLimit,MockedDates,true,3030,2054,20,838,2690,40,2120,205,10997,13180
+$2020-10-06T10:14:41.028+00:00$,|project://rebel2/examples/local/debitcard/checks/LimitChecksWithMocks.rebel|,CanAddOverrideAndCheck,MockedDates,true,2093,1910,17,1867,13781,1160,10893,744,32465,38050
+$2020-10-06T10:14:41.028+00:00$,|project://rebel2/examples/local/debitcard/checks/LimitChecksWithMocks.rebel|,CantOverdrawLimit,MockedDates,true,2475,1899,17,2420,17356,2120,-1,-1,26285,46307
+$2020-10-06T10:14:41.028+00:00$,|project://rebel2/examples/local/debitcard/checks/LimitChecksWithMocks.rebel|,LimitIsAlwaysPositive,MockedDates,false,2093,2487,19,2212,8291,540,8680,582,24904,28678
+$2020-10-06T10:14:41.029+00:00$,|project://rebel2/examples/local/debitcard/checks/LimitChecksWithMocks.rebel|,NormalAndOverrideAlwaysInSameCurrency,MockedDates,true,2362,1780,18,1713,9492,500,-1,-1,15863,28403

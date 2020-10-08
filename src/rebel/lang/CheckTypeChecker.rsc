@@ -42,7 +42,7 @@ void collect(current: (Config)`config <Id name> = <{InstanceSetup ","}+ instance
   c.leaveScope(current);  
 }
 
-void collect(current: (InstanceSetup)`<{Id ","}+ labels>: <Type spc> <Abstracts? abstracts> <Forget? forget> <InState? inState> <WithAssignments? assignments>`, Collector c) {
+void collect(current: (InstanceSetup)`<{Id ","}+ labels>: <Type spc> <Mocks? mocks> <Forget? forget> <InState? inState> <WithAssignments? assignments>`, Collector c) {
   for (l <- labels) {
     c.define("<l>", instanceId(), l, defType(spc));
   }
@@ -62,14 +62,14 @@ void collect(current: (InstanceSetup)`<{Id ","}+ labels>: <Type spc> <Abstracts?
     collect(val, c);    
   }
   
-  if (/Abstracts ab := abstracts) { 
-    collect(ab, c);
+  if (/Mocks m := mocks) { 
+    collect(m, c);
   }
   
   collect(spc, c); 
 }
 
-void collect(current:(Abstracts)`abstracts <Type concrete>`, Collector c) {
+void collect(current:(Mocks)`mocks <Type concrete>`, Collector c) {
   collect(concrete, c);
 }
 
@@ -150,7 +150,7 @@ void collect(current:(Formula)`<TransEvent event> on <Expr spc> <WithAssignments
       AType (Solver s) {
         eType = s.getType(event);
         
-        if (eventType(namedTypeList(ntl)) := s.getType(event)) {
+        if (eventType(namedTypeList(ntl),_) := s.getType(event)) {
           map[str,AType] namedFormals = (name : tipe | <str name, AType tipe> <- ntl); 
           map[str,AType] namedArgs = (n : s.getType(namedArgs[n]) | n <- namedArgs);
                   

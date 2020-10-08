@@ -17,15 +17,17 @@ import DateTime;
 import util::Progress;
 import util::Benchmark;
 
-alias CheckedModule = tuple[Module m, TModel tm];
+alias CheckedModule = tuple[Module m, TModel tm, int duration];
 
 CheckedModule assembleCheck(str check, loc modLoc, PathConfig pcfg, bool saveGenModule = true) = assembleCheck(check, parseModule(modLoc), pcfg, saveGenModule = saveGenModule);
 
 CheckedModule assembleCheck(str check, Module root, PathConfig pcfg, bool saveGenModule = true) = assembleCheck(check, root, calculateDependencies(root, defaultPathConfig(root@\loc.top)), pcfg, saveGenModule = saveGenModule);
 
 CheckedModule assembleCheck(str check, Module root, Graph[RebelDependency] modDep, PathConfig pcfg, bool saveGenModule = true) {
-  if (/resolvedAndCheckedModule(Module m, TModel tm, _) := modDep, /Check chk := m, "<chk.name>" == check) {
-    return assembleCheck(chk, root, tm, modDep, pcfg, saveGenModule = saveGenModule);
+  set[RebelDependency] resAndChecked = {r | r:resolvedAndCheckedModule(_, _, _) <- (modDep<0> + modDep<1>)};  
+  
+  if (r <- resAndChecked, (Part)`<Check chk>` <- r.m.parts, "<chk.name>" == check) {
+    return assembleCheck(chk, root, r.tm, modDep, pcfg, saveGenModule = saveGenModule);
   } else {
     throw "Check with name `<check>` not found";
   }
@@ -110,7 +112,7 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
 
   // Step 1: Apply abstraction
   cfg = visit (cfg) {
-    case (InstanceSetup)`<{Id ","}+ labels> : <Type abstractSpc> abstracts <Type concreteSpc> <Forget? forget> <InState? inState> <WithAssignments? assignments>` =>
+    case (InstanceSetup)`<{Id ","}+ labels> : <Type abstractSpc> mocks <Type concreteSpc> <Forget? forget> <InState? inState> <WithAssignments? assignments>` =>
       (InstanceSetup)`<{Id ","}+ labels> : <Type concreteSpc> <Forget? forget> <InState? inState> <WithAssignments? assignments>` when replace(abstractSpc, concreteSpc)
   };  
   //println("After applying abstractions: <(cpuTime() - startTime) / 1000000>ms");
@@ -150,9 +152,11 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
     writeFile(addModuleToBase(pcfg.checks, gen)[extension="rebel"], gen);
   }
 
-  println("done, took: <((cpuTime() - startTime) / 1000000)> ms.");
+  int duration = (cpuTime() - startTime) / 1000000;
+
+  println("done, took: <duration> ms.");
   
-  return <genMod, genTm>;
+  return <genMod, genTm, duration>;
 }
 
 private Spec filterFieldAndFacts(Field fld, Spec s, set[loc] uses) = filterFacts(filterField(s, fld), uses);

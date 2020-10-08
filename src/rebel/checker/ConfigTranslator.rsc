@@ -11,6 +11,8 @@ import String;
 import Set;
 import List;
 
+import util::Benchmark;
+
 data Config = config(rel[Spec spc, str instance, State initialState] instances, 
                      rel[Spec spc, str instance, str field, str val] initialValues, 
                      int numberOfTransitions,
@@ -18,12 +20,17 @@ data Config = config(rel[Spec spc, str instance, State initialState] instances,
                      bool exactNrOfSteps = false,
                      int maxSizeIntegerSets = 5,
                      int maxSizeStringSets = 5);
+
+alias ConfigBuilderResult = tuple[Config cfg, int duration];
  
-Config buildConfig(rebel::lang::Syntax::Config cfg, Module m, TModel tm, int searchDepth, bool exactNrOfSteps, bool infiniteTrace) {
+ConfigBuilderResult buildConfig(rebel::lang::Syntax::Config cfg, Module m, TModel tm, int searchDepth, bool exactNrOfSteps, bool infiniteTrace) {
+  int startTime = cpuTime();
+  
   rel[Spec,str,State] instances = buildInstances(cfg, m, tm);
   rel[Spec,str,str,str] initialValues = buildInitialValues(cfg, m, tm);
+  int duration = (cpuTime() - startTime) / 1000000;
   
-  return config(instances, initialValues, searchDepth, exactNrOfSteps = exactNrOfSteps, finiteTrace = !infiniteTrace);
+  return <config(instances, initialValues, searchDepth, exactNrOfSteps = exactNrOfSteps, finiteTrace = !infiniteTrace), duration>;
 }
 
 str config2Str(Config cfg) 
@@ -63,7 +70,7 @@ rel[Spec spc, str instance, str field, str val] buildInitialValues(rebel::lang::
   rel[Spec,str,str,str] initialValues = {};
   
   visit (cfg) {
-    case (InstanceSetup)`<{Id ","}+ labels> : <Type spec> <Abstracts? _> <InState? _> <WithAssignments assignments>` : {
+    case (InstanceSetup)`<{Id ","}+ labels> : <Type spec> <Mocks? _> <InState? _> <WithAssignments assignments>` : {
       Spec s = lookupSpecByRef(spec@\loc, m, tm);
       initialValues += {<s, "<label>", field, v> | <str field, str v> <- buildAssignments(assignments), Id label <- labels};           
     }

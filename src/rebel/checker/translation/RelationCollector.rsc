@@ -353,9 +353,9 @@ private str getSpecName(loc l, AnalysisContext ctx) {
 }
 
 private Define getDefinition(loc use, AnalysisContext ctx) {
-  if (use notin ctx.tm.useDef<0>) {
-    throw "Unable to find the definition for `<use>`";
-  } 
+  //if (use notin ctx.tm.useDef<0>) {
+  //  throw "Unable to find the definition for `<use>`";
+  //} 
   
   if ({loc def} := ctx.tm.useDef[use]) { 
     if (def in ctx.tm.definitions) {

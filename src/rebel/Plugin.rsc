@@ -40,9 +40,9 @@ set[Contribution] getRebelContributions() {
       PathConfig pcfg = defaultPathConfig(m@\loc.top);
       TypeCheckerResult tr = typeCheckModule(m);
       
-      Trace t = performCheck(chk, m, tr.tm, tr.depGraph, pcfg = pcfg, saveIntermediateFiles = false, solverTimeout = solverTimeout);
+      ModelCheckerResult res = performCheck(chk, m, tr.tm, tr.depGraph, pcfg = pcfg, saveIntermediateFiles = false, solverTimeout = solverTimeout);
       
-      switch(t) {
+      switch(res.t) {
         case noTrace(solverTimeout()): {
           alert("Solver timed out. Please simplify the check");
           throw "Solver timed out";
@@ -51,7 +51,7 @@ set[Contribution] getRebelContributions() {
           alert("No trace found. Check not satisfiable for the given configuration");
           throw "No trace found";
         }
-        default: return createTraceVis("<chk.name>", t);
+        default: return createTraceVis("<chk.name>", "<chk.config>", "<m.\module.name>", res.t);
       } 
     } 
   }
@@ -69,9 +69,9 @@ set[Contribution] getRebelContributions() {
       println("===========================");
       
       switch (r) {
-        case asExpected(str c): println("Check `<c>` as expected");
-        case notAsExpected(str c, str reason, Trace t): {
-          println("Check `<c>` NOT as expected: <reason>");
+        case r:asExpected(str c, str _): println("Check `<c>` as expected. <durations2str(r)>");
+        case r:notAsExpected(str c, str _, str reason, Trace t): {
+          println("Check `<c>` NOT as expected: <reason>. <durations2str(r)>");
           println(trace2Str(t));
         }
       }
@@ -91,9 +91,9 @@ set[Contribution] getRebelContributions() {
     
     for (r <- results) {
       switch (r) {
-        case asExpected(str c): println("Check `<c>` as expected");
-        case notAsExpected(str c, str reason, Trace t): {
-          println("Check `<c>` NOT as expected: <reason>");
+        case r:asExpected(str c, str _): println("Check `<c>` as expected. <durations2str(r)>");
+        case r:notAsExpected(str c, str _, str reason, Trace t): {
+          println("Check `<c>` NOT as expected: <reason>. <durations2str(r)>");
           println(trace2Str(t));
         }
       }

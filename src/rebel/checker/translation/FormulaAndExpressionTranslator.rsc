@@ -389,5 +389,7 @@ private str maybeRename(str orig, str renameAs) = "[<orig> as <renameAs>]" when 
 private default str maybeRename(str orig, str renameAs) = "";
 
 str getSpecTypeName(Expr expr, TModel tm) = name when specType(str name) := getType(expr, tm);
+str getSpecTypeName(Expr expr, TModel tm) = name when optionalType(specType(str name)) := getType(expr, tm);
+
 default str getSpecTypeName(Expr expr, TModel tm) { throw "Expression `<expr>` is not a Spec Type"; }
 

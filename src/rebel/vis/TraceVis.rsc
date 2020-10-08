@@ -14,8 +14,11 @@ import IO;
 import String;
 import Type;
 import Set; 
+import ValueIO;
 
-alias TraceVisModel = tuple[str check, Trace trace, int currentStep, int totalSteps, bool isInfiniteTrace, bool showNxt, map[str,Filter] filters]; 
+alias TraceVisModel = tuple[str check, str config, str moduleName, Trace trace, int currentStep, int totalSteps, bool isInfiniteTrace, bool showNxt, Filters filters]; 
+
+alias Filters = map[str,Filter];
 
 data Msg 
   = nxt()
@@ -24,10 +27,11 @@ data Msg
   | prev()
   | changeFilter(str selected)
   | toggleConstants()
+  | saveFilters()
   ;
 
-App[TraceVisModel] createTraceVis(str check, Trace trace) {
-  TraceVisModel init() = <check, trace, 0, getTotalNumberOfSteps(trace), isInfiniteTrace(trace), false, initialFilters(trace)>;
+App[TraceVisModel] createTraceVis(str check, str config, str moduleName, Trace trace) {
+  TraceVisModel init() = <check, config, moduleName, trace, 0, getTotalNumberOfSteps(trace), isInfiniteTrace(trace), false, initialFilters(trace, moduleName, config)>;
     
   return webApp(makeApp("rebelTraceVis", init, view, update), 
     |project://rebel2/salix/tracevis.html|, |project://rebel2/salix/|
@@ -36,7 +40,14 @@ App[TraceVisModel] createTraceVis(str check, Trace trace) {
 
 bool isInfiniteTrace(Trace t) = /goalInfiniteTrace(_,_,_) := t;
 
-map[str,Filter] initialFilters(Trace t) = (inst : show() | <_,inst> <- t.conf.instances<0,1>);
+map[str,Filter] initialFilters(Trace t, str moduleName, str config) {
+  Filters filters = loadLastAppliedFilters(moduleName, config);
+  for (<_,inst> <- t.conf.instances<0,1>, inst notin filters) {
+    filters += (inst : show());
+  }
+  
+  return filters;
+}
   
 void view(TraceVisModel m) {
   div(() {
@@ -69,7 +80,7 @@ void view(TraceVisModel m) {
 }
 
 void displayTextualTrace(TraceVisModel m) {
-  textarea(id("textual_trace"), trace2Str(m.trace));
+  textarea(id("textual_trace"), class("form-control"), attribute("rows", "30"), trace2Str(m.trace));
 }
 
 void displayVisualTrace(TraceVisModel m) {
@@ -126,8 +137,13 @@ void displayFiltersAndOptions(TraceVisModel m) {
         });
       });
     }
+
     div(class("form-group"), () {
       button(\type("button"), onClick(toggleConstants()), class("btn btn-primary"),"Hide/show constants");
+    });
+
+    div(class("form-group"), () {
+      button(\type("button"), onClick(saveFilters()), class("btn btn-primary"),"Save applied filters");
     });
   });
 }
@@ -144,7 +160,7 @@ void displayNextEvent(TraceVisModel m) {
         
         code(() {
           strong("<currentStep.re.instance>");
-          text(".<currentStep.re.event.name>(");
+          text(".<currentStep.re.event.name><if (currentStep.re has variant) {>::<currentStep.re.variant><}>(");
           
           int i = 1;
           for (<param,val> <- currentStep.re.arguments) {
@@ -203,26 +219,26 @@ TraceVisModel update(Msg msg, TraceVisModel m) {
         m.filters[s] = hide();
       }
     }
+    case saveFilters(): saveAppliedFilters(m);
   }
   
   return m;
 }
 
-//data Configuration 
-//  = config(rel[Spec spc, str instance, State state] instances, rel[Spec spc, str instance, str field, str val] values)
-//  ;
+private loc getSavedFiltersFile(str moduleName, str cfgName) = |project://rebel2/bin/filters/| + "<replaceAll(moduleName, "::", "_")>_<cfgName>.fil"; 
 
-//data Trace
-//  = step(Configuration conf, RaisedEvent re, Trace next)
-//  | goal(Configuration conf)
-//  | goalInfiniteTrace(Configuration conf, RaisedEvent re, int backTo)
-//  ;
-//
-//
-//data RaisedEvent
-//  = raisedEvent(Spec spc, Event event, str instance, rel[str param, str val] arguments, set[str] affectedInstances)
-//  | raisedEventVariant(Spec spc, Event event, str eventName, str variant, str instance, rel[str param, str val] arguments, set[str] affectedInstances)
-//  ;
+Filters loadLastAppliedFilters(str moduleName, str config) {
+  loc lstAppliedFilters = getSavedFiltersFile(moduleName, config);
+  if (exists(lstAppliedFilters)) {
+    return readTextValueFile(#Filters, lstAppliedFilters);
+  } else {
+    return ();
+  }
+}
+
+void saveAppliedFilters(TraceVisModel m) {
+  writeTextValueFile(getSavedFiltersFile(m.moduleName, m.config), m.filters);
+} 
 
 
 str displayConf(TraceVisModel m) {

@@ -12,11 +12,11 @@ syntax Part
 syntax Config = "config" Id name "=" {InstanceSetup ","}+ instances ";";
 
 syntax InstanceSetup 
-  = {Id ","}+ labels ":" Type spec Abstracts? abstracts Forget? forget InState? inState WithAssignments? assignments
+  = {Id ","}+ labels ":" Type spec Mocks? mocks Forget? forget InState? inState WithAssignments? assignments
   | Id label WithAssignments assignments
   ;
 
-syntax Abstracts = "abstracts" Type concrete;
+syntax Mocks = "mocks" Type concrete;
 
 syntax Forget = "forget" {Id ","}+ fields;
 
@@ -103,4 +103,5 @@ keyword Keywords
   | "trace"
   | "check"
   | "run"
+  | "mocks"
   ;

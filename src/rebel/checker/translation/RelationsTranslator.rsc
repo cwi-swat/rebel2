@@ -96,19 +96,21 @@ private str buildSingleEventRel(str specName, Event e)
   when str event := replaceAll("<e.name>", "::", "_");
 
 private str buildConstantRels(set[Spec] spcs) {
-  set[str] constRels = {};
-  
-  for (/(Expr)`<Lit l>` := spcs) {
-    switch (l) {
-      case (Lit)`<Int i>`:            constRels += "__IntConst_<i> (const_<i>: int) = {\<<i>\>}";
-      case (Lit)`<StringConstant s>`: constRels += "__StrConst_<unquote(s)> (const_<unquote(s)>: str) = {\<<s>\>}";
-      case (Lit)`{}`:                 constRels += "__EMPTY (instance:id) = {}"; 
-      case (Lit)`none`:               constRels += "__EMPTY (instance:id) = {}";
-    }
-  }
-  
-  return "<for (r <- constRels) {><r>
-         '<}>";  
+  return "__EMPTY (instance:id) = {}";
+
+  //set[str] constRels = {};
+
+  //for (/(Expr)`<Lit l>` := spcs) {
+  //  switch (l) {
+  //    case (Lit)`<Int i>`:            constRels += "__IntConst_<i> (const_<i>: int) = {\<<i>\>}";
+  //    case (Lit)`<StringConstant s>`: constRels += "__StrConst_<unquote(s)> (const_<unquote(s)>: str) = {\<<s>\>}";
+  //    case (Lit)`{}`:                 constRels += "__EMPTY (instance:id) = {}"; 
+  //    case (Lit)`none`:               constRels += "__EMPTY (instance:id) = {}";
+  //  }
+  //}
+  //
+  //return "<for (r <- constRels) {><r>
+  //       '<}>";  
 }
 
 private str unquote(StringConstant s) = "<s>"[1..-1];

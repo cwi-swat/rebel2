@@ -31,5 +31,5 @@ config Game = f: Farmer is near, fox, chicken, grain: Cargo is near,
 
 assert CanGetEverybodyAcross = eventually forall f:Farmer, c:Cargo | f is far && c is far;  
 
-run CanGetEverybodyAcross from Game in max 8 steps;
+run CanGetEverybodyAcross from Game in max 8 steps expect trace;
  

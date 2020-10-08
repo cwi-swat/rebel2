@@ -21,7 +21,9 @@ import String;
 import util::Benchmark;
 import ParseTree;
 
-str translateToAlleAlle(Config cfg, Module m, TModel tm, PathConfig pcfg, bool saveAlleAlleFile = true) {
+alias TransResult = tuple[str alleSpec, int duration]; 
+
+TransResult translateToAlleAlle(Config cfg, Module m, TModel tm, PathConfig pcfg, bool saveAlleAlleFile = true) {
   print("Translating Rebel to AlleAlle ...");
   int startTime = cpuTime();
   RelMapping rm = constructRelMapping(m, tm);
@@ -36,13 +38,15 @@ str translateToAlleAlle(Config cfg, Module m, TModel tm, PathConfig pcfg, bool s
                  '// Minimize the number of steps by minimizing the number of Configurations
                  'objectives: minimize Config[count()]";
   
-  println("done, took: <((cpuTime() - startTime) / 1000000)> ms.");
   
   if (saveAlleAlleFile) {
     writeFile(addModuleToBase(pcfg.checks, m)[extension="alle"], alleSpec);
   }
+
+  int duration = (cpuTime() - startTime) / 1000000;
+  println("done, took: <duration> ms.");
   
-  return alleSpec;  
+  return <alleSpec, duration>;  
 }  
           
 str translateFacts(Module m, RelMapping rm, TModel tm, set[Spec] spcs) {

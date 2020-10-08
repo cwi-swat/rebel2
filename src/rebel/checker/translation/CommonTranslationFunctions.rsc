@@ -91,7 +91,9 @@ bool isParam(Expr expr, TModel tm)
 default bool isParam(Expr _, TModel _) = false;
 
 Spec getSpecByType(Expr expr, set[Spec] specs, TModel tm) {
-  if (specType(str specName) := getType(expr, tm)) {
+  AType tipe = getType(expr, tm);
+  
+  if (specType(str specName) := tipe || optionalType(specType(str specName)) := tipe) {
     return lookupSpecByName(specName, specs);
   }
   

@@ -1,0 +1,6 @@
+timestamp,modul,check,config,asExpected,checkAssemblyDuration,normDuration,configBuildDuration,translateToAlleDuration,translateToSmtDuration,solveDurationSolver,solveDurationTotal,relModelCreationDuration,total,observedTotalDuration
+$2020-10-06T09:56:57.107+00:00$,|project://rebel2/examples/Light.rebel|,CanBeTurnedOnAndOff,OneLight,true,818,722,1,162,1681,60,201,216,3861,5043
+$2020-10-06T09:56:57.107+00:00$,|project://rebel2/examples/Light.rebel|,BulbCanBreak,OneLight,true,721,720,2,168,581,10,64,203,2469,3960
+$2020-10-06T09:57:49.207+00:00$,|project://rebel2/examples/CoffeeMachine.rebel|,MachineIsServing,InitialMachine,true,702,804,4,1444,3851,80,411,293,7589,8764
+$2020-10-06T09:57:49.207+00:00$,|project://rebel2/examples/CoffeeMachine.rebel|,CanServeNormalCoffee,InitialMachine,true,699,804,4,1106,2995,100,463,456,6627,7552
+$2020-10-06T09:57:49.207+00:00$,|project://rebel2/examples/CoffeeMachine.rebel|,MachineWillServeOrCancel,InitialMachine,true,956,1066,4,1170,17220,150,-1,-1,20564,26531

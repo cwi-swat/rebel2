@@ -17,7 +17,8 @@ import ValueIO;
 import String;
 
 import DateTime;
-
+import Location;
+ 
 alias TypeCheckerResult = tuple[TModel tm, Graph[RebelDependency] depGraph];
 
 TypeCheckerResult checkModule(Module root, Graph[RebelDependency] depGraph, PathConfig pcfg, bool saveTModels = true, bool refreshRoot = false, bool debug = false) {
@@ -118,22 +119,32 @@ private void saveModule(Module m, TModel model, PathConfig pcfg) {
   // filter tmodel  
   makeDirRecursively(tmFile.parent);
   //println("Dirs made");
-  writeBinaryValueFile(tmFile, filterTModel(model));
-  //println("TM saved");  
+
+  print("Filtering and saving TModel...");
+  writeBinaryValueFile(tmFile, filterTModel(model,m));
+  println("done");  
 }
 
-private TModel filterTModel(TModel tm) {
-    println("Filtering TModel before saving");
+private TModel filterTModel(TModel tm, Module m) {
+    loc mloc = m@\loc;
+    
     tm.config = tconfig();
     
-    tm.defines = {d | Define d <- tm.defines, defTypeCall(_,_) !:= d.defInfo};
+    tm.defines = {d | Define d <- tm.defines, d.defined.top == mloc.top, isContainedIn(d.defined, mloc), defTypeCall(_,_) !:= d.defInfo};
     tm.definitions = ( d.defined : d | Define d <- tm.defines);
     tm.calculators = {};
+    
+    tm.facts = (l : tm.facts[l] | l <- tm.facts, l.top == mloc.top, isContainedIn(l, mloc));
+    tm.specializedFacts = (l : tm.specializedFacts[l] | l <- tm.specializedFacts, l.top == mloc.top, isContainedIn(l, mloc));
+    //tm.useDef = {<u,d> | <u,d> <- tm.useDef, isContainedIn(u, mloc)};
+    //tm.definesMap = (l : tm.definesMap[l] | l <- tm.definesMap, isContainedIn(l, mloc));
     
     //if(tm.config.logImports) println("defines: <size(tm.defines)> ==\> <size(defs)>");
     //m1.defines = toSet(defs);
     //m1 = visit(m1) {case loc l : if(!isEmpty(l.fragment)) insert l[fragment=""]; };
     //m1.definitions = ( def.defined : def | Define def <- m1.defines);
+    
+    // only save those facts that are part of this module
     
     return tm;
 }

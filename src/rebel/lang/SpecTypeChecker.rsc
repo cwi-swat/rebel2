@@ -43,6 +43,7 @@ void collect(current: (Spec)`spec <Id name> <Instances? instances> <Fields? fiel
     
     collect(events, c);
     if (/States sts <- states) {
+      c.clearStack("states_done");
       collect(sts.root, c);
       
       done = getDefStates(c);
@@ -184,28 +185,34 @@ void collect((TransEvent)`empty`, Collector c) {}
 
 void collect(current: (Event)`<Modifier* modifiers> event <Id name>(<{FormalParam ","}* formals>) <EventBody body>`, Collector c) {
   list[Id] fp = [f.name | f <- formals];
+
+  ModifierInfo toModInfo((Modifier)`init`) = initial();
+  ModifierInfo toModInfo((Modifier)`final`) = final();
+  ModifierInfo toModInfo((Modifier)`internal`) = internal();
+  
+  set[ModifierInfo] mods = {toModInfo(m) | Modifier m <- modifiers};
   
   c.define("<name>", eventId(), current, defType(fp, 
     AType (Solver s) {
-      return eventType(namedTypeList([<"<f>",s.getType(f)> | f <- fp]));
-    }));
+      return eventType(namedTypeList([<"<f>",s.getType(f)> | f <- fp]), mods);
+    })); 
   
   // Scan for possible variants, also define here to cicumvent qualified naming with external types issue
   for (EventVariant var <- body.variants) {
     c.define("<name>::<var.name>", eventVariantId(), var, defType(fp, 
       AType (Solver s) {
-        return eventType(namedTypeList([<"<f>",s.getType(f)> | f <- fp]));
+        return eventType(namedTypeList([<"<f>",s.getType(f)> | f <- fp]), mods);
       }));
   }
   
   c.enterScope(current);
     c.push("eventName", "<name>");
     
-    if (/(Modifier)`init` := modifiers) {
-      c.setScopeInfo(c.getScope(), eventScope(), initialEvent());
-    } else if (/(Modifier)`final` := modifiers) {
-      c.setScopeInfo(c.getScope(), eventScope(), finalEvent());
-    }    
+    //if (/(Modifier)`init` := modifiers) {
+    //  c.setScopeInfo(c.getScope(), eventScope(), initial());
+    //} else if (/(Modifier)`final` := modifiers) {
+    //  c.setScopeInfo(c.getScope(), eventScope(), final());
+    //}    
       
     collect(formals, body, c);
 
@@ -285,7 +292,7 @@ void collect(current: (Formula)`<Expr spc>.<QualifiedName event>(<{Expr ","}* ar
     AType (Solver s) {
       eType = s.getType(event);
       
-      if (eventType(namedTypeList(ntl)) := s.getType(event) || predType(namedTypeList(ntl)) := s.getType(event)) {
+      if (eventType(namedTypeList(ntl),_) := s.getType(event) || predType(namedTypeList(ntl)) := s.getType(event)) {
         AType formalTypes = atypeList([tipe | <str _, AType tipe> <- ntl]);
         
         argTypes = atypeList([s.getType(a) | a <- args]);

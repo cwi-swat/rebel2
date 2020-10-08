@@ -23,7 +23,7 @@ spec Boolean [TRUE,FALSE]
 config OneLight = l1: Light is uninitialized;
     
 assert CanBeTurnedOnAndOff = exists l: Light | ((l is initialized => l is lightOn) until l is lightOff);
-run CanBeTurnedOnAndOff from OneLight in max 4 steps with infinite trace; 
+run CanBeTurnedOnAndOff from OneLight in max 4 steps with infinite trace expect trace; 
 
 assert BulbCanBreak = eventually exists l: Light | l is finalized;
-run BulbCanBreak from OneLight in max 4 steps;
+run BulbCanBreak from OneLight in max 4 steps expect trace;

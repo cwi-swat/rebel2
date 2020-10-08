@@ -14,7 +14,7 @@ data AType
   | specType(str name)
   | specInstanceType(str specName)
   | stateType()
-  | eventType(AType argTypes)
+  | eventType(AType argTypes, set[ModifierInfo] mods)
   | moduleType()
   | factType()
   | predType(AType argTypes)
@@ -51,12 +51,13 @@ data IdRole
   | quantVarId()
   | instanceId()
   ; 
-    
-data EventInfo
-  = initialEvent()
-  | finalEvent()
-  ;    
 
+data ModifierInfo
+  = initial()
+  | final()
+  | internal()
+  ;
+    
 data PathRole
   = importPath()
   ;
@@ -66,7 +67,7 @@ str prettyAType(boolType()) = "Boolean";
 str prettyAType(stringType()) = "String";
 str prettyAType(specType(str name)) = "<name>";
 str prettyAType(specInstanceType(str specName)) = "instance of <specName>";
-str prettyAType(eventType(AType argTypes)) = "event <prettyAType(argTypes)>";
+str prettyAType(eventType(AType argTypes, set[ModifierInfo] mods)) = "event <prettyAType(argTypes)>";
 str prettyAType(voidType()) = "*";
 str prettyAType(setType(AType elem)) = "set of <prettyAType(elem)>";
 str prettyAType(optionalType(AType elem)) = "?<prettyAType(elem)>";

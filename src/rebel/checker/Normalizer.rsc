@@ -15,9 +15,9 @@ import String;
 import IO; 
 import Location;
 
-alias CheckedModule = tuple[Module m, TModel tm];
+alias NormalizedModule = tuple[Module m, TModel tm, int duration];
 
-CheckedModule normalizeAndTypeCheck(Module origMod, TModel origTm, PathConfig pcfg, bool saveNormalizedMod = false) {
+NormalizedModule normalizeAndTypeCheck(Module origMod, TModel origTm, PathConfig pcfg, bool saveNormalizedMod = false) {
   print("Normalizing prepared module ...");
   int startTime = cpuTime();
 
@@ -37,9 +37,11 @@ CheckedModule normalizeAndTypeCheck(Module origMod, TModel origTm, PathConfig pc
     
   TModel normModTm = rebelTModelFromModule(normMod, {}, pcfg, debug = false);
   
-  println("done, took: <(cpuTime() - startTime) / 1000000> ms.");
+  int duration = (cpuTime() - startTime) / 1000000;
   
-  return <normMod, normModTm>;
+  println("done, took: <duration> ms.");
+  
+  return <normMod, normModTm, duration>;
 }
 
 Spec normalize(Spec spc, TModel origTm) {
@@ -315,10 +317,10 @@ private States? normalizeStates(States? states, TModel tm) {
       }
     }
     
-    throw "Unable to find qualified state id";
+    throw "Unable to find qualified state id for `<use>`";
   }
 
-  rel[str super, str transChild] substates = {<qnSuper, child> | /t:(Transition)`<Id super> { <StateBlock block> }` := states, 
+  rel[str super, str transChild] substates = {<qnSuper, child> | /t:(Transition)`<Id _> { <StateBlock block> }` := states, 
     str qnSuper := getQualifiedName(t@\loc), child <- findChildrenTransitive(block@\loc)};
   // remove all the states that are super states themselfs
   substates -= substates<1,0>;   
@@ -326,7 +328,7 @@ private States? normalizeStates(States? states, TModel tm) {
   lrel[str from, str to, str event] normalized = [];
 
   visit(states) {
-    case (Transition)`<State from> -\> <State to> : <{TransEvent ","}+ events>;`: {
+    case t:(Transition)`<State from> -\> <State to> : <{TransEvent ","}+ events>;`: {
       list[str] evnts = [normalizeEventRefs(e) | e <- events];
       str t = "<to>" == "(*)" ? "<to>" : getQualifiedName(to@\loc);
       str f = "<from>" == "(*)" ? "<from>" : getQualifiedName(from@\loc);

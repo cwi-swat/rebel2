@@ -53,12 +53,12 @@ syntax Expr
   | Lit
   > nextVal: Expr "\'"
   > "-" Expr
-  > assoc Expr lhs "*" Expr rhs
+  > left Expr lhs "*" Expr rhs
   | non-assoc Expr lhs "/" Expr rhs
   | non-assoc Expr lhs "%" Expr rhs
-  > assoc Expr lhs "+" Expr rhs
+  > left Expr lhs "+" Expr rhs
   | non-assoc Expr lhs "-" Expr rhs
-  | assoc Expr lhs "++" Expr rhs
+  | left Expr lhs "++" Expr rhs
   > "{" Decl d "|" Formula form "}"
   ; 
   

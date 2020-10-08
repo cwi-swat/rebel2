@@ -136,7 +136,7 @@ private Graph[SyncedWith] buildSyncGraph(set[Spec] spcs, TModel tm) {
 
   Graph[SyncedWith] syncDep = {};
    
-  for (Spec s <- spcs, Event e <- s.events, /(Formula)`<Expr exp>.<Id ev>(<{Expr ","}* args>)` := e.body, eventId() := getIdRole(ev@\loc, tm), specType(str spcName) := getType(exp,tm)) {
+  for (Spec s <- spcs, Event e <- s.events, /(Formula)`<Expr exp>.<Id ev>(<{Expr ","}* args>)` := e.body,  getIdRole(ev@\loc, tm) in {eventId(), eventVariantId()}, AType tipe := getType(exp,tm), (specType(str spcName) := tipe || optionalType(specType(str spcName)) := tipe)) {
     Spec otherSpec = findSpecByName(spcName);
     Event otherEvent = findEventByName("<ev>", otherSpec);
     

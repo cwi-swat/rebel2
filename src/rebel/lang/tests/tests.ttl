@@ -4,7 +4,7 @@ test SetId [[
   spec Simple
     id: Integer;
     
-    event start(id: Integer) 
+    init final event start(id: Integer) 
       post: this.id' = id;
     
     states:
@@ -16,7 +16,7 @@ test EventVariant [[
   module EV
   
   spec EV
-    event base() 
+    init final event base() 
       variant var
   
   states:
@@ -28,7 +28,7 @@ test NestedStateMachines [[
   module NSM
   
   spec NSM
-    event base() 
+    init final event base() 
   
   states:
     [a,b,c]
@@ -80,9 +80,12 @@ test MultipleSpecs [[
   spec Leader 
     follower: Follower;
     
-    event start(follower: Follower) 
+    init event start(follower: Follower) 
       post: this.follower' = follower;
   
+    states:
+      (*) -> active: start;
+      
   spec Follower
 ]]
 
@@ -92,7 +95,7 @@ test SetOfFollowers [[
   spec Leader
     followers: set Follower;
     
-    event start()
+    init event start()
       post: this.followers' = {};
       
     event add(follower: Follower)
@@ -100,9 +103,16 @@ test SetOfFollowers [[
 
     event hit()
       pre: forall f: this.followers | f.hit();
+    
+    states:
+      (*)->active: start;
+      active->active: add, hit; 
             
   spec Follower
     event hit()
+    
+    states:
+      a->a: hit;
 ]]
 
 test SimpleCorrectConfig [[
@@ -139,5 +149,8 @@ test FieldReferenceOptional [[
     event refOp() 
       pre: this.a.f = 0;
       post: this.a.f' = 10; 
+      
+    states:
+      b->b: refOp;
 ]]
 
