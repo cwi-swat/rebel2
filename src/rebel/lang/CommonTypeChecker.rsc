@@ -284,9 +284,13 @@ void collect(current: (Expr)`- <Expr expr>`, Collector c) {
 }
 
 void collect(current: (Expr)`|<Expr expr>|`, Collector c) {
-  c.calculate("absolute", current, [expr], 
+  c.calculate("absolute or size", current, [expr], 
     AType (Solver s) {
-      s.requireEqual(expr, intType(), error(current, "Expression should be of type integer"));
+      AType tipe = s.getType(expr);
+      if (intType() !:= tipe, setType(_) !:= tipe) {
+        s.report(error(current, "Expression should be a set or integer type"));
+      }
+      
       return intType();
     });
     

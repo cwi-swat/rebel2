@@ -1,0 +1,44 @@
+module DoctorsAndRoster
+
+spec Doctor
+  internal event goOnCall()
+  internal event goOffCall()
+
+  states:
+    onCall -> offCall: goOffCall; 
+    offCall -> onCall: goOnCall;
+
+spec Roster 
+  doctors: set Doctor;  
+  
+  event goOnCall(d: Doctor)  
+    pre: d in this.doctors, d.goOnCall();
+    
+  event goOffCall(d: Doctor)
+    pre: 
+      d in this.doctors, 
+      d.goOffCall(), 
+      exists other: this.doctors | other != d && other is onCall;
+    
+  fact InitiallySomeDoctorIsOnCall = first exists r:Roster, d:r.doctors | d is onCall;  
+    
+  states: 
+    active -> active: goOnCall, goOffCall; 
+    
+assert AlwaysADoctorOnCall = always (exists r:Roster | |r.doctors| > 0) && !(forall d:Doctor| d is offCall);
+
+assert ARosterOfOne = always exists r:Roster | |r.doctors| = 0; 
+
+assert DoctorCanGoOffAndOnCall = eventually exists d: Doctor | 
+  (forall other: Doctor | (other != d => (other is offCall && eventually other is onCall && (eventually other is offCall)))) 
+  && d is onCall 
+  && eventually (d is offCall && eventually d is onCall);
+    
+config ThreeDoctors 
+  = alice,bob,carol: Doctor,
+    r: Roster;
+
+check AlwaysADoctorOnCall from ThreeDoctors in max 10 steps expect no trace;
+run DoctorCanGoOffAndOnCall from ThreeDoctors in max 7 steps expect trace;
+
+run ARosterOfOne from ThreeDoctors in max 0 steps expect trace;

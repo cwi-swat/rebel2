@@ -4,10 +4,10 @@ spec CoffeeMachine
   selected: CoffeeType,
   amountNeeded: Integer;
    
-  event powerOn() 
+  init event powerOn() 
     post: this.amountNeeded' = 0, this.selected' = CoffeeType[NONE];
     
-  event powerOff()
+  final event powerOff()
   
   event select()
     variant americano

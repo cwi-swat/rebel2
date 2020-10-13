@@ -1,7 +1,7 @@
 module rebel::checker::tests::ExpectationBenchmarker
 
 import rebel::checker::ExpectationRunner;
-import rebel::lang::Syntax;
+//import rebel::lang::Syntax;
 
 import util::PathUtil;
 import rebel::lang::TypeChecker;
@@ -13,13 +13,13 @@ import IO;
 import lang::csv::IO;
 import DateTime;
 
-alias ExpectationBenchmarkResult = lrel[datetime timestamp, loc modul, str check, str config, bool asExpected, int checkAssemblyDuration, int normDuration, int configBuildDuration, int translateToAlleDuration, int translateToSmtDuration, int solveDurationSolver, int solveDurationTotal, int relModelCreationDuration, int total, int observedTotalDuration];
+alias ExpectationBenchmarkResult = lrel[datetime timestamp, loc modul, str check, str config, bool asExpected, bool solverTimeout, int checkAssemblyDuration, int normDuration, int configBuildDuration, int translateToAlleDuration, int translateToSmtDuration, int solveDurationSolver, int solveDurationTotal, int relModelCreationDuration, int total, int observedTotalDuration];
 
-void benchmarkAllExpectations(list[loc] moduls, loc csvOutputFile) {
+void benchmarkAllExpectations(list[loc] moduls, loc csvOutputFile, int solverTimeout = 0) {
   ExpectationBenchmarkResult intermediateResult = [];
     
   for (loc modul <- moduls) {
-    intermediateResult = benchmarkExpectations(modul, csvOutputFile, intermediateResult = intermediateResult);
+    intermediateResult = benchmarkExpectations(modul, csvOutputFile, intermediateResult = intermediateResult, solverTimeout = solverTimeout);
   }  
 }
 
@@ -42,6 +42,6 @@ ExpectationBenchmarkResult benchmarkExpectations(loc modul, loc csvOutputFile, E
 }
 
 private ExpectationBenchmarkResult consOutcome(loc modul, ExpectationResult res) =
-  [<now(), modul, res.check, res.config, asExpected(_,_) := res, res.checkAssemblyDuration, res.normDuration, res.configBuildDuration, res.translateToAlleDuration, res.translateToSmtDuration, res.solveDurationSolver, res.solveDurationTotal, res.relModelCreationDuration, calcTotal(res), res.observedTotalDuration>]; 
+  [<now(), modul, res.check, res.config, asExpected(_,_) := res, solverTimedout(_,_) := res, res.checkAssemblyDuration, res.normDuration, res.configBuildDuration, res.translateToAlleDuration, res.translateToSmtDuration, res.solveDurationSolver, res.solveDurationTotal, res.relModelCreationDuration, calcTotal(res), res.observedTotalDuration>]; 
   
-private int calcTotal(ExpectationResult res) = res.checkAssemblyDuration + res.normDuration + res.configBuildDuration + res.translateToAlleDuration + res.translateToSmtDuration + res.solveDurationTotal + res.relModelCreationDuration;
+private int calcTotal(ExpectationResult res) = res.checkAssemblyDuration + res.normDuration + res.configBuildDuration + res.translateToAlleDuration + res.translateToSmtDuration + res.solveDurationSolver + res.solveDurationTotal + res.relModelCreationDuration;

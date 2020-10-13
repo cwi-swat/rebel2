@@ -13,13 +13,11 @@ spec HourClock
     (*) -> started: create;
     started -> started: tick;
     
-assert CanStart = eventually exists c: HourClock | c is initialized;
 assert AlwaysTick = eventually exists c: HourClock | c is initialized;
 
 assert GoingForward = eventually exists c: HourClock | c.hr = 1 && eventually c.hr = 3;
 
 config Simple = hc: HourClock is uninitialized;
 
-check CanStart from Simple in max 2 steps;
-check AlwaysTick from Simple in max 12 steps with infinite trace;
+run AlwaysTick from Simple in max 12 steps with infinite trace;
 check GoingForward from Simple in max 4 steps;

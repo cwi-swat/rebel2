@@ -253,7 +253,13 @@ void analyse(current:(Expr)`- <Expr expr>`, AnalysisContext ctx) {
 
 void analyse(current:(Expr)`|<Expr expr>|`, AnalysisContext ctx) {
   analyse(expr, ctx);
-  ctx.add(current@\loc, ctx.lookup(expr@\loc));
+  AType tipe = getType(expr@\loc,ctx);
+  if (intType() := tipe) {
+    ctx.add(current@\loc, ctx.lookup(expr@\loc));
+  } else if (setType(_) := tipe) {
+    RelExpr re = ctx.lookup(expr@\loc);
+    ctx.add(current@\loc, <"<re.relExpr>[count() as size]", ("size": intDom())>);
+  }
 }
 
 private void setOperation(loc current, Expr lhs, Expr rhs, str op, AnalysisContext ctx) {

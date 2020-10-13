@@ -13,9 +13,17 @@ import util::PathUtil;
 import ParseTree;
 import IO;
 
+import util::MemoCacheClearer;
+import util::Benchmark;
+
+set[str] alleAlleMods() = {"translation::Environment","translation::Relation"};
+
+
 data ExpectationResult(int checkAssemblyDuration = -1, int normDuration = -1, int configBuildDuration = -1, int translateToAlleDuration = -1, int translateToSmtDuration = -1, int solveDurationSolver = -1, int solveDurationTotal = -1, int relModelCreationDuration = -1, int observedTotalDuration = -1)
   = asExpected(str check, str config)
   | notAsExpected(str check, str config, str message, Trace trace)
+  | solverTimedout(str check, str config)
+  | solverError(str check, str config)
   ;
 
 list[ExpectationResult] checkExpectations(Module m, TModel tm, Graph[RebelDependency] deps, PathConfig pcfg = defaultPathConfig(m@\loc.top), bool saveIntermediateFiles = true, int solverTimeout = 30 * 1000) 
@@ -28,12 +36,15 @@ ExpectationResult checkExpectation(Check chk, Module m, TModel tm, Graph[RebelDe
     println("Start checking expectation for `<chk.name>`");
     println("=============================");
     
+    clearMemoCache(alleAlleMods());
+    gc();
+    
     ModelCheckerResult mcr = performCheck(chk,m,tm,deps,pcfg=pcfg,saveIntermediateFiles = saveIntermediateFiles, solverTimeout = solverTimeout);
     
     if (/(ExpectResult)`no trace` := expect) {
       switch (mcr.t) {
         case noTrace(noSolutionFound()):  return addTiming(asExpected("<chk.name>", "<chk.config>"), mcr);
-        case t:noTrace(solverTimeout()):  return addTiming(notAsExpected("<chk.name>", "Time out", t), mcr);
+        case t:noTrace(solverTimeout()):  return addTiming(solverTimedout("<chk.name>","<chk.config>"), mcr);
         case t:step(_,_,_):               return addTiming(notAsExpected("<chk.name>", "<chk.config>", "Trace found while no trace is expected", t), mcr);
         case t:goal(_):                   return addTiming(notAsExpected("<chk.name>", "<chk.config>", "Trace found while no trace is expected", t), mcr);
         case t:goalInfiniteTrace(_,_,_):  return addTiming(notAsExpected("<chk.name>", "<chk.config>", "Trace found while no trace is expected", t), mcr);
@@ -41,7 +52,7 @@ ExpectationResult checkExpectation(Check chk, Module m, TModel tm, Graph[RebelDe
     } else {
       switch (mcr.t) {
         case t:noTrace(noSolutionFound()):  return addTiming(notAsExpected("<chk.name>", "<chk.config>","No trace found while trace is expected", t), mcr);
-        case t:noTrace(solverTimeout()):    return addTiming(notAsExpected("<chk.name>", "<chk.config>", "Time out", t), mcr);
+        case t:noTrace(solverTimeout()):    return addTiming(solverTimedout("<chk.name>","<chk.config>"), mcr);
         default:                            return addTiming(asExpected("<chk.name>", "<chk.config>"), mcr);      
       }    
     }  

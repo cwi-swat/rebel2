@@ -10,7 +10,7 @@ spec Counter
     post: this.i' = this.i + 1;
     
   event dec()
-    pre: this.i > 3;
+    //pre: this.i > 3;
     post: this.i' = this.i - 1;
   
   states:
@@ -19,8 +19,8 @@ spec Counter
   
 config Simple = c: Counter is uninitialized;
 
-assert Eventually3Later5 = eventually exists c:Counter | c.i = 3 && eventually c.i = 5;
-run Eventually3Later5 from Simple in max 7 steps;  
+assert Eventually3Later1 = eventually exists c:Counter | c.i = 3 && eventually c.i = 1;
+run Eventually3Later1 from Simple in max 7 steps;  
 
 assert EventuallyAlwaysHigherThan3 = eventually always exists c:Counter | c.i > 3;
 check EventuallyAlwaysHigherThan3 from Simple in max 6 steps with infinite trace;

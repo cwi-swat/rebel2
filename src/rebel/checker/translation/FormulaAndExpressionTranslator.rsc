@@ -300,7 +300,8 @@ AttRes translateAttrExpr(current:(Expr)`<Id func>(<{Expr ","}* actuals>)`, Conte
       r = "<r><renameIfNecessary(params[0], newFld, ctx)>";
       AttRes p0 = translateAttrExpr(params[0],ctx);
       return <{r} + p0.rels, "toStr(<p0.constraint>)">;
-    }            
+    } 
+    default: throw "Unknown function `<func>`";           
   }
 }
 
@@ -309,9 +310,17 @@ AttRes translateAttrExpr((Expr)`- <Expr e>`, Context ctx) {
   return <r.rels, "(- <r.constraint>)">;
 }
 
-AttRes translateAttrExpr((Expr)`|<Expr e>|`, Context ctx) { 
-  AttRes r = translateAttrExpr(e,ctx);
-  return <r.rels, "|<r.constraint>|">;
+AttRes translateAttrExpr(cur:(Expr)`|<Expr e>|`, Context ctx) { 
+  AType tipe = getType(e, ctx.tm);
+  
+  if (intType() := tipe) {
+    AttRes r = translateAttrExpr(e,ctx);
+    return <r.rels, "|<r.constraint>|">;
+  } else if (setType(_) := tipe) {
+    return <{ctx.rm[cur@\loc].relExpr}, getFieldName(cur,ctx)>;
+  }
+  
+  throw "Unable to translate `|<e>|` of type `<tipe>`";
 }
 
 private AttRes translateBinAttrExpr(Expr lhs, Expr rhs, str op, Context ctx) {
