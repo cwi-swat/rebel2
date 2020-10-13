@@ -63,7 +63,7 @@ TypeCheckerResult checkModule(Module root, Graph[RebelDependency] depGraph, Path
     check(current, lastModified(current.m@\loc.top));
   }  
   
-  if (/resolvedAndCheckedModule(Module m, TModel tm, datetime _) := depGraph, m == root) {
+  if (resolvedAndCheckedModule(Module m, TModel tm, datetime _) <- depGraph<0> + depGraph<1>, m == root) {
     return <tm, depGraph>;
   } else {
     throw "Unable to find resolved root module `<root.\module.name>` in type checked dependency graph";
