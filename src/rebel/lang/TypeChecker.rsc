@@ -42,15 +42,18 @@ TypeCheckerResult checkModule(Module root, Graph[RebelDependency] depGraph, Path
 
     todo -= dep;
     
-    if ((resolvedAndCheckedModule(Module m, TModel tm, datetime timestamp) := dep && shouldRefresh(timestamp, newest, m)) ||
-        resolvedOnlyModule(Module m, datetime timestamp) := dep) {
+    if ((resolvedAndCheckedModule(Module m, TModel _, datetime timestamp) := dep && shouldRefresh(timestamp, newest, m)) || resolvedOnlyModule(Module m, datetime _) := dep) {
       // need to check the dependency
       newest = now();
       TModel newTM = rebelTModelFromModule(m, subgraph(dep,depGraph), pcfg, saveTModels = saveTModels, debug = debug);
       
-      depGraph = visit(depGraph) {
-        case RebelDependency d => resolvedAndCheckedModule(m, newTM, newest) when d == dep
-      }      
+      depGraph = {<updLhs,updRhs> | <RebelDependency lhs, RebelDependency rhs> <- depGraph, 
+        RebelDependency updLhs := ((lhs == dep) ? resolvedAndCheckedModule(m, newTM, newest) : lhs), 
+        RebelDependency updRhs := ((rhs == dep) ? resolvedAndCheckedModule(m, newTM, newest) : rhs)};
+
+      //depGraph = visit(depGraph) {
+      //  case RebelDependency d => resolvedAndCheckedModule(m, newTM, newest) when d == dep
+      //}      
     }
     
     for (set[RebelDependency] parents := predecessors(depGraph, dep), parent <- parents) {
@@ -64,6 +67,7 @@ TypeCheckerResult checkModule(Module root, Graph[RebelDependency] depGraph, Path
   }  
   
   if (resolvedAndCheckedModule(Module m, TModel tm, datetime _) <- depGraph<0> + depGraph<1>, m == root) {
+    println("done");
     return <tm, depGraph>;
   } else {
     throw "Unable to find resolved root module `<root.\module.name>` in type checked dependency graph";
