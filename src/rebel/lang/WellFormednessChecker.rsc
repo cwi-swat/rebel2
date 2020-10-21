@@ -26,12 +26,14 @@ private TModel checkModifiersAndUseOfEvents(Module root, TModel tm) {
   set[loc] nonInit = {};
   set[loc] nonFinal = {};
   
+  set[loc] uses = tm.useDef<0>;
+  
   for ((Part)`<Spec  spc>` <- root.parts) {
     for (/States sts <- spc.states, /(Transition)`<State from> -\> <State to> : <{TransEvent ","}+ events>;` := sts) {
       bool isInitial = "<from>" == "(*)";
       bool isFinal = "<to>" == "(*)"; 
 
-      for (TransEvent evnt <- events, loc def <- tm.useDef[evnt@\loc]) {
+      for (TransEvent evnt <- events, evnt@\loc in uses, loc def <- tm.useDef[evnt@\loc]) {
         refEvents += def;
         
         AType evntType = tm.facts[def];
@@ -48,13 +50,16 @@ private TModel checkModifiersAndUseOfEvents(Module root, TModel tm) {
     
     for(Event evnt <- spc.events) {
       bool referenced = evnt@\loc in refEvents;
-
+      
       if (!referenced) {
         for (EventVariant evntVar <- evnt.body.variants) {
-          referenced = referenced || evntVar@\loc in refEvents;        
+          referenced = referenced || evntVar@\loc in refEvents;
+          if (evntVar@\loc notin refEvents) {
+            tm.messages += [warning("Event variant is not referenced in the state definition", evntVar.name@\loc)];        
+          }
         }
       }
-      
+            
       if (!referenced) {
         tm.messages += [warning("Event or its variants are not referenced in the state definition", evnt.name@\loc)];
       }   

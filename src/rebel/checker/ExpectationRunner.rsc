@@ -13,33 +13,27 @@ import util::PathUtil;
 import ParseTree;
 import IO;
 
-import util::MemoCacheClearer;
-import util::Benchmark;
-
 set[str] alleAlleMods() = {"translation::Environment","translation::Relation"};
 
 
-data ExpectationResult(int checkAssemblyDuration = -1, int normDuration = -1, int configBuildDuration = -1, int translateToAlleDuration = -1, int translateToSmtDuration = -1, int solveDurationSolver = -1, int solveDurationTotal = -1, int relModelCreationDuration = -1, int observedTotalDuration = -1)
+data ExpectationResult(int checkAssemblyDuration = -1, int normDuration = -1, int configBuildDuration = -1, int translateToAlleDuration = -1, int translateToSmtDuration = -1, int solveDurationSolver = -1, int solveDurationTotal = -1, int relModelCreationDuration = -1, int observedTotalDuration = -1, int nrOfSmtVars = -1, int nrOfSmtClauses = -1)
   = asExpected(str check, str config)
   | notAsExpected(str check, str config, str message, Trace trace)
   | solverTimedout(str check, str config)
   | solverError(str check, str config)
   ;
 
-list[ExpectationResult] checkExpectations(Module m, TModel tm, Graph[RebelDependency] deps, PathConfig pcfg = defaultPathConfig(m@\loc.top), bool saveIntermediateFiles = true, int solverTimeout = 30 * 1000) 
-  = [checkExpectation(chk,m,tm,deps,pcfg=pcfg,saveIntermediateFiles=saveIntermediateFiles, solverTimeout=solverTimeout) | 
+list[ExpectationResult] checkExpectations(Module m, TModel tm, Graph[RebelDependency] deps, PathConfig pcfg = defaultPathConfig(m@\loc.top), bool saveIntermediateFiles = true, int solverTimeout = 30 * 1000, bool countNrOfVars = false, bool countNrOfClauses = false) 
+  = [checkExpectation(chk,m,tm,deps,pcfg=pcfg,saveIntermediateFiles=saveIntermediateFiles, solverTimeout=solverTimeout, countNrOfVars = countNrOfVars, countNrOfClauses = countNrOfClauses) | 
       /chk:(Check)`<Command _> <Id _> from <Id _> in <SearchDepth _> <Objectives? _> <Expect _>;` := m.parts];
 
-ExpectationResult checkExpectation(Check chk, Module m, TModel tm, Graph[RebelDependency] deps, PathConfig pcfg = defaultPathConfig(m@\loc.top), bool saveIntermediateFiles = true, int solverTimeout = 30 * 1000) {
+ExpectationResult checkExpectation(Check chk, Module m, TModel tm, Graph[RebelDependency] deps, PathConfig pcfg = defaultPathConfig(m@\loc.top), bool saveIntermediateFiles = true, int solverTimeout = 30 * 1000, bool countNrOfVars = false, bool countNrOfClauses = false) {
   if (/Expect expect := chk) {
     println();
     println("Start checking expectation for `<chk.name>`");
     println("=============================");
-    
-    clearMemoCache(alleAlleMods());
-    gc();
-    
-    ModelCheckerResult mcr = performCheck(chk,m,tm,deps,pcfg=pcfg,saveIntermediateFiles = saveIntermediateFiles, solverTimeout = solverTimeout);
+        
+    ModelCheckerResult mcr = performCheck(chk,m,tm,deps,pcfg=pcfg,saveIntermediateFiles = saveIntermediateFiles, solverTimeout = solverTimeout, countNrOfVars = countNrOfVars, countNrOfClauses = countNrOfClauses);
     
     if (/(ExpectResult)`no trace` := expect) {
       switch (mcr.t) {
@@ -63,7 +57,9 @@ ExpectationResult checkExpectation(Check chk, Module m, TModel tm, Graph[RebelDe
 
 private ExpectationResult addTiming(ExpectationResult er, ModelCheckerResult mcr)
   = er[checkAssemblyDuration = mcr.checkAssemblyDuration][normDuration = mcr.normDuration][configBuildDuration = mcr.configBuildDuration]
-      [translateToAlleDuration = mcr.translateToAlleDuration][translateToSmtDuration = mcr.translateToSmtDuration][solveDurationSolver = mcr.solveSolverDuration][solveDurationTotal = mcr.solveTotal][relModelCreationDuration=mcr.constructRelModelDuration][observedTotalDuration = mcr.observedTotalDuration];
+      [translateToAlleDuration = mcr.translateToAlleDuration][translateToSmtDuration = mcr.translateToSmtDuration][solveDurationSolver = mcr.solveSolverDuration]
+      [solveDurationTotal = mcr.solveTotal][relModelCreationDuration=mcr.constructRelModelDuration][observedTotalDuration = mcr.observedTotalDuration]
+      [nrOfSmtVars = mcr.nrOfSmtVars][nrOfSmtClauses = mcr.nrOfSmtClauses];
 
 // tuple[Trace t, int checkAssemblyDuration, int normDuration, int configBuildDuration, int translateToAlleDuration, int translateToSmtDuration, int solveSolverDuration, int solveTotal, int constructRelModelDuration, int observedTotalDuration];
 str durations2str(ExpectationResult res) = 

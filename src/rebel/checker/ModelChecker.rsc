@@ -24,9 +24,9 @@ import IO;
 
 import util::Benchmark;
 
-alias ModelCheckerResult = tuple[Trace t, int checkAssemblyDuration, int normDuration, int configBuildDuration, int translateToAlleDuration, int translateToSmtDuration, int solveSolverDuration, int solveTotal, int constructRelModelDuration, int observedTotalDuration];
+alias ModelCheckerResult = tuple[Trace t, int checkAssemblyDuration, int normDuration, int configBuildDuration, int translateToAlleDuration, int translateToSmtDuration, int solveSolverDuration, int solveTotal, int constructRelModelDuration, int observedTotalDuration, int nrOfSmtVars, int nrOfSmtClauses];
 
-ModelCheckerResult performCheck(Check chk, Module m, TModel tm, Graph[RebelDependency] deps, PathConfig pcfg = defaultPathConfig(m@\loc.top), bool saveIntermediateFiles = true, int solverTimeout = 30 * 1000) {
+ModelCheckerResult performCheck(Check chk, Module m, TModel tm, Graph[RebelDependency] deps, PathConfig pcfg = defaultPathConfig(m@\loc.top), bool saveIntermediateFiles = true, int solverTimeout = 30 * 1000, bool countNrOfVars = false, bool countNrOfClauses = false) {
   int startTime = realTime();
 
   // Step 1: Construct a new module containing all the Specifications that are refereced in the Config part of the check. 
@@ -41,14 +41,14 @@ ModelCheckerResult performCheck(Check chk, Module m, TModel tm, Graph[RebelDepen
   // Step 4: Translate the normalized, combined module to an AlleAlle specification
   TransResult transRes = translateToAlleAlle(cfgRes.cfg, norm.m, norm.tm, pcfg, saveAlleAlleFile = saveIntermediateFiles);
   // Step 5: Run the translated AlleAlle specification in the ModelFinder and interpet the result (based on the generated, non-normalized, module)
-  tuple[Trace t, int transToSmtDuration, int solveDuration, int solverTotal, int constructRelModelDuration] modelFindRes = runAlleAlle(transRes.alleSpec, cfgRes.cfg, gen.m, solverTimeout);
+  tuple[Trace t, int transToSmtDuration, int solveDuration, int solverTotal, int constructRelModelDuration, int nrOfVars, int nrOfClauses] modelFindRes = runAlleAlle(transRes.alleSpec, cfgRes.cfg, gen.m, solverTimeout, countNrOfVars, countNrOfClauses);
   
   int observedDuration = realTime() - startTime;
   
-  return <modelFindRes.t, gen.duration , norm.duration, cfgRes.duration, transRes.duration, modelFindRes.transToSmtDuration, modelFindRes.solveDuration, modelFindRes.solverTotal, modelFindRes.constructRelModelDuration, observedDuration>;
+  return <modelFindRes.t, gen.duration , norm.duration, cfgRes.duration, transRes.duration, modelFindRes.transToSmtDuration, modelFindRes.solveDuration, modelFindRes.solverTotal, modelFindRes.constructRelModelDuration, observedDuration, modelFindRes.nrOfVars, modelFindRes.nrOfClauses>;
 }
 
-private tuple[Trace t, int transToSmtDuration, int solveDuration, int solverTotal, int constructRelModelDuration] runAlleAlle(str alleSpec, Config cfg, Module m, int solverTimeOut) {  
+private tuple[Trace t, int transToSmtDuration, int solveDuration, int solverTotal, int constructRelModelDuration, int nrOfVars, int nrOfClauses] runAlleAlle(str alleSpec, Config cfg, Module m, int solverTimeOut, bool countNrOfVars, bool countNrOfClauses) {  
   Spec findSpec(Spec spc) = s when /Spec s <- m.parts, "<s.name>" == "<spc.name>"; 
 
   Trace extractTrace(Model model) {
@@ -57,21 +57,21 @@ private tuple[Trace t, int transToSmtDuration, int solveDuration, int solverTota
     return trace;
   }
  
-  ModelFinderResult mfr = checkInitialSolution(implodeProblem(alleSpec), timeOutInMs = solverTimeOut);
+  ModelFinderResult mfr = checkInitialSolution(implodeProblem(alleSpec), timeOutInMs = solverTimeOut, countNrOfVars = countNrOfVars, countNrOfClauses = countNrOfClauses);
  
   switch(mfr) {
     case sat(Model currentModel, Model (Domain) nextModel, void () stop): {
       stop();
       
       Trace t = extractTrace(currentModel);
-      return <t, mfr.translationTime, mfr.solvingTimeSolver, mfr.solvingTimeTotal, mfr.constructModelTime>;
+      return <t, mfr.translationTime, mfr.solvingTimeSolver, mfr.solvingTimeTotal, mfr.constructModelTime, mfr.nrOfVars, mfr.nrOfClauses>;
     } 
-    case trivialSat(Model model): return <extractTrace(model), mfr.translationTime, mfr.solvingTimeSolver, mfr.solvingTimeTotal, mfr.constructModelTime>;
+    case trivialSat(Model model): return <extractTrace(model), mfr.translationTime, mfr.solvingTimeSolver, mfr.solvingTimeTotal, mfr.constructModelTime, mfr.nrOfVars, mfr.nrOfClauses>;
 
-    case unsat(_): return <noTrace(noSolutionFound()), mfr.translationTime, mfr.solvingTimeSolver, mfr.solvingTimeTotal, mfr.constructModelTime>;
-    case trivialUnsat(): return <noTrace(noSolutionFound()), mfr.translationTime, mfr.solvingTimeSolver, mfr.solvingTimeTotal, mfr.constructModelTime>;
+    case unsat(_): return <noTrace(noSolutionFound()), mfr.translationTime, mfr.solvingTimeSolver, mfr.solvingTimeTotal, mfr.constructModelTime, mfr.nrOfVars, mfr.nrOfClauses>;
+    case trivialUnsat(): return <noTrace(noSolutionFound()), mfr.translationTime, mfr.solvingTimeSolver, mfr.solvingTimeTotal, mfr.constructModelTime, mfr.nrOfVars, mfr.nrOfClauses>;
 
-    case timeout(): return <noTrace(solverTimeout()), mfr.translationTime, mfr.solvingTimeSolver, mfr.solvingTimeTotal, mfr.constructModelTime>;
+    case timeout(): return <noTrace(solverTimeout()), mfr.translationTime, mfr.solvingTimeSolver, mfr.solvingTimeTotal, mfr.constructModelTime, mfr.nrOfVars, mfr.nrOfClauses>;
 
     default: throw "Unable to handle response from model finder"; 
   }
