@@ -1,0 +1,4 @@
+module paper::debitcard::types::Currency
+
+spec Currency [EUR, USD]
+    

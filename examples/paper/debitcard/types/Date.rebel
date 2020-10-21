@@ -1,0 +1,182 @@
+module paper::debitcard::types::Date
+
+import paper::debitcard::types::Boolean
+
+spec Date[TODAY*]
+  year: Integer,
+  month: Integer,  
+  day: Integer, 
+  dayInYear: Integer, 
+  dayInWeek: Integer,
+  leapYear: Boolean,
+  totalNrOfDays: Integer;
+  
+  internal event afterToday() 
+    variant years pre: this.year > Date[TODAY].year;
+    variant month pre: this.year = Date[TODAY].year, this.month > Date[TODAY].month;
+    variant day   pre: this.year = Date[TODAY].year, this.month = Date[TODAY].month, this.day > Date[TODAY].day;
+
+  internal event afterOrOnToday()
+    variant same  pre: this.year = Date[TODAY].year, this.month = Date[TODAY].month, this.day = Date[TODAY].day;
+    variant years pre: this.year > Date[TODAY].year;
+    variant month pre: this.year = Date[TODAY].year, this.month > Date[TODAY].month;
+    variant day   pre: this.year = Date[TODAY].year, this.month = Date[TODAY].month, this.day > Date[TODAY].day;
+  
+  internal event beforeToday()
+    variant years pre: this.year < Date[TODAY].year;
+    variant month pre: this.year = Date[TODAY].year, this.month < Date[TODAY].month;
+    variant day   pre: this.year = Date[TODAY].year, this.month = Date[TODAY].month, this.day < Date[TODAY].day;
+
+  internal event beforeOrOnToday()
+    variant same  pre: this.year = Date[TODAY].year, this.month = Date[TODAY].month, this.day = Date[TODAY].day;
+    variant years pre: this.year < Date[TODAY].year;
+    variant month pre: this.year = Date[TODAY].year, this.month < Date[TODAY].month;
+    variant day   pre: this.year = Date[TODAY].year, this.month = Date[TODAY].month, this.day < Date[TODAY].day;
+  
+  internal event isToday()
+    pre: this.year = Date[TODAY].year, this.month = Date[TODAY].month, this.day = Date[TODAY].day;
+    
+  internal event after(other: Date) 
+    variant years pre: this.year > other.year;
+    variant month pre: this.year = other.year, this.month > other.month;
+    variant day   pre: this.year = other.year, this.month = other.month, this.day > other.day;
+
+  internal event before(other: Date)
+    variant years pre: this.year < other.year;
+    variant month pre: this.year = other.year, this.month < other.month;
+    variant day   pre: this.year = other.year, this.month = other.month, this.day < other.day;
+    
+  internal event isNrOfDaysBefore(nrOfDays: Integer, other: Date)
+    pre: nrOfDays > 0, nrOfDays < 366; // Can't check more than year
+    variant sameYear pre: this.year = other.year, other.dayInYear - this.dayInYear = nrOfDays;
+    variant nextYear pre: other.year = this.year + 1, (this.totalNrOfDays - this.dayInYear) + other.dayInYear = nrOfDays;
+
+  internal event lessThanDaysBefore(nrOfDays: Integer, other: Date)
+    pre: nrOfDays > 0, nrOfDays < 366; // Can't check more than year
+    variant sameYear pre: this.year = other.year, other.dayInYear - this.dayInYear > nrOfDays;
+    variant nextYear pre: other.year = this.year + 1, (this.totalNrOfDays - this.dayInYear) + other.dayInYear > nrOfDays;
+    
+  fact CorrectDate
+    = always forall d:Date | (
+        d.year >= 1900 && d.year <= 2200 &&
+        d.month > 0 && d.month < 13 &&
+        d.day > 0 && 
+             if d.month = 1 then d.day < 32 
+        else if d.month = 2 then d.day < 30 // Leap year upper bound
+        else if d.month = 3 then d.day < 32 
+        else if d.month = 4 then d.day < 31 
+        else if d.month = 5 then d.day < 32   
+        else if d.month = 6 then d.day < 31 
+        else if d.month = 7 then d.day < 32 
+        else if d.month = 8 then d.day < 32 
+        else if d.month = 9 then d.day < 31  
+        else if d.month = 10 then d.day < 32 
+        else if d.month = 11 then d.day < 31 
+        else d.day < 32); 
+  
+  fact LeapYear = always forall d:Date | 
+    if (d.year % 4 != 0 || (d.year % 100 = 0 && d.year % 400 != 0)) then d.leapYear = Boolean[FALSE] else d.leapYear = Boolean[TRUE];
+  
+  fact FebHasOneMoreDayInLeapYear = always forall d:Date | ((d.leapYear = Boolean[FALSE] && d.month = 2) => d.day < 29);
+   
+  fact DayInLeapYear = always forall d:Date | if (d.leapYear = Boolean[TRUE]) then (
+         if (d.month = 1) then d.dayInYear = d.day 
+    else if (d.month = 2) then d.dayInYear = 31 + d.day
+    else if (d.month = 3) then d.dayInYear = 31 + 29 + d.day
+    else if (d.month = 4) then d.dayInYear = 31 + 29 + 31 + d.day
+    else if (d.month = 5) then d.dayInYear = 31 + 29 + 31 + 30 + d.day
+    else if (d.month = 6) then d.dayInYear = 31 + 29 + 31 + 30 + 31 + d.day
+    else if (d.month = 7) then d.dayInYear = 31 + 29 + 31 + 30 + 31 + 30 + d.day
+    else if (d.month = 8) then d.dayInYear = 31 + 29 + 31 + 30 + 31 + 30 + 31 + d.day
+    else if (d.month = 9) then d.dayInYear = 31 + 29 + 31 + 30 + 31 + 30 + 31 + 31 + d.day
+    else if (d.month = 10) then d.dayInYear = 31 + 29 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + d.day
+    else if (d.month = 11) then d.dayInYear = 31 + 29 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + d.day
+    else d.dayInYear = 31 + 29 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30 + d.day      
+  );
+
+  fact DayInNonLeapYear = always forall d:Date | if (d.leapYear = Boolean[FALSE]) then (
+         if (d.month = 1) then d.dayInYear = d.day 
+    else if (d.month = 2) then d.dayInYear = 31 + d.day
+    else if (d.month = 3) then d.dayInYear = 31 + 28 + d.day
+    else if (d.month = 4) then d.dayInYear = 31 + 28 + 31 + d.day
+    else if (d.month = 5) then d.dayInYear = 31 + 28 + 31 + 30 + d.day
+    else if (d.month = 6) then d.dayInYear = 31 + 28 + 31 + 30 + 31 + d.day
+    else if (d.month = 7) then d.dayInYear = 31 + 28 + 31 + 30 + 31 + 30 + d.day
+    else if (d.month = 8) then d.dayInYear = 31 + 28 + 31 + 30 + 31 + 30 + 31 + d.day
+    else if (d.month = 9) then d.dayInYear = 31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + d.day
+    else if (d.month = 10) then d.dayInYear = 31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + d.day
+    else if (d.month = 11) then d.dayInYear = 31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + d.day
+    else d.dayInYear = 31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30 + d.day      
+  );  
+  
+  // Based on Zellers algorithm (See https://en.wikipedia.org/wiki/Determination_of_the_day_of_the_week#Zeller's_algorithm)
+  fact DayInWeek = always forall d:Date | 
+    if (d.month <= 2) then (
+      d.dayInWeek = ( (((13 * (d.month + 13)) / 5) + (((d.year-1) % 100) / 4) + (((d.year-1) / 100) / 4) + d.day + ((d.year-1) % 100)) - (2 * ((d.year-1) / 100)) ) % 7
+    ) else (
+      d.dayInWeek = ( (((13 * (d.month + 1)) / 5) + ((d.year % 100) / 4) + ((d.year / 100) / 4) + d.day + (d.year % 100)) - (2 * (d.year / 100)) ) % 7
+    ); 
+  
+  fact TotalDaysInYearDependsOnLeapYear = always forall d:Date | if (d.leapYear = Boolean[TRUE]) then d.totalNrOfDays = 366 else d.totalNrOfDays = 365;
+
+  fact TodayAlwaysMovesForward
+    = always-last ((Date[TODAY].year' = Date[TODAY].year && Date[TODAY].dayInYear' > Date[TODAY].dayInYear) || Date[TODAY].year' > Date[TODAY].year);
+   
+  states:
+    created -> created: after, before, afterToday, afterOrOnToday, beforeToday, beforeOrOnToday, isToday, isNrOfDaysBefore, lessThanDaysBefore;   
+
+spec Wrapper
+  d: Date;
+  
+  event afterToday()      pre: this.d.afterToday();
+  event beforeToday()     pre: this.d.beforeToday();
+  event afterOrOnToday()  pre: this.d.afterOrOnToday();
+  event beforeOrOnToday() pre: this.d.beforeOrOnToday();
+  event isToday()         pre: this.d.isToday();
+  
+  event lessThanDaysBefore(nrOfDays: Integer, other: Date) pre: this.d.lessThanDaysBefore(nrOfDays, other);
+  event isNrOfDaysBefore(nrOfDays: Integer, other: Date) pre: this.d.isNrOfDaysBefore(nrOfDays, other); 
+  
+  states:
+    wrapped->wrapped: afterToday, afterOrOnToday, beforeToday, beforeOrOnToday, isToday, isNrOfDaysBefore, lessThanDaysBefore;
+    
+assert SomeInitializedDate  = eventually exists d: Date    | d.year = 2020 && d.month = 10 && d.day = 6;
+assert DateInTheFuture      = eventually exists w: Wrapper | afterToday on w;
+assert CanBeSameDateAsToday = eventually exists w: Wrapper | isToday on w;
+
+assert CanBeNrDaysBeforeTodayNextYear               = eventually exists w: Wrapper | isNrOfDaysBefore on w && Date[TODAY].year = w.d.year + 1;
+assert CanBeNrDaysBeforeTodaySameYear               = eventually exists w: Wrapper | isNrOfDaysBefore on w && Date[TODAY].year = w.d.year;
+assert CanBeNrDaysBeforeTodaySameYearDifferentMonth = eventually exists w: Wrapper | isNrOfDaysBefore on w && Date[TODAY].year = w.d.year && Date[TODAY].month != w.d.month;
+
+assert FebHas28DaysInNonLeapYears = always forall d: Date     | if (d.leapYear = Boolean[FALSE] && d.month = 2) then d.day < 29; 
+assert FebHas29DaysInLeapYear     = eventually exists d: Date | d.month = 2 && d.day = 29;
+assert Max366DaysInLeapYear       = always forall d:Date      | (d.leapYear = Boolean[TRUE] => d.dayInYear < 367);
+assert Max365DaysInNonLeapYear    = always forall d:Date      | (d.leapYear = Boolean[FALSE] => d.dayInYear < 366);
+assert CantHaveNegativeNrOfDays   = always forall d:Date      | d.dayInYear > 0;
+
+assert TodayMovesForward = always-last (Date[TODAY].year' > Date[TODAY].year || (Date[TODAY].year' = Date[TODAY].year && Date[TODAY].month' > Date[TODAY].month) || (Date[TODAY].year' = Date[TODAY].year && Date[TODAY].month' = Date[TODAY].month && Date[TODAY].day' > Date[TODAY].day));
+
+assert DayOfTheWeekAlwaysBetween0And6 = always forall d:Date | d.dayInWeek >= 0 && d.dayInWeek < 7;
+assert NoWeekDayGap = always forall d1:Date, d2: Date | ((d1.dayInYear = d2.dayInYear + 1 && d1.year = d2.year) => (d1.dayInWeek = d2.dayInWeek + 1 || (d2.dayInWeek = 6 && d1.dayInWeek = 0)));
+
+config SomeDateWithWrapper = d: Date, w:Wrapper with d = d;
+config SomeDate = d: Date;
+config TwoDates = d1,d2: Date;
+
+run SomeInitializedDate                           from SomeDate in max 0 steps expect trace;
+run DateInTheFuture                               from SomeDateWithWrapper in max 1 steps expect trace;  
+run CanBeSameDateAsToday                          from SomeDateWithWrapper in exact 2 steps expect trace;
+run CanBeNrDaysBeforeTodayNextYear                from SomeDateWithWrapper in max 1 steps expect trace;    
+run CanBeNrDaysBeforeTodaySameYear                from SomeDateWithWrapper in max 1 steps expect trace;    
+run CanBeNrDaysBeforeTodaySameYearDifferentMonth  from SomeDateWithWrapper in max 1 steps expect trace;    
+
+check TodayMovesForward from SomeDateWithWrapper in max 3 steps expect no trace; 
+    
+check FebHas28DaysInNonLeapYears    from SomeDate in max 0 steps expect no trace;
+run   FebHas29DaysInLeapYear        from SomeDate in max 0 steps expect trace;
+check Max366DaysInLeapYear          from SomeDate in max 0 steps expect no trace;
+check Max365DaysInNonLeapYear       from SomeDate in max 0 steps expect no trace;
+check CantHaveNegativeNrOfDays      from SomeDate in max 0 steps expect no trace;
+
+check DayOfTheWeekAlwaysBetween0And6 from SomeDate in max 0 steps expect no trace;
+//check NoWeekDayGap from TwoDates in max 0 steps expect no trace; // Takes at least 17 hours to compute (and probably much longer)...

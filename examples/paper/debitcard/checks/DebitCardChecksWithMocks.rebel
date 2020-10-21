@@ -1,0 +1,42 @@
+module paper::debitcard::checks::DebitCardChecksWithMocks
+
+import paper::debitcard::DebitCard
+
+import paper::debitcard::Common  
+import paper::debitcard::types::IBAN
+import paper::debitcard::types::Boolean
+import paper::debitcard::types::Date 
+import paper::debitcard::types::Money
+import paper::debitcard::Limit 
+
+import paper::debitcard::checks::DateMock
+import paper::debitcard::checks::LimitMock
+import paper::debitcard::checks::DebitCardChecks
+
+//config PartlyMocked
+//  = an: IBAN, 
+//    d1,d2,d3: DateMock mocks Date, 
+//    m1,m2,m3: Money,
+//    shop,atm: Limit,
+//    dc: DebitCard forget brandType, pinRetention, stolenOn is uninitialized;  
+//
+//run RequestedNewDebitCardCanBeProduced from PartlyMocked in max 3 steps expect trace;
+//run CardCanExpire from PartlyMocked in max 5 steps expect trace;
+//
+//run NotAbleToPinAfterThreeAttempts from PartlyMocked in max 10 steps expect no trace;
+//run NoMoreThan3WrongPinAttempts from PartlyMocked in max 10 steps expect no trace;
+
+config FullyMocked
+  = an: IBAN,
+    d1,d2,d3: DateMock mocks Date,
+    m1,m2,m3: Money,
+    shop,atm: LimitMock mocks Limit,
+    dc: DebitCard forget brandType, pinRetention, stolenOn is uninitialized;  
+ 
+run RequestedNewDebitCardCanBeProduced from FullyMocked in max 3 steps expect trace;
+run CardCanExpire from FullyMocked in max 5 steps expect trace;
+
+run NotAbleToPinAfterThreeAttempts from FullyMocked in max 10 steps expect no trace;
+run NoMoreThan3WrongPinAttempts from FullyMocked in max 10 steps expect no trace;
+
+ 

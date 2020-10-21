@@ -1,0 +1,3 @@
+module paper::debitcard::types::Boolean
+
+spec Boolean [TRUE, FALSE] 

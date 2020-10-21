@@ -1,0 +1,10 @@
+module paper::debitcard::checks::LimitMock
+
+import paper::debitcard::types::Money
+import paper::debitcard::Common
+
+spec LimitMock
+  event checkAndRegister(amount: Money, usage: Usage)
+  event skip()
+  
+  states: active->active: checkAndRegister, skip;

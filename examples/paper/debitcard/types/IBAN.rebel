@@ -1,0 +1,33 @@
+module paper::debitcard::types::IBAN
+
+spec IBAN
+  number: Integer;
+    
+  fact IBANsAreUnique
+    = always forall iban1, iban2: IBAN | (iban1.number = iban2.number => iban1 = iban2);
+  
+  fact PositiveIBANs
+    = always forall iban: IBAN | iban.number > 0;
+  
+  fact IBANsAreImmutable = always-last forall iban: IBAN | iban.number = iban.number';
+              
+config TwoIbans = iban1,iban2: IBAN;
+
+assert InitializedIBANsAreUnique = 
+  always forall n1,n2: IBAN | 
+    (n1 != n2 => n1.number != n2.number);
+
+assert CanBeInstantiated = eventually exists iban: IBAN | iban.number > 0;
+
+check InitializedIBANsAreUnique from TwoIbans in max 0 steps expect no trace;   
+run CanBeInstantiated from TwoIbans in max 0 steps expect trace;
+
+spec Stepper
+  states:
+    dummy -> dummy: empty;
+
+config IbanWithStepper = iban: IBAN, stepper: Stepper;
+
+assert IBANsCannotChange = always forall iban: IBAN | iban.number != iban.number';
+
+check IBANsCannotChange from IbanWithStepper in exact 5 steps expect trace; 

@@ -1,0 +1,8 @@
+module paper::debitcard::Common
+
+spec BrandType [A,B]
+
+spec RequestReason [NEW, LOST, STOLEN, EXPIRED, CUSTOMER] 
+
+spec Usage[ATM,SHOP]
+ 

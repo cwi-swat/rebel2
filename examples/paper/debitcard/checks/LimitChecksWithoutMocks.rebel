@@ -1,0 +1,16 @@
+module paper::debitcard::checks::LimitChecksWithoutMocks
+
+import paper::debitcard::Limit
+import paper::debitcard::types::Money
+import paper::debitcard::types::Date 
+ 
+import paper::debitcard::checks::LimitChecks
+
+config Basic = l: Limit is uninitialized, m1,m2,m3,m4: Money, d1,d2,d3: Date; 
+ 
+run CanInitializeLimit from Basic in max 1 steps expect trace;    
+run CanAddOverrideAndCheck from Basic in max 3 steps expect trace;
+ 
+check CantOverdrawLimit from Basic in max 5 steps expect no trace;
+check LimitIsAlwaysPositive from Basic in max 4 steps expect no trace; 
+check NormalAndOverrideAlwaysInSameCurrency from Basic in max 4 steps expect no trace; 

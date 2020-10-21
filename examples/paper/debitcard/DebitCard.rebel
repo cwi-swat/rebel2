@@ -1,0 +1,133 @@
+module paper::debitcard::DebitCard
+
+import paper::debitcard::Common  
+import paper::debitcard::types::IBAN
+import paper::debitcard::types::Boolean
+import paper::debitcard::types::Date 
+import paper::debitcard::Limit 
+import paper::debitcard::types::Money
+ 
+spec DebitCard        
+  accountNumber: IBAN,  
+  shopLimit: Limit,
+  atmLimit: Limit,
+  sequenceNumber: Integer,  
+	pinHash: String,       
+	expiry: Date,  
+  brandType: BrandType,  
+  requestReason: RequestReason,  
+  pinRetention: Boolean,        
+  createdOn: Date,    
+  closedOn: ?Date,     
+  nrOfWrongPinEntries: Integer,  
+  pinReset: Boolean,
+  stolenOn: ?Date;  
+  		 
+  init event request(accountNumber: IBAN, reason: RequestReason, expiry: Date, brandType: BrandType, sequenceNumber: Integer, shopLimit: Limit, atmLimit: Limit, reqDate: Date) 
+		pre: 
+		  expiry.year = Date[TODAY].year + 5, expiry.month = Date[TODAY].month, expiry.day = Date[TODAY].day, 
+		  reqDate.isToday();
+		post: 
+		  this.accountNumber' = accountNumber,
+			this.shopLimit' = shopLimit,
+			this.atmLimit' = atmLimit,
+			this.expiry' = expiry,  
+			this.requestReason' = reason, 
+			this.brandType' = brandType,
+
+			// Defaults
+			this.createdOn' = reqDate, 
+      this.pinHash'  = "",
+			this.stolenOn' = none,
+			this.closedOn' = none, 
+      this.pinReset' = Boolean[FALSE],
+      this.nrOfWrongPinEntries' = 0;
+	 
+	  variant new
+	    pre: reason = RequestReason[NEW]; 
+	   
+	  variant stolen
+	    pre: reason = RequestReason[STOLEN];
+	    
+	  variant lost
+	    pre: reason = RequestReason[LOST];
+	   
+	  variant expired
+	    pre: reason = RequestReason[EXPIRED];
+	  
+	  variant customer
+	    pre: reason = RequestReason[CUSTOMER];
+
+	event produce(pinHash: String) 
+		pre: pinHash != ""; 
+		post: this.pinHash' = pinHash;  
+	 
+	event activated()
+	 
+  event transactionOccurred(pinHash: String, amount: Money, usage: Usage)
+    variant ok
+      pre:  this.pinHash = pinHash, 
+            this.expiry.afterToday(),
+            //if (this.brandType = BrandType[MAESTRO]) then (this.expiry.isToday()),
+            if (usage = Usage[ATM])  then this.atmLimit.checkAndRegister(amount, usage)  else this.atmLimit.skip(),
+            if (usage = Usage[SHOP]) then this.shopLimit.checkAndRegister(amount, usage) else this.shopLimit.skip();
+      post: this.nrOfWrongPinEntries' = 0;
+     
+    variant wrongPin 
+      pre: this.pinHash != pinHash, 
+           this.nrOfWrongPinEntries < 3,
+           this.expiry.isToday() ||this.expiry.afterToday();
+      post: this.nrOfWrongPinEntries' = this.nrOfWrongPinEntries + 1;
+
+    variant tooManyAttempts 
+      pre: this.pinHash != pinHash, 
+           this.nrOfWrongPinEntries >= 3,
+           this.expiry.isToday() ||this.expiry.afterToday();
+	   
+    variant expired
+      pre: this.expiry.beforeToday();
+  
+  event unblocked()
+    pre:  this.pinReset = Boolean[FALSE];
+    post: this.pinReset' = Boolean[TRUE],
+          this.nrOfWrongPinEntries' = 0;
+      
+  final event deactivate()
+    post: this.closedOn.isToday();
+          
+  final event tooManyResets()
+    pre: this.pinReset = Boolean[TRUE]; 
+    post: this.closedOn.isToday();
+      
+  states:
+    existing {
+      blocked -> (*): tooManyResets;
+      blocked -> existing::active::pinPossible: unblocked;
+  
+      active {
+        pinPossible -> pinPossible: transactionOccurred::ok, transactionOccurred::wrongPin;
+        pinPossible -> tooManyAttempts: transactionOccurred::tooManyAttempts;
+        tooManyAttempts -> existing::blocked: empty;
+      }
+
+      replacementRequested -> existing::active::pinPossible: produce;
+ 
+      requested { 
+        [new, lost, stolen, customer] 
+      }
+
+      requested -> produced: produce;        
+      
+      produced -> existing::active::pinPossible: activated;
+      active -> expired: transactionOccurred::expired;
+      
+      expired -> (*): empty; 
+    }     
+ 
+    (*) -> existing::requested::new: request::new; 
+    (*) -> existing::requested::lost: request::lost; 
+    (*) -> existing::requested::stolen: request::stolen;
+    (*) -> existing::requested::customer: request::customer;    
+    (*) -> existing::replacementRequested: request::expired;
+
+    existing -> (*): deactivate;

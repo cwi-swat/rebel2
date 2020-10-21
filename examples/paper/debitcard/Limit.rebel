@@ -1,0 +1,72 @@
+module paper::debitcard::Limit
+
+import paper::debitcard::types::Money
+import paper::debitcard::types::Currency
+import paper::debitcard::types::Date
+import paper::debitcard::Common
+
+spec Limit 
+  weeklyLimit: Money,
+  weeklySpent: Money,
+  
+  override: ?Money,
+  overrideStart: ?Date, 
+  overrideEnd: ?Date,
+   
+  usage: Usage;
+  
+  init event create(weeklyLimit: Money, usage: Usage) 
+    pre:  weeklyLimit.currency  = Currency[EUR],
+          weeklyLimit.amount > 0;
+          // What is the maximum normal limit?
+          
+    post: this.weeklyLimit' = weeklyLimit,
+          this.usage' = usage,
+          
+          this.weeklySpent.currency' = Currency[EUR],
+          this.weeklySpent.amount' = 0,
+          
+          this.override' = none, 
+          this.overrideStart' = none,
+          this.overrideEnd' = none;
+
+  event resetWeeklySpent() 
+    pre: ; // should check the time passed
+    post: this.weeklySpent.amount' = 0;
+                    
+  event checkAndRegister(amount: Money, usage: Usage)  
+    pre:  this.usage = usage,
+          amount.currency = this.weeklyLimit.currency,
+          amount.amount > 0,
+          //this.lastWithdrawal.isToday(),
+          this.weeklySpent.add(amount);
+    
+    variant normal
+      pre:  (this.overrideStart = none || this.overrideStart.afterToday() || this.overrideEnd.beforeToday()),
+            this.weeklyLimit.amount > this.weeklySpent.amount + amount.amount; 
+      
+    variant overrideActive
+      pre: this.overrideStart.beforeOrOnToday(), 
+           this.overrideEnd.afterOrOnToday(), 
+           this.override.amount > this.weeklySpent.amount + amount.amount; 
+   
+  event addOverride(overrideLimit: Money, start: Date, end: Date)
+    pre:  overrideLimit.amount > 0,
+          overrideLimit.currency = this.weeklyLimit.currency,
+          start.afterOrOnToday(), 
+          end.after(start);
+          // Is there a minimum and maximum time and amount connected to an override?
+          // Should the override always be more than the current active limit?
+    post: this.override' = overrideLimit,
+          this.overrideStart' = start,
+          this.overrideEnd' = end;
+          
+  event removeOverride()
+    // What happens with the weekly spent if you remove a limit?
+    post: this.override' = none, this.overrideStart' = none, this.overrideEnd' = none;
+   
+  event skip() 
+                     
+  states:  
+    (*) -> active: create;
+    active -> active: checkAndRegister, addOverride, removeOverride, resetWeeklySpent, skip;

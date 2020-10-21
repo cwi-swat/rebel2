@@ -1,0 +1,26 @@
+module paper::debitcard::checks::DebitCardChecks
+
+import paper::debitcard::DebitCard
+import paper::debitcard::Common  
+import paper::debitcard::types::IBAN
+import paper::debitcard::types::Boolean
+import paper::debitcard::types::Date 
+import paper::debitcard::types::Money
+import paper::debitcard::Limit 
+
+assert RequestedNewDebitCardCanBeProduced = 
+  first (Date[TODAY].year = 2020 && Date[TODAY].month = 9) &&
+  exists d: DebitCard | eventually d is existing::produced;
+
+assert CardCanExpire = 
+  first (Date[TODAY].year = 2020 && Date[TODAY].month = 9) &&
+  eventually exists d: DebitCard | d is existing::expired;
+    
+assert CanWithdrawMoneyWithCard = eventually exists d: DebitCard | transactionOccurred::ok on d;    
+
+assert NotAbleToPinAfterThreeAttempts = 
+  eventually exists d: DebitCard | (transactionOccurred::ok on d && d.nrOfWrongPinEntries > 3);
+
+assert NoMoreThan3WrongPinAttempts = eventually exists d: DebitCard | d is initialized && d.nrOfWrongPinEntries > 3;
+  
+  

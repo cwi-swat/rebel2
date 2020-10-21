@@ -1,0 +1,22 @@
+module paper::debitcard::checks::DateMock
+
+spec DateMock[TODAY*]
+  nr: Integer,
+  year: Integer,
+  month: Integer,
+  day: Integer;
+  
+  internal event beforeOrOnToday()  pre: this.nr <= DateMock[TODAY].nr;
+  internal event beforeToday()      pre: this.nr < DateMock[TODAY].nr;
+  internal event afterOrOnToday()   pre: this.nr >= DateMock[TODAY].nr;
+  internal event afterToday()       pre: this.nr > DateMock[TODAY].nr;
+  internal event isToday()          pre: this.nr = DateMock[TODAY].nr;
+  
+  internal event after(other: DateMock)  pre: this.nr > other.nr;
+  
+  //fact DatesAreOrdered   = always forall d1,d2:DateMock | ((d1 != d2 && d1 != DateMock[TODAY] && d2 != DateMock[TODAY]) => d1.nr != d2.nr);
+  fact TodayMovesForward = always-last DateMock[TODAY].nr' > DateMock[TODAY].nr;
+   
+  states:
+    active->active:beforeOrOnToday, beforeToday, afterOrOnToday, afterToday, after, isToday;
+    

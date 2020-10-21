@@ -1,0 +1,23 @@
+module paper::debitcard::checks::LimitChecks
+
+import paper::debitcard::Limit 
+import paper::debitcard::types::Money 
+
+assert CanInitializeLimit = eventually exists l:Limit | l is initialized;
+assert CanAddOverrideAndCheck = eventually exists l:Limit | checkAndRegister::overrideActive on l;
+
+assert CantOverdrawLimit = 
+  always forall l:Limit | (l is initialized => 
+    (l.weeklySpent.amount <= l.weeklyLimit.amount || l.weeklySpent.amount <= l.override.amount));
+ 
+assert LimitIsAlwaysPositive = 
+  always forall l:Limit | (l is initialized => 
+    l.weeklyLimit.amount > 0 && (l.override = none || l.override.amount > 0));
+
+assert NormalAndOverrideAlwaysInSameCurrency = 
+  always forall l:Limit | ((l is initialized && l.override != none) => 
+    l.weeklyLimit.currency = l.override.currency);  
+
+assert OverrideIsMoreThanNormalLimit =
+  always forall l:Limit | ((l is initialized && l.override != none) => l.override.amount > l.weeklyLimit.amount);
+ 

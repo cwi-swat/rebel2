@@ -1,0 +1,22 @@
+module paper::debitcard::checks::DebitCardChecksWithoutMocks
+
+import paper::debitcard::DebitCard
+
+import paper::debitcard::Common  
+import paper::debitcard::types::IBAN
+import paper::debitcard::types::Boolean
+import paper::debitcard::types::Date 
+import paper::debitcard::types::Money
+import paper::debitcard::Limit 
+
+import paper::debitcard::checks::DebitCardChecks
+  
+config Orig
+  = an: IBAN, d1,d2,d3:Date, m1,m2,m3: Money, shop,atm:Limit, dc: DebitCard is uninitialized;
+  
+run RequestedNewDebitCardCanBeProduced from Orig in max 3 steps expect trace;
+run CardCanExpire from Orig in max 5 steps expect trace;
+
+run NotAbleToPinAfterThreeAttempts from Orig in max 10 steps expect no trace;
+run NoMoreThan3WrongPinAttempts from Orig in max 10 steps expect no trace;
+    

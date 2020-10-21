@@ -1,0 +1,53 @@
+module paper::debitcard::types::Money
+
+import paper::debitcard::types::Currency
+
+spec Money
+  amount: Integer, 
+  currency: Currency;  
+   
+  internal event add(other: Money)
+    pre: this != other, this.currency = other.currency;
+    post: this.amount' = this.amount + other.amount;
+    
+  internal event subtract(other: Money)
+    pre: this != other, this.currency = other.currency;
+    post: this.amount' = this.amount - other.amount;
+  
+  internal event isPositive()
+    pre: this.amount >= 0;
+  
+  internal event isNegative()
+    pre: this.amount < 0;
+       
+  fact AllMoneyIsFinite  
+    = always forall m: Money |  m.amount > -9999999999999 && m.amount < 9999999999999;
+  
+  states:
+    created -> created: add,subtract, isPositive, isNegative;
+
+spec Wrapper
+  m: Money;
+  
+  event add(other: Money) pre: this.m.add(other);
+  event subtract(other: Money) pre: this.m.subtract(other);
+  event isPositive() pre: this.m.isPositive();
+  event isNegative() pre: this.m.isNegative();
+  
+  states:
+    a->a: add,subtract,isPositive,isNegative;  
+
+assert CanNotHaveTooMuchMoney
+  = eventually exists m: Money | m.amount = 10000000000000;
+
+assert MoneyCanExist 
+  = eventually exists m: Money | m is created;  
+
+assert CanAddAndSubtractMoney 
+  = eventually exists w: Wrapper, m:Money | w.m != m && w.m.amount > 0 && m.amount > 0 && add on w && (next subtract on w);
+  
+config SomeMoney = m1,m2: Money, w: Wrapper;
+run CanNotHaveTooMuchMoney from SomeMoney in max 0 steps expect no trace;
+
+run MoneyCanExist from SomeMoney in max 0 steps expect trace;
+run CanAddAndSubtractMoney from SomeMoney in max 4 steps expect trace;  
