@@ -69,7 +69,7 @@ syntax EventVariantBody
 
 syntax Pred = "pred" Id name "(" {FormalParam ","}* params ")"  "=" Formula form ";";
 
-syntax Fact = "fact" Id name "=" Formula form ";";
+syntax Fact = "assume" Id name "=" Formula form ";";
   
 syntax States
   = "states" ":" StateBlock root
@@ -116,5 +116,6 @@ keyword Keywords = "spec"
                  | "variant"
                  | "noOp"
                  | "func"
+                 | "assume"
                  ;
  

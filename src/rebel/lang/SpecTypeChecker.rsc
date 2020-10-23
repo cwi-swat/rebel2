@@ -70,7 +70,7 @@ void collect(current: (Field)`<Id name> : <Type tipe>`, Collector c) {
   collect(tipe, c);
 }
 
-void collect(current:(Fact)`fact <Id name> = <Formula form>;`, Collector c) {
+void collect(current:(Fact)`assume <Id name> = <Formula form>;`, Collector c) {
   c.define("<name>", factId(), current, defType(factType()));
   
   c.enterScope(current); 
@@ -113,27 +113,35 @@ void collect(current: (StateBlock)`<Transition* trans>`, Collector c) {
 private set[str] getDefStates(Collector c) = (list[str] done := c.getStack("states_done")) ? toSet(done) : {};
 
 private void definedState(str s, Collector c) {
-  c.push("states_done", s);
+  c.push("states_done", getFQS(s,c));
 }
+
+private void pushStateBlock(StateBlock blck, Collector c) { c.push("state_block", blck); }
+private Maybe[StateBlock] topStateBlock(Collector c) = (c.getStack("state_block") != [] && StateBlock blck := c.top("state_block")) ? just(blck) : nothing();  
+private void popStateBlock(Collector c) { c.pop("state_block"); }
 
 private void pushStateQualifier(str q, Collector c) { c.push("state_scope", q); }
 private void popStateQualifier(Collector c) { c.pop("state_scope"); }
 
 private list[str] getStateQualifiers(Collector c) = (list[str] q := c.getStack("state_scope")) ? reverse(q) : [];
+private str getFQS(str state, Collector c) = intercalate("::", getStateQualifiers(c) + [state]);
 
 private void defineState(str state, Tree t, Collector c) {
-  c.define(state, stateId(), t, defType(stateType()));
+  if (just(StateBlock blck) := topStateBlock(c)) {
+    c.defineInScope(blck, state, stateId(), t, defType(stateType()));
+  } else {
+    c.define(state, stateId(), t, defType(stateType()));
+  }
   
   list[str] sq = getStateQualifiers(c);
   if (sq != []) {
-    str qn = intercalate("::", sq + [state]);
-    c.define(qn, stateId(), t, defType(stateType()));
+    c.define(getFQS(state,c), stateId(), t, defType(stateType()));
   } 
   
   definedState(state, c);
 }
 
-private bool alreadyDefinedState(str s, Collector c) = s in getDefStates(c);   
+private bool alreadyDefinedState(str s, Collector c) = s in defStates || getFQS(s,c) in defStates when defStates := getDefStates(c);   
 
 void collect(current: (Transition)`<State from>-\><State to> : <{TransEvent ","}+ events>;`, Collector c) {
   // Check if the states are already in the done list. If so, reference, otherwise add. Always reference if it concerns a fully qualified referenced state
@@ -143,7 +151,13 @@ void collect(current: (Transition)`<State from>-\><State to> : <{TransEvent ","}
       if ((QualifiedName)`<Id name>` := st.name, !alreadyDefinedState("<name>",c)) {
         defineState("<name>", st, c);
       } else {
-        c.use(st, {stateId()});
+        if (just(StateBlock blck) := topStateBlock(c)) {
+          c.enterScope(blck);
+            c.use(st, {stateId()});
+          c.leaveScope(blck);
+        } else {
+          c.use(st, {stateId()});
+        }
       }
     } 
   }
@@ -166,11 +180,11 @@ void collect(current: (Transition)`<State from>-\><State to> : <{TransEvent ","}
 void collect(current: (Transition)`<Id super> { <StateBlock child> }`, Collector c) {
   defineState("<super>", current, c);
   
-  //c.enterScope(current); 
-    pushStateQualifier("<super>", c);
-    collect(child, c);
-    popStateQualifier(c);
-  //c.leaveScope(current);
+  pushStateBlock(child,c);
+  pushStateQualifier("<super>", c);
+  collect(child, c);
+  popStateQualifier(c);
+  popStateBlock(c);
 }
 
 void collect(current: (TransEvent)`<QualifiedName event>`, Collector c) {

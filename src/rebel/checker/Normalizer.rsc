@@ -22,7 +22,8 @@ NormalizedModule normalizeAndTypeCheck(Module origMod, TModel origTm, PathConfig
   int startTime = cpuTime();
 
   Module normMod = normalizeEventVariantSyncs(origMod, origTm);
-
+  normMod = normalizeStateQueries(normMod, origTm);
+  
   normMod = visit(normMod) {
     case (Part)`<Spec spc>` => (Part)`<Spec nSpc>` when Spec nSpc := normalize(spc, origTm)
   }
@@ -60,6 +61,42 @@ Spec normalize(Spec spc, TModel origTm) {
   spc.states = normalizeStates(spc.states, origTm);
 
   return spc;
+}
+
+Module normalizeStateQueries(Module m, TModel origTm) {
+  rel[loc, Define] definitions = {<d.defined, d> | d <- origTm.defines, d.idRole == stateId()};
+  rel[loc, str] substates = {<def, child> | loc def <- definitions<0>, str child <- findChildrenTransitive(def, definitions)};
+  
+  set[str] findSubStates(loc use) {
+    if ({loc def} := origTm.useDef[use]) {
+      return substates[def];  
+    }
+    
+    throw "Unable to find state referenced at `<use>`";
+  }
+  
+  Formula normStateQuery(orig:(Formula)`<Expr expr> is <QualifiedName state>`) {
+    if (set[str] substates := findSubStates(state@\loc), substates != {}) {
+      return buildDisj(expr, substates);
+    } else if (contains("<state>", "::")) {
+      return [Formula]"<expr> is <replaceAll("<state>", "::", "__")>";
+    } else {
+      return orig;
+    }
+  }
+  Formula buildDisj(Expr expr, set[str] substates) = [Formula]"(<intercalate(" || ", ["<expr> is <replaceAll(sub, "::", "__")>" | sub <- substates])>)"; 
+  
+  return visit(m) {
+    case orig:(Formula)`<Expr expr> is <QualifiedName state>` => normStateQuery(orig)
+  }
+}
+
+private set[str] findChildrenTransitive(loc super, rel[loc, Define] definitions) {
+  set[str] children = {};
+  for (<loc def, Define d> <- definitions, def != super, isContainedIn(def, super), contains(d.id, "::")) {
+    children += d.id;  
+  }  
+  return children;
 }
 
 Module normalizeEventVariantSyncs(Module m, TModel origTm) {
@@ -296,24 +333,16 @@ private States? normalizeStates(States? states, TModel tm) {
   }
   
   rel[loc, Define] definitions = {<d.defined, d> | d <- tm.defines, d.idRole == stateId()};
-  
-  set[str] findChildrenTransitive(loc super) {
-    set[str] children = {};
-    for (<loc def, Define d> <- definitions, isContainedIn(def, super), contains(d.id, "::")) {
-      children += d.id;  
-    }  
-    return children;
-  }
-  
+    
   str getQualifiedName(loc use) {
     loc stateDefLoc = {loc def} := tm.useDef[use] ? def : use;
     set[Define] defs = definitions[stateDefLoc];
 
     if ({Define d} := defs) {
-      return d.id;
+      return replaceAll(d.id, "::", "__");
     } else {
       for (Define d <- defs, contains(d.id, "::")) {
-        return d.id;
+        return replaceAll(d.id, "::", "__");
       }
     }
     
@@ -321,7 +350,7 @@ private States? normalizeStates(States? states, TModel tm) {
   }
 
   rel[str super, str transChild] substates = {<qnSuper, child> | /t:(Transition)`<Id _> { <StateBlock block> }` := states, 
-    str qnSuper := getQualifiedName(t@\loc), child <- findChildrenTransitive(block@\loc)};
+    str qnSuper := getQualifiedName(t@\loc), child <- findChildrenTransitive(block@\loc, definitions)};
   // remove all the states that are super states themselfs
   substates -= substates<1,0>;   
 
@@ -334,7 +363,7 @@ private States? normalizeStates(States? states, TModel tm) {
       str f = "<from>" == "(*)" ? "<from>" : getQualifiedName(from@\loc);
       
       if (substates[f] != {}) {
-        normalized += [<c,t,e> | str c <- substates[f], e <- evnts];
+        normalized += [<replaceAll(c, "::", "__"),t,e> | str c <- substates[f], e <- evnts];
       } else {  
         normalized += [<f,t,e> | e <- evnts];
       }      

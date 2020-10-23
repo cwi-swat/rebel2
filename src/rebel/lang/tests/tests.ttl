@@ -65,13 +65,13 @@ test DoubleNestedStateMachine [[
     a {
       b {
         c -> d: ev;
-        d -> a::b::c: ev;
+        d -> c: ev;
       }
       
-      e->d: ev;
+      e->a::b::d: ev;
     }
     
-    f->c: ev; 
+    f->a::b::c: ev; 
 ]]     
 
 test MultipleSpecs [[

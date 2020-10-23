@@ -6,7 +6,6 @@ import rebel::lang::TypeChecker;
 import rebel::checker::translation::RelationCollector;
 
 import String;
-import Node;
 import IO;
 
 data State 
@@ -112,9 +111,19 @@ private Spec lookupSpecByName(str specName, set[Spec] specs) {
   throw "Spec `<specName>` could not be found";
 }
 
+set[str] lookupFQS(Spec spc, TModel tm) {
+  set[str] states = {};
+  for (Define d <- tm.defines, d.idRole == stateId(), d.scope == spc@\loc) {
+    states += d.id;
+  }
+  
+  println(states);
+  return states;
+}
+
 //@memo 
 set[rebel::lang::SpecSyntax::State] lookupStates(Spec spc) 
-  = {delAnnotationsRec(st) | /rebel::lang::SpecSyntax::State st <- spc.states, st has name};
+  = {st | /rebel::lang::SpecSyntax::State st <- spc.states, st has name};
 
 //@memo
 set[str] lookupStateLabels(Spec spc) {

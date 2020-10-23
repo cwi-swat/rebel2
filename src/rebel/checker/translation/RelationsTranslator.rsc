@@ -72,7 +72,7 @@ private str buildStateTuples(Spec spc)
   = intercalate(",", ["\<state_<s>\>" | str s <- states])
   when 
     str name := getLowerCaseSpecName(spc),
-    set[str] states := {"<name>_<toLowerCase(replaceAll("<s.name>", "::", "__"))>" | /rebel::lang::SpecSyntax::State s := spc.states, s has name};
+    set[str] states := {"<name>_<toLowerCase("<s>")>" | /rebel::lang::SpecSyntax::State s := spc.states, s has name};
 
 private str buildAllowedTransitionRel(set[Spec] spcs)
   = "// Define which transitions are allowed (in the form of `from a state` -\> ` via an event` -\> `to a state`
