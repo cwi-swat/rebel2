@@ -5,7 +5,7 @@ spec Cargo
   
   internal event cross()
        
-  fact DontBeAloneWithFood = always forall c1:Cargo, c2: Cargo, f:Farmer | (c1 != c2 && c2 = c1.eats =>  
+  assume DontBeAloneWithFood = always forall c1:Cargo, c2: Cargo, f:Farmer | (c1 != c2 && c2 = c1.eats =>  
     if (c1 is near &&  c2 is near) then f is near 
     else if (c1 is far && c2 is far) then f is far);
      
@@ -30,6 +30,5 @@ config Game = f: Farmer is near, fox, chicken, grain: Cargo is near,
               fox with eats = chicken, chicken with eats = grain, grain with eats = none;  
 
 assert CanGetEverybodyAcross = eventually forall f:Farmer, c:Cargo | f is far && c is far;  
-
 run CanGetEverybodyAcross from Game in max 8 steps expect trace;
  

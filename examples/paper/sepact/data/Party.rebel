@@ -7,4 +7,4 @@ spec Party
   name: String,
   address: Address;
 
-  fact Immutable = always-last forall p:Party | p.id' = p.id && p.name' = p.name && p.address' = p.address;
+  assume Immutable = always-last forall p:Party | p.id' = p.id && p.name' = p.name && p.address' = p.address;

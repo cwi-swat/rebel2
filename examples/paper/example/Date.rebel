@@ -10,7 +10,7 @@ spec Date [NOW*]
   //  (this.year = other.year && this.month > other.month) ||
   //  (this.year = other.year && this.month = other.month && this.day > other.day);
 
-  fact CorrectDate
+  assume CorrectDate
     = always forall d:Date | (
         d.year >= 1900 && d.year <= 2200 &&
         d.month > 0 && d.month < 13 &&
@@ -28,7 +28,7 @@ spec Date [NOW*]
         if d.month = 11 then d.day < 31 else 
         d.day < 32);  
   
-  fact TimeFlowsForward 
+  assume TimeFlowsForward 
     = always-last Date[NOW].year' > Date[NOW].year; 
      
 assert SomeInitializedDate = eventually exists d: Date | d is initialized;

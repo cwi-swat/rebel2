@@ -52,14 +52,14 @@ spec PitmanArm
   event stop()
     pre: this.dirLights.stop();
   
-  fact ReleaseArmIfTipBlinkingLeft = exists p: PitmanArm, d: DirectionLights, s:SensorValues | 
+  assume ReleaseArmIfTipBlinkingLeft = exists p: PitmanArm, d: DirectionLights, s:SensorValues | 
     always ((s.key = KeyState[IN_IGNITION_ON] && startTipBlinkLeft on p) => 
       if (Timer[NOW].timepast' - Timer[NOW].timepast < 500)
         then (next releaseArm on p)
         else (next holdArm on p || (next holdArm on p))
       );
       
-  fact ReleaseArmIfTipBlinkingRight = exists p: PitmanArm, d: DirectionLights | 
+  assume ReleaseArmIfTipBlinkingRight = exists p: PitmanArm, d: DirectionLights | 
     always ((startTipBlinkRight on p && d.cycle = 0 && next (p is tipBlinkingRight && flashBlink on d && next flashBlink on d)) => next holdArm on p);
 
   states:
@@ -74,7 +74,7 @@ spec PitmanArm
     neutral -> blinkingLeft: startBlink::left;
     blinkingLeft -> neutral: stop;  
     
- config Simple = s: KeyOnlySensor abstracts SensorValues,
+ config Simple = s: KeyOnlySensor mocks SensorValues,
                  d:DirectionLights is off with left = 0, right = 0, cycle = 0, sensors = s, 
                  p: PitmanArm is neutral with dirLights = d;
  
@@ -83,12 +83,12 @@ spec PitmanArm
     next (s.key = KeyState[IN_IGNITION_ON]) &&
       eventually (d.cycle = 6 && 
         eventually (d is off));
- run CanDoTipBlinkingCycle from Simple in max 10 steps;
+ run CanDoTipBlinkingCycle from Simple in max 10 steps expect trace;
  
  assert CheckHoldArmBehaviour = exists d:DirectionLights, p:PitmanArm, s:SensorValues |
   eventually (startTipBlinkLeft on p && s.key = KeyState[IN_IGNITION_ON]) && 
     next (s.key = KeyState[IN_IGNITION_ON]) &&
-      eventually (d is lBright);   
+      eventually (d is blinkLeft::bright);   
  
- run CheckHoldArmBehaviour from Simple in max 5 steps;
+ run CheckHoldArmBehaviour from Simple in max 5 steps expect trace;
  

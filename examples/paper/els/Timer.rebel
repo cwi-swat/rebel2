@@ -3,8 +3,8 @@ module paper::els::Timer
 spec Timer[NOW]
   timepast: Integer;
     
-  fact TimeMovesForward = always-last forall t:Timer | t.timepast' > t.timepast;
-  fact TimeIsPositive = always forall t:Timer | t.timepast >= 0;
+  assume TimeMovesForward = always-last forall t:Timer | t.timepast' > t.timepast;
+  assume TimeIsPositive = always forall t:Timer | t.timepast >= 0;
   
 assert TimeCannotGoBackwards = eventually exists t:Timer | t.timepast > 0;
 

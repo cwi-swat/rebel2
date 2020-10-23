@@ -20,12 +20,12 @@ spec Roster
       d.goOffCall(), 
       exists other: this.doctors | other != d && other is onCall;
     
-  fact InitiallySomeDoctorIsOnCall = first exists r:Roster, d:r.doctors | d is onCall;  
+  assume InitiallySomeDoctorIsOnCall = first exists r:Roster, d:r.doctors | d is onCall;  
     
   states: 
     active -> active: goOnCall, goOffCall; 
     
-assert AlwaysADoctorOnCall = always (exists r:Roster | |r.doctors| > 0) && !(forall d:Doctor| d is offCall);
+assert NoDoctersOnCall = eventually exists r:Roster | |r.doctors| > 0 && forall d:r.doctors | d is offCall;
 
 assert ARosterOfOne = always exists r:Roster | |r.doctors| = 0; 
 
@@ -38,7 +38,7 @@ config ThreeDoctors
   = alice,bob,carol: Doctor,
     r: Roster;
 
-check AlwaysADoctorOnCall from ThreeDoctors in max 10 steps expect no trace;
+run NoDoctersOnCall from ThreeDoctors in max 10 steps expect no trace;
 run DoctorCanGoOffAndOnCall from ThreeDoctors in max 7 steps expect trace;
 
 run ARosterOfOne from ThreeDoctors in max 0 steps expect trace;

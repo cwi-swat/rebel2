@@ -1,11 +1,12 @@
 module CoffeeMachine
 
 spec CoffeeMachine
-  selected: CoffeeType,
+  selected: ?CoffeeType,
+  serving: ?CoffeeType,
   amountNeeded: Integer;
    
   init event powerOn() 
-    post: this.amountNeeded' = 0, this.selected' = CoffeeType[NONE];
+    post: this.amountNeeded' = 0, this.selected' = none, this.serving' = none;
     
   final event powerOff()
   
@@ -31,10 +32,13 @@ spec CoffeeMachine
       
     variant amountMet
       pre: this.amountNeeded - amount = 0;
-      post: this.selected' = CoffeeType[NONE];
-                 
+      post: this.selected' = none, this.serving' = this.selected;
+ 
+  event done() 
+    post: this.serving' = none;
+                    
   event cancel() 
-    post: this.amountNeeded' = 0, this.selected' = CoffeeType[NONE];
+    post: this.amountNeeded' = 0, this.selected' = none;
 
   states:
     active {
@@ -42,13 +46,13 @@ spec CoffeeMachine
       acceptingPayment -> serve: pay::amountMet;
       acceptingPayment -> acceptingPayment: pay::amountNotMet;
       acceptingPayment -> waiting: cancel;
-      serve -> waiting: empty;
+      serve -> waiting: done;
     }
     
     active -> (*): powerOff;  
     (*) -> active::waiting: powerOn;  
 
-spec CoffeeType[NONE,NORMAL,ESPRESSO,AMERICANO,LATTE]
+spec CoffeeType[NORMAL,ESPRESSO,AMERICANO,LATTE]
  
 config InitialMachine = cm: CoffeeMachine is uninitialized;
    
@@ -56,10 +60,13 @@ assert MachineIsServing = eventually exists m: CoffeeMachine | m is active::serv
 run MachineIsServing from InitialMachine in max 10 steps expect trace;
 
 assert CanServeNormalCoffee  
-  = eventually exists m: CoffeeMachine | m.selected = CoffeeType[NORMAL] && eventually m is active::serve;
+  = eventually exists m: CoffeeMachine | m.selected = CoffeeType[NORMAL] && eventually done on m;
 run CanServeNormalCoffee from InitialMachine in max 10 steps expect trace;
   
-assert MachineWillServeOrCancel = always exists m: CoffeeMachine | (m is active::acceptingPayment => eventually m is active::serve || cancel on m);    
+assert MachineWillServeOrCancel = always forall m: CoffeeMachine | (m is active::acceptingPayment => eventually m is active::serve || cancel on m);    
 check MachineWillServeOrCancel from InitialMachine in max 7 steps with infinite trace expect no trace;
+
+assert SimServeLoop = exists m:CoffeeMachine | eventually m is active::serve && eventually m is active::waiting;
+run SimServeLoop from InitialMachine in max 7 steps with infinite trace expect trace;
 
     

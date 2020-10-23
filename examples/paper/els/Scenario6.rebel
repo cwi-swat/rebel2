@@ -217,7 +217,7 @@ spec Scenario6
     step12 -> step13: doStep13;
     
 config StartConfig =  
-  s: KeyOnlySensor abstracts SensorValues,
+  s: KeyOnlySensor mocks SensorValues,
   d: DirectionLights is off with left = 0, right = 0, cycle = 0, sensors = s,
   p: PitmanArm is neutral with dirLights = d, sensors = s,
   scen6: Scenario6 is initial with s = s, d = d, p = p;
@@ -238,7 +238,7 @@ assert UpToStep5 = exists s:Scenario6 | eventually s is step5;
 run UpToStep5 from StartConfig in max 6 steps expect trace;
 
 config AfterStep5 =
-  s: KeyOnlySensor abstracts SensorValues,
+  s: KeyOnlySensor mocks SensorValues,
   d: DirectionLights is lFlashDark with left = 0, right = 0, cycle = 1, sensors = s,
   p: PitmanArm is neutral with dirLights = d, sensors = s,
   scen6: Scenario6 is step5 with s = s, d = d, p = p;
@@ -259,7 +259,7 @@ assert UpToStep10 = exists s:Scenario6 | eventually s is step10;
 run UpToStep10 from AfterStep5 in max 10 steps expect trace;
 
 config AfterStep10 =  
-  s: KeyOnlySensor abstracts SensorValues,
+  s: KeyOnlySensor mocks SensorValues,
   d: DirectionLights is lFlashDark with left = 0, right = 0, cycle = 5, sensors = s, lastBlinkAt = 7500,
   p: PitmanArm is neutral with dirLights = d, sensors = s,
   scen6: Scenario6 is step10 with s = s, d = d, p = p;

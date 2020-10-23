@@ -3,8 +3,8 @@ module paper::performance::rebel::TowerOfHanoi
 spec Disc
   size: Integer;
 
-  fact DistinctSizes = always forall d1,d2: Disc | (d1 != d2 => d1.size != d2.size); 
-  fact DiscsAreImmutable = always-last forall d:Disc | d.size' = d.size;
+  assume DistinctSizes = always forall d1,d2: Disc | (d1 != d2 => d1.size != d2.size); 
+  assume DiscsAreImmutable = always-last forall d:Disc | d.size' = d.size;
   
 spec Peg
   discs: set Disc;
@@ -25,7 +25,7 @@ spec Peg
     post: // remove the disc from the peg
           this.discs' = this.discs - d; 
 
-  fact ADiscCanOnlyBeOnOneRod = always forall d:Disc | exists p: Peg | 
+  assume ADiscCanOnlyBeOnOneRod = always forall d:Disc | exists p: Peg | 
       d in p.discs && forall other: Peg | (other != p => d notin other.discs);
     
   states:
@@ -38,7 +38,7 @@ spec Tower
   event move(d: Disc, from: Peg, to: Peg) 
     pre: from.remove(d), to.add(d);
   
-  fact InitiallyAllDiscOnInitialPeg = first forall d: Disc, t: Tower | d in t.initial.discs; 
+  assume InitiallyAllDiscOnInitialPeg = first forall d: Disc, t: Tower | d in t.initial.discs; 
   
   states:
     playing -> playing: move;

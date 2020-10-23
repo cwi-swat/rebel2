@@ -39,7 +39,7 @@ spec Money
   internal event addInterest(rate: Integer) 
     post: this.amount' = this.amount + ((this.amount * rate) / 100);
 
-  fact FiniteMoney = always forall m: Money | m.amount > -1000000000 && m.amount < 1000000000;
+  assume FiniteMoney = always forall m: Money | m.amount > -1000000000 && m.amount < 1000000000;
       
   states:   
     created -> created: gt, gte, lt, lte, minIfGte, plus, equal, zero, addInterest, positive, negative;

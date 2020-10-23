@@ -20,12 +20,12 @@ spec HVehicle[RED]
                           
     post: this.col' = this.col + steps;  
   
-  fact Grid = always forall h:HVehicle | h.col >= 0 && h.col <= 6 - h.length;
+  assume Grid = always forall h:HVehicle | h.col >= 0 && h.col <= 6 - h.length;
   
-  fact NoHorizontalOverlap = 
+  assume NoHorizontalOverlap = 
     always forall h1:HVehicle, h2:HVehicle | ((h1 != h2 && h1.row = h2.row) => h1.length <= |h1.col - h2.col|);  
 
-  fact RedPosition = first (HVehicle[RED].row = 2 && HVehicle[RED].length = 2); 
+  assume RedPosition = first (HVehicle[RED].row = 2 && HVehicle[RED].length = 2); 
   
   states:
     active -> active: move;
@@ -50,12 +50,12 @@ spec VVehicle
                           
     post: this.row' = this.row + steps;  
   
-  fact Grid = always forall v:VVehicle | v.row >= 0 && v.row <= 6 - v.length;
+  assume Grid = always forall v:VVehicle | v.row >= 0 && v.row <= 6 - v.length;
 
-  fact NoVerticalOverlap = 
+  assume NoVerticalOverlap = 
     always forall v1:VVehicle, v2:VVehicle | ((v1 != v2 && v1.col = v2.col) => v1.length <= |v1.row - v2.row|);  
   
-  fact NoOrthogonalOverlap =
+  assume NoOrthogonalOverlap =
     always forall v1:VVehicle, h1:HVehicle | 
       ((v1.row > (h1.row - v1.length) && v1.row <= h1.row) => (h1.col + h1.length <= v1.col || h1.col > v1.col));
   

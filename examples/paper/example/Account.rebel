@@ -30,7 +30,7 @@ spec Account
   final event close() 
     pre: this.balance = 0; 
   
-  fact AllAccountsHaveUniqueAccountNumbers 
+  assume AllAccountsHaveUniqueAccountNumbers 
     = always forall ac1, ac2: Account | (ac1 is initialized && ac2 is initialized && ac1.nr = ac2.nr => ac1 = ac2);
   
   states: 

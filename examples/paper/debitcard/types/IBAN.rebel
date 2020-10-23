@@ -3,13 +3,13 @@ module paper::debitcard::types::IBAN
 spec IBAN
   number: Integer;
     
-  fact IBANsAreUnique
+  assume IBANsAreUnique
     = always forall iban1, iban2: IBAN | (iban1.number = iban2.number => iban1 = iban2);
   
-  fact PositiveIBANs
+  assume PositiveIBANs
     = always forall iban: IBAN | iban.number > 0;
   
-  fact IBANsAreImmutable = always-last forall iban: IBAN | iban.number = iban.number';
+  assume IBANsAreImmutable = always-last forall iban: IBAN | iban.number = iban.number';
               
 config TwoIbans = iban1,iban2: IBAN;
 

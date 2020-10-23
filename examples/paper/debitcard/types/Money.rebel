@@ -20,7 +20,7 @@ spec Money
   internal event isNegative()
     pre: this.amount < 0;
        
-  fact AllMoneyIsFinite  
+  assume AllMoneyIsFinite  
     = always forall m: Money |  m.amount > -9999999999999 && m.amount < 9999999999999;
   
   states:

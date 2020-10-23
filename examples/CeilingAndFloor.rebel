@@ -6,9 +6,9 @@ spec Man
   ceiling: Platform,
   floor: Platform;
   
-  fact OneMansCeilingIsAnotherMensFloor =  always forall m: Man | exists n: Man | m.floor = n.ceiling;
-  //fact CantBeCeilingAndFloor = always forall m: Man | m.floor != m.ceiling;
-  fact NoSharing = always !(exists m,n: Man | m != n && (m.floor = n.floor || m.ceiling = n.ceiling));
+  assume OneMansCeilingIsAnotherMensFloor =  always forall m: Man | exists n: Man | m.floor = n.ceiling;
+  //assume CantBeCeilingAndFloor = always forall m: Man | m.floor != m.ceiling;
+  assume NoSharing = always !(exists m,n: Man | m != n && (m.floor = n.floor || m.ceiling = n.ceiling));
     
 assert BelowToo = always forall m: Man | exists n: Man | m.ceiling = n.floor;
 assert BelowToo2 = always ((forall m: Man | m.floor != m.ceiling) => (forall m: Man | exists n: Man | m.ceiling = n.floor));

@@ -56,7 +56,7 @@ spec Date[TODAY*]
     variant sameYear pre: this.year = other.year, other.dayInYear - this.dayInYear > nrOfDays;
     variant nextYear pre: other.year = this.year + 1, (this.totalNrOfDays - this.dayInYear) + other.dayInYear > nrOfDays;
     
-  fact CorrectDate
+  assume CorrectDate
     = always forall d:Date | (
         d.year >= 1900 && d.year <= 2200 &&
         d.month > 0 && d.month < 13 &&
@@ -74,12 +74,12 @@ spec Date[TODAY*]
         else if d.month = 11 then d.day < 31 
         else d.day < 32); 
   
-  fact LeapYear = always forall d:Date | 
+  assume LeapYear = always forall d:Date | 
     if (d.year % 4 != 0 || (d.year % 100 = 0 && d.year % 400 != 0)) then d.leapYear = Boolean[FALSE] else d.leapYear = Boolean[TRUE];
   
-  fact FebHasOneMoreDayInLeapYear = always forall d:Date | ((d.leapYear = Boolean[FALSE] && d.month = 2) => d.day < 29);
+  assume FebHasOneMoreDayInLeapYear = always forall d:Date | ((d.leapYear = Boolean[FALSE] && d.month = 2) => d.day < 29);
    
-  fact DayInLeapYear = always forall d:Date | if (d.leapYear = Boolean[TRUE]) then (
+  assume DayInLeapYear = always forall d:Date | if (d.leapYear = Boolean[TRUE]) then (
          if (d.month = 1) then d.dayInYear = d.day 
     else if (d.month = 2) then d.dayInYear = 31 + d.day
     else if (d.month = 3) then d.dayInYear = 31 + 29 + d.day
@@ -94,7 +94,7 @@ spec Date[TODAY*]
     else d.dayInYear = 31 + 29 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30 + d.day      
   );
 
-  fact DayInNonLeapYear = always forall d:Date | if (d.leapYear = Boolean[FALSE]) then (
+  assume DayInNonLeapYear = always forall d:Date | if (d.leapYear = Boolean[FALSE]) then (
          if (d.month = 1) then d.dayInYear = d.day 
     else if (d.month = 2) then d.dayInYear = 31 + d.day
     else if (d.month = 3) then d.dayInYear = 31 + 28 + d.day
@@ -110,16 +110,16 @@ spec Date[TODAY*]
   );  
   
   // Based on Zellers algorithm (See https://en.wikipedia.org/wiki/Determination_of_the_day_of_the_week#Zeller's_algorithm)
-  fact DayInWeek = always forall d:Date | 
+  assume DayInWeek = always forall d:Date | 
     if (d.month <= 2) then (
       d.dayInWeek = ( (((13 * (d.month + 13)) / 5) + (((d.year-1) % 100) / 4) + (((d.year-1) / 100) / 4) + d.day + ((d.year-1) % 100)) - (2 * ((d.year-1) / 100)) ) % 7
     ) else (
       d.dayInWeek = ( (((13 * (d.month + 1)) / 5) + ((d.year % 100) / 4) + ((d.year / 100) / 4) + d.day + (d.year % 100)) - (2 * (d.year / 100)) ) % 7
     ); 
   
-  fact TotalDaysInYearDependsOnLeapYear = always forall d:Date | if (d.leapYear = Boolean[TRUE]) then d.totalNrOfDays = 366 else d.totalNrOfDays = 365;
+  assume TotalDaysInYearDependsOnLeapYear = always forall d:Date | if (d.leapYear = Boolean[TRUE]) then d.totalNrOfDays = 366 else d.totalNrOfDays = 365;
 
-  fact TodayAlwaysMovesForward
+  assume TodayAlwaysMovesForward 
     = always-last ((Date[TODAY].year' = Date[TODAY].year && Date[TODAY].dayInYear' > Date[TODAY].dayInYear) || Date[TODAY].year' > Date[TODAY].year);
    
   states:

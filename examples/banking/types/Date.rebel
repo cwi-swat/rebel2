@@ -24,7 +24,7 @@ spec Date [NOW*]
   internal event same(other: Date)
      pre: other.year = this.year, other.month = this.month, other.day = this.day;
 
-  fact CorrectDate
+  assume CorrectDate
     = always forall d:Date | (d is initialized => (
         d.year >= 1900 && d.year <= 2200 &&
         d.month > 0 && d.month < 13 &&
@@ -42,14 +42,14 @@ spec Date [NOW*]
         if d.month = 11 then d.day < 31 else
         d.day < 32)); 
   
-  fact TimeAlwaysMovesForward
+  assume TimeAlwaysMovesForward
     = always-last exists d1: Date[NOW] | next exists d2: Date[NOW] | ( 
         d2.year > d1.year || 
         (d2.year = d1.year && d2.month > d1.month) || 
         (d2.year = d1.year && d2.month = d1.month && d2.day > d1.day)
       );   
    
-  fact NowAlwaysExists = always (Date[NOW] is initialized);
+  assume NowAlwaysExists = always (Date[NOW] is initialized);
 
      
   states:

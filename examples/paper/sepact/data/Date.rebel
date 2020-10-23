@@ -20,7 +20,7 @@ spec Date
          (this.year = Today[NOW].year && this.month > Today[NOW].month) ||
          (this.year = Today[NOW].year && this.month = Today[NOW].month && this.day = Today[NOW].day);
   
-  fact CorrectDate
+  assume CorrectDate
     = always forall d:Date | (
         d.year >= 1900 && d.year <= 2200 &&
         d.month > 0 && d.month < 13 &&

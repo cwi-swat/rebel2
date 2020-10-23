@@ -19,7 +19,7 @@ spec SensorValues
   currentSpeed: Integer, // Unit = 0.1 km/h
   reverseGear: Boolean;
   
-  fact SensorsRanges = always forall s:SensorValues | 
+  assume SensorsRanges = always forall s:SensorValues | 
     s.brightness > 0 && s.brightness < 10000 &&
     s.brakePedalDeflection >= 0 && s.brakePedalDeflection <= 225 &&
     s.batteryVoltage >= 0 && s.batteryVoltage <= 500 &&

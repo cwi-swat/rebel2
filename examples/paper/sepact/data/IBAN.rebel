@@ -5,7 +5,7 @@ spec IBAN
   checkDigits: String,
   bban: String;
   
-  fact CountriesList = always forall iban: IBAN |          (iban.cc = "AL" || iban.cc = "DZ" || iban.cc = "AD" || iban.cc = "AO" ||
+  assume CountriesList = always forall iban: IBAN |          (iban.cc = "AL" || iban.cc = "DZ" || iban.cc = "AD" || iban.cc = "AO" ||
       iban.cc = "AT" || iban.cc = "AZ" || iban.cc = "BH" || iban.cc = "BY" || iban.cc = "BE" || iban.cc = "BJ" || iban.cc = "BA" || iban.cc = "BH" ||
       iban.cc = "BR" || iban.cc = "VG" || iban.cc = "BG" || iban.cc = "BF" || iban.cc = "BI" || iban.cc = "CM" || iban.cc = "CV" || iban.cc = "FR" ||
       iban.cc = "CG" || iban.cc = "CR" || iban.cc = "HR" || iban.cc = "CY" || iban.cc = "CZ" || iban.cc = "DK" || iban.cc = "DO" || iban.cc = "EG" ||
@@ -19,13 +19,13 @@ spec IBAN
       iban.cc = "SI" || iban.cc = "ES" || iban.cc = "SE" || iban.cc = "CH" || iban.cc = "TL" || iban.cc = "TN" || iban.cc = "TR" || iban.cc = "UA" ||
       iban.cc = "AE" || iban.cc = "GB" || iban.cc = "VA");
           
-  fact AlwaysTwoCheckDigits = always forall iban: IBAN | iban.checkDigits.length = 2 && toInt(substr(iban.checkDigits,0,1)) >= 0 && toInt(substr(iban.checkDigits,0,1)) <= 9 && toInt(substr(iban.checkDigits,1,1)) >= 0 && toInt(substr(iban.checkDigits,1,1)) <= 9;
+  assume AlwaysTwoCheckDigits = always forall iban: IBAN | iban.checkDigits.length = 2 && toInt(substr(iban.checkDigits,0,1)) >= 0 && toInt(substr(iban.checkDigits,0,1)) <= 9 && toInt(substr(iban.checkDigits,1,1)) >= 0 && toInt(substr(iban.checkDigits,1,1)) <= 9;
     
-  fact Immutable = always-last forall iban:IBAN | iban.cc'=iban.cc && iban.checkDigits'= iban.checkDigits && iban.bban'= iban.bban;  
+  assume Immutable = always-last forall iban:IBAN | iban.cc'=iban.cc && iban.checkDigits'= iban.checkDigits && iban.bban'= iban.bban;  
     
   // source: https://www.nordea.com/en/our-services/cashmanagement/iban-validator-and-information/iban-countries/
   //Country Length  First 2 characters (letters)   
-  fact MaxBbanLength = 
+  assume MaxBbanLength = 
     always forall iban:IBAN | 
            if iban.cc = "AL" then iban.bban.length = 28 //Albania*  28 an AL
       else if iban.cc = "DZ" then iban.bban.length = 24 //Algeria 24 an DZ

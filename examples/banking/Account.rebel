@@ -34,7 +34,7 @@ spec Account
   final event removed() 
     pre: this.closedOn.yearsAfter(Date[NOW], 5);
     
-  fact AllAccountsHaveUniqueIBANs = always forall ac1,ac2: Account | (ac1 is initialized && ac2 is initialized && ac1.nr = ac2.nr => ac1 = ac2);
+  assume AllAccountsHaveUniqueIBANs = always forall ac1,ac2: Account | (ac1 is initialized && ac2 is initialized && ac1.nr = ac2.nr => ac1 = ac2);
   
   states:  
     //(*) -> open: create;  

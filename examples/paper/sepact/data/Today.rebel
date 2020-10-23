@@ -5,7 +5,7 @@ spec Today[NOW]
   month: Integer,
   day: Integer;
   
-  fact CorrectDate
+  assume CorrectDate
     = always forall d:Today | (
         d.year >= 1900 && d.year <= 2200 &&
         d.month > 0 && d.month < 13 &&
@@ -23,7 +23,7 @@ spec Today[NOW]
         if d.month = 11 then d.day < 31 else
         d.day < 32); 
   
-  fact TimeAlwaysMovesForward
+  assume TimeAlwaysMovesForward
     = always-last (Today[NOW].year' > Today[NOW].year ||
                   (Today[NOW].year' = Today[NOW].year && Today[NOW].month' > Today[NOW].month) ||
                   (Today[NOW].year' = Today[NOW].year && Today[NOW].month' = Today[NOW].month && Today[NOW].day' > Today[NOW].day)); 

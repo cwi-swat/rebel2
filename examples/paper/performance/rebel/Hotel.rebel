@@ -6,7 +6,7 @@ spec Card
   frst: Key,
   second: Key;
   
-  event create(fst: Key, snd: Key) 
+  init event create(fst: Key, snd: Key) 
     pre: fst != snd;
     post: this.frst' = fst, this.second' = snd;
       
@@ -17,7 +17,7 @@ spec Guest
   card: Card,
   room: Room;
  
-  internal event checkin(card: Card, room: Room)
+  init internal event checkin(card: Card, room: Room)
     pre: card is initialized, room is initialized, card.frst = room.key;
     post: this.card' = card, this.room' = room; 
   
@@ -31,7 +31,7 @@ spec Guest
 spec Room  
   key: Key;  
   
-  event create(initialKey: Key)    
+  init event create(initialKey: Key)    
     post: this.key' = initialKey; 
      
   internal event enterRoom(card: Card) 
@@ -43,14 +43,14 @@ spec Room
       post: this.key' = card.second;
     
   states:
-    createdd -> createdd: enterRoom::normal, enterRoom::update;
-    (*) -> createdd: create;
+    created -> created: enterRoom::normal, enterRoom::update;
+    (*) -> created: create;
        
   
 spec FrontDesk
   issued: set Key;
     
-  event initialize() 
+  init event initialize() 
     post: this.issued' = {};   
     
   event checkin(card: Card, room: Room, guest: Guest)

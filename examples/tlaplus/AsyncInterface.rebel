@@ -16,7 +16,7 @@ spec Channel
     pre: this.rdy != this.ack;
     post: this.ack' = 1 - this.ack;
   
-  fact TypeInv = always forall c:Channel | 
+  assume TypeInv = always forall c:Channel | 
     (c is initialized => (c.val >= 0 && // Val is in Natural
                          (c.rdy = 0 || c.rdy = 1) && (c.ack = 0 || c.ack = 1))); // rdy and ack are bits
   

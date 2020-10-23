@@ -32,7 +32,7 @@ spec SimpleAccount
     pre: amount > 0;
     post: this.balance' = this.balance + amount;
     
-  fact PositiveBalance = always forall a:SimpleAccount | (a is initialized => a.balance >= 0);
+  assume PositiveBalance = always forall a:SimpleAccount | (a is initialized => a.balance >= 0);
   
   states:
     opened -> opened: withdraw, deposit;

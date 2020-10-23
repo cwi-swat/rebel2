@@ -51,7 +51,7 @@ spec SimpleAccount
     pre: amount.currency = this.currency;
     post: this.amount' = this.amount + amount.amount;
     
-  fact NoOverdraw = always forall ac:SimpleAccount | ac.amount >= 0;
+  assume NoOverdraw = always forall ac:SimpleAccount | ac.amount >= 0;
   
   states:
     (*) -> opened: empty;

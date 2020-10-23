@@ -3,5 +3,5 @@ module paper::sepact::data::ID
 spec ID
   id: String;
   
-  fact Immutable = always-last forall id:ID | id.id' = id.id;
+  assume Immutable = always-last forall id:ID | id.id' = id.id;
   
