@@ -4,6 +4,8 @@ import rebel::lang::CommonSyntax;
 
 extend analysis::typepal::TypePal;
 
+import IO;
+
 data AType
   = intType()
   | stringType()
@@ -19,6 +21,7 @@ data AType
   | factType()
   | predType(AType argTypes)
   | namedTypeList(list[tuple[str, AType]] ntl)
+  | unknownType()
   ;
 
 data ScopeRole
@@ -71,6 +74,7 @@ str prettyAType(eventType(AType argTypes, set[ModifierInfo] mods)) = "event <pre
 str prettyAType(voidType()) = "*";
 str prettyAType(setType(AType elem)) = "set of <prettyAType(elem)>";
 str prettyAType(optionalType(AType elem)) = "?<prettyAType(elem)>";
+str prettyAType(unknownType()) = "\<\<??\>\>";
 
 tuple[list[str] typeNames, set[IdRole] idRoles] rebelTypeNamesAndRole(specType(str name)) = <[name], {specId()}>;
 tuple[list[str] typeNames, set[IdRole] idRoles] rebelTypeNamesAndRole(optionalType(AType elem)) = rebelTypeNamesAndRole(elem);
@@ -168,6 +172,7 @@ void collect(current: (Decl)`<{Id ","}+ vars> : <Expr expr>`, Collector c) {
           return specType(name);
         } else {
           s.report(error(current, "Should be a set type or a type of specication but is %t", expr));
+          return unknownType();
         }
       }));
   }
@@ -345,8 +350,10 @@ void collect(current: (Expr)`<Expr lhs> - <Expr rhs>`, Collector c) {
       switch({s.getType(lhs), s.getType(rhs)}){
         case {intType()}: return intType();
         case {setType(AType elem), elem}: return setType(elem);
-        default:
+        default: {
           s.report(error(current, "`-` not defined for %t and %t", lhs, rhs));
+          return unknownType();
+        }
       }
     });    
   
@@ -362,8 +369,10 @@ void collectIntOp(Expr lhs, Expr rhs, Expr complete, str op, str description, Co
     AType (Solver s) {
       switch({s.getType(lhs), s.getType(rhs)}){
         case {intType()}: return intType();
-        default:
+        default: {
           s.report(error(complete, "`<op>` not defined for %t and %t", lhs, rhs));
+          return unknownType();
+        }
       }
     });  
     
@@ -371,15 +380,18 @@ void collectIntOp(Expr lhs, Expr rhs, Expr complete, str op, str description, Co
 }
 
 void collect(current: (Expr)`{<Decl d> | <Formula frm>}`, Collector c) {
-  c.calculate("comprehension", current, [d], 
-    AType (Solver s) {
-      return setType(s.getType(d));
-    });
+  if ((Decl)`<Id var> : <Expr expr>` := d) {
+    c.calculate("comprehension", current, [expr], 
+      AType (Solver s) {
+        return setType(s.getType(expr));
+      });
+  } else {
+    c.report(error(current, "Comprehension only allows a single declaration"));
+  }
 
   c.enterScope(current);
     collectQuant([d], frm, c);
   c.leaveScope(current);
-
 }
 
 void collect(current: (Expr)`<Id var>`, Collector c) {

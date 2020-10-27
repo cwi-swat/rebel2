@@ -77,7 +77,13 @@ private str machineOnlyHasValuesWhenInitialized(set[Spec] spcs, TModel tm) {
       str relName = "<getCapitalizedSpecName(s)><getCapitalizedFieldName(f)>";
       fldCons = [];
       switch (<isPrim(f.tipe, tm), isEmpty>) {
-        case <_,true>:      fldCons += "one <relName> ⨝ c ⨝ inst";
+        case <_,true>: {
+          switch(getType(f, tm)) {
+            case optionalType(_): fldCons += "lone <relName> ⨝ c ⨝ inst";
+            case setType(_): ;
+            default: fldCons += "one <relName> ⨝ c ⨝ inst";
+          }
+        }
         case <true,false>:  fldCons += "(((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one <relName> ⨝ c ⨝ inst)";
         case <false,false>: {
           fldCons += "(no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no <relName> ⨝ c ⨝ inst)";

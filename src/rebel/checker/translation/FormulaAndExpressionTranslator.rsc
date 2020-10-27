@@ -312,12 +312,13 @@ AttRes translateAttrExpr((Expr)`- <Expr e>`, Context ctx) {
 
 AttRes translateAttrExpr(cur:(Expr)`|<Expr e>|`, Context ctx) { 
   AType tipe = getType(e, ctx.tm);
-  
+  AttRes r = translateAttrExpr(e,ctx);
+
   if (intType() := tipe) {
-    AttRes r = translateAttrExpr(e,ctx);
     return <r.rels, "|<r.constraint>|">;
   } else if (setType(_) := tipe) {
-    return <{ctx.rm[cur@\loc].relExpr}, getFieldName(cur,ctx)>;
+    //return <{ctx.rm[cur@\loc].relExpr}, getFieldName(cur,ctx)>;
+    return <{"(<intercalate(" x ", [re | re <- r.rels])>)[count() as size]"}, getFieldName(cur,ctx)>;
   }
   
   throw "Unable to translate `|<e>|` of type `<tipe>`";
@@ -335,6 +336,11 @@ AttRes translateAttrExpr((Expr)`<Expr lhs> / <Expr rhs>`, Context ctx) = transla
 AttRes translateAttrExpr((Expr)`<Expr lhs> + <Expr rhs>`, Context ctx) = translateBinAttrExpr(lhs, rhs, "+", ctx);
 AttRes translateAttrExpr((Expr)`<Expr lhs> - <Expr rhs>`, Context ctx) = translateBinAttrExpr(lhs, rhs, "-", ctx);
 AttRes translateAttrExpr((Expr)`<Expr lhs> % <Expr rhs>`, Context ctx) = translateBinAttrExpr(lhs, rhs, "%", ctx);
+
+AttRes translateAttrExpr(current:(Expr)`{<Id var> : <Expr expr> | <Formula f>}`, Context ctx) {
+  str te = ctx.rm[expr@\loc].relExpr;
+  return  <{"{<var> : <te> | <translate(f,ctx)>}"}, "">; 
+}
 
 AttRes translateAttrExpr((Expr)`<Lit l>`, Context ctx) = <{}, translateLit(l)>;
 
