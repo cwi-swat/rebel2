@@ -80,7 +80,7 @@ config Advanced24 = orangeCar:    HVehicle with row = 0, col = 3, length = 2,
                     beigeCar:     HVehicle with row = 5, col = 0, length = 2,
                     blackCar:     VVehicle with row = 4, col = 4, length = 2;
                    
-assert Init = first (HVehicle[RED].col = 2 && (forall h:HVehicle | h is initialized) && (forall v:VVehicle | v is initialized));
+assert Init = first HVehicle[RED].col = 2;
 
 assert CanMoveHorizontalVehicle = eventually exists h:HVehicle | move on h;
 assert CanMoveVerticalVehicle = eventually exists v:VVehicle | move on v;
@@ -92,5 +92,5 @@ run Init from Advanced24 in max 1 steps;
 run CanMoveHorizontalVehicle from Beginner1 in max 1 steps;
 run CanMoveVerticalVehicle from Beginner1 in max 1 steps;
 
-run RedCanGetOut from Beginner1 in max 8 steps;
-//run RedCanGetOut from Advanced24 in max 25 steps;
+run RedCanGetOut from Beginner1 in max 8 steps expect trace;
+//run RedCanGetOut from Advanced24 in max 25 steps expect trace;

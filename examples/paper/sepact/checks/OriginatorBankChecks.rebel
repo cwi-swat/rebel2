@@ -30,7 +30,7 @@ spec MockIBAN
   states:
     a->a:empty; 
     
-config Small = ib1,ib2:MockIBAN abstracts IBAN, 
+config Small = ib1,ib2:MockIBAN mocks IBAN, 
                m: Money, 
                d: Date, 
                bicChecker: BICChecker,

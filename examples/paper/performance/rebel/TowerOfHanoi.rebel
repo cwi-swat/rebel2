@@ -3,7 +3,7 @@ module paper::performance::rebel::TowerOfHanoi
 spec Disc
   size: Integer;
 
-  assume DistinctSizes = always forall d1,d2: Disc | (d1 != d2 => d1.size != d2.size); 
+  assume DistinctSizes     = always forall d1,d2: Disc | (d1.size = d2.size => d1 = d2); 
   assume DiscsAreImmutable = always-last forall d:Disc | d.size' = d.size;
   
 spec Peg
@@ -45,18 +45,12 @@ spec Tower
 
 assert AllOnGoalPeg = eventually exists t:Tower | forall d:Disc | d in t.goal.discs;
 
-assert CanMoveADisc = eventually exists t:Tower | move on t;
-assert CanInitialize = eventually exists t:Tower | t is initialized;
-
 config TwoDiscs   = d1,d2: Disc, p1,p2,p3: Peg, t:Tower with initial = p1, goal = p3, d1 with size = 1, d2 with size = 2;
 config ThreeDiscs = d1,d2,d3: Disc, p1,p2,p3: Peg, t:Tower with initial = p1, goal = p3, d1 with size = 1, d2 with size = 2, d3 with size = 3;
 config FourDiscs  = d1,d2,d3,d4: Disc, p1,p2,p3: Peg, t:Tower with initial = p1, goal = p3, d1 with size = 1, d2 with size = 2, d3 with size = 3, d4 with size = 4;
 config FiveDiscs  = d1,d2,d3,d4,d5: Disc, p1,p2,p3: Peg, t:Tower with initial = p1, goal = p3, d1 with size = 1, d2 with size = 2, d3 with size = 3, d4 with size = 4, d5 with size = 5;               
                
-run CanInitialize from TwoDiscs in max 0 steps;             
-run CanMoveADisc from TwoDiscs in max 1 steps;             
-               
-//run AllOnGoaldPeg from TwoDiscs in max 3 steps;  
-//run AllOnGoalPeg from ThreeDiscs in max 7 steps;
-//run AllOnGoalPeg from FourDiscs in max 15 steps;  
-run AllOnGoalPeg from FiveDiscs in max 32 steps;  
+//run AllOnGoalPeg from TwoDiscs in max 3 steps expect trace;  
+run AllOnGoalPeg from ThreeDiscs in max 7 steps expect trace;
+//run AllOnGoalPeg from FourDiscs in max 15 steps expect trace;  
+//run AllOnGoalPeg from FiveDiscs in max 32 steps expect trace;  

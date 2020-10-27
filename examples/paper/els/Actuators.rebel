@@ -150,6 +150,8 @@ spec DirectionLights
     hazardLightsOn {
       dark -> bright: blink::hazard, hazardBlinkWhenOff; 
       bright -> dark: blink::hazard, hazardBlinkWhenOff;
+      
+      bright -> off: stop;
     }
 
     off -> blinkLeft::bright: startBlinkLeft;

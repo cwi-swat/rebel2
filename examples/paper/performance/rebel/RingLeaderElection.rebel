@@ -1,16 +1,16 @@
 module paper::performance::rebel::RingLeaderElection
 
 spec Process
-  pid: Integer,
+  pid:    Integer,
   toSend: Integer,
-  succ: Process;
+  succ:   Process;
 
   internal event received(anId: Integer)
     variant lower 
       pre: anId < this.pid || anId < this.toSend;
       
     variant higher
-      pre: this.pid < anId, this.toSend <= anId;
+      pre: this.pid < anId, this.toSend < anId;
       post: this.toSend' = anId; 
     
     variant elected  
@@ -22,16 +22,16 @@ spec Process
          else this.succ.received(this.toSend); 
     post: this.toSend' = 0;
 
-  assume UniqueIds = always forall p1,p2: Process | (p1.pid = p2.pid => p1 = p2); 
-  assume PositiveIds = always forall p: Process | p.pid > 0;
+  assume UniqueIds           = always forall p1,p2: Process | (p1.pid = p2.pid => p1 = p2); 
+  assume PositiveIds         = always forall p: Process | p.pid > 0;
   assume InitialToSendIsZero = first forall p: Process | p.toSend = 0; 
-  assume Progress = forall p:Process | eventually send on p;
+  assume Progress            = forall p:Process | eventually send on p;
   assume AlwaysSendIfBufferStillFilled = always forall p:Process | (p.toSend > 0 => eventually send on p);
         
   states:
     notElected -> notElected: send, received::lower, received::higher; 
     notElected -> elected: received::elected; 
-    elected->elected: empty;
+    elected -> elected: empty;
            
 // ---------------------------
     
@@ -42,11 +42,11 @@ config RingOfThree
     p3 with succ = p1; 
 
 assert EventuallyOneIsElected = eventually exists p: Process | p is elected;
-run EventuallyOneIsElected from RingOfThree in max 3 steps expect trace;
+run    EventuallyOneIsElected from RingOfThree in max 3 steps expect trace;
   
 assert OnlyOneCanGetElected = always forall p1,p2: Process | (p1 is elected && p2 is elected => p1 = p2);     
-check OnlyOneCanGetElected from RingOfThree in max 7 steps expect no trace;  
+check  OnlyOneCanGetElected from RingOfThree in max 7 steps expect no trace;  
  
 assert AProcessWillAlwaysBeElected = eventually exists p: Process | always p is elected;
-check AProcessWillAlwaysBeElected from RingOfThree in max 5 steps with infinite trace;
+check  AProcessWillAlwaysBeElected from RingOfThree in max 5 steps with infinite trace expect no trace;
  

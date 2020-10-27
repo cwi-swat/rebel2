@@ -46,7 +46,6 @@ spec Room
     created -> created: enterRoom::normal, enterRoom::update;
     (*) -> created: create;
        
-  
 spec FrontDesk
   issued: set Key;
     
@@ -71,7 +70,7 @@ config EmptyHotel
     fd: FrontDesk is uninitialized;
 
 assert CanEnterRoomTwice
-  = eventually exists g:Guest | enterRoom on g && next enterRoom on g;
+  = exists g:Guest | eventually (enterRoom on g && next (eventually enterRoom on g));
   
 assert NoIntruder 
   = eventually exists g1,g2:Guest | 
