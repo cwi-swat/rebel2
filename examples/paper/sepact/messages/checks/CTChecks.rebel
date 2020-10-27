@@ -22,7 +22,7 @@ config SingleCT = p1,p2:Party,
 
 spec MockIBAN
 
-config SimpleCT = ib1,ib2:MockIBAN abstracts IBAN, 
+config SimpleCT = ib1,ib2:MockIBAN mocks IBAN, 
                   m: Money,
                   d: Date,  
                   ct: CustomerCreditTransferRequest forget originator, remittanceInfo, 

@@ -19,7 +19,7 @@ spec Transaction
 
   states:
     (*) -> created: create;
-    created -> (*): book;//, fail;
+    created -> (*): book, fail;
 
 spec SimpleAccount
   balance: Integer;
@@ -32,13 +32,13 @@ spec SimpleAccount
     pre: amount > 0;
     post: this.balance' = this.balance + amount;
     
-  assume PositiveBalance = always forall a:SimpleAccount | (a is initialized => a.balance >= 0);
+  assume PositiveBalance = always forall a:SimpleAccount | a.balance >= 0;
   
   states:
     opened -> opened: withdraw, deposit;
  
 //config BasicTrans = t: Transaction is uninitialized, ac1,ac2: Account is uninitialized, an1,an2: AccountNumber, d1:Date, d2:Date;
-config SimplifiedTrans = t: Transaction is uninitialized, ac1,ac2: SimpleAccount abstracts Account;
+config SimplifiedTrans = t: Transaction is uninitialized, ac1,ac2: SimpleAccount mocks Account;
 
 assert CanBookATransaction = eventually exists t: Transaction | book on t;
 assert TransactionsDontGetStuck = always forall t: Transaction | (t is initialized => eventually t is finalized);

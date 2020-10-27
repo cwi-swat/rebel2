@@ -3,24 +3,25 @@ module paper::performance::rebel::RiverCrossing
 spec Cargo
   eats: ?Cargo;
   
-  internal event cross()
+  internal event crossToFar()
+  internal event crossToNear()
        
-  assume DontBeAloneWithFood = always forall c1:Cargo, c2: Cargo, f:Farmer | (c1 != c2 && c2 = c1.eats =>  
+  assume DontBeAloneWithFood = always forall c1:Cargo, c2: Cargo, f:Farmer | (c2 = c1.eats =>  
     if (c1 is near &&  c2 is near) then f is near 
     else if (c1 is far && c2 is far) then f is far);
      
   states:
-    near -> far: cross;
-    far -> near: cross;
+    near -> far: crossToFar;
+    far -> near: crossToNear;
 
 spec Farmer
   event crossAlone()
   
   event crossToFar(cargo: Cargo)
-    pre: cargo is near, cargo.cross();
+    pre: cargo.crossToFar();
   
   event crossToNear(cargo: Cargo)
-      pre: cargo is far, cargo.cross();
+      pre: cargo.crossToNear();
 
   states:
     near -> far: crossAlone, crossToFar;

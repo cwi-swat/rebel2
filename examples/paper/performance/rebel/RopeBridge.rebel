@@ -35,7 +35,6 @@ assert EverybodyCrossedInTheLeastTime
 assert CantGoquicker
   = eventually ((forall a: Adventurer | a is far) && (exists t: Torch | t.totalTimeSpend < 17));
 
-
 config EverybodyNear
   = a1,a2,a3,a4: Adventurer is near, 
     t: Torch is near with totalTimeSpend = 0,
