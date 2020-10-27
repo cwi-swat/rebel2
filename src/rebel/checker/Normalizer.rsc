@@ -79,12 +79,12 @@ Module normalizeStateQueries(Module m, TModel origTm) {
     if (set[str] substates := findSubStates(state@\loc), substates != {}) {
       return buildDisj(expr, substates);
     } else if (contains("<state>", "::")) {
-      return [Formula]"<expr> is <replaceAll("<state>", "::", "__")>";
+      return [Formula]"<expr> is <replaceAll("<state>", "::", "_")>";
     } else {
       return orig;
     }
   }
-  Formula buildDisj(Expr expr, set[str] substates) = [Formula]"(<intercalate(" || ", ["<expr> is <replaceAll(sub, "::", "__")>" | sub <- substates])>)"; 
+  Formula buildDisj(Expr expr, set[str] substates) = [Formula]"(<intercalate(" || ", ["<expr> is <replaceAll(sub, "::", "_")>" | sub <- substates])>)"; 
   
   return visit(m) {
     case orig:(Formula)`<Expr expr> is <QualifiedName state>` => normStateQuery(orig)
@@ -339,10 +339,10 @@ private States? normalizeStates(States? states, TModel tm) {
     set[Define] defs = definitions[stateDefLoc];
 
     if ({Define d} := defs) {
-      return replaceAll(d.id, "::", "__");
+      return replaceAll(d.id, "::", "_");
     } else {
       for (Define d <- defs, contains(d.id, "::")) {
-        return replaceAll(d.id, "::", "__");
+        return replaceAll(d.id, "::", "_");
       }
     }
     

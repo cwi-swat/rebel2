@@ -2,6 +2,7 @@ module rebel::vis::TraceVis
 
 import rebel::checker::Trace;
 import rebel::lang::Syntax; 
+import rebel::lang::TypeChecker;
 import rebel::checker::translation::CommonTranslationFunctions;
 import rebel::vis::SpecToSalixConverter;
 

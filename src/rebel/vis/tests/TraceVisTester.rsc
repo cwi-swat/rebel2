@@ -4,11 +4,6 @@ import rebel::vis::TraceVis;
 
 import rebel::checker::tests::ModelCheckerTester;
 
-import rebel::checker::ModelChecker;
-import rebel::checker::Trace;
-
-import util::PathUtil;
-
 import salix::App;
 
 App[TraceVisModel] visCoffeeMachineCheck(str check) = visTrace(check, |home:///workspace/rebel2/examples/CoffeeMachine.rebel|);
@@ -26,6 +21,7 @@ App[TraceVisModel] visPaperTransactionCanBookRun() = visTrace("CanBookATransacti
 App[TraceVisModel] visPaperAccountCheck(str check) = visTrace(check, |home:///workspace/rebel2/examples/paper/example/Account.rebel|);
 
 App[TraceVisModel] visTrace(str check, loc rebelFile, int timeout = 30 * 1000) {
-  tuple[ModelCheckerResult mcr, str cfgName, str modName] result = testPerformCheck(check, rebelFile, timeout = timeout);
-  return createTraceVis(check, result.cfgName, result.modName, result.mcr.t);
+  //alias ModelCheckerTesterResult = tuple[ModelCheckerResult mcr, TModel tm, str config, str moduleName];
+  ModelCheckerTesterResult result = testPerformCheck(check, rebelFile, timeout = timeout);
+  return createTraceVis(check, result.config, result.moduleName, result.mcr.t);
 }

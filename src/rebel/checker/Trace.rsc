@@ -39,7 +39,7 @@ data RaisedEvent
   ;
 
 Trace buildTrace(Model alleModel, set[Module] mods, rel[Spec spc, str instance] instances, bool finiteTrace) {
-  set[Spec] specs = {s | Module m <- mods, /Spec s <- m.parts};
+  set[Spec] specs = {s | Module m <- mods, (Part)`<Spec s>` <- m.parts};
   
   int nrOfConfigs = getNrOfConfigs(alleModel); 
 
@@ -114,9 +114,10 @@ rel[Spec spc, str instance, State state] getStateInConfig(int step, Spec spc, se
     throw "Unable to find state for `<inst>` in step `<step>`";
   }
   
+  str spcNm = toLowerCase("<spc.name>");
   State parseState("state_uninitialized") = uninitialized();
   State parseState("state_finalized") = finalized();
-  default State parseState(str st) = state(substring(st, findLast(st, "_")+1));
+  default State parseState(str total) = state(replaceAll(st, "_", "::")) when /^state_<spcNm>_<st:.*>$/ := total;
 
   for (inst <- instances) {
     instanceStates += {<spc, inst, getState(inst)>};

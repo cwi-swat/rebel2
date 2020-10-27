@@ -36,7 +36,7 @@ list[Sub] changeCheckSubs(str id, Model m) = [timeEvery(id, specChangedCheck, 10
 
 void view(Model m) {
   div(() {
-    stateMachineCat("rebelVis", specToStateMachineJs(m.prevParsedSpecs));
+    stateMachineCat("rebelVis", convertToSMJs(m.prevParsedSpecs));
   });
 }
 
@@ -54,9 +54,9 @@ Model update(Msg msg, Model m) {
   return m;
 }
 
-str specToStateMachineJs(loc spc) = specToStateMachineJs({s | /Spec s <- parseModule(spc).parts});
+str convertToSMJs(loc spc) = convertToSMJs({s | /Spec s <- parseModule(spc).parts});
 
-str specToStateMachineJs(set[Spec] spcs) {
+str convertToSMJs(set[Spec] spcs) {
   if ({Spec spc} := spcs) {
     // only a single specification in the module
     return "<spc.name> {

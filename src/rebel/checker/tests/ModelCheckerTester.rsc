@@ -9,23 +9,24 @@ import rebel::lang::Parser;
 import rebel::lang::DependencyAnalyzer;
 import util::PathUtil;
 
-tuple[ModelCheckerResult,str,str] testPerformCheckOnCoffeeMachine() = testPerformCheck("CanServeNormalCoffee", |project://rebel2/examples/CoffeeMachine.rebel|);
+alias ModelCheckerTesterResult = tuple[ModelCheckerResult mcr, TModel tm, str config, str moduleName]; 
 
-tuple[ModelCheckerResult,str,str] testPerformCheckOnTransaction1() = testPerformCheck("CanBookATransaction", |project://rebel2/examples/local/paper/Transaction.rebel|);
-tuple[ModelCheckerResult,str,str] testPerformCheckOnTransaction2() = testPerformCheck("TransactionCanGetStuck", |project://rebel2/examples/local/paper/Transaction.rebel|);
+ModelCheckerTesterResult testPerformCheckOnCoffeeMachine() = testPerformCheck("CanServeNormalCoffee", |project://rebel2/examples/CoffeeMachine.rebel|);
 
-tuple[ModelCheckerResult,str,str] testPerformCheckOnHotel() = testPerformCheck("NoIntruder", |project://rebel2/examples/Hotel.rebel|);
+ModelCheckerTesterResult testPerformCheckOnTransaction1() = testPerformCheck("CanBookATransaction", |project://rebel2/examples/local/paper/Transaction.rebel|);
+ModelCheckerTesterResult testPerformCheckOnTransaction2() = testPerformCheck("TransactionCanGetStuck", |project://rebel2/examples/local/paper/Transaction.rebel|);
 
-tuple[ModelCheckerResult,str,str] testPerformCheckOnLight() = testPerformCheck("BulbCanBreak", |project://rebel2/examples/Light.rebel|);
+ModelCheckerTesterResult testPerformCheckOnHotel() = testPerformCheck("NoIntruder", |project://rebel2/examples/paper/performance/rebel/Hotel.rebel|);
+ModelCheckerTesterResult testPerformCheckOnLight() = testPerformCheck("BulbCanBreak", |project://rebel2/examples/Light.rebel|);
 
-tuple[ModelCheckerResult,str,str] testPerformCheck(str check, loc spec, int timeout = 30 * 1000) {
+ModelCheckerTesterResult testPerformCheck(str check, loc spec, int timeout = 30 * 1000) {
   PathConfig pcfg = defaultPathConfig(spec);
   
   Module m = parseModule(spec);
   TypeCheckerResult tcr = checkModule(m, calculateDependencies(m,pcfg), pcfg); 
   
   Check chk = findCheckByName(check, m);
-  return <performCheck(chk, m, tcr.tm, tcr.depGraph, pcfg = pcfg, saveIntermediateFiles = true, solverTimeout = timeout), "<chk.config>", "<m.\module.name>">;
+  return <performCheck(chk, m, tcr.tm, tcr.depGraph, pcfg = pcfg, saveIntermediateFiles = true, solverTimeout = timeout), tcr.tm, "<chk.config>", "<m.\module.name>">;
 }
 
 private Check findCheckByName(str check, Module m) {
