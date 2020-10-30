@@ -47,7 +47,9 @@ syntax Expr
   = brackets: "(" Expr ")"
   > var: Id
   | "|" Expr "|"
-  > fieldAccess: Expr "." Id 
+  > fieldAccess: Expr "." Id
+  | trans: Expr "." "^" Id
+  | reflTrans: Expr "." "*" Id 
   | functionCall: Id func "(" {Expr ","}* actuals ")"
   | instanceAccess: Expr spc "[" Id inst"]"
   | Lit

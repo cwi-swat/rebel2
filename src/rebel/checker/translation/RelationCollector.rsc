@@ -209,6 +209,26 @@ void analyse(current:(Expr)`<Expr expr>.<Id fld>`, AnalysisContext ctx) {
   }
 }
 
+void analyse(current:(Expr)`<Expr expr>.*<Id fld>`, AnalysisContext ctx) {
+  analyse(expr,ctx);
+  analyse(fld,ctx);
+
+  RelExpr exprRel  = ctx.lookup(expr@\loc); 
+  RelExpr fieldRel = ctx.lookup(fld@\loc);
+
+  ctx.add(current@\loc, <"(<exprRel.relExpr><renameIfNeeded(getFieldName(exprRel),"instance")> ⨝ *(<fieldRel.relExpr>)[instance,<fld>])[<fld>]", ("<fld>": type2Dom(getType(fld@\loc,ctx)))>); 
+}  
+
+void analyse(current:(Expr)`<Expr expr>.^<Id fld>`, AnalysisContext ctx) {
+  analyse(expr,ctx);
+  analyse(fld,ctx);
+
+  RelExpr exprRel  = ctx.lookup(expr@\loc); 
+  RelExpr fieldRel = ctx.lookup(fld@\loc);
+
+  ctx.add(current@\loc, <"(<exprRel.relExpr><renameIfNeeded(getFieldName(exprRel),"instance")> ⨝ ^(<fieldRel.relExpr>)[instance,<fld>])[<fld>]", ("<fld>": type2Dom(getType(fld@\loc,ctx)))>); 
+}  
+
 void analyse(current:(Expr)`<Id func>(<{Expr ","}* actuals>)`, AnalysisContext ctx) {
   list[Expr] params = [p | p <- actuals];
   for (p <- params) {
@@ -256,9 +276,9 @@ void analyse(current:(Expr)`|<Expr expr>|`, AnalysisContext ctx) {
   AType tipe = getType(expr@\loc,ctx);
   if (intType() := tipe) {
     ctx.add(current@\loc, ctx.lookup(expr@\loc));
-  } else if (setType(_) := tipe) {
+  } else if (setType(_) := tipe || spectType(_) := tipe) {
     RelExpr re = ctx.lookup(expr@\loc);
-    ctx.add(current@\loc, <"<re.relExpr>[count() as size]", ("size": intDom())>);
+    ctx.add(current@\loc, re);
   }
 }
 

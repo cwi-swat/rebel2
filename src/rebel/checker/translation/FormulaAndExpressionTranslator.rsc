@@ -147,7 +147,8 @@ str translate(current:(Decl)`<{Id ","}+ ids>: <Expr expr>`, Context ctx) {
   return intercalate(",", ["<name> ∈ <te>" | Id name <- ids]); 
 } 
 
-str translate((Formula)`<Expr lhs> in <Expr rhs>`,    Context ctx) = "some (<translateRelExpr(rhs,ctx)> ∩ <translateRelExpr(lhs,ctx)>[<getFieldName(lhs,ctx)>-\><getFieldName(rhs,ctx)>])";
+//str translate((Formula)`<Expr lhs> in <Expr rhs>`,    Context ctx) = "some (<translateRelExpr(rhs,ctx)> ∩ <translateRelExpr(lhs,ctx)>[<getFieldName(lhs,ctx)>-\><getFieldName(rhs,ctx)>])";
+str translate((Formula)`<Expr lhs> in <Expr rhs>`,    Context ctx) = "(<translateRelExpr(lhs,ctx)>[<getFieldName(lhs,ctx)>-\><getFieldName(rhs,ctx)>] in <translateRelExpr(rhs,ctx)>)";
 str translate((Formula)`<Expr lhs> notin <Expr rhs>`, Context ctx) = "no (<translateRelExpr(rhs,ctx)> ∩ <translateRelExpr(lhs,ctx)>[<getFieldName(lhs,ctx)>-\><getFieldName(rhs,ctx)>])";
 
 str translate((Formula)`<Formula lhs> && <Formula rhs>`,    Context ctx) = "(<translate(lhs,ctx)> ∧ <translate(rhs,ctx)>)";
@@ -207,6 +208,9 @@ str translateRelExpr(current:(Expr)`<Id id>`, Context ctx) = ctx.rm[current@\loc
 str translateRelExpr(current:(Expr)`<Expr expr>'`, Context ctx) = ctx.rm[current@\loc].relExpr;
 str translateRelExpr(current:(Expr)`<Expr expr>.<Id field>`, Context ctx) = ctx.rm[current@\loc].relExpr;
 str translateRelExpr(current:(Expr)`<Expr spc>[<Id field>]`, Context ctx) = ctx.rm[current@\loc].relExpr;
+
+str translateRelExpr(current:(Expr)`<Expr expr>.^<Id field>`, Context ctx) = ctx.rm[current@\loc].relExpr;
+str translateRelExpr(current:(Expr)`<Expr expr>.*<Id field>`, Context ctx) = ctx.rm[current@\loc].relExpr;
 
 str translateRelExpr(current:(Expr)`{<Id var> : <Expr expr> | <Formula f>}`, Context ctx) {
   str te = ctx.rm[expr@\loc].relExpr;
@@ -316,10 +320,9 @@ AttRes translateAttrExpr(cur:(Expr)`|<Expr e>|`, Context ctx) {
 
   if (intType() := tipe) {
     return <r.rels, "|<r.constraint>|">;
-  } else if (setType(_) := tipe) {
-    //return <{ctx.rm[cur@\loc].relExpr}, getFieldName(cur,ctx)>;
-    return <{"(<intercalate(" x ", [re | re <- r.rels])>)[count() as size]"}, getFieldName(cur,ctx)>;
-  }
+  } else if (setType(_) := tipe || specType(_) := tipe) {
+    return <{"(<intercalate(" x ", [re | re <- r.rels])>)[count() as size]"}, "size">;
+  } 
   
   throw "Unable to translate `|<e>|` of type `<tipe>`";
 }

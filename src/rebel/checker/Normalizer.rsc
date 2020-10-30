@@ -363,7 +363,7 @@ private States? normalizeStates(States? states, TModel tm) {
       str f = "<from>" == "(*)" ? "<from>" : getQualifiedName(from@\loc);
       
       if (substates[f] != {}) {
-        normalized += [<replaceAll(c, "::", "__"),t,e> | str c <- substates[f], e <- evnts];
+        normalized += [<replaceAll(c, "::", "_"),t,e> | str c <- substates[f], e <- evnts];
       } else {  
         normalized += [<f,t,e> | e <- evnts];
       }      

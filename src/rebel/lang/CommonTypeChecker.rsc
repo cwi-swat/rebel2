@@ -292,8 +292,8 @@ void collect(current: (Expr)`|<Expr expr>|`, Collector c) {
   c.calculate("absolute or size", current, [expr], 
     AType (Solver s) {
       AType tipe = s.getType(expr);
-      if (intType() !:= tipe, setType(_) !:= tipe) {
-        s.report(error(current, "Expression should be a set or integer type"));
+      if (intType() !:= tipe, setType(_) !:= tipe, specType(_) !:= tipe) {
+        s.report(error(current, "Expression should be a integer,set or spec type"));
       }
       
       return intType();
@@ -404,6 +404,43 @@ void collect(current: (Expr)`<Expr expr>.<Id fld>`, Collector c) {
   
   collect(expr,c);
 }
+
+void collect(current: (Expr)`<Expr expr>.^<Id fld>`, Collector c) {
+  c.useViaType(expr, fld, {fieldId()});
+  
+  c.calculate("Transitive closure", current, [fld],
+    AType (Solver s) {
+      exprType = s.getType(expr);
+      fldType = s.getType(fld);
+      if (fldType in {exprType, optionalType(exprType), setType(exprType)}) {
+        return setType(exprType);
+      } 
+      
+      s.report(error(current, "Transitive closure can only be performed when field and expression have the same type"));
+      return unknownType();
+    });
+
+  collect(expr,c);
+}
+
+void collect(current: (Expr)`<Expr expr>.*<Id fld>`, Collector c) {
+  c.useViaType(expr, fld, {fieldId()});
+  
+  c.calculate("Reflexive transitive closure", current, [fld],
+    AType (Solver s) {
+      exprType = s.getType(expr);
+      fldType = s.getType(fld);
+      if (fldType in {exprType, optionalType(exprType), setType(exprType)}) {
+        return setType(exprType);
+      } 
+      
+      s.report(error(current, "Reflexive transitive closure can only be performed when field and expression have the same type"));
+      return unknownType();
+    });
+
+  collect(expr,c);
+}
+
 
 void collect(current: (Expr)`<Id func>(<{Expr ","}* actuals>)`, Collector c) {
   args = [arg | arg <- actuals];
