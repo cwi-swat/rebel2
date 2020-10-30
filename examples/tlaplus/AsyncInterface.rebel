@@ -17,16 +17,17 @@ spec Channel
     post: this.ack' = 1 - this.ack;
   
   assume TypeInv = always forall c:Channel | 
-    (c is initialized => (c.val >= 0 && // Val is in Natural
-                         (c.rdy = 0 || c.rdy = 1) && (c.ack = 0 || c.ack = 1))); // rdy and ack are bits
-  
+    (c is initialized => (c.val >= 0 && (c.rdy = 0 || c.rdy = 1) && (c.ack = 0 || c.ack = 1))); // Val is in Natural, rdy & ack are boolean bits
+          
   states:
     (*) -> accepting: start;
     accepting -> accepting: send, receive;
+ 
+ config Simple = chan:Channel is uninitialized; 
+ 
+ assert AlwaysSendAndReceive = forall c:Channel | always (send on c => eventually receive on c);
+ run AlwaysSendAndReceive from Simple in max 6 steps with infinite trace expect trace;
     
- assert CanAccept = eventually exists c:Channel | c is initialized;
- 
- config Single = c:Channel is uninitialized; 
- 
- check CanAccept from Single in max 4 steps with infinite trace;
+ assert CanNeverReSend = forall c:Channel | always (send on c => !(next send on c));
+ check CanNeverReSend from Simple in max 6 steps expect no trace;
   
