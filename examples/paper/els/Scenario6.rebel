@@ -200,7 +200,42 @@ spec Scenario6
           // Pitman arm
           this.p is neutral; 
 
-
+  event doStep14() 
+    pre:  // Event
+          this.p.startTipBlinkRight(),
+          // Sensors
+          this.s.key = KeyState[IN_IGNITION_ON],
+          // Time 
+          Timer[NOW].timepast = 9001,
+          // Direction lights
+          this.d.left = 0,
+          this.d.right = 0,
+          this.d.cycle = 0, 
+          // Pitman arm
+          this.p is neutral;
+    post: this.d.right' = 100,
+          this.d.left' = 0,
+          this.d.cycle' = 0,
+          this.d' is flashBlinkRight::bright,
+          this.p' is tipBlinkingRight;
+          
+  event doStep15()
+    pre:  // Event
+          this.p.releaseArm(),
+          // Sensors
+          this.s.key = KeyState[IN_IGNITION_ON],
+          // Time
+          Timer[NOW].timepast = 10800,
+          // Direction lights
+          this.d is blinkRight,
+          this.d.left = 0,
+          this.d.right = 0,
+          //this.d.cycle = 4,
+          // Pitman arm
+          this.p is tipBlinkingRight;
+            
+           
+          
   states:
     initial -> step1: doStep1; 
     step1 -> step2:   doStep2;
@@ -215,6 +250,8 @@ spec Scenario6
     step10 -> step11: doStep11;
     step11 -> step12: doStep12;
     step12 -> step13: doStep13;
+    step13 -> step14: doStep14;
+    step14 -> step15: doStep15;
     
 config StartConfig =  
   s: KeyOnlySensor mocks SensorValues,
@@ -272,4 +309,16 @@ run UpToStep12 from AfterStep10 in max 2 steps expect trace;
 
 assert UpToStep13 = exists s:Scenario6 | eventually s is step13;
 run UpToStep13 from AfterStep10 in max 4 steps expect trace;
+
+config AfterStep13 =  
+  s: KeyOnlySensor mocks SensorValues,
+  d: DirectionLights is flashBlinkLeft::bright with left = 100, right = 0, cycle = 0, sensors = s, lastBlinkAt = 8000,
+  p: PitmanArm is neutral with dirLights = d, sensors = s,
+  scen6: Scenario6 is step13 with s = s, d = d, p = p;
+
+assert UpToStep14 = exists s:Scenario6 | eventually s is step14;
+run UpToStep14 from AfterStep13 in max 3 steps expect trace;
+
+assert UpToStep15 = exists s:Scenario6 | eventually s is step15;
+run UpToStep15 from AfterStep13 in max 6 steps expect trace;
  

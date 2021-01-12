@@ -132,7 +132,7 @@ spec DirectionLights
       
       bright -> blinkLeft::bright: startBlinkLeft;
       bright -> hazardLightsOn::bright: startHazardLights;
-      bright -> off: stopFlashBlink;
+      bright -> off: stopFlashBlink, stop;
     }
 
     flashBlinkRight {
@@ -142,7 +142,7 @@ spec DirectionLights
       dark -> dark: restartFlashBlinking::dark;
       bright -> bright: restartFlashBlinking::bright;
       
-      bright -> off: stopFlashBlink;
+      bright -> off: stopFlashBlink, stop;
       bright -> blinkRight::bright: startBlinkRight;
       bright -> hazardLightsOn::bright: startHazardLights;
     }
