@@ -113,7 +113,7 @@ private Spec lookupSpecByName(str specName, set[Spec] specs) {
 
 set[str] lookupStates(Spec spc, TModel tm) {
   set[str] states = {};
-  for (Define d <- tm.defines, d.idRole == stateId(), d.scope == spc@\loc) {
+  for (Define d <- tm.defines, d.idRole == stateId(), d.scope == spc@\loc, d.id notin {"initialized","finalized","uninitialized"}) {
     states += d.id;
   }
   
@@ -121,13 +121,12 @@ set[str] lookupStates(Spec spc, TModel tm) {
   return states;
 }
 
-//@memo 
-//set[rebel::lang::SpecSyntax::State] lookupStates(Spec spc) 
-//  = {st | /rebel::lang::SpecSyntax::State st <- spc.states, st has name};
+//@memo
+set[str] lookupStateLabels(Spec spc, TModel tm) = {getStateLabel(spc, st) | str st <- lookupStates(spc,tm)};
 
 //@memo
-set[str] lookupStateLabels(Spec spc, TModel tm) {
-  set[str] states = {getStateLabel(spc, st) | str st <- lookupStates(spc,tm)};
+set[str] lookupStateLabelsWithDefaultStates(Spec spc, TModel tm) {
+  set[str] states = lookupStateLabels(spc,tm);
   
   if (/(Transition)`(*) -\> <State _> : <{TransEvent ","}+ _>;` := spc.states) {
     states += "state_uninitialized";
@@ -139,10 +138,6 @@ set[str] lookupStateLabels(Spec spc, TModel tm) {
   
   return states; 
 }
-
-//@memo
-set[str] lookupStateLabelsWithDefaultState(Spec spc, TModel tm)
-  = lookupStateLabels(spc,tm); // + (!isEmptySpec(spc) ? {"state_uninitialized", "state_finalized"} : {});   
 
 str getStateLabel(Spec spc, str state) = "state_<getLowerCaseSpecName(spc)>_<toLowerCase(state)>";
 

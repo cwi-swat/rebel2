@@ -1,0 +1,3 @@
+module paper::example::Boolean
+
+spec Boolean [TRUE, FALSE] 

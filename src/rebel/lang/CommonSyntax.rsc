@@ -73,8 +73,8 @@ syntax Lit
 
 syntax Type
   = TypeName tp
-  | "set" TypeName elem
-  | "?" TypeName elem
+  | "set" TypeName tp
+  | "?" TypeName tp
   ;  
 
 lexical QuasiQualifiedName = [a-z A-Z 0-9 _:] !<< ([a-zA-Z_][a-zA-Z0-9_]*([:][:][a-zA-Z0-9_])* !>> [a-zA-Z0-9_]) \ Keywords;

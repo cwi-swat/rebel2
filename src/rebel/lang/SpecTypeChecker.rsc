@@ -163,13 +163,13 @@ void collect(current: (Transition)`<State from>-\><State to> : <{TransEvent ","}
   }
   
   if ("<from>" == "(*)") {
-    definedState("$$init$$", c);
-  } else{  
+    c.push("states_done","$$init$$");
+  } else {  
     collectState(from); 
   }
     
   if ("<to>" == "(*)") {
-    definedState("$$fin$$", c);
+    c.push("states_done","$$fin$$");
   } else { 
     collectState(to); 
   }

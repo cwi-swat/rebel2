@@ -1,0 +1,115 @@
+module tlaplus::seq::Sequence2
+
+spec Elem
+  val: Integer,
+  nxt: ?Elem;
+ 
+  init internal event createFirst(val: Integer)
+    post: this.val' = val, this.nxt' = none;
+  
+  init internal event create(val: Integer, nxtt: ?Elem) 
+    pre: nxtt is initialized;  
+    post: this.val' = val, this.nxt' = nxtt;
+   
+  internal event skip()
+         
+  states:
+    (*) -> created: createFirst, create;
+    created -> created: skip;
+      
+spec Sequence2 // refines Sequence
+  elems: set Elem,
+  fst: ?Elem,
+  lst: ?Elem,
+  size: Integer;
+  
+  init event create()
+    // oper: this.elems = {}; 
+    //       this.size = 0; 
+    //       this.fst = none; 
+    //       this.lst = none;
+    post: this.elems' = {}, 
+          this.size' = 0, 
+          this.fst' = none, 
+          this.lst' = none;
+  
+  event add(val: Integer)
+    post: this.size' = this.size + 1,
+          this.elems in this.elems',
+          |this.elems'| = |this.elems| + 1; 
+    
+    variant isEmpty
+      pre:  this.elems = {};
+      // oper: this.size += 1;
+      //       let e: Elem.uninitialized | 
+      //         e.createFirst(val);
+      //         this.elems += e;
+      //         this.fst = e;
+      //         this.lst = e;  
+      post: (exists e: Elem | e.createFirst(val) 
+                           && e in this.elems' 
+                           && forall o: Elem | (o != e => (o is uninitialized || o.skip())) 
+                           && this.fst' = e 
+                           && this.lst' = e);
+    
+    variant notEmpty
+      pre:  this.elems != {};      
+      post: (exists e: Elem | e.create(val, this.fst) 
+                           && e notin this.elems 
+                           && e in this.elems' 
+                           && forall o: Elem | (o != e => (o is uninitialized || o.skip())) 
+                           && this.fst' = e 
+                           && this.lst' = this.lst);
+   
+  states:  
+    (*)     -> created: create;
+    created -> created: add;
+  
+config OneSeqOfMaxOne   = s: Sequence2 is uninitialized, e1: Elem is uninitialized;
+config OneSeqOfMaxFive  = s: Sequence2 is uninitialized, e1,e2,e3,e4,e5: Elem is uninitialized;   
+
+config TwoSeqOfMaxThree = s1,s2: Sequence2 is uninitialized, e1,e2,e3,e4,e5,e6: Elem;
+
+assert CanInitialize = eventually exists s:Sequence2 | |s.elems| = |Elem|;
+run CanInitialize from OneSeqOfMaxFive in max 6 steps expect trace;
+run CanInitialize from OneSeqOfMaxOne in max 3 steps expect trace;
+ 
+assert OnlyOneHead = eventually exists s:Sequence2 | |{e: s.elems | (forall o:s.elems | o.nxt != e)}| > 1;
+run OnlyOneHead from OneSeqOfMaxFive in max 5 steps expect no trace;
+
+assert HeadCantBeTailIfSizeIsMoreThanOne = eventually exists s:Sequence2 | s is initialized && s.size > 1 && s.fst = s.lst;
+run HeadCantBeTailIfSizeIsMoreThanOne from OneSeqOfMaxFive in max 5 steps expect no trace; 
+
+assert HeadIsTailWhenSizeIsOne = eventually exists s:Sequence2 | s is initialized && s.size = 1 && s.fst != s.lst;
+run HeadIsTailWhenSizeIsOne from OneSeqOfMaxFive in max 5 steps expect no trace;
+
+assert SeqCanBeEmpty = eventually exists s:Sequence2 | s is initialized && s.elems = {};
+run SeqCanBeEmpty from OneSeqOfMaxFive in max 4 steps expect trace;
+
+assert SizeIsAlwaysEqToNrOfElems = eventually exists s:Sequence2 | (s is initialized && |s.elems| != s.size);
+run SizeIsAlwaysEqToNrOfElems from OneSeqOfMaxFive in max 5 steps expect no trace;
+
+assert TwoDistinctSeq = eventually exists s1,s2: Sequence2 | s1 != s2 && s1.elems notin s2.elems && s1.size = 3 && s2.size = 3;
+run TwoDistinctSeq from TwoSeqOfMaxThree in max 8 steps expect trace;
+
+assert ElemsCantBeShared = always forall s1: Sequence2 | !(exists s2: Sequence2 | s2 != s1 && exists e:s2.elems | e in s1.elems);
+check ElemsCantBeShared from TwoSeqOfMaxThree in max 5 steps expect no trace;
+
+// Assumptions from Sequence turned assertions
+assert AllReachableFromHead = always forall s:Sequence2 | forall e: s.elems |e in s.fst.*nxt;
+check AllReachableFromHead from OneSeqOfMaxFive in max 6 steps expect no trace;
+check AllReachableFromHead from TwoSeqOfMaxThree in max 8 steps expect no trace;
+
+assert AllReachableElemsInSeq = always forall s:Sequence2 | forall e: s.fst.*nxt | e in s.elems;
+check AllReachableFromHead from OneSeqOfMaxFive in max 6 steps expect no trace;
+check AllReachableFromHead from TwoSeqOfMaxThree in max 8 steps expect no trace;
+
+assert NoLoops = always forall s:Sequence2 | forall e: s.elems | e notin e.^nxt;
+check NoLoops from OneSeqOfMaxFive in max 6 steps expect no trace;
+check NoLoops from TwoSeqOfMaxThree in max 8 steps expect no trace;
+
+assert Size = eventually exists s:Sequence2 | s is initialized && s.size != |s.elems|;
+run Size from OneSeqOfMaxFive in max 6 steps expect no trace;
+run Size from TwoSeqOfMaxThree in max 8 steps expect no trace;
+
+

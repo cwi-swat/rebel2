@@ -1,14 +1,9 @@
 module paper::example::Date
  
-spec Date [NOW*]
+spec Date [TODAY*]
   year: Integer,
   month: Integer,  
   day: Integer;
-    
-  //pred after(other: Date) =
-  //  (this.year > other.year) ||
-  //  (this.year = other.year && this.month > other.month) ||
-  //  (this.year = other.year && this.month = other.month && this.day > other.day);
 
   assume CorrectDate
     = always forall d:Date | (
@@ -29,11 +24,7 @@ spec Date [NOW*]
         d.day < 32);  
   
   assume TimeFlowsForward 
-    = always-last Date[NOW].year' > Date[NOW].year; 
-     
-assert SomeInitializedDate = eventually exists d: Date | d is initialized;
-
-config SomeDates = d1: Date; 
- 
-run SomeInitializedDate from SomeDates in max 2 steps;
-      
+    = always-last    Date[TODAY].year' > Date[TODAY].year
+                  || (Date[TODAY].year' = Date[TODAY].year && Date[TODAY].month' > Date[TODAY].month)
+                  || (Date[TODAY].year' = Date[TODAY].year && Date[TODAY].month' = Date[TODAY].month && Date[TODAY].day' > Date[TODAY].day)
+                  ; 

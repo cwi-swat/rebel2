@@ -183,7 +183,8 @@ void collect(current: (Decl)`<{Id ","}+ vars> : <Expr expr>`, Collector c) {
 void collect(current: (Formula)`<Expr exp> is <QualifiedName state>`, Collector c) {
   c.calculate("is in state", current, [exp],
     AType (Solver s) {
-      s.requireTrue(specType(_) := s.getType(exp),  
+      tipe = s.getType(exp);
+      s.requireTrue(specType(_) := tipe || optionalType(specType(_)) := tipe,  
                     error(current, "Can only perform an \'is\' operation on a specification"));
         
       return boolType();
@@ -199,7 +200,12 @@ void collect(current: (Formula)`<Expr lhs> in <Expr rhs>`, Collector c) {
     AType (Solver s) {
       switch(<s.getType(lhs), s.getType(rhs)>) {
         case <AType t, setType(t)>: return boolType();
-        default: s.report(error(current, "Can only check membership of element of same type as set"));
+        case <optionalType(AType t), setType(t)>: return boolType();
+        case <setType(AType t), setType(t)>: return boolType();
+        default: {
+          s.report(error(current, "Can only check membership of element of same type as set"));
+          return unknownType();
+        }
       }
     });
 
@@ -211,7 +217,12 @@ void collect(current: (Formula)`<Expr lhs> notin <Expr rhs>`, Collector c) {
     AType (Solver s) {
       switch(<s.getType(lhs), s.getType(rhs)>) {
         case <AType t, setType(t)>: return boolType();
-        default: s.report(error(current, "Can only check membership of element of same type as set"));
+        case <optionalType(AType t), setType(t)>: return boolType();
+        case <setType(AType t), setType(t)>: return boolType();
+        default: {
+          s.report(error(current, "Can only check membership of element of same type as set"));
+          return unknownType();
+        }
       }
     });
 
@@ -406,41 +417,76 @@ void collect(current: (Expr)`<Expr expr>.<Id fld>`, Collector c) {
 }
 
 void collect(current: (Expr)`<Expr expr>.^<Id fld>`, Collector c) {
-  c.useViaType(expr, fld, {fieldId()});
-  
-  c.calculate("Transitive closure", current, [fld],
-    AType (Solver s) {
-      exprType = s.getType(expr);
-      fldType = s.getType(fld);
-      if (fldType in {exprType, optionalType(exprType), setType(exprType)}) {
-        return setType(exprType);
-      } 
-      
-      s.report(error(current, "Transitive closure can only be performed when field and expression have the same type"));
-      return unknownType();
-    });
-
-  collect(expr,c);
+  collectClosure(current, expr, fld, "Transitive closure can only be performed when field and expression have the same type", c);
+//  c.useViaType(expr, fld, {fieldId()});
+//  
+//  c.calculate("Transitive closure", current, [fld],
+//    AType (Solver s) {
+//      exprType = s.getType(expr);
+//      exprType = switch(exprType) {
+//        case optionalType(AType tipe): return tipe;
+//        case setType(AType tipe): return tipe;
+//        default: return exprType;
+//      };
+//      
+//      fldType = s.getType(fld);
+//      if (fldType == exprType) {
+//        return setType(exprType);
+//      } 
+//      
+//      s.report(error(current, "Transitive closure can only be performed when field and expression have the same type"));
+//      return unknownType();
+//    });
+//
+//  collect(expr,c);
 }
 
 void collect(current: (Expr)`<Expr expr>.*<Id fld>`, Collector c) {
+  collectClosure(current, expr, fld, "Reflexive transitive closure can only be performed when field and expression have the same type", c);
+//  c.useViaType(expr, fld, {fieldId()});
+//  
+//  c.calculate("Reflexive transitive closure", current, [fld],
+//    AType (Solver s) {
+//      exprType = s.getType(expr);
+//      fldType = s.getType(fld);
+//      if (fldType in {exprType, optionalType(exprType), setType(exprType)}) {
+//        return setType(exprType);
+//      } 
+//      
+//      s.report(error(current, "Reflexive transitive closure can only be performed when field and expression have the same type"));
+//      return unknownType();
+//    });
+//
+//  collect(expr,c);
+}
+
+private void collectClosure(Expr complete, Expr expr, Id fld, str comment, Collector c) {
   c.useViaType(expr, fld, {fieldId()});
   
-  c.calculate("Reflexive transitive closure", current, [fld],
+  c.calculate("Transitive closure", complete, [fld],
     AType (Solver s) {
       exprType = s.getType(expr);
+      switch(exprType) {
+        case optionalType(AType tipe): exprType = tipe;
+        case setType(AType tipe): exprType = tipe;
+      };
+      
       fldType = s.getType(fld);
-      if (fldType in {exprType, optionalType(exprType), setType(exprType)}) {
+      switch(fldType) {
+        case optionalType(AType tipe): fldType = tipe;
+        case setType(AType tipe): fldType = tipe;
+      };
+      
+      if (fldType == exprType) {
         return setType(exprType);
       } 
       
-      s.report(error(current, "Reflexive transitive closure can only be performed when field and expression have the same type"));
+      s.report(error(complete, comment));
       return unknownType();
     });
 
   collect(expr,c);
 }
-
 
 void collect(current: (Expr)`<Id func>(<{Expr ","}* actuals>)`, Collector c) {
   args = [arg | arg <- actuals];

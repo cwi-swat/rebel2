@@ -176,10 +176,12 @@ assert SimWhenInDarkCycleNoLights = eventually exists d:DirectionLights |
   (d is blinkLeft::dark || d is blinkRight::dark || d is flashBlinkLeft::dark || d is flashBlinkRight::dark || d is hazardLightsOn::dark) && d.left = 0 && d.right = 0;
 run SimWhenInDarkCycleNoLights from DirectionLightsAndKeySensor in max 5 steps expect trace;
     
-assert BlinkingStopsWhenKeyIsRemoved = always exists d:DirectionLights, s:SensorValues | 
-  ((s.key = KeyState[IN_IGNITION_ON] && 
-  (next (s.key' != KeyState[IN_IGNITION_ON])) &&  
-  (d is blinkLeft::bright || d is blinkLeft::dark || d is blinkRight::bright || d is blinkRight::dark)) => next (d is off || d is hazardLightsOn::bright));
+assert BlinkingStopsWhenKeyIsRemoved = always forall d:DirectionLights, s:SensorValues | ( 
+  (    s.key = KeyState[IN_IGNITION_ON] 
+    && (d is blinkLeft::bright || d is blinkLeft::dark || d is blinkRight::bright || d is blinkRight::dark) 
+    && next (s.key != KeyState[IN_IGNITION_ON])) => 
+      (next (d is off || d is hazardLightsOn::bright)) 
+  ); 
 check BlinkingStopsWhenKeyIsRemoved from DirectionLightsAndKeySensor in max 5 steps expect no trace;   
 
 assert SimBlinkingStopsWhenKeyIsRemoved = eventually exists d:DirectionLights, s:SensorValues | 
@@ -199,7 +201,7 @@ run SimHazardLightIntensityLoweredWhenKeyIsRemoved from DirectionLightsAndKeySen
 assert IntensityAlwaysInRange = always forall d:DirectionLights | 
   (d.left = 0 || d.left = 50 || d.left = 100) && (d.right = 0 || d.right = 50 || d.right = 100); 
 check IntensityAlwaysInRange from DirectionLightsAndKeySensor in max 10 steps expect no trace;
-
+  
 // ELS-2 
 assert CanCompleteFlashBlinkCycle = eventually exists d:DirectionLights | d is flashBlinkLeft::bright && eventually (d.cycle = 6 && d is off);
 run CanCompleteFlashBlinkCycle from DirectionLightsAndKeySensor in max 10 steps expect trace;
@@ -212,10 +214,12 @@ check NoFlashBlinkingWhenCycleIsComplete from DirectionLightsAndKeySensor in max
 
 assert CanBlinkLeft = eventually exists d:DirectionLights | d is blinkLeft::bright && Timer[NOW].timepast = 1000 && 
   next (d is blinkLeft::dark && Timer[NOW].timepast = 1500 && 
-  next (d is blinkRight::bright && Timer[NOW].timepast = 2000));
+    next (d is blinkLeft::bright && Timer[NOW].timepast = 2000));
 run CanBlinkLeft from DirectionLightsAndKeySensor in max 4 steps expect trace;
 
-assert CanBlinkRight = eventually exists d:DirectionLights | (d is blinkRight::bright && Timer[NOW].timepast = 2000) && next (d is blinkRight::dark && next (d is blinkRight::bright && Timer[NOW].timepast = 3000));
+assert CanBlinkRight = eventually exists d:DirectionLights | (d is blinkRight::bright && Timer[NOW].timepast = 2000) && 
+  next (d is blinkRight::dark && 
+    next (d is blinkRight::bright && Timer[NOW].timepast = 3000));
 run CanBlinkRight from DirectionLightsAndKeySensor in max 4 steps expect trace;
 
 assert CanStartBlinkingAtRandomPointInTime = exists d:DirectionLights | eventually (startBlinkRight on d && Timer[NOW].timepast = 603);

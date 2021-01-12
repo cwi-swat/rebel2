@@ -20,37 +20,43 @@ spec Account
     post: this.balance' = this.balance - amount;
     
   event payInterest(rate: Integer)
-    //pre: rate > 0;
     post: this.balance' = this.balance + ((this.balance * rate) / 100);
     
   event block()
+  
   event unblock()  
+
   final event forceClose()
     
   final event close() 
     pre: this.balance = 0; 
-  
+
   assume AllAccountsHaveUniqueAccountNumbers 
     = always forall ac1, ac2: Account | (ac1 is initialized && ac2 is initialized && ac1.nr = ac2.nr => ac1 = ac2);
   
   states: 
-    (*) -> waitingForActivation: open;
-    waitingForActivation -> opened: deposit;
+    (*) -> opened: open;
     opened -> opened: deposit, withdraw, payInterest;
-    opened -> blocked: block; 
+    opened -> blocked: block;
     blocked -> opened: unblock;
     blocked -> (*): forceClose;   
-    opened -> (*): close; 
+    opened -> (*): close;
      
-assert CantOverdrawAccount = always forall a:Account | (a is initialized => a.balance >= 0);
 
 assert CanPayInterestAndClose = eventually exists ac:Account | payInterest on ac && eventually close on ac;
-assert CanOpenAccount = eventually exists ac:Account | ac is initialized;
+assert CanOpenAccount         = eventually exists ac:Account | ac is initialized;
+assert CanCloseAccount        = eventually exists ac:Account | ac is finalized;
     
-config Basic = ac: Account is uninitialized, aNr:AccountNumber, d:Date;
-config Sliced = ac: Account forget nr, openedOn is uninitialized;
+config Basic = ac: Account is uninitialized, aNr:AccountNumber, d1,d2:Date;
+
+assert CantOverdrawAccount = always forall a:Account | (a is initialized => a.balance >= 0);
+
+config Sliced = ac: Account forget nr, openedOn, closedOn is uninitialized;
      
-check CantOverdrawAccount from Sliced in max 10 steps;  
-run CanOpenAccount from Basic in max 1 steps;     
+check CantOverdrawAccount from Sliced in max 5 steps;  
+run CanOpenAccount from Sliced in max 3 steps;     
+run CanCloseAccount from Sliced in max 5 steps;     
+
+check CantOverdrawAccount from Basic in max 10 steps;  
 run CanPayInterestAndClose from Basic in max 8 steps; 
 run CanOpenAccount from Basic in max 3 steps; 

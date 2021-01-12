@@ -27,7 +27,7 @@ spec Roster
     
 assert NoDoctersOnCall = eventually exists r:Roster | |r.doctors| > 0 && forall d:r.doctors | d is offCall;
 
-assert ARosterOfOne = always exists r:Roster | |r.doctors| = 0; 
+assert ARosterOfOne = always exists r:Roster | |r.doctors| = 1; 
 
 assert DoctorCanGoOffAndOnCall = eventually exists d: Doctor | 
   (forall other: Doctor | (other != d => (other is offCall && eventually other is onCall && (eventually other is offCall)))) 

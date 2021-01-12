@@ -52,12 +52,13 @@ private str buildSpecRel(Spec spc)
   
 private str buildStateRel(set[Spec] spcs, TModel tm) 
   = "// Define all possible states for all machines
-    'State (state:id) = {\<state_uninitialized\>,\<state_finalized\><if (stateTuples != "") {>,<stateTuples><}>}
+    'State (state:id) = {<stateTuplesWithDefaults>}
     'initialized (state:id) = {<stateTuples>}
     'finalized (state:id) = {\<state_finalized\>}
     'uninitialized (state:id) = {\<state_uninitialized\>}
     '<buildIndividualStateRels(spcs,tm)>"
-  when stateTuples := intercalate(",", [st | s <- spcs, str st := buildStateTuples(s,tm), st != ""]);
+  when stateTuples := intercalate(",", [st | s <- spcs, str st := buildStateTuples(s,tm), st != ""]),
+       stateTuplesWithDefaults := intercalate(",", dup([st | s <- spcs, str st := buildStateTuplesWithDefaultStates(s,tm), st != ""]));
 
 private str buildIndividualStateRels(set[Spec] spcs, TModel tm)
   = "<for (s <- spcs) {><buildIndividualStateRel(s,tm)>
@@ -68,12 +69,11 @@ private str buildIndividualStateRel(Spec spc, TModel tm)
     '<}>"
     when set[str] states := lookupStates(spc,tm);
   
-private str buildStateTuples(Spec spc, TModel tm) 
-  = intercalate(",", ["\<<s>\>" | str s <- states])
-  when 
-    //str name := getLowerCaseSpecName(spc),
-    //set[str] states := {"<name>_<toLowerCase("<s>")>" | /rebel::lang::SpecSyntax::State s := spc.states, s has name};
-    set[str] states := lookupStateLabels(spc, tm) - {"state_uninitialized","state_finalized"};
+private str buildStateTuples(Spec spc, TModel tm) = intercalate(",", ["\<<s>\>" | str s <- states])
+  when set[str] states := lookupStateLabels(spc, tm);
+
+private str buildStateTuplesWithDefaultStates(Spec spc, TModel tm) = intercalate(",", ["\<<s>\>" | str s <- states])
+  when set[str] states := lookupStateLabelsWithDefaultStates(spc, tm);
 
 private str buildAllowedTransitionRel(set[Spec] spcs)
   = "// Define which transitions are allowed (in the form of `from a state` -\> ` via an event` -\> `to a state`
@@ -277,5 +277,5 @@ private str buildInitialInstanceInStateTuples(rel[Spec spc, str instance, State 
   = intercalate(",", ["\<c1,<i>,<translateConfigState(s, st)>\>" | <s,i,st> <- instances, !isEmptySpec(s), st != noState()]);
 
 private str buildInstanceInStateTuples(rel[Spec spc, str instance] instances, int numberOfTransitions, TModel tm)
-  = intercalate(",", ["\<c<c>,<i>,<toLowerCase(st)>\>" | int c <- [1..numberOfTransitions+1], <s,i> <- instances, str st <- lookupStateLabelsWithDefaultState(s,tm)]);
+  = intercalate(",", ["\<c<c>,<i>,<toLowerCase(st)>\>" | int c <- [1..numberOfTransitions+1], <s,i> <- instances, str st <- lookupStateLabelsWithDefaultStates(s,tm)]);
   

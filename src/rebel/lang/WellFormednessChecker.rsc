@@ -48,7 +48,15 @@ private TModel checkModifiersAndUseOfEvents(Module root, TModel tm) {
       }      
     }
     
-    for(Event evnt <- spc.events) {
+    for(Event evnt <- spc.events, eventType(_,set[ModifierInfo] mods) := tm.facts[evnt@\loc]) {
+      // check if pre-conditions reference 'this' variables
+      if (initial() in mods, /e:(Expr)`this.<Id fld>` := evnt.body.pre) {
+        tm.messages += [error("Pre condition references `<fld>` but it is not initialized yet", e@\loc)];  
+      }
+      if (final() in mods, /e:(Expr)`this.<Id fld>` := evnt.body.post) {
+        tm.messages += [error("Post condition references `<fld>` but it can not have a value after finalization", e@\loc)];  
+      }
+      
       bool referenced = evnt@\loc in refEvents;
       
       if (!referenced) {

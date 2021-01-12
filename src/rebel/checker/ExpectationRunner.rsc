@@ -63,4 +63,4 @@ private ExpectationResult addTiming(ExpectationResult er, ModelCheckerResult mcr
 
 // tuple[Trace t, int checkAssemblyDuration, int normDuration, int configBuildDuration, int translateToAlleDuration, int translateToSmtDuration, int solveSolverDuration, int solveTotal, int constructRelModelDuration, int observedTotalDuration];
 str durations2str(ExpectationResult res) = 
-  " - <res.observedTotalDuration> ms. (assembling: <res.checkAssemblyDuration> ms., normalization: <res.normDuration> ms., to allealle: <res.translateToAlleDuration> ms., to smt: <res.translateToSmtDuration>, solving (Z3): <res.solveDurationSolver>, solving (total): <res.solveDurationTotal>, construct rel model: <res.relModelCreationDuration>)";
+  " - <res.observedTotalDuration> ms. (assembling: <res.checkAssemblyDuration> ms., normalization: <res.normDuration> ms., to allealle: <res.translateToAlleDuration> ms., to smt: <res.translateToSmtDuration>, solving (Z3): <res.solveDurationSolver>, solving (streaming): <res.solveDurationTotal>, construct rel model: <res.relModelCreationDuration>)";

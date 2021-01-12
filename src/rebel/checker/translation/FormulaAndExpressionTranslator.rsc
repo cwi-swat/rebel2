@@ -51,10 +51,12 @@ str translate((Formula)`<Expr lhs> is <QualifiedName state>`, Context ctx) {
   str specOfLhs = getSpecTypeName(lhs, ctx.tm);
   str specRel = ctx.rm[lhs@\loc].relExpr; 
 
-  str stateRel = "State<capitalize(specOfLhs)><capitalize(replaceAll("<state>", "::", "__"))>";
+  str stateRel = "";
   switch ("<state>") {
-    case "initialized": stateRel = "initialized";
-    case "finalized" : stateRel = "finalized";
+    case "initialized"    : stateRel = "initialized";
+    case "finalized"      : stateRel = "finalized";
+    case "uninitialized"  : stateRel = "uninitialized";
+    default: stateRel = "State<capitalize(specOfLhs)><capitalize(replaceAll("<state>", "::", "__"))>";
   };
   
   str stepRel = (Expr)`<Expr _>'` := lhs ? "nxt" : "cur";
@@ -99,7 +101,7 @@ str translate((Formula)`next <Formula f>`, Context ctx) {
   str s = ctx.topLevelLtl ? "let cur = first | " : "";
   ctx = flipTopLevelLtl(ctx);
   
-  return "<s>(let cur = (cur[config as cur] |x| (order ∪ loop))[nxt-\>config], step = cur[config as cur] |x| (order ∪ loop) | some cur && (<translate(f,ctx)>))";
+  return "<s>(let cur = (cur[config as cur] |x| (order ∪ loop))[nxt-\>config], step = cur[config as cur] |x| (order ∪ loop), nxt = step[nxt-\>config] | some cur && (<translate(f,ctx)>))";
 }
 
 str translate((Formula)`first <Formula f>`, Context ctx) {
@@ -321,7 +323,8 @@ AttRes translateAttrExpr(cur:(Expr)`|<Expr e>|`, Context ctx) {
   if (intType() := tipe) {
     return <r.rels, "|<r.constraint>|">;
   } else if (setType(_) := tipe || specType(_) := tipe) {
-    return <{"(<intercalate(" x ", [re | re <- r.rels])>)[count() as size]"}, "size">;
+    str sizeParam = "size_<ctx.nxtUniquePrefix()>";
+    return <{"(<intercalate(" x ", [re | re <- r.rels])>)[count() as <sizeParam>]"}, sizeParam>;
   } 
   
   throw "Unable to translate `|<e>|` of type `<tipe>`";

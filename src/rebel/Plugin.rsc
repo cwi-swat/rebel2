@@ -4,6 +4,7 @@ import rebel::lang::Syntax;
 import rebel::lang::Parser;
 import rebel::lang::TypeChecker;
 import rebel::lang::DependencyAnalyzer;
+import rebel::lang::Outliner;
 
 import rebel::checker::ModelChecker;
 import rebel::checker::ExpectationRunner;
@@ -132,6 +133,10 @@ set[Contribution] getRebelContributions() {
         action("Check expectation", runExpectation),
         action("Check all expectations of module", runAllExpectations)
       ])
-    )   
+    ),
+    outliner(node (Module m) {
+      return buildOutline(m);
+    })   
   };
 }
+

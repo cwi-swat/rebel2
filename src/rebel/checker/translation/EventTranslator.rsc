@@ -78,6 +78,9 @@ lrel[str fieldName, str relName] findRootRel(Expr exp, str instRel, Spec spc, Ev
   IdRole role = getIdRole(exp, ctx.tm);
   
   switch(role) {
+    case specId(): {
+      return [<toLowerCase("<exp>"), "<ctx.rm[exp@\loc].relExpr><renameIfNecessary(exp, "instance", ctx)>">];
+    }
     case fieldId(): {
       lrel[str,str] result = [<getLowerCaseSpecName(spc), instRel>];
       result += <"<getLowerCaseSpecName(spc)>_<replaceAll("<exp>",".","_")>", "<ctx.rm[exp@\loc].relExpr><renameIfNecessary(exp, "instance", ctx)>">;
@@ -99,7 +102,7 @@ lrel[str fieldName, str relName] findRootRel(Expr exp, str instRel, Spec spc, Ev
         return findRootRel(d.expr, instRel, spc, evnt, scp, ctx);
       }
     }
-    default: throw "Unknown role `<role>`";
+    default: throw "Unknown role `<role>` for expression `<exp>` at `<exp@\loc>`";
   }
 }
 

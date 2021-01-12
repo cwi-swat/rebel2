@@ -23,7 +23,7 @@ spec Account
     
   event payInterest(rate: Integer)  
     pre: this.balance.addInterest(rate); 
-    
+     
   event blocked() 
   event unblocked()  
   
@@ -55,9 +55,9 @@ assert CanBeRemoved = eventually exists ac:Account | ac is finalized;
   
 assert CanBeOverdrawn = eventually exists ac:Account | ac.balance.amount < 0;  
   
-check CanBeOpened from SomeAccount in max 2 steps;          
-check CanDeposit from SomeAccount in max 3 steps;         
-check CanWithdraw from SomeAccount in max 4 steps;      
-check CanBeRemoved from SomeAccount in max 6 steps;    
+check CanBeOpened from SomeAccount in max 2 steps expect trace;          
+check CanDeposit from SomeAccount in max 3 steps expect trace;         
+check CanWithdraw from SomeAccount in max 4 steps expect trace;      
+check CanBeRemoved from SomeAccount in max 6 steps expect trace;    
 
-check CanBeOverdrawn from SomeAccount in max 4 steps;
+check CanBeOverdrawn from SomeAccount in max 4 steps expect no trace;

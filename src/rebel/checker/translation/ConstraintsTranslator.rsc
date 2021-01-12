@@ -75,7 +75,7 @@ private str machineOnlyHasValuesWhenInitialized(set[Spec] spcs, TModel tm) {
     
     for (/Field f <- s.fields) {    
       str relName = "<getCapitalizedSpecName(s)><getCapitalizedFieldName(f)>";
-      fldCons = [];
+      list[str] fldCons = [];
       switch (<isPrim(f.tipe, tm), isEmpty>) {
         case <_,true>: {
           switch(getType(f, tm)) {
@@ -96,7 +96,7 @@ private str machineOnlyHasValuesWhenInitialized(set[Spec] spcs, TModel tm) {
         }
       }
       
-      cons += intercalate("\n", ["∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | <fc>" | fc <- fldCons]);
+      cons += "<intercalate("\n", ["∀ c ∈ Config, inst ∈ (Instance ⨝ <getCapitalizedSpecName(s)>)[instance] | <fc>" | fc <- fldCons])>\n";
     }
   } 
 
@@ -116,8 +116,11 @@ private str eventParamTypeAndMultiplicityConstraints(set[Spec] spcs, TModel tm) 
     } else {
       typeCons[spc] = "<relName> ⊆ (order ∪ loop) ⨯ (Instance ⨝ <p.tipe.tp>)[instance-\><p.name>]";
 
-      str mult = (setType(_) := getType(p, tm)) ? "some" : "one";
-      multCons[spc] = "(some (step ⨝ Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>) ⇔ <mult> (step ⨝ <relName>))";                 
+      switch(getType(p,tm)) {
+        case setType(_): mult = multCons[spc] = "(no (step ⨝ Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>) ⇒ no (step ⨝ <relName>))";
+        case optionalType(_): multCons[spc] = "((some (step ⨝ Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>) ⇒ lone (step ⨝ <relName>)) ∧ (no (step ⨝ Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>) ⇒ no (step ⨝ <relName>)))";
+        default: multCons[spc] = "(some (step ⨝ Event<getCapitalizedSpecName(spc)><getCapitalizedEventName(ev)>) ⇔ one (step ⨝ <relName>))"; 
+      }
     }
   }
 

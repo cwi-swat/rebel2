@@ -1,0 +1,47 @@
+module tlaplus::seq::Sequence
+
+spec Elem
+  val: Integer,
+  nxt: ?Elem;
+
+  assume Immutable = always-last forall e:Elem | e.val = e.val' && e.nxt = e.nxt';
+
+spec Sequence
+  elems: set Elem,
+  fst: ?Elem,
+  lst: ?Elem,
+  size: Integer;
+  
+  assume Head                    = always forall s:Sequence | s.elems = {} || (exists e:s.elems | s.fst = e && forall o:s.elems | o.nxt != e);
+  assume Last                    = always forall s:Sequence | s.elems = {} || (exists e:s.elems | e.nxt = none && s.lst = e);
+  assume AllReachableFromHead    = always forall s:Sequence | forall e: s.elems |e in s.fst.*nxt;
+  assume AllReachableElemsInSeq  = always forall s:Sequence | forall e: s.fst.*nxt | e in s.elems;
+  assume NoLoops                 = always forall s:Sequence | forall e: s.elems | e notin e.^nxt;
+  assume LastAndFirstMustBeInSeq = always forall s:Sequence | (s.fst = none || s.fst in s.elems) && (s.lst = none || s.lst in s.elems);
+  
+  assume Size                    = always forall s:Sequence | s.size = |s.elems|;
+  
+  states:
+    created->created: empty;
+  
+config OneSeqOfMaxOne   = s: Sequence, e1: Elem;
+config OneSeqOfMaxFive  = s: Sequence, e1,e2,e3,e4,e5: Elem;   
+config OneSeqOfExactFive  = s: Sequence with elems = {e1,e2,e3,e4,e5}, e1,e2,e3,e4,e5: Elem;   
+
+config TwoSeqOfMaxThree = s1,s2: Sequence, e1,e2,e3,e4,e5,e6: Elem;
+
+assert CanInitialize = eventually exists s:Sequence | |s.elems| = 3;
+run CanInitialize from OneSeqOfMaxFive in exact 3 steps expect trace;
+ 
+assert OnlyOneHead = eventually exists s:Sequence | |{e: s.elems | (forall o:s.elems | o.nxt != e)}| > 1;
+run OnlyOneHead from OneSeqOfMaxFive in max 0 steps expect no trace;
+
+assert HeadCanBeTail = always forall s:Sequence | if (|s.elems| = 1) then s.fst = s.lst else s.fst != s.lst;
+run HeadCanBeTail from OneSeqOfMaxOne in max 0 steps expect trace;
+check HeadCanBeTail from OneSeqOfExactFive in max 0 steps expect no trace; 
+
+assert SeqCanBeEmpty = eventually exists s:Sequence | s.elems = {};
+run SeqCanBeEmpty from OneSeqOfMaxFive in max 0 steps expect trace;
+
+assert TwoDistinctSeq = eventually exists s1,s2: Sequence | s1 != s2 && s1.elems notin s2.elems && s1.size = 3 && s2.size = 3;
+run TwoDistinctSeq from TwoSeqOfMaxThree in max 0 steps expect trace;
