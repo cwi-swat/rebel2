@@ -6,8 +6,8 @@ spec Timer[NOW]
   assume TimeMovesForward = always-last forall t:Timer | t.timepast' > t.timepast;
   assume TimeIsPositive = always forall t:Timer | t.timepast >= 0;
   
-assert TimeCannotGoBackwards = eventually exists t:Timer | t.timepast > 0;
+assert TimeCannotGoBackwards = eventually exists t:Timer | t.timepast' < t.timepast;
 
 config SingletonTimer = t:Timer;
 
-run TimeCannotGoBackwards from SingletonTimer in max 2 steps;  
+run TimeCannotGoBackwards from SingletonTimer in max 5 steps expect no trace;  
