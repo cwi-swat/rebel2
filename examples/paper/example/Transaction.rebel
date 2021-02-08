@@ -44,7 +44,7 @@ config SimplifiedTrans = t: Transaction is uninitialized, ac1,ac2: SimpleAccount
 assert CanBookATransaction = eventually exists t: Transaction | book on t;
 assert TransactionsDontGetStuck = always forall t: Transaction | (t is initialized => eventually t is finalized);
 
-check CanBookATransaction from Orig in max 10 steps;
-run CanBookATransaction from SimplifiedTrans in max 5 steps;
+run CanBookATransaction from Orig in max 10 steps;
+run CanBookATransaction from SimplifiedTrans in max 10 steps;
  
 check TransactionsDontGetStuck from SimplifiedTrans in max 5 steps with infinite trace;
