@@ -1,0 +1,77 @@
+// Based on a blog post: https://blog.gchinis.com/posts/serverless-specification-with-tla/
+module tlaplus::atleastonce::Version1
+
+spec Message
+
+spec Queue
+  queue: set Message;
+  
+  internal event add(m: Message) 
+    post: this.queue' = this.queue + m;
+    
+  internal event remove(m: Message) 
+    pre: m in this.queue;
+    post: this.queue' = this.queue - m;
+    
+  states:
+    active->active: add,remove;
+    
+spec Store
+  store: set Message;
+  
+  internal event add(m: Message)
+    post: this.store' = this.store + m;
+  
+  states:
+    active->active: add;
+
+spec Consumer
+  queue: Queue,
+  store: Store;
+  
+  event consume(m: Message) 
+    pre: m in this.queue.queue;
+    post: this.store.add(m);
+    
+    variant read
+      pre: this.queue.remove(m);
+    
+    variant nonDeletingRead
+  
+  assume Fairness = always forall q:Queue, m: q.queue | eventually exists c:Consumer | m in c.store.store;
+  
+  states:
+    active->active: consume;    
+
+spec Producer
+  queue: Queue;
+  
+  event publish(m: Message)
+    pre: this.queue.add(m);
+  
+  assume Fairness = forall m: Message | eventually exists q: Queue | m in q.queue; 
+  
+  states:
+    active->active: publish;
+
+assert AllMessageInAStore = always eventually (forall m:Message | exists s:Store | m in s.store);
+
+assert QueuesAreEmptyInTheEnd = always eventually ((forall m: Message | exists s:Store | m in s.store) && (forall q:Queue | q.queue = {})); 
+
+assert MessageCanBeReadAndRemoved = eventually exists c:Consumer | consume::read on c;
+
+config Simple =
+  m1,m2,m3,m4: Message,
+  q: Queue with queue = {}, 
+  s: Store with store = {},
+  p: Producer,
+  c: Consumer
+  ;
+
+run AllMessageInAStore from Simple in max 10 steps expect trace;
+check AllMessageInAStore from Simple in max 10 steps expect no trace;
+
+run QueuesAreEmptyInTheEnd from Simple in max 10 steps expect trace;
+check QueuesAreEmptyInTheEnd from Simple in max 10 steps expect trace;
+
+run MessageCanBeReadAndRemoved from Simple in max 10 steps expect trace;
