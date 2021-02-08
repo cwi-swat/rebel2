@@ -57,8 +57,16 @@ void collect(current: (InstanceSetup)`<{Id ","}+ labels>: <Type spc> <Mocks? moc
   
   for (/assign:(Assignment)`<Id fieldName> = <Lit val>` := assignments) {
     c.useViaType(spc, fieldName, {fieldId()});
+
+    //c.calculate("assign", f, [fieldName,val], 
+    //  AType (Solver s) {
+    //    s.requireSubType(fieldName, val, error(f, "Expressions are not type compatible, found %t and %t", lhs, rhs));
+    //    return boolType();
+    //});
+
     
-    c.requireEqual(fieldName, val, error(assign, "Field is of type %t, but assigned value is of type %t", fieldName, val)); 
+    //c.requireEqual(fieldName, val, error(assign, "Field is of type %t, but assigned value is of type %t", fieldName, val)); 
+    c.requireSubType(fieldName, val, error(assign, "Field is of type %t, but assigned value is of type %t", fieldName, val));
     collect(val, c);    
   }
   
@@ -168,6 +176,14 @@ void collect(current:(Formula)`<TransEvent event> on <Expr spc> <WithAssignments
 }
 
 void collect(current:(WithAssignments)`with <{Assignment ","}+ assignments>`, Collector c) {
+  for (/assign:(Assignment)`<Id fieldName> = <Lit val>` := assignments) {
+    c.useViaType(label, fieldName, {fieldId()});
+    c.requireSubType(fieldName, val, error(assign, "Field is of type %t, but assigned value is of type %t", fieldName, val)); 
+          
+    collect(val, c);
+  }  
+
+
   collect(assignments,c);
 }
 
