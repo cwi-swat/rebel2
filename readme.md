@@ -1,6 +1,9 @@
 # Rebel<sup>2</sup>: Lightweight Specifications for Enterprise Systems
 
-Rebel<sup>2</sup> is a specification language based on communicating State Machines with data. It is a general purpose specification language meaning that it can be used for all kinds of different domains. It offers built-in support for verification of user defined properties using bounded model checking. 
+Rebel<sup>2</sup> is a specification language based on communicating State Machines with data. It is a general purpose specification language meaning that it can be used for all kinds of different problems. It offers built-in support for verification of user defined properties using bounded model checking. 
+
+It is inspired by other _lightweight formal methods_ such as [Alloy](https://alloytools.org) and [Electrum](https://github.com/haslab/Electrum2). Just like these formalisms Rebel<sup>2</sup> favors _partiality_ over _completeness_. This results in a language in which it isn't necessary to fully specify a problem before interesting properties can be checked or simulated. It allows for incremental development of specifications. During these increments the user can use the model checker any time to quickly test hypotheses made about the specifications under development. 
+
 What is unique about Rebel<sup>2</sup> is that is offers simple mechanisms to check properties in isolation. This is done by allowing the user to _mock_ specifications without altering the original specification. This construct allows the user to write specifications for a complete problem while still retaining the ability to check non-trivial properties, all with the push of a button!
 
 ### Quick jump:
@@ -10,17 +13,17 @@ What is unique about Rebel<sup>2</sup> is that is offers simple mechanisms to ch
 
 ## Rebel<sup>2</sup> by Example
 Enough talk, lets just start with a small example. Lets say that we want to specify a simple bank account and the transferral of money between accounts. The rules are as follows: 
-- An account can opened and closed.
+- An account can be opened and closed.
 - Every account is uniquely identified.
 - Once the account is opened money can be withdrawn or deposited. 
 - An account can not be overdrawn. 
-- If necessary the account can be blocked for withdrawals and deposits (e.g. when fraudulent activity is suspected) and it can be unblocked as well. 
+- If necessary the account can be blocked for withdrawals and deposits (e.g. when fraud is suspected) and it can be unblocked as well. 
 - An account accumulates interest.
 
 ### The `Account` specification
 
 Here is the Rebel<sup>2</sup> specification of such an `Account`:
-```alloy
+```
 module Account
 
 spec Account
@@ -61,7 +64,7 @@ spec Account
     opened -> (*): close;
 ```
 
-Specifications contains four different parts: 
+Specifications contain four different parts: 
 1. The first part defines the fields which are local to the state machine. In this case these are the `nr` and `balance` fields. In this example these fields are of the built-in type `Integer`. Rebel<sup>2</sup> has two built-in types: `Integer`'s and `String`'s. Next to that, every specification is its own type and can be used but that will become clear later on in this example.
 2. The second part contains the `event` definitions. These describe which event that can be triggered on the machine. Every event is guarded by a _precondition_ and its effects are described via a _postcondition_. Fields are referenced with the use of the keyword `this`. By priming a field in the postcondition, e.g. `this.balance'` constraints can be formulated for the value of the field in the _next_ state. 
 Please note that the `open` event is qualified with the keyword `init` and the `close` and `forceClose` events are qualified with the keyword `final`. The reason for this will be explained shortly.
@@ -78,7 +81,7 @@ Now that we have our Account specified we can start formulating properties we ar
 ```
 assert CantOverdrawAccount = always forall ac:Account | (ac is initialized => ac.balance >= 0);
 ```
-This assertion states that when an `Account` is initialized (read: not in a initialization or finalization state) it must always be the case that its balance is positive. 
+This assertion states that when an `Account` is initialized (read: not in a initialization or finalization state) it must always be the case that its balance is positive. Just like `assume`, `assert` can be specified using LTL and FOL operators.
 
 As mentioned earlier, Rebel<sup>2</sup> uses bounded model checking to verify whether an assertion holds. So before we can check our assertion we must specify what are the bounds we want to use. We can do this using a `config` statement as follows:
 ```
@@ -96,7 +99,7 @@ Running this command will yield the following result (click on the line of the c
 
 ![animated gif of checker result](account_check.gif)
 
-A counter example is found. It seems that we forgot to specify that the interest rate should not be negative. Luckily this is easily fixed by adding a precondition to the `payInterest` event like so:
+A counter example is found. It seems that we forgot to specify that the interest rate should not be negative. This is why we still end up with an `Account` with a negative balance. Luckily this is easily fixed by adding a precondition to the `payInterest` event like so:
 ```
 event payInterest(rate: Integer)
     pre: rate > 0;
@@ -104,6 +107,32 @@ event payInterest(rate: Integer)
 ```    
 Rerunning the same check now yields the desired result. The model checker can not find a counter example anymore.
 
+### Communicating State Machines
+Now that we have specified our `Account`, we can focus on the transferal of money between accounts.
+We do this by specifying a `MoneyTransfer`:
+```
+module MoneyTransfer
+
+spec MoneyTransfer
+  from: Account,
+  to: Account,
+  amount: Integer;
+
+  init event create(from: Account, to: Account, amount: Integer)
+    pre: amount > 0, from != to;
+    post: this.from' = from, this.to' = to, this.amount' = amount;
+
+  final event book() 
+    pre: this.from.withdraw(amount), this.to.deposit(amount);
+  
+  final event fail()
+
+  states:
+    (*) -> created: create;
+    created -> (*): book, fail;
+```
+
+<!-- As can be seen the  -->
 ## Setting up Rebel<sup>2</sup>
 
 ### Prerequisite
