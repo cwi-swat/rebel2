@@ -88,13 +88,21 @@ This config statement constructs a so called _initial configuration_ which will 
 
 Now that we have defined which instances will be part during model checking we still need to define the maximum search depth the model checker is allowed to explore. This search depth represents the number of consecutive events the model checker may raise. We can do this using the following command:
 ```
-check CantOverdrawAccount from SingleAccount in max 10 steps;
+check CantOverdrawAccount from SingleAccount in max 5 steps;
 ```
-Let's dissect this statement. The last part, `in max 10 steps`, bounds the model checker to never look for traces with more than 10 consecutive raised events. The first part, `check CantOverdrawAccount`, instructs the model checker to check the earlier defined assertion. The `check` command forces the model checker to look for a _counter example_, a trace for which the assertion `CantOverdrawAccount` does not hold. The middle part, `from SingleAccount` states the configuration that should be used by the model checker when searching for a counter example. 
+Let's dissect this statement. The last part, `in max 5 steps`, bounds the model checker to never look for traces with more than 5 consecutive raised events. The first part, `check CantOverdrawAccount`, instructs the model checker to check the earlier defined assertion. The `check` command forces the model checker to look for a _counter example_, a trace for which the assertion `CantOverdrawAccount` does not hold. The middle part, `from SingleAccount` states the configuration that should be used by the model checker when searching for a counter example. 
 
 Running this command will yield the following result (click on the line of the command definition, right mouse click and select `Rebel actions -> Run checker (30s timeout)`):
 
 ![animated gif of checker result](account_check.gif)
+
+A counter example is found. It seems that we forgot to specify that the interest rate should not be negative. Luckily this is easily fixed by adding a precondition to the `payInterest` event like so:
+```
+event payInterest(rate: Integer)
+    pre: rate > 0;
+    post: this.balance' = this.balance + ((this.balance * rate) / 100);
+```    
+Rerunning the same check now yields the desired result. The model checker can not find a counter example anymore.
 
 ## Setting up Rebel<sup>2</sup>
 
