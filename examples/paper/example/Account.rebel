@@ -51,7 +51,7 @@ config Basic = ac: Account is uninitialized, aNr:AccountNumber, d1,d2:Date;
 
 assert CantOverdrawAccount = always forall a:Account | (a is initialized => a.balance >= 0);
 
-config Sliced = ac: Account forget nr, openedOn, closedOn is uninitialized;
+config Sliced = ac: Account forget nr, openedOn is uninitialized;
      
 check CantOverdrawAccount from Sliced in max 5 steps;  
 run CanOpenAccount from Sliced in max 3 steps;     
