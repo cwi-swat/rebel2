@@ -78,7 +78,23 @@ Now that we have our Account specified we can start formulating properties we ar
 ```
 assert CantOverdrawAccount = always forall ac:Account | (ac is initialized => ac.balance >= 0);
 ```
-This assertion 
+This assertion states that when an `Account` is initialized (read: not in a initialization or finalization state) it must always be the case that its balance is positive. 
+
+As mentioned earlier, Rebel<sup>2</sup> uses bounded model checking to verify whether an assertion holds. So before we can check our assertion we must specify what are the bounds we want to use. We can do this using a `config` statement as follows:
+```
+config SingleAccount = ac: Account is unitialized;
+```
+This config statement constructs a so called _initial configuration_ which will be used by the model checker later on. This configuration states that there is only a single instance that will take part, namely the instance `ac` of type `Account`. Next to that is also constraints this instance `ac` to start in an `uninitialized` state. 
+
+Now that we have defined which instances will be part during model checking we still need to define the maximum search depth the model checker is allowed to explore. This search depth represents the number of consecutive events the model checker may raise. We can do this using the following command:
+```
+check CantOverdrawAccount from SingleAccount in max 10 steps;
+```
+Let's dissect this statement. The last part, `in max 10 steps`, bounds the model checker to never look for traces with more than 10 consecutive raised events. The first part, `check CantOverdrawAccount`, instructs the model checker to check the earlier defined assertion. The `check` command forces the model checker to look for a _counter example_, a trace for which the assertion `CantOverdrawAccount` does not hold. The middle part, `from SingleAccount` states the configuration that should be used by the model checker when searching for a counter example. 
+
+Running this command will yield the following result (click on the line of the command definition, right mouse click and select `Rebel actions -> Run checker (30s timeout)`):
+
+![animated gif of checker result](account_check.gif)
 
 ## Setting up Rebel<sup>2</sup>
 
