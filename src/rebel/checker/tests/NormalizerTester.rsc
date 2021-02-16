@@ -6,8 +6,8 @@ import rebel::checker::Normalizer;
 
 void testNormalizingScen6Step3() = testNormalize("UpToStep3", |project://rebel2/examples/paper/els/Scenario6.rebel|);
 
-void testNormalizeLimitCheckSmall() = testNormalize("CanInitializeLimit", |project://rebel2/examples/local/debitcard/checks/LimitChecksWithoutMocks.rebel|);
-void testNormalizeLimitCheckBig() = testNormalize("CantOverdrawLimit", |project://rebel2/examples/local/debitcard/checks/LimitChecksWithoutMocks.rebel|);
+void testNormalizeLimitCheckSmall() = testNormalize("CanInitializeLimit", |project://rebel2/examples/paper/debitcard/checks/LimitChecksWithoutMocks.rebel|);
+void testNormalizeLimitCheckBig() = testNormalize("CantOverdrawLimit", |project://rebel2/examples/paper/debitcard/checks/LimitChecksWithoutMocks.rebel|);
 
 void testNormalize(str check, loc modul) {
   PathConfig pcfg = defaultPathConfig(modul);

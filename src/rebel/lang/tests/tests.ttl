@@ -4,12 +4,14 @@ test SetId [[
   spec Simple
     id: Integer;
     
-    init final event start(id: Integer) 
+    init event start(id: Integer) 
       post: this.id' = id;
+    
+    final event stop()
     
     states:
       (*) -> started: start;
-      started -> (*): start;  
+      started -> (*): stop;  
 ]] 
 
 test EventVariant [[

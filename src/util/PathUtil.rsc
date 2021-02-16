@@ -18,29 +18,19 @@ PathConfig defaultPathConfig(loc file) {
   //if (file.scheme != "project") {
   //  throw "Can only create default path config for files with `project` scheme";
   //}
-  //
+  
   //loc proj = project(file);
-  loc proj = |home:///workspace/rebel2|;
-  return pathConfig(srcs = [proj + "src", proj + "examples"], tmodels = proj + "bin/tm", normalized = proj + "bin/normalized", checks = proj + "/bin/checks");
+  //loc proj = |home:///workspace/rebel2|;
+  //return pathConfig(srcs = [proj, proj + "src", proj + "examples"], tmodels = proj + "bin/tm", normalized = proj + "bin/normalized", checks = proj + "bin/checks");
+  loc root = |<file.scheme>://<file.authority>/|;
+  return pathConfig(srcs = [root, root + "src", root + "examples"], tmodels = |tmp:///rebel2/tm|, normalized = |tmp:///rebel2/normalized|, checks = |tmp:///rebel2/checks|);
 }
-
-PathConfig normalizerPathConfig(loc file) {
-  //if (file.scheme != "project") {
-  //  throw "Can only create default path config for files with `project` scheme";
-  //}
-  //
-  //loc proj = project(file);
-  loc proj = |home:///workspace/rebel2|;
-  return pathConfig(srcs = [proj + "bin/normalized"], tmodels = proj + "bin/normalized", normalized = proj + "bin/normalized");
-}
-
 
 loc extractBase(Module m) = extractBase(m.\module.name); 
-
 loc extractBase(QualifiedName modDef) {
   loc modLoc = modDef@\loc.top;
   
-  for (str part <- split("::", "<modDef>")) {
+  for (str _ <- split("::", "<modDef>")) {
     modLoc = modLoc.parent;
   }
   

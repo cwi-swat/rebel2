@@ -13,8 +13,8 @@ alias ModelCheckerTesterResult = tuple[ModelCheckerResult mcr, TModel tm, str co
 
 ModelCheckerTesterResult testPerformCheckOnCoffeeMachine() = testPerformCheck("CanServeNormalCoffee", |project://rebel2/examples/CoffeeMachine.rebel|);
 
-ModelCheckerTesterResult testPerformCheckOnTransaction1() = testPerformCheck("CanBookATransaction", |project://rebel2/examples/local/paper/Transaction.rebel|);
-ModelCheckerTesterResult testPerformCheckOnTransaction2() = testPerformCheck("TransactionCanGetStuck", |project://rebel2/examples/local/paper/Transaction.rebel|);
+ModelCheckerTesterResult testPerformCheckOnTransaction1() = testPerformCheck("CanBookATransaction", |project://rebel2/examples/paper/example/Transaction.rebel|);
+ModelCheckerTesterResult testPerformCheckOnTransaction2() = testPerformCheck("TransactionCanGetStuck", |project://rebel2/examples/paper/exampleTransaction.rebel|);
 
 ModelCheckerTesterResult testPerformCheckOnHotel() = testPerformCheck("NoIntruder", |project://rebel2/examples/paper/performance/rebel/Hotel.rebel|);
 ModelCheckerTesterResult testPerformCheckOnLight() = testPerformCheck("BulbCanBreak", |project://rebel2/examples/Light.rebel|);

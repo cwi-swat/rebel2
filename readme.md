@@ -14,7 +14,7 @@ It is inspired by other _lightweight formal methods_ such as [Alloy](https://all
 What is unique about Rebel<sup>2</sup> is that is offers simple mechanisms to check properties in isolation. This is done by allowing the user to _mock_ specifications without altering the original specification. This construct allows the user to write specifications for a complete problem while still retaining the ability to check non-trivial properties, all with the push of a button!
 
 ## Rebel<sup>2</sup> by Example
-Enough talk, lets just start with a small example. Lets say that we want to specify a simple bank account and the transferral of money between accounts. The rules are as follows: 
+Enough talk, lets just start with a small example. Lets say that we want to specify a simple bank account and the transfer of money between accounts. The rules are as follows: 
 - An account can be opened and closed.
 - Every account is uniquely identified.
 - Once the account is opened money can be withdrawn or deposited. 
@@ -26,8 +26,6 @@ Enough talk, lets just start with a small example. Lets say that we want to spec
 
 Here is the Rebel<sup>2</sup> specification of such an `Account`:
 ```
-module Account
-
 spec Account
   nr: Integer,  
   balance: Integer; 
@@ -67,7 +65,7 @@ spec Account
 ```
 
 Specifications contain four different parts: 
-1. **Fields:** The first part defines the fields which are local to the state machine. In this case these are the `nr` and `balance` fields. In this example these fields are of the built-in type `Integer`. Rebel<sup>2</sup> has two built-in types: `Integer`'s and `String`'s. Next to that, every specification is its own type and can be used but that will become clear later on in this example.
+1. **Fields:** The first part defines the fields which are local to the state machine. In this case these are the `nr` and `balance` fields. In this example these fields are of the built-in type `Integer`. Rebel<sup>2</sup> has two built-in types: `Integer`'s and `String`'s. Next to that, every `spec` is its own type and can be used but that will become clear later on in this example.
 2. **Events:** The second part contains the `event` definitions. These describe which event that can be triggered on the machine. Every event is guarded by a _precondition_ and its effects are described via a _postcondition_. Fields are referenced with the use of the keyword `this`. By priming a field in the postcondition, e.g. `this.balance'` constraints can be formulated for the value of the field in the _next_ state. 
 Please note that the `open` event is qualified with the keyword `init` and the `close` and `forceClose` events are qualified with the keyword `final`. The reason for this will be explained shortly.
 3. **Assumptions:** The third part contains the `assumptions`, i.e. invariants. These are properties on _traces_ that are assumed to always hold. You can think of a trace as an ordered sequence of events that led to a certain global state. 
@@ -95,7 +93,7 @@ Now that we have defined which instances will be part during model checking we s
 ```
 check CantOverdrawAccount from SingleAccount in max 5 steps;
 ```
-Let's dissect this statement. The last part, `in max 5 steps`, bounds the model checker to never look for traces with more than 5 consecutive raised events. The first part, `check CantOverdrawAccount`, instructs the model checker to check the earlier defined assertion. The `check` command forces the model checker to look for a _counter example_, a trace for which the assertion `CantOverdrawAccount` does not hold. The middle part, `from SingleAccount` states the configuration that should be used by the model checker when searching for a counter example. 
+Let's dissect this statement. The last part, `in max 5 steps`, limits the model checker to never look for traces with more than 5 consecutive raised events. The first part, `check CantOverdrawAccount`, instructs the model checker to check the earlier defined assertion. The `check` command forces the model checker to look for a _counter example_, a trace for which the assertion `CantOverdrawAccount` does not hold. The middle part, `from SingleAccount` states the configuration that should be used by the model checker when searching for a counter example. 
 
 Running this command will yield the following result (click on the line of the command definition, right mouse click and select `Rebel actions -> Run checker (30s timeout)`):
 
@@ -215,13 +213,10 @@ That's it. Running the model checker on this command now again results in a shor
 
 ![animated gif of found trace by model checker for the transfer some money assertion using a mocked account](transfer_some_money_mocked.gif)
 
-
-
-
-<sup>1</sup>The model checker of Rebel<sup>2</sup> has a default time-out of 30 seconds. So that wait actually wouldn't be that long :)
+<sub>1. The model checker of Rebel<sup>2</sup> has a default time-out of 30 seconds. So that wait actually wouldn't be that long :)</sub>
 
 ## Setting up Rebel<sup>2</sup>
- 
+
 ### Prerequisite
 - Rebel<sup>2</sup> is written in the [Rascal Meta Programming Language](https://www.rascal-mpl.org) and is integrated with the [Eclipse IDE](https://www.eclipse.org/downloads/packages/release/2020-06/r/eclipse-ide-rcp-and-rap-developers). You can follow the [Getting Started](https://www.rascal-mpl.org/start/) guide on the Rascal MPL website to setup Rascal and Eclipse.
 **Beware:** Currently (feb 2021) Rascal *only* works with Java 8. Newer version of Eclipse (post 2020-06) _only_ work with Java 11 and up. To make sure that you can install Rascal please download the [2020-06 Eclipse RCP and RAP developers version](https://www.eclipse.org/downloads/packages/release/2020-06/r/eclipse-ide-rcp-and-rap-developers) and not a newer version and make sure you use a Java _JDK version 8_!
