@@ -35,7 +35,7 @@ App[TraceVisModel] createTraceVis(str check, str config, str moduleName, Trace t
   TraceVisModel init() = <check, config, moduleName, trace, 0, getTotalNumberOfSteps(trace), isInfiniteTrace(trace), false, initialFilters(trace, moduleName, config)>;
     
   return webApp(makeApp("rebelTraceVis", init, view, update), 
-    |project://rebel2/salix/tracevis.html|, |project://rebel2/salix/|
+    |plugin://rebel2/salix/tracevis.html|, |plugin://rebel2/salix/|
   );
 }
 
