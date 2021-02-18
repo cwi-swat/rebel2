@@ -243,7 +243,7 @@ To add this console to your perspective do the following:
 
 #### Test your local installation
 After installation you can test whether everything works correctly by following these steps:
-1. In Eclipse, create a new Project (`File` -> `New` -> `Project`, select `General`, `Project`).
+1. In Eclipse, create a new Project (`File` -> `New` -> `Project`, select `General`, `Project`) and name it as you see fit.
 2. Create a new file and save it as `Light.rebel`.
 3. Copy the contents of the [Light.rebel](https://raw.githubusercontent.com/cwi-swat/rebel2/master/examples/Light.rebel) example to your local `Light.rebel` file.
 4. After you see the syntax highlighting, click on the `run BulbCanBreak from OneLight in max 4 steps expect trace;` line.
