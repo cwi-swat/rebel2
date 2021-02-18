@@ -138,7 +138,7 @@ spec MoneyTransfer
 
 Our `MoneyTransfer` specification is very basic. It only describes the necessary interaction needed when transferring money between accounts but it does show how communication occurs within Rebel<sup>2</sup>.
 
-In the initial `create` event the `from` and `to` accounts are set. They are passed in as parameters of the event. Their references are then stored in the `from` and `to` fields of the `MoneyTransfer` state machine. The `book` event describes what happens when the transferral actual occurs. To transfer money we need to `withdraw` it from our `from` account and `deposit` it on our `to` account. 
+In the initial `create` event the `from` and `to` accounts are set. They are passed in as parameters of the event. Their references are then stored in the `from` and `to` fields of the `MoneyTransfer` state machine. The `book` event describes what happens when the transfer actual occurs. To transfer money we need to `withdraw` it from our `from` account and `deposit` it on our `to` account. 
 
 The syntax for this event synchronization is very similar to method calling in Object Oriented languages. You can just 'call' the event you want to raise on the other machine. The semantics are however a bit different.
 In the semantics of Rebel<sup>2</sup> all synchronized events happen as _one atomic step_. This means that either all raised events succeed or they all fail and none of the machines perform a transition. In our example this means that it is impossible to end up in a situation that the money is withdrawn from our account but it isn't deposited. The language simply does not allow this to happen.
@@ -220,12 +220,32 @@ That's it. Running the model checker on this command now again results in a shor
 ### Prerequisite
 - Rebel<sup>2</sup> is written in the [Rascal Meta Programming Language](https://www.rascal-mpl.org) and is integrated with the [Eclipse IDE](https://www.eclipse.org/downloads/packages/release/2020-06/r/eclipse-ide-rcp-and-rap-developers). You can follow the [Getting Started](https://www.rascal-mpl.org/start/) guide on the Rascal MPL website to setup Rascal and Eclipse.
 **Beware:** Currently (feb 2021) Rascal *only* works with Java 8. Newer version of Eclipse (post 2020-06) _only_ work with Java 11 and up. To make sure that you can install Rascal please download the [2020-06 Eclipse RCP and RAP developers version](https://www.eclipse.org/downloads/packages/release/2020-06/r/eclipse-ide-rcp-and-rap-developers) and not a newer version and make sure you use a Java _JDK version 8_!
-
-- Rebel<sup>2</sup> uses [AlleAlle](https://www.github.com/cwi-swat/allealle) (which in turn uses [Microsofts Z3 SMT solver]()) to check user defined properties. After installing Rascal and Eclipse please [download AlleAlle](https://github.com/cwi-swat/allealle/releases/tag/jan-2021) and follow [its installation instructions](https://github.com/cwi-swat/allealle/blob/master/README.md). Make sure that AlleAlle works before you install Rebel<sup>2</sup>.
+ 
+- Rebel<sup>2</sup> uses [AlleAlle](https://www.github.com/cwi-swat/allealle) which in turn uses [Microsofts Z3 SMT solver]() to check user defined properties. 
+After installing Rascal and Eclipse please download and install [Microsofts Z3](https://www.github.com/microsoft/z3). Make sure that AlleAlle can find your locally installed Z3 instance. 
+From the AlleAlle documentation: "You need to add the following option to the eclipse.ini file of your Eclipse installation: `-Dsolver.z3.path=<path to your local Z3 executable>`. The default path that is used if no path is configured is: `/usr/bin/`"
 
 ### Installation
-1. [Download a stable version of Rebel<sup>2</sup>](https://github.com/cwi-swat/rebel2/releases/tag/jan-2021) (or clone the master branch if you want to have the latest version of the language).
-2. Import the Rebel<sup>2</sup> project into you Eclipse Workspace (`File -> Import -> Existing Projects into Workspace`). You should now have both the Rebel<sup>2</sup> project and the AlleAlle project in your workspace.
-3. Right-click the `src/rebel/Plugin.rsc` and select `Run As -> Rascal Application`.
-4. A Racal `Terminal` will start which will automatically load the Rebel2 language definition. Once it is done with loading the Rebel<sup>2</sup> language is registered with Eclipse. 
-5. Open the file `examples/Light.rebel` (in the `rebel2` project). If all is well you should see the specification of a simple lightbulb with syntax highlighting. If this is not the case, restart Eclipse and try again!
+Rebel<sup>2</sup> can be installed as Eclipse plugin. After you have installed Rascal and verified that it worked you can install the Rebel<sup>2</sup> plugin:
+1. In Eclipse, open the menu `Help` -> `Install New Software...`.
+2. In the `Work with` text field enter `https://update.rascal-mpl.org/libs'.
+3. From the `Rascal Libraries` dropdown, select `allealle_feature`, `rebel2_feature` and the `salix_feature`.
+4. Click the `Next` button on the following confirmation dialogs. 
+5. Restart Eclipse.
+
+Rebel<sup>2</sup> is now installed.
+Files with the `.rebel` extension will be parsed as Rebel<sup>2</sup> specifications. You do not have to create a special 'Rebel<sup>2</sup>' Eclipse project, you can add specifications to any Eclipse project.
+
+You should add the `Console` to your Eclipse perspective. Rebel<sup>2</sup> will output information to this console. 
+To add this console to your perspective do the following:
+- Go to `Window` -> `Show View` -> `Other...`
+- Select `General` -> `Console` from the list and hit ok.
+
+#### Test your local installation
+After installation you can test whether everything works correctly by following these steps:
+1. In Eclipse, create a new Project (`File` -> `New` -> `Project`, select `General`, `Project`).
+2. Create a new file and save it as `Light.rebel`.
+3. Copy the contents of the [Light.rebel](https://raw.githubusercontent.com/cwi-swat/rebel2/master/examples/Light.rebel) example to your local `Light.rebel` file.
+4. After you see the syntax highlighting, click on the `run BulbCanBreak from OneLight in max 4 steps expect trace;` line.
+5. Click the right mouse button and select `Rebel actions` -> `Run checker (30s timeout)`.
+6. If all 
