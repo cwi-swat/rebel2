@@ -228,7 +228,7 @@ From the AlleAlle documentation: "You need to add the following option to the ec
 ### Installation
 Rebel<sup>2</sup> can be installed as Eclipse plugin. After you have installed Rascal and verified that it worked you can install the Rebel<sup>2</sup> plugin:
 1. In Eclipse, open the menu `Help` -> `Install New Software...`.
-2. In the `Work with` text field enter `https://update.rascal-mpl.org/libs'.
+2. In the `Work with` text field fill in `https://update.rascal-mpl.org/libs` and hit enter.
 3. From the `Rascal Libraries` dropdown, select `allealle_feature`, `rebel2_feature` and the `salix_feature`.
 4. Click the `Next` button on the following confirmation dialogs. 
 5. Restart Eclipse.
