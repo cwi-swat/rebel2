@@ -245,7 +245,6 @@ To add this console to your perspective do the following:
 After installation you can test whether everything works correctly by following these steps:
 1. In Eclipse, create a new Project (`File` -> `New` -> `Project`, select `General`, `Project`) and name it as you see fit.
 2. Create a new file and save it as `Light.rebel`.
-3. Copy the contents of the [Light.rebel](https://raw.githubusercontent.com/cwi-swat/rebel2/master/examples/Light.rebel) example to your local `Light.rebel` file.
-4. After you see the syntax highlighting, click on the `run BulbCanBreak from OneLight in max 4 steps expect trace;` line.
-5. Click the right mouse button and select `Rebel actions` -> `Run checker (30s timeout)`.
-6. If all 
+3. Copy the contents of the [Light.rebel](https://raw.githubusercontent.com/cwi-swat/rebel2/master/examples/Light.rebel) example and paste it in your local `Light.rebel` file.
+4. After you see the syntax highlighting, click on the `run BulbCanBreak from OneLight in max 4 steps expect trace;` line, click the right mouse button and select `Rebel actions` -> `Run checker (30s timeout)`.
+6. You should now see a short trace how the light bulb can break.  
