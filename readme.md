@@ -3,6 +3,7 @@
 ### Quick jump:
 - [Introduction](#introduction)
 - [Rebel<sup>2</sup> by Example](#rebel2-by-example)
+- [Publications](#publications)
 - [Setting up Rebel<sup>2</sup>](#setting-up-rebel2)
 
 ## Introduction
@@ -216,6 +217,11 @@ That's it. Running the model checker on this command now again results in a shor
 ![animated gif of found trace by model checker for the transfer some money assertion using a mocked account](transfer_some_money_mocked.gif)
 
 <sub>1. The model checker of Rebel<sup>2</sup> has a default time-out of 30 seconds. So that wait actually wouldn't be that long :)</sub>
+
+## Publications
+Further reading on Rebel<sup>2</sup>:
+- Jouke Stoel, Tijs van der Storm, Jurgen Vinju. 
+**Modeling with Mocking**, Accepted for ICST'21 [[preprint]](https://joukestoel.github.io/papers/modeling-with-mocking-icst21.pdf) 
 
 ## Setting up Rebel<sup>2</sup>
 
