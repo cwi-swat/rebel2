@@ -110,7 +110,7 @@ Rerunning the same check now yields the desired result. The model checker can no
 Btw, although we instructed the model checker to find a counter example within at most five steps, it returned a counter example with only 3 steps. This is by design. The model checker will always return a minimal example. That is, an example with the shortest trace since these are often easier to understand as they only contain the core behavior needed to demonstrate the property.
 
 ### Communicating State Machines
-Now that we have specified our `Account`, we can focus on the transferal of money between accounts.
+Now that we have specified our `Account`, we can focus on the transfer of money between accounts.
 We do this by specifying a `MoneyTransfer`:
 ```
 module MoneyTransfer
@@ -168,6 +168,8 @@ We are using the `run` command instead of the `check` command. The `run` command
 
 Running this command results in a short trace:
 ![animated gif of found trace by model checker for the transfer some money assertion](transfer_some_money.gif)
+
+It looks like our Transaction specification lets us transfer money!
 
 ### So what about _mocking_?
 So far we have shown a small example of how to specify a simple bank account management system in Rebel<sup>2</sup>. In the real world however, things are often much more complicated. A real account probably has many more attributes like owner, limits, open and close dates, etc. Besides that probably there will be custom specifications for things like `Money`, `Account Number` and many more. In short, the real world is much more complex then we described in our small example.
@@ -229,7 +231,7 @@ From the AlleAlle documentation: "You need to add the following option to the ec
 Rebel<sup>2</sup> can be installed as Eclipse plugin. After you have installed Rascal and verified that it worked you can install the Rebel<sup>2</sup> plugin:
 1. In Eclipse, open the menu `Help` -> `Install New Software...`.
 2. In the `Work with` text field fill in `https://update.rascal-mpl.org/libs` and hit enter.
-3. From the `Rascal Libraries` dropdown, select `allealle_feature`, `rebel2_feature` and the `salix_feature`.
+3. From the `Rascal Libraries` dropdown, select `rebel2_feature`, `allealle_feature`, `typepal_feature` and the `salix_feature`.
 4. Click the `Next` button on the following confirmation dialogs. 
 5. Restart Eclipse.
 
