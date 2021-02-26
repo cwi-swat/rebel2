@@ -229,8 +229,8 @@ Further reading on Rebel<sup>2</sup>:
 - Rebel<sup>2</sup> is written in the [Rascal Meta Programming Language](https://www.rascal-mpl.org) and is integrated with the [Eclipse IDE](https://www.eclipse.org/downloads/packages/release/2020-06/r/eclipse-ide-rcp-and-rap-developers). You can follow the [Getting Started](https://www.rascal-mpl.org/start/) guide on the Rascal MPL website to setup Rascal and Eclipse.
 **Beware:** Currently (feb 2021) Rascal *only* works with Java 8. Newer version of Eclipse (post 2020-06) _only_ work with Java 11 and up. To make sure that you can install Rascal please download the [2020-06 Eclipse RCP and RAP developers version](https://www.eclipse.org/downloads/packages/release/2020-06/r/eclipse-ide-rcp-and-rap-developers) and not a newer version and make sure you use a Java _JDK version 8_!
  
-- Rebel<sup>2</sup> uses [AlleAlle](https://www.github.com/cwi-swat/allealle) which in turn uses [Microsofts Z3 SMT solver]() to check user defined properties. 
-After installing Rascal and Eclipse please download and install [Microsofts Z3](https://www.github.com/microsoft/z3). Make sure that AlleAlle can find your locally installed Z3 instance. 
+- Rebel<sup>2</sup> uses [AlleAlle](https://www.github.com/cwi-swat/allealle) which in turn uses [Microsofts Z3 SMT solver](https://github.com/Z3Prover/z3) to check user defined properties. 
+After installing Rascal and Eclipse please download and install [Microsofts Z3](https://github.com/Z3Prover/z3). Make sure that AlleAlle can find your locally installed Z3 instance. 
 From the AlleAlle documentation: "You need to add the following option to the eclipse.ini file of your Eclipse installation: `-Dsolver.z3.path=<path to your local Z3 executable>`. The default path that is used if no path is configured is: `/usr/bin/`"
 
 ### Installation
