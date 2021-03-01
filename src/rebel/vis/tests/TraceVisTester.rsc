@@ -6,7 +6,7 @@ import rebel::checker::tests::ModelCheckerTester;
 
 import salix::App;
 
-App[TraceVisModel] visCoffeeMachineCheck(str check) = visTrace(check, |home:///workspace/rebel2/examples/CoffeeMachine.rebel|);
+App[TraceVisModel] visCoffeeMachineCheck(str check) = visTrace(check, |project://rebel2/examples/CoffeeMachine.rebel|);
 App[TraceVisModel] visHotelCheck(str check) = visTrace(check, |home:///workspace/rebel2/examples/paper/performance/rebel/Hotel.rebel|);
 App[TraceVisModel] visRopeBridgeCheck() = visTrace("EverybodyCrossedInTheLeastTime", |home:///workspace/rebel2/examples/RopeBridge.rebel|);
 App[TraceVisModel] visRingLeaderElectionCheck() = visTrace("EventuallyOneIsElected", |project://rebel2/examples/paper/performance/rebel/RingLeaderElection.rebel|);

@@ -34,11 +34,12 @@ data Msg
 App[TraceVisModel] createTraceVis(str check, str config, str moduleName, Trace trace) {
   TraceVisModel init() = <check, config, moduleName, trace, 0, getTotalNumberOfSteps(trace), isInfiniteTrace(trace), false, initialFilters(trace, moduleName, config)>;
     
-  return webApp(makeApp("rebelTraceVis", init, view, update), 
-    |plugin://rebel2/salix/tracevis.html|, |plugin://rebel2/salix/|
-  );
+  return webApp(makeApp("rebelTraceVis", init, view, update),getHtmlLoc(), getStaticLoc());
 }
 
+private loc getHtmlLoc() = exists(|project://rebel2/|) ? |project://rebel2/salix/tracevis.html| : |plugin://rebel2/salix/tracevis.html|;
+private loc getStaticLoc() = exists(|project://rebel2/|) ? |project://rebel2/salix/| : |plugin://rebel2/salix/|;
+ 
 bool isInfiniteTrace(Trace t) = /goalInfiniteTrace(_,_,_) := t;
 
 map[str,Filter] initialFilters(Trace t, str moduleName, str config) {

@@ -23,10 +23,11 @@ App[Model] createStateMachineVis(loc rebelFile) {
   
   Model init() = <rebelFile, spcs>;
     
-  return webApp(makeApp("rebelModVis", init, view, update, subs = changeCheckSubs), 
-    |plugin://rebel2/salix/modulevis.html|, |plugin://rebel2/salix/|
-  );
+  return webApp(makeApp("rebelModVis", init, view, update, subs = changeCheckSubs),getHtmlLoc(), getStaticLoc());
 }
+
+private loc getHtmlLoc() = exists(|project://rebel2/|) ? |project://rebel2/salix/modulevis.html| : |plugin://rebel2/salix/modulevis.html|;
+private loc getStaticLoc() = exists(|project://rebel2/|) ? |project://rebel2/salix/| : |plugin://rebel2/salix/|;
 
 data Msg 
   = specChangedCheck(int time)
