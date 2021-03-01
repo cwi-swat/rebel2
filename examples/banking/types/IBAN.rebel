@@ -1,3 +1,0 @@
-module banking::types::IBAN
-
-spec IBAN
