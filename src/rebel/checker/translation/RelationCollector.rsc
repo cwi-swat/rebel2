@@ -323,6 +323,16 @@ void analyseBinOp(Expr lhs, Expr rhs, loc complete, AnalysisContext ctx) {
   ctx.add(complete, ctx.lookup(lhs@\loc));  
 }
 
+void analyse(current:(Expr)`<Expr lhs> ++ <Expr rhs>`, AnalysisContext ctx) {
+  analyse(lhs,ctx); 
+  analyse(rhs,ctx);
+
+  switch ({getType(lhs@\loc, ctx), getType(rhs@\loc, ctx)}) {
+    case {strType()}: ctx.add(current@\loc, ctx.lookup(lhs@\loc));  
+  }  
+}
+
+
 void analyse(current:(Expr)`{<Decl d> | <Formula f>}`, AnalysisContext ctx) {
   analyse(d,ctx); 
   analyse(f,ctx);

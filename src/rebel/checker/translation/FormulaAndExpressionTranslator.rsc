@@ -343,6 +343,13 @@ AttRes translateAttrExpr((Expr)`<Expr lhs> + <Expr rhs>`, Context ctx) = transla
 AttRes translateAttrExpr((Expr)`<Expr lhs> - <Expr rhs>`, Context ctx) = translateBinAttrExpr(lhs, rhs, "-", ctx);
 AttRes translateAttrExpr((Expr)`<Expr lhs> % <Expr rhs>`, Context ctx) = translateBinAttrExpr(lhs, rhs, "%", ctx);
 
+AttRes translateAttrExpr((Expr)`<Expr lhs> ++ <Expr rhs>`, Context ctx) {
+   AttRes l = translateAttrExpr(lhs,ctx);
+   AttRes r = translateAttrExpr(rhs,ctx);
+   
+   return <l.rels + r.rels, "<l.constraint> ++ <r.constraint>">;
+}
+
 AttRes translateAttrExpr(current:(Expr)`{<Id var> : <Expr expr> | <Formula f>}`, Context ctx) {
   str te = ctx.rm[expr@\loc].relExpr;
   return  <{"{<var> : <te> | <translate(f,ctx)>}"}, "">; 

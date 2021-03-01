@@ -3,25 +3,26 @@ module CoffeeMachine
 spec CoffeeMachine
   selected: ?CoffeeType,
   serving: ?CoffeeType,
+  display: String,
   amountNeeded: Integer;
    
   init event powerOn() 
-    post: this.amountNeeded' = 0, this.selected' = none, this.serving' = none;
+    post: this.amountNeeded' = 0, this.selected' = none, this.serving' = none, this.display' = "";
     
   final event powerOff()
   
   event select()
     variant americano
-      post: this.amountNeeded' = 130, this.selected' = CoffeeType[AMERICANO];
+      post: this.amountNeeded' = 130, this.selected' = CoffeeType[AMERICANO], this.display' = "Americano - " ++ toStr(this.amountNeeded') ++ " cents left";
     
     variant espresso
-      post: this.amountNeeded' = 120, this.selected' = CoffeeType[ESPRESSO];
+      post: this.amountNeeded' = 120, this.selected' = CoffeeType[ESPRESSO], this.display' = "Espresso - " ++ toStr(this.amountNeeded') ++ " cents left";
     
     variant normal
-      post: this.amountNeeded' = 95, this.selected' = CoffeeType[NORMAL];
+      post: this.amountNeeded' = 95, this.selected' = CoffeeType[NORMAL], this.display' = "Normal - " ++ toStr(this.amountNeeded') ++ " cents left";
     
     variant latte  
-      post: this.amountNeeded' = 150, this.selected' = CoffeeType[LATTE];
+      post: this.amountNeeded' = 150, this.selected' = CoffeeType[LATTE], this.display' = "Latte - " ++ toStr(this.amountNeeded') ++ " cents left";
        
   event pay(amount: Integer)
     pre: (amount = 5 || amount = 10 || amount = 20 || amount = 50);
