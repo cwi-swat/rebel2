@@ -7,7 +7,7 @@ spec CoffeeMachine
   amountNeeded: Integer;
    
   init event powerOn() 
-    post: this.amountNeeded' = 0, this.selected' = none, this.serving' = none, this.display' = "";
+    post: this.amountNeeded' = 0, this.selected' = none, this.serving' = none, this.display' = "What can I get you?";
     
   final event powerOff()
   
@@ -30,13 +30,15 @@ spec CoffeeMachine
   
     variant amountNotMet
       pre: this.amountNeeded - amount > 0;
+      post: this.display' = toStr(this.amountNeeded') ++ " cents left";
       
     variant amountMet
       pre: this.amountNeeded - amount = 0;
-      post: this.selected' = none, this.serving' = this.selected;
+      post: this.selected' = none, this.serving' = this.selected,
+            this.display' = "Serving a nice cup of coffee!";
  
   event done() 
-    post: this.serving' = none;
+    post: this.serving' = none, this.display' = "What can I get you?";
                     
   event cancel() 
     post: this.amountNeeded' = 0, this.selected' = none;
