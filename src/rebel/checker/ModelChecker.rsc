@@ -57,7 +57,7 @@ private tuple[Trace t, int transToSmtDuration, int solveDuration, int solverTota
     return trace;
   }
  
-  ModelFinderResult mfr = checkInitialSolution(implodeProblem(alleSpec), timeOutInMs = solverTimeOut, countNrOfVars = countNrOfVars, countNrOfClauses = countNrOfClauses);
+  ModelFinderResult mfr = checkInitialSolution(implodeProblem(alleSpec), timeOutInMs = solverTimeOut, countNrOfVars = countNrOfVars, countNrOfClauses = countNrOfClauses, saveSMTToFile=false);
  
   switch(mfr) {
     case sat(Model currentModel, Model (Domain) nextModel, void () stop): {

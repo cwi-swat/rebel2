@@ -30,12 +30,12 @@ spec CoffeeMachine
   
     variant amountNotMet
       pre: this.amountNeeded - amount > 0;
-      post: this.display' = toStr(this.amountNeeded') ++ " cents left";
+      post: this.display' = toStr(this.amountNeeded'); // ++ " cents left";
       
     variant amountMet
       pre: this.amountNeeded - amount = 0;
       post: this.selected' = none, this.serving' = this.selected,
-            this.display' = "Serving a nice cup of coffee!";
+            this.display' = "Serving up a nice cup of coffee!";
  
   event done() 
     post: this.serving' = none, this.display' = "What can I get you?";
@@ -43,6 +43,12 @@ spec CoffeeMachine
   event cancel() 
     post: this.amountNeeded' = 0, this.selected' = none;
 
+  //func display(selected: CoffeeType, amountLeft: Integer): String = 
+  //  coffeeTypeToStr(selected) ++ amountToStr(amountLeft) ++ " euro left";
+  //
+  //func coffeeTypeToStr(ct: CoffeeType): String
+  //  if (ct = 
+  
   states:
     active {
       waiting -> acceptingPayment: select::americano, select::espresso, select::normal, select::latte;

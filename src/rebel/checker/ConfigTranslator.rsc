@@ -86,6 +86,7 @@ rel[Spec spc, str instance, str field, str val] buildInitialValues(rebel::lang::
 rel[str field, str val] buildAssignments(WithAssignments assignments) {  
   set[str] translateLit((Expr)`<Id id>`) = {"<id>"};
   set[str] translateLit((Expr)`<Int i>`) = {"<i>"};
+  set[str] translateLit((Expr)`-<Int i>`) = {"-<i>"};
   set[str] translateLit((Expr)`<StringConstant s>`) = {"<s>"};
   set[str] translateLit((Expr)`{<{Expr ","}* elems>}`) = els when els := {"<e>" | e <- elems}, els != {};  
   default set[str] translateLit((Expr)`{<{Expr ","}* elems>}`) = {"__none"};

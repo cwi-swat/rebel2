@@ -10,10 +10,7 @@ spec Account
    
   init event open(nr: AccountNumber, openedOn: Date)
     post: this.nr' = nr, this.balance' = 0, this.openedOn' = openedOn;
-    
-  event isBalance(balance: Integer) 
-    pre: this.balance = balance;  
-    
+        
   event deposit(amount: Integer)
     pre: amount > 0;
     post: this.balance' = this.balance + amount;
@@ -39,15 +36,11 @@ spec Account
   
   states: 
     (*) -> opened: open;
-    opened -> opened: deposit, withdraw, payInterest, isBalance;
+    opened -> opened: deposit, withdraw, payInterest;
     opened -> blocked: block;
-    blocked -> blocked: isBalance;
     blocked -> opened: unblock;
     blocked -> (*): forceClose;   
     opened -> (*): close;
-
-assert BalanceOfAllAccountsShouldBeZero = always forall ac1,ac2,ac3:{ac:Account | ac is initialized} | ac1 != ac2 && ac2 != ac3 && ac1 != ac3 && 
-  ac1.balance + ac2.balance + ac3.balance = 0;     
 
 assert CanPayInterestAndClose = eventually exists ac:Account | payInterest on ac && eventually close on ac;
 assert CanOpenAccount         = eventually exists ac:Account | ac is initialized;

@@ -1,0 +1,21 @@
+module tlaplus::seq::Sequence3
+
+spec Element
+  idx: Integer;
+
+spec Seq
+  elems: set Element,
+  size: Integer;
+  
+  assume Size = always forall s:Seq | s.size = |s.elems|;
+   
+  assume Ordered      = always forall s:Seq, e1,e2: s.elems | (e1.idx = e2.idx => e1 = e2);
+  assume ZeroIndexed  = always forall s:Seq | (s.size > 0 => (exists e:s.elems | e.idx = 0));
+  assume UpperBound   = always forall s:Seq | (s.size > 0 => (exists e:s.elems | e.idx = s.size - 1));
+  assume Range        = always forall s:Seq | (s.size > 0 => (forall e:s.elems | e.idx >= 0 && e.idx < s.size));
+   
+assert Example = eventually forall s:Seq | |s.elems| > 1;
+
+config Small = s1,s2:Seq, e1,e2,e3,e4,e5: Element;
+
+run Example from Small in max 1 steps expect trace;

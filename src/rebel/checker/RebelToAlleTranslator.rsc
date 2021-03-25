@@ -17,9 +17,7 @@ import util::PathUtil;
 
 import IO;  
 import Set;
-import String;
 import util::Benchmark;
-import ParseTree;
 
 alias TransResult = tuple[str alleSpec, int duration]; 
 
