@@ -282,7 +282,7 @@ private Spec filterFacts(Spec spc, set[loc] uses) {
 }
 
 private set[Spec] filterNonReferencedSpecs(Graph[Spec] spcDep, TModel tm, Config cfg) {
-  set[Spec] referencedSpcs = {lookupSpecByRef(tm.useDef[spc@\loc], spcDep) | (InstanceSetup)`<{Id ","}+ _> : <Type spc> <InState? _> <WithAssignments? _>` <- cfg.instances};
+  set[Spec] referencedSpcs = {lookupSpecByName("<spc>", spcDep) | (InstanceSetup)`<{Id ","}+ _> : <Type spc> <InState? _> <WithAssignments? _>` <- cfg.instances};
   set[Spec] reachable = reach(spcDep, referencedSpcs);
   
   set[Spec] filtered = referencedSpcs + reachable;
@@ -349,6 +349,7 @@ private Field lookupFieldByRef(loc fldDef, Graph[Spec] spcDeps) {
   throw "Unable to find referenced Field at `<fldDef>`";
 } 
 
+private Spec lookupSpecByRef({}, Graph[Spec] spcDeps) { throw "No definition found for ref"; }
 private Spec lookupSpecByRef({loc specDef}, Graph[Spec] spcDeps) = lookupSpecByRef(specDef, spcDeps);
 private Spec lookupSpecByRef(loc specDef, Graph[Spec] spcDeps) {
   for (Spec s <- spcDeps<0>+spcDeps<1>, s@\loc == specDef) {
@@ -358,6 +359,7 @@ private Spec lookupSpecByRef(loc specDef, Graph[Spec] spcDeps) {
   throw "Unable to find referenced Spec at `<specDef>`";
 }
 
+private Spec lookupSpecByRef({}, set[RebelDependency] deps) { throw "No definition found for ref"; }
 private Spec lookupSpecByRef({loc specDef}, set[RebelDependency] deps) = lookupSpecByRef(specDef, deps);
 private Spec lookupSpecByRef(loc specDef, set[RebelDependency] deps) {
   for (resolvedAndCheckedModule(Module m, _, _) <- deps, (Part)`<Spec s>` <- m.parts, s@\loc == specDef) {
@@ -376,6 +378,16 @@ private Spec lookupSpecByName(str name, set[RebelDependency] deps) {
   
   throw "Unable to find spec with name `<name>`"; 
 } 
+
+private Spec lookupSpecByName(str name, Graph[Spec] spcDeps) {
+  for (Spec s <- spcDeps<0>+spcDeps<1>) { 
+    if ("<s.name>" == name) {
+      return s;
+    }
+  }
+  
+  throw "Unable to find referenced Spec at `<specDef>`";
+}
 
 private void printSpcDepGraph(Graph[Spec] spcDepGraph) {
   for (Spec from <- spcDepGraph<0>, Spec to <- spcDepGraph[from]) {
