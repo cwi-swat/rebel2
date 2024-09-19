@@ -41,14 +41,14 @@ ModelCheckerResult performCheck(Check chk, Module m, TModel tm, Graph[RebelDepen
   // Step 4: Translate the normalized, combined module to an AlleAlle specification
   TransResult transRes = translateToAlleAlle(cfgRes.cfg, norm.m, norm.tm, pcfg, saveAlleAlleFile = saveIntermediateFiles);
   // Step 5: Run the translated AlleAlle specification in the ModelFinder and interpet the result (based on the generated, non-normalized, module)
-  tuple[Trace t, int transToSmtDuration, int solveDuration, int solverTotal, int constructRelModelDuration, int nrOfVars, int nrOfClauses] modelFindRes = runAlleAlle(transRes.alleSpec, cfgRes.cfg, gen.m, solverTimeout, countNrOfVars, countNrOfClauses);
+  tuple[Trace t, int transToSmtDuration, int solveDuration, int solverTotal, int constructRelModelDuration, int nrOfVars, int nrOfClauses] modelFindRes = runAlleAlle(transRes.alleSpec, cfgRes.cfg, gen.m, solverTimeout, countNrOfVars, countNrOfClauses, saveSmtToFile = saveIntermediateFiles);
   
   int observedDuration = realTime() - startTime;
   
   return <modelFindRes.t, gen.duration , norm.duration, cfgRes.duration, transRes.duration, modelFindRes.transToSmtDuration, modelFindRes.solveDuration, modelFindRes.solverTotal, modelFindRes.constructRelModelDuration, observedDuration, modelFindRes.nrOfVars, modelFindRes.nrOfClauses>;
 }
 
-private tuple[Trace t, int transToSmtDuration, int solveDuration, int solverTotal, int constructRelModelDuration, int nrOfVars, int nrOfClauses] runAlleAlle(str alleSpec, Config cfg, Module m, int solverTimeOut, bool countNrOfVars, bool countNrOfClauses) {  
+private tuple[Trace t, int transToSmtDuration, int solveDuration, int solverTotal, int constructRelModelDuration, int nrOfVars, int nrOfClauses] runAlleAlle(str alleSpec, Config cfg, Module m, int solverTimeOut, bool countNrOfVars, bool countNrOfClauses, bool saveSmtToFile = false) {  
   Spec findSpec(Spec spc) = s when /Spec s <- m.parts, "<s.name>" == "<spc.name>"; 
 
   Trace extractTrace(Model model) {
@@ -57,7 +57,7 @@ private tuple[Trace t, int transToSmtDuration, int solveDuration, int solverTota
     return trace;
   }
  
-  ModelFinderResult mfr = checkInitialSolution(implodeProblem(alleSpec), timeOutInMs = solverTimeOut, countNrOfVars = countNrOfVars, countNrOfClauses = countNrOfClauses, saveSMTToFile=false);
+  ModelFinderResult mfr = checkInitialSolution(implodeProblem(alleSpec), timeOutInMs = solverTimeOut, countNrOfVars = countNrOfVars, countNrOfClauses = countNrOfClauses, saveSMTToFile=saveSmtToFile);
  
   switch(mfr) {
     case sat(Model currentModel, Model (Domain) nextModel, void () stop): {

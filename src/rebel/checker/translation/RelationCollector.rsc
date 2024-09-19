@@ -134,14 +134,6 @@ void analyse((Formula)`exists <{Decl ","}+ decls> | <Formula f>`, AnalysisContex
 
 void analyse((Formula)`noOp(<Expr expr>)`, AnalysisContext ctx) { analyse(expr,ctx); }
 
-//From Check Syntax
-//void analyse((Formula)`eventually <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurAndStepRel(ctx));
-//void analyse((Formula)`always <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurAndStepRel(ctx));
-//void analyse((Formula)`always-last <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurAndStepRel(ctx));
-//void analyse((Formula)`next <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurAndStepRel(ctx));
-//void analyse((Formula)`first <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurRel(ctx));
-//void analyse((Formula)`last <Formula f>`, AnalysisContext ctx) = analyse(f,nextCurRel(ctx));
-
 void analyse((Formula)`eventually <Formula f>`, AnalysisContext ctx) = analyse(f,ctx);
 void analyse((Formula)`always <Formula f>`, AnalysisContext ctx) = analyse(f,ctx);
 void analyse((Formula)`always-last <Formula f>`, AnalysisContext ctx) = analyse(f,ctx);
@@ -162,8 +154,7 @@ void analyse((Formula)`<TransEvent event> on <Expr var> <WithAssignments? w>`, A
   }
 }
 
-void analyse((WithAssignments)`with <{Assignment ","}+ assignments>`, AnalysisContext ctx) {
-}
+void analyse((WithAssignments)`with <{Assignment ","}+ assignments>`, AnalysisContext ctx) {}
 
 // From Common Syntax
 void analyse(current:(Expr)`(<Expr expr>)`, AnalysisContext ctx) {

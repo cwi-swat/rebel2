@@ -14,16 +14,16 @@ spec Torch
   totalTimeSpend: Integer;
     
   event crossNearToFar(p1: Adventurer, p2: Adventurer)
-    pre:  
-      p1.crossNearToFar(), p2.crossNearToFar();
-    post:
-      if p1.timeToCross > p2.timeToCross 
-        then this.totalTimeSpend' = this.totalTimeSpend + p1.timeToCross
-        else this.totalTimeSpend' = this.totalTimeSpend + p2.timeToCross;
+    pre:  p1.crossNearToFar(), p2.crossNearToFar();
+    post: if p1.timeToCross > p2.timeToCross 
+            then this.totalTimeSpend' = this.totalTimeSpend + p1.timeToCross
+            else this.totalTimeSpend' = this.totalTimeSpend + p2.timeToCross;
       
   event crossFarToNear(p: Adventurer) 
-    pre: p.crossFarToNear();
+    pre:  p.crossFarToNear();
     post: this.totalTimeSpend' = this.totalTimeSpend + p.timeToCross; 
+    
+  assume EverybodyGetsACross = eventually forall a: Adventurer | a is far;   
     
   states:
     near -> far: crossNearToFar;
@@ -32,8 +32,8 @@ spec Torch
 assert EverybodyCrossedInTheLeastTime
   = eventually ((forall a: Adventurer | a is far) && (exists t: Torch | t.totalTimeSpend = 17));
 
-assert CantGoquicker
-  = eventually ((forall a: Adventurer | a is far) && (exists t: Torch | t.totalTimeSpend < 17));
+assert CantGoQuicker
+  = eventually forall t: Torch, a:Adventurer | t.totalTimeSpend < 17 && a is far;
 
 config EverybodyNear
   = a1,a2,a3,a4: Adventurer is near, 
@@ -43,6 +43,6 @@ config EverybodyNear
     a3 with timeToCross = 5,
     a4 with timeToCross = 10;
   
-run EverybodyCrossedInTheLeastTime from EverybodyNear in max 6 steps;
-run CantGoquicker from EverybodyNear in max 10 steps;  
+run EverybodyCrossedInTheLeastTime from EverybodyNear in max 6 steps expect trace;
+run CantGoQuicker from EverybodyNear in max 10 steps expect no trace;  
 

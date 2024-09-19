@@ -15,7 +15,8 @@ spec DateMock[TODAY*]
   internal event after(other: DateMock)  pre: this.nr > other.nr;
   
   //assume DatesAreOrdered   = always forall d1,d2:DateMock | ((d1 != d2 && d1 != DateMock[TODAY] && d2 != DateMock[TODAY]) => d1.nr != d2.nr);
-  assume TodayMovesForward = always-last DateMock[TODAY].nr' > DateMock[TODAY].nr;
+  assume TodayMovesForward = always-last DateMock[TODAY].nr' > DateMock[TODAY].nr; 
+  assume TimeNeverNegative = always forall d:DateMock | d.nr >= 0 && d.year >= 0 && d.month >= 0 && d.day >= 0;
    
   states:
     active->active:beforeOrOnToday, beforeToday, afterOrOnToday, afterToday, after, isToday;

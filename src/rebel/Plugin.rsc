@@ -93,7 +93,7 @@ set[Contribution] getRebelContributions() {
     for (r <- results) {
       switch (r) {
         case r:asExpected(str c, str _): println("Check `<c>` as expected. <durations2str(r)>");
-        case r:notAsExpected(str c, str _, str reason, Trace t): {
+        case r:notAsExpected(str c, str _, str reason, Trace t): { 
           println("Check `<c>` NOT as expected: <reason>. <durations2str(r)>");
           println(trace2Str(t));
         }

@@ -11,11 +11,14 @@ import IO;
 import Location;
 import ParseTree;
 import Set;
+import List;
 import analysis::graphs::Graph;
 import DateTime;
 
 import util::Progress;
 import util::Benchmark;
+
+import analysis::typepal::TModel;
 
 alias CheckedModule = tuple[Module m, TModel tm, int duration];
 
@@ -131,9 +134,9 @@ CheckedModule assembleCheck(Check chk, Module root, TModel tm, Graph[RebelDepend
   //println("After assembling new module: <(cpuTime() - startTime) / 1000000>ms");
   TModel genTm = rebelTModelFromModule(gen, {}, pcfg);
   //println("After type checking new module: <(cpuTime() - startTime) / 1000000>ms");
-  
+    
   Module genMod = gen;
-  
+    
   // Filter the specs until none can be removed any more
   Graph[Spec] newSpcDep = extractSpecDependencyGraph({<resolvedAndCheckedModule(gen,genTm,now()), resolvedAndCheckedModule(gen,genTm,now())>});
   if (size(newSpcDep) != size(spcDep)) {

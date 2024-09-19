@@ -94,3 +94,4 @@ run CanMoveVerticalVehicle from Beginner1 in max 1 steps;
 
 run RedCanGetOut from Beginner1 in max 8 steps expect trace;
 //run RedCanGetOut from Advanced24 in max 25 steps expect trace;
+

@@ -9,6 +9,8 @@ import rebel::lang::Syntax;
 import rebel::lang::WellFormednessChecker;
 
 import util::PathUtil;
+
+import analysis::graphs::Graph;
  
 extend analysis::typepal::TypePal;
 
@@ -74,7 +76,7 @@ TypeCheckerResult checkModule(Module root, Graph[RebelDependency] depGraph, Path
   }   
 }
 
-private Graph[RebelDependency] subgraph(RebelDependency from, Graph[RebelDependency] depGraph) = {<from,d> | <from, RebelDependency d> <- depGraph};
+private Graph[RebelDependency] subgraph(RebelDependency from, Graph[RebelDependency] depGraph) = {<from,d> | /<from, RebelDependency d> := depGraph}; // should be <from, RebelDependency d> <- depGraph
 
 private AType rebelBuiltInTypes(AType containerType, Tree selector, loc _, Solver s) {
     if(!(containerType == stringType() && "<selector>" == "length")){

@@ -10,7 +10,9 @@ import rebel::lang::Parser;
 
 import String;
 
-void testTranslateLimitCheckSmall() = testTranslateToAlleAlle("CanInitializeLimit", |project://rebel2/examples/paper/debitcard/checks/LimitChecksWithoutMocks.rebel|);
+private loc root() = |home:///develop/workspace/personal/rebel2|;
+
+void testTranslateLimitCheckSmall() = testTranslateToAlleAlle("CanInitializeLimit", root() + "examples/paper/debitcard/checks/LimitChecksWithoutMocks.rebel");
 void testTranslateLimitCheckBig() = testTranslateToAlleAlle("CantOverdrawLimit", |project://rebel2/examples/paper/debitcard/checks/LimitChecksWithoutMocks.rebel|);
 
 void testTranslateToAlleAlle(str check, loc modul) {

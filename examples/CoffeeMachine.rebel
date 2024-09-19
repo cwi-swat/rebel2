@@ -13,27 +13,34 @@ spec CoffeeMachine
   
   event select()
     variant americano
-      post: this.amountNeeded' = 130, this.selected' = CoffeeType[AMERICANO], this.display' = "Americano - " ++ toStr(this.amountNeeded') ++ " cents left";
+      post: this.amountNeeded' = 130, 
+      		this.selected' = CoffeeType[AMERICANO], 
+      		this.display' = "Americano";
     
     variant espresso
-      post: this.amountNeeded' = 120, this.selected' = CoffeeType[ESPRESSO], this.display' = "Espresso - " ++ toStr(this.amountNeeded') ++ " cents left";
+      post: this.amountNeeded' = 120, 
+      		this.selected' = CoffeeType[ESPRESSO], 
+      		this.display' = "Espresso";
     
     variant normal
-      post: this.amountNeeded' = 95, this.selected' = CoffeeType[NORMAL], this.display' = "Normal - " ++ toStr(this.amountNeeded') ++ " cents left";
+      post: this.amountNeeded' = 95, 
+      		this.selected' = CoffeeType[NORMAL], 
+      		this.display' = "Normal";
     
     variant latte  
-      post: this.amountNeeded' = 150, this.selected' = CoffeeType[LATTE], this.display' = "Latte - " ++ toStr(this.amountNeeded') ++ " cents left";
+      post: this.amountNeeded' = 150, 
+      		this.selected' = CoffeeType[LATTE], 
+      		this.display' = "Latte";
        
   event pay(amount: Integer)
-    pre: (amount = 5 || amount = 10 || amount = 20 || amount = 50);
-    post: this.amountNeeded' = this.amountNeeded - amount;
+    pre: 	(amount = 5 || amount = 10 || amount = 20 || amount = 50);
+    post: 	this.amountNeeded' = this.amountNeeded - amount;
   
     variant amountNotMet
-      pre: this.amountNeeded - amount > 0;
-      post: this.display' = toStr(this.amountNeeded'); // ++ " cents left";
+      pre: 	this.amountNeeded - amount > 0;
       
     variant amountMet
-      pre: this.amountNeeded - amount = 0;
+      pre:  this.amountNeeded - amount = 0;
       post: this.selected' = none, this.serving' = this.selected,
             this.display' = "Serving up a nice cup of coffee!";
  
@@ -42,12 +49,6 @@ spec CoffeeMachine
                     
   event cancel() 
     post: this.amountNeeded' = 0, this.selected' = none;
-
-  //func display(selected: CoffeeType, amountLeft: Integer): String = 
-  //  coffeeTypeToStr(selected) ++ amountToStr(amountLeft) ++ " euro left";
-  //
-  //func coffeeTypeToStr(ct: CoffeeType): String
-  //  if (ct = 
   
   states:
     active {
@@ -77,5 +78,8 @@ check MachineWillServeOrCancel from InitialMachine in max 7 steps with infinite 
 
 assert SimServeLoop = exists m:CoffeeMachine | eventually m is active::serve && eventually m is active::waiting;
 run SimServeLoop from InitialMachine in max 7 steps with infinite trace expect trace;
+
+assert CanAlwaysTurnMachineOff = eventually exists m: CoffeeMachine | powerOff on m;
+run CanAlwaysTurnMachineOff from InitialMachine in max 10 steps expect no trace;
 
     

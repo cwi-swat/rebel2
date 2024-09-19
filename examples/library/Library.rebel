@@ -1,0 +1,87 @@
+module library::Libary
+
+spec Stringg
+
+spec Date
+  nr: Integer;
+  
+  assume Immutable = always-last forall d:Date | d.nr = d.nr';
+  assume Identity = always forall d1,d2:Date | (d1.nr = d2.nr => d1 = d2);
+
+
+spec Title
+  name: Stringg,
+  subtitle: Stringg,
+  authors: Stringg,
+  books: set Book;
+  
+  init event create(name: Stringg, subtitle: Stringg, authors: Stringg)
+    post: this.name' = name, this.subtitle' = subtitle, this.authors' = authors;
+    
+  event add(b: Book) 
+    post: b in this.books';
+    
+  states:
+    (*) -> created: create;
+    created -> created: add;
+  
+spec Book
+  location: Integer,
+  title: Title;
+  
+  init event create(t: Title)
+    pre: t is initialized, t.add(this);
+    post: this.title' = t;
+
+  event shelf(loc: Integer)
+    post: this.location' = loc;
+  
+  internal event lend()
+  internal event return()
+  
+  states:
+    (*) -> created: create;
+    created -> available: shelf;
+    available -> lent: lend;
+    lent -> available: return;
+
+spec Person
+  name: Integer,
+  email: Integer;
+
+  init event create(name: Integer, email: Integer) 
+    post: this.name' = name, this.email' = email;
+  
+  states:
+    (*) -> created: create;
+    
+spec Loan
+  book: Book,
+  person: Person,
+  start: Date,
+  end: ?Date;
+  
+  init event checkout(p: Person, b: Book, start: Date)
+    pre: b.lend(), p is initialized;
+    post: this.person' = p, this.book' = b, this.start' = start, this.end' = none;
+    
+  final event return(p: Person, b: Book, end:Date)
+    pre: end.nr >= this.start.nr, b = this.book, p = this.person, b.return();
+    
+  states:
+    (*) -> active: checkout;
+    active -> (*): return;
+
+assert CantLendABookTwice = 
+  always forall l1,l2: Loan | (l1 is active && l2 is active && l1.book = l2.book => l1 = l2);    
+
+config Basic = 
+  d1,d2,d3,d4: Date, 
+  s1,s2,s3,s4,s5: Stringg,
+  b1,b2: Book is uninitialized,
+  t1,t2: Title is uninitialized,
+  p1,p2: Person is uninitialized,
+  l1,l2,l3: Loan is uninitialized;
+  
+check CantLendABookTwice from Basic in max 15 steps expect no trace;    
+ 

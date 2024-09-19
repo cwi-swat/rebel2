@@ -76,9 +76,7 @@ syntax Type
   | "set" TypeName tp
   | "?" TypeName tp
   ;  
-
-lexical QuasiQualifiedName = [a-z A-Z 0-9 _:] !<< ([a-zA-Z_][a-zA-Z0-9_]*([:][:][a-zA-Z0-9_])* !>> [a-zA-Z0-9_]) \ Keywords;
-  
+ 
 lexical Id = [a-z A-Z 0-9 _] !<< ([a-z A-Z_][a-z A-Z 0-9 _]* !>> [a-z A-Z 0-9 _]) \ Keywords;
 lexical TypeName = @category="Type" [a-z A-Z 0-9 _] !<< [A-Z][a-z A-Z 0-9 _]* !>> [a-z A-Z 0-9 _] \ Keywords;
 lexical Int = @category="Constant"  [0-9] !<< [0-9]+ !>> [0-9];

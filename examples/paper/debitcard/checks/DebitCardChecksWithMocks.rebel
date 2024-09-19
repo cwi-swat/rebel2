@@ -21,7 +21,7 @@ config FullyMocked
     dc: DebitCard forget brandType, pinRetention, stolenOn is uninitialized;  
  
 run RequestedNewDebitCardCanBeProduced from FullyMocked in max 3 steps expect trace;
-run CardCanExpire from FullyMocked in max 5 steps expect trace;
+run CardCanExpire from FullyMocked in max 5 steps expect trace; 
 
 run NotAbleToPinAfterThreeAttempts from FullyMocked in max 10 steps expect no trace;
 run NoMoreThan3WrongPinAttempts from FullyMocked in max 10 steps expect no trace;

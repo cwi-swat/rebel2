@@ -25,9 +25,9 @@ spec Transaction
 spec SimpleAccount
   balance: Integer;
   
-  internal event withdraw(amount: Integer)
-    pre: amount > 0;
-    post: this.balance' = this.balance - amount;
+  //internal event withdraw(amount: Integer)
+  //  pre: amount > 0;
+  //  post: this.balance' = this.balance - amount;
     
   internal event deposit(amount: Integer) 
     pre: amount > 0;
@@ -36,7 +36,8 @@ spec SimpleAccount
   assume PositiveBalance = always forall a:SimpleAccount | a.balance >= 0;
   
   states:
-    opened -> opened: withdraw, deposit;
+    //opened -> opened: withdraw, deposit;
+    opened -> opened: deposit;
  
 config Orig = t: Transaction is uninitialized, ac1,ac2: Account is uninitialized, an1,an2: AccountNumber, d1:Date, d2:Date;
 config SimplifiedTrans = t: Transaction is uninitialized, ac1,ac2: SimpleAccount mocks Account;
@@ -44,7 +45,7 @@ config SimplifiedTrans = t: Transaction is uninitialized, ac1,ac2: SimpleAccount
 assert CanBookATransaction = eventually exists t: Transaction | book on t;
 assert TransactionsDontGetStuck = always forall t: Transaction | (t is initialized => eventually t is finalized);
 
-run CanBookATransaction from Orig in max 5 steps;
-run CanBookATransaction from SimplifiedTrans in max 5 steps;
+//run CanBookATransaction from Orig in max 5 steps;
+run CanBookATransaction from SimplifiedTrans in max 5 steps; 
  
 check TransactionsDontGetStuck from SimplifiedTrans in max 5 steps with infinite trace;

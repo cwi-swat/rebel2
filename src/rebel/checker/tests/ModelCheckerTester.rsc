@@ -19,14 +19,14 @@ ModelCheckerTesterResult testPerformCheckOnTransaction2() = testPerformCheck("Tr
 ModelCheckerTesterResult testPerformCheckOnHotel() = testPerformCheck("NoIntruder", |project://rebel2/examples/paper/performance/rebel/Hotel.rebel|);
 ModelCheckerTesterResult testPerformCheckOnLight() = testPerformCheck("BulbCanBreak", |project://rebel2/examples/Light.rebel|);
 
-ModelCheckerTesterResult testPerformCheck(str check, loc spec, int timeout = 30 * 1000) {
+ModelCheckerTesterResult testPerformCheck(str check, loc spec, int timeout = 30 * 1000, bool saveIntermediateFiles = true) {
   PathConfig pcfg = defaultPathConfig(spec);
   
   Module m = parseModule(spec);
   TypeCheckerResult tcr = checkModule(m, calculateDependencies(m,pcfg), pcfg); 
   
   Check chk = findCheckByName(check, m);
-  return <performCheck(chk, m, tcr.tm, tcr.depGraph, pcfg = pcfg, saveIntermediateFiles = true, solverTimeout = timeout), tcr.tm, "<chk.config>", "<m.\module.name>">;
+  return <performCheck(chk, m, tcr.tm, tcr.depGraph, pcfg = pcfg, saveIntermediateFiles = saveIntermediateFiles, solverTimeout = timeout), tcr.tm, "<chk.config>", "<m.\module.name>">;
 }
 
 private Check findCheckByName(str check, Module m) {

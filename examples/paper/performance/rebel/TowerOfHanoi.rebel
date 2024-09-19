@@ -51,6 +51,6 @@ config FourDiscs  = d1,d2,d3,d4: Disc, p1,p2,p3: Peg, t:Tower with initial = p1,
 config FiveDiscs  = d1,d2,d3,d4,d5: Disc, p1,p2,p3: Peg, t:Tower with initial = p1, goal = p3, d1 with size = 1, d2 with size = 2, d3 with size = 3, d4 with size = 4, d5 with size = 5;               
                
 //run AllOnGoalPeg from TwoDiscs in max 3 steps expect trace;  
-run AllOnGoalPeg from ThreeDiscs in max 7 steps expect trace;
-//run AllOnGoalPeg from FourDiscs in max 15 steps expect trace;  
+//run AllOnGoalPeg from ThreeDiscs in max 7 steps expect trace;
+run AllOnGoalPeg from FourDiscs in max 15 steps expect trace;  
 //run AllOnGoalPeg from FiveDiscs in max 32 steps expect trace;  
